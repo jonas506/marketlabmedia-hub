@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Filter, Plus, FileText, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
