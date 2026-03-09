@@ -15,8 +15,8 @@ interface KontingentTrackerProps {
   year: number;
 }
 
-const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces, month, year }) => {
-  const monthPieces = contentPieces.filter((c) => c.target_month === month && c.target_year === year);
+const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces = [], month, year }) => {
+  const monthPieces = (contentPieces ?? []).filter((c) => c.target_month === month && c.target_year === year);
 
   // "Ist" = pieces with phase "handed_over"
   const countByType = (type: string) =>
