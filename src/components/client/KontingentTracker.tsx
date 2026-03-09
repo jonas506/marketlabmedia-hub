@@ -18,9 +18,9 @@ interface KontingentTrackerProps {
 const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces = [], month, year }) => {
   const monthPieces = (contentPieces ?? []).filter((c) => c.target_month === month && c.target_year === year);
 
-  // "Ist" = pieces with phase "handed_over"
+  // "Ist" = pieces with phase "done" or "handed_over" (ab Fertig zählt es)
   const countByType = (type: string) =>
-    monthPieces.filter((c) => c.type === type && c.phase === "handed_over").length;
+    monthPieces.filter((c) => c.type === type && (c.phase === "done" || c.phase === "handed_over")).length;
 
   const types = [
     { label: "Reels", type: "reel", target: client.monthly_reels, current: countByType("reel") },

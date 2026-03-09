@@ -22,6 +22,7 @@ interface ContentPiece {
   target_month: number;
   target_year: number;
   has_script: boolean;
+  preview_link?: string | null;
 }
 
 interface MonthlyPipelineProps {
