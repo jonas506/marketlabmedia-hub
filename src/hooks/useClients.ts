@@ -15,11 +15,10 @@ export interface Client {
 }
 
 export interface ClipPhaseCounts {
-  raw: number;
+  filmed: number;
   editing: number;
-  done: number;
-  scheduled: number;
-  posted: number;
+  approved: number;
+  scheduled_posted: number;
 }
 
 export interface ClientDashboardData extends Client {
@@ -29,9 +28,9 @@ export interface ClientDashboardData extends Client {
   runway: number;
 }
 
-const getFirstDayOfMonth = () => {
+const getCurrentMonth = () => {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+  return { month: d.getMonth() + 1, year: d.getFullYear() };
 };
 
 export const useClients = () => {
@@ -44,13 +43,11 @@ export const useClients = () => {
 
       const clientIds = clients.map((c) => c.id);
 
-      // Fetch all clips for these clients
       const { data: allClips } = await supabase
         .from("clips")
-        .select("client_id, phase, type, updated_at")
+        .select("client_id, phase, type, target_month, target_year")
         .in("client_id", clientIds);
 
-      // Fetch next planned shoot days
       const today = new Date().toISOString().split("T")[0];
       const { data: shootDays } = await supabase
         .from("shoot_days")
@@ -60,27 +57,26 @@ export const useClients = () => {
         .gte("date", today)
         .order("date", { ascending: true });
 
-      const firstOfMonth = getFirstDayOfMonth();
+      const { month, year } = getCurrentMonth();
 
       return clients.map((client) => {
         const clips = allClips?.filter((c) => c.client_id === client.id) ?? [];
         
         const clipCounts: ClipPhaseCounts = {
-          raw: clips.filter((c) => c.phase === "raw").length,
+          filmed: clips.filter((c) => c.phase === "filmed").length,
           editing: clips.filter((c) => c.phase === "editing").length,
-          done: clips.filter((c) => c.phase === "done").length,
-          scheduled: clips.filter((c) => c.phase === "scheduled").length,
-          posted: clips.filter((c) => c.phase === "posted").length,
+          approved: clips.filter((c) => c.phase === "approved").length,
+          scheduled_posted: clips.filter((c) => c.phase === "scheduled_posted").length,
         };
 
-        // Posted this month
+        // Posted this month (scheduled_posted clips for current month)
         const postedThisMonth = clips.filter(
-          (c) => c.phase === "posted" && c.updated_at >= firstOfMonth
+          (c) => c.phase === "scheduled_posted" && c.target_month === month && c.target_year === year
         );
 
         const totalMonthly = client.monthly_reels + client.monthly_carousels + client.monthly_stories;
         const dailyFreq = totalMonthly / 30;
-        const readyClips = clipCounts.done + clipCounts.scheduled;
+        const readyClips = clipCounts.approved + clipCounts.scheduled_posted;
         const runway = dailyFreq > 0 ? Math.round(readyClips / dailyFreq) : 999;
 
         const nextShoot = shootDays?.find((s) => s.client_id === client.id);
