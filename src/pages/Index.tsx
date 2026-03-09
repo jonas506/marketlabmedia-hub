@@ -1,17 +1,24 @@
 import { useClients } from "@/hooks/useClients";
 import ClientCard from "@/components/ClientCard";
 import AppLayout from "@/components/AppLayout";
+import CreateClientDialog from "@/components/CreateClientDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
   const { data: clients, isLoading } = useClients();
+  const { role } = useAuth();
+  const canCreate = role === "admin" || role === "head_of_content";
 
   return (
     <AppLayout>
-      <div className="mb-6">
-        <h1 className="text-xl font-bold tracking-tight">DASHBOARD</h1>
-        <p className="font-body text-sm text-muted-foreground">
-          Sortiert nach Content-Runway – dringendste Kunden zuerst.
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight">DASHBOARD</h1>
+          <p className="font-body text-sm text-muted-foreground">
+            Sortiert nach Content-Runway – dringendste Kunden zuerst.
+          </p>
+        </div>
+        {canCreate && <CreateClientDialog />}
       </div>
 
       {isLoading ? (
