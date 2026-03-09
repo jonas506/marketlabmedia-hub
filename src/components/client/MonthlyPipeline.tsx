@@ -134,10 +134,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     [contentPieces, activeType, month, year]
   );
 
+  const PRIORITY_WEIGHT: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
+
   const phasePieces = useMemo(() => {
     let filtered = monthPieces.filter((c) => c.phase === activePhase);
     if (filterPerson !== "all") filtered = filtered.filter((c) => c.assigned_to === filterPerson);
-    return filtered;
+    return [...filtered].sort((a, b) => {
+      const pa = PRIORITY_WEIGHT[a.priority || "normal"] ?? 2;
+      const pb = PRIORITY_WEIGHT[b.priority || "normal"] ?? 2;
+      if (pa !== pb) return pa - pb;
+      if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
+      if (a.deadline) return -1;
+      if (b.deadline) return 1;
+      return 0;
+    });
   }, [monthPieces, activePhase, filterPerson]);
 
   const nextPhaseMap = useMemo(() => {
