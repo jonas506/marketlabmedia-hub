@@ -10,9 +10,10 @@ import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import MonthlyChecklist from "@/components/client/MonthlyChecklist";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { motion } from "framer-motion";
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +66,7 @@ const ClientDetail = () => {
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
         </div>
       </AppLayout>
     );
@@ -83,39 +84,50 @@ const ClientDetail = () => {
 
   return (
     <AppLayout>
-      <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground font-body mb-4">
-        <ArrowLeft className="h-4 w-4" />
-        Dashboard
-      </Link>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+        {/* Back link */}
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-body mb-6 transition-colors group">
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+          Dashboard
+        </Link>
 
-      <div className="mb-6">
-        <ClientInfoPanel client={client} canEdit={canEdit} />
-      </div>
+        {/* Client info panel */}
+        <div className="mb-8">
+          <ClientInfoPanel client={client} canEdit={canEdit} />
+        </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="font-mono text-sm font-semibold tracking-wider text-muted-foreground">MONATSZYKLUS</h2>
-        <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
-          const [m, y] = v.split("-").map(Number);
-          setSelectedMonth(m);
-          setSelectedYear(y);
-        }}>
-          <SelectTrigger className="w-48 h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {monthOptions.map((o) => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+        {/* Month selector */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
+              <CalendarDays className="h-4 w-4 text-primary" />
+            </div>
+            <h2 className="font-display text-lg font-semibold tracking-tight">Monatszyklus</h2>
+          </div>
+          <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
+            const [m, y] = v.split("-").map(Number);
+            setSelectedMonth(m);
+            setSelectedYear(y);
+          }}>
+            <SelectTrigger className="w-52 h-10 text-sm bg-card border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {monthOptions.map((o) => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="space-y-4">
-        <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} />
-        <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
-        <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
-        <MonthlyChecklist clientId={client.id} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
-      </div>
+        {/* Sections */}
+        <div className="space-y-6">
+          <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} />
+          <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+          <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+          <MonthlyChecklist clientId={client.id} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+        </div>
+      </motion.div>
     </AppLayout>
   );
 };

@@ -17,39 +17,39 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 flex h-screen w-56 flex-col border-r border-border bg-sidebar">
-        <div className="px-4 py-6">
-          <img src={logoLight} alt="Marketlab Media" className="h-5 w-auto" />
+      <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-sidebar-border bg-sidebar">
+        <div className="px-5 py-7">
+          <img src={logoLight} alt="Marketlab Media" className="h-5 w-auto opacity-90" />
         </div>
 
-        <nav className="flex-1 space-y-1 px-2">
+        <nav className="flex-1 space-y-0.5 px-3">
           {navItems.map(({ to, label, icon: Icon }) => {
             const active = location.pathname === to;
             return (
               <Link
                 key={to}
                 to={to}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-body transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-body transition-all duration-200 ${
                   active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-primary/10 text-primary font-medium shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className={`h-[18px] w-[18px] ${active ? "text-primary" : ""}`} />
                 {label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-border p-4">
-          <div className="mb-3">
-            <p className="text-sm font-body text-foreground">{profile?.name}</p>
-            <p className="text-xs font-mono text-muted-foreground uppercase">
+        <div className="border-t border-sidebar-border p-4">
+          <div className="mb-3 px-1">
+            <p className="text-sm font-body font-medium text-foreground">{profile?.name}</p>
+            <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
               {role === "admin" ? "Geschäftsführer" : role === "head_of_content" ? "Head of Content" : "Cutter"}
             </p>
           </div>
-          <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start gap-2 text-muted-foreground font-body">
+          <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start gap-2 text-muted-foreground font-body hover:text-foreground">
             <LogOut className="h-4 w-4" />
             Abmelden
           </Button>
@@ -57,7 +57,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </aside>
 
       {/* Main content */}
-      <main className="ml-56 flex-1 p-8">
+      <main className="ml-60 flex-1 p-8">
         {children}
       </main>
     </div>
