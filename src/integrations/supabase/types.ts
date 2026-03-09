@@ -391,6 +391,7 @@ export type Database = {
           deadline: string | null
           id: string
           is_completed: boolean | null
+          notes: string | null
           tag: string | null
           title: string
         }
@@ -401,6 +402,7 @@ export type Database = {
           deadline?: string | null
           id?: string
           is_completed?: boolean | null
+          notes?: string | null
           tag?: string | null
           title: string
         }
@@ -411,6 +413,7 @@ export type Database = {
           deadline?: string | null
           id?: string
           is_completed?: boolean | null
+          notes?: string | null
           tag?: string | null
           title?: string
         }
