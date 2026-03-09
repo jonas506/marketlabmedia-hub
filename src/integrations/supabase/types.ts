@@ -208,6 +208,66 @@ export type Database = {
           },
         ]
       }
+      content_pieces: {
+        Row: {
+          assigned_to: string | null
+          client_id: string
+          created_at: string | null
+          has_script: boolean | null
+          id: string
+          phase: string
+          shoot_day_id: string | null
+          target_month: number
+          target_year: number
+          title: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          client_id: string
+          created_at?: string | null
+          has_script?: boolean | null
+          id?: string
+          phase: string
+          shoot_day_id?: string | null
+          target_month: number
+          target_year: number
+          title?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          client_id?: string
+          created_at?: string | null
+          has_script?: boolean | null
+          id?: string
+          phase?: string
+          shoot_day_id?: string | null
+          target_month?: number
+          target_year?: number
+          title?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_pieces_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_pieces_shoot_day_id_fkey"
+            columns: ["shoot_day_id"]
+            isOneToOne: false
+            referencedRelation: "shoot_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_changes: {
         Row: {
           changed_at: string | null
