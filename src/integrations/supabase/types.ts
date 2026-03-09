@@ -213,10 +213,12 @@ export type Database = {
           assigned_to: string | null
           client_id: string
           created_at: string | null
+          deadline: string | null
           has_script: boolean | null
           id: string
           phase: string
           preview_link: string | null
+          priority: string | null
           shoot_day_id: string | null
           target_month: number
           target_year: number
@@ -228,10 +230,12 @@ export type Database = {
           assigned_to?: string | null
           client_id: string
           created_at?: string | null
+          deadline?: string | null
           has_script?: boolean | null
           id?: string
           phase: string
           preview_link?: string | null
+          priority?: string | null
           shoot_day_id?: string | null
           target_month: number
           target_year: number
@@ -243,10 +247,12 @@ export type Database = {
           assigned_to?: string | null
           client_id?: string
           created_at?: string | null
+          deadline?: string | null
           has_script?: boolean | null
           id?: string
           phase?: string
           preview_link?: string | null
+          priority?: string | null
           shoot_day_id?: string | null
           target_month?: number
           target_year?: number

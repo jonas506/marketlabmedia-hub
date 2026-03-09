@@ -6,12 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ContentPiece {
   id: string;
@@ -25,7 +28,16 @@ interface ContentPiece {
   target_year: number;
   has_script: boolean;
   preview_link?: string | null;
+  deadline?: string | null;
+  priority?: string | null;
 }
+
+const PRIORITY_OPTIONS = [
+  { value: "low", label: "Niedrig", color: "text-muted-foreground", bg: "bg-muted/60" },
+  { value: "normal", label: "Normal", color: "text-foreground", bg: "bg-muted/60" },
+  { value: "high", label: "Hoch", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/10" },
+  { value: "urgent", label: "Dringend", color: "text-destructive", bg: "bg-destructive/10" },
+];
 
 interface MonthlyPipelineProps {
   clientId: string;
@@ -477,6 +489,69 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     )}
                   </div>
 
+                  {/* Deadline & Priority — shown in editing phase */}
+                  {activePhase === "editing" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="flex items-center gap-3 pl-9"
+                    >
+                      {/* Deadline */}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            disabled={!canEdit}
+                            className={cn(
+                              "h-7 w-40 justify-start text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md gap-1.5",
+                              !piece.deadline && "text-muted-foreground/50",
+                              piece.deadline && new Date(piece.deadline) < new Date() && "text-destructive bg-destructive/10"
+                            )}
+                          >
+                            <CalendarIcon className="h-3 w-3 shrink-0" />
+                            {piece.deadline
+                              ? format(new Date(piece.deadline), "dd. MMM yyyy", { locale: de })
+                              : "Deadline setzen"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={piece.deadline ? new Date(piece.deadline) : undefined}
+                            onSelect={(date) => updatePiece(piece.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
+                            initialFocus
+                            locale={de}
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      {/* Priority */}
+                      <Select
+                        value={piece.priority || "normal"}
+                        onValueChange={(v) => updatePiece(piece.id, { priority: v })}
+                        disabled={!canEdit}
+                      >
+                        <SelectTrigger className={cn(
+                          "h-7 w-32 text-xs font-mono border-0 px-2.5 rounded-md gap-1.5",
+                          PRIORITY_OPTIONS.find(p => p.value === (piece.priority || "normal"))?.bg,
+                          PRIORITY_OPTIONS.find(p => p.value === (piece.priority || "normal"))?.color,
+                        )}>
+                          {(piece.priority === "high" || piece.priority === "urgent") && (
+                            <AlertTriangle className="h-3 w-3 shrink-0" />
+                          )}
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PRIORITY_OPTIONS.map((p) => (
+                            <SelectItem key={p.value} value={p.value}>
+                              <span className={p.color}>{p.label}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </motion.div>
+                  )}
                   {/* Preview link — shown from done phase onwards */}
                   {isLatePhase && (
                     <motion.div
