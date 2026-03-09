@@ -128,6 +128,11 @@ const ClientDetail = () => {
           <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyChecklist clientId={client.id} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
         </div>
+
+        {/* Aufgaben — always visible */}
+        <div className="mt-6">
+          <TaskList clientId={client.id} canEdit={canEdit} />
+        </div>
       </motion.div>
     </AppLayout>
   );
