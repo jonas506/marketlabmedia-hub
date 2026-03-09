@@ -64,7 +64,12 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   });
 
   const sortedTasks = useMemo(() => {
-    const open = tasks.filter((t) => !t.is_completed);
+    const open = tasks.filter((t) => !t.is_completed).sort((a, b) => {
+      if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
+      if (a.deadline) return -1;
+      if (b.deadline) return 1;
+      return 0;
+    });
     const done = tasks.filter((t) => t.is_completed);
     return [...open, ...done];
   }, [tasks]);
