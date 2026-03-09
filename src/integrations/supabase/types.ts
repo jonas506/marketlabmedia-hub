@@ -57,46 +57,64 @@ export type Database = {
       }
       clients: {
         Row: {
+          content_topics: string | null
           created_at: string
           drive_branding_link: string | null
           drive_logo_link: string | null
           drive_styleguide_link: string | null
           id: string
+          industry: string | null
           logo_url: string | null
           monthly_carousels: number
           monthly_reels: number
           monthly_stories: number
           name: string
           status: string
+          summary: string | null
+          target_audience: string | null
+          tonality: string | null
           updated_at: string
+          usps: string | null
         }
         Insert: {
+          content_topics?: string | null
           created_at?: string
           drive_branding_link?: string | null
           drive_logo_link?: string | null
           drive_styleguide_link?: string | null
           id?: string
+          industry?: string | null
           logo_url?: string | null
           monthly_carousels?: number
           monthly_reels?: number
           monthly_stories?: number
           name: string
           status?: string
+          summary?: string | null
+          target_audience?: string | null
+          tonality?: string | null
           updated_at?: string
+          usps?: string | null
         }
         Update: {
+          content_topics?: string | null
           created_at?: string
           drive_branding_link?: string | null
           drive_logo_link?: string | null
           drive_styleguide_link?: string | null
           id?: string
+          industry?: string | null
           logo_url?: string | null
           monthly_carousels?: number
           monthly_reels?: number
           monthly_stories?: number
           name?: string
           status?: string
+          summary?: string | null
+          target_audience?: string | null
+          tonality?: string | null
           updated_at?: string
+          usps?: string | null
         }
         Relationships: []
       }
