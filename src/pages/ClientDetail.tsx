@@ -9,6 +9,7 @@ import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import MonthlyChecklist from "@/components/client/MonthlyChecklist";
+import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
@@ -126,6 +127,11 @@ const ClientDetail = () => {
           <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyChecklist clientId={client.id} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+        </div>
+
+        {/* Aufgaben — always visible */}
+        <div className="mt-6">
+          <TaskList clientId={client.id} canEdit={canEdit} />
         </div>
       </motion.div>
     </AppLayout>
