@@ -5,7 +5,6 @@ import CreateClientDialog from "@/components/CreateClientDialog";
 import MyTasks from "@/components/MyTasks";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
-import { LayoutGrid } from "lucide-react";
 
 const Dashboard = () => {
   const { data: clients, isLoading } = useClients();
@@ -14,43 +13,37 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-primary/10">
-              <LayoutGrid className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-display font-bold tracking-tight">Dashboard</h1>
-              <p className="font-body text-sm text-muted-foreground mt-0.5">
-                Sortiert nach Content-Runway – dringendste Kunden zuerst
-              </p>
-            </div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-display font-bold tracking-tight">Dashboard</h1>
+            <p className="font-body text-xs text-muted-foreground mt-0.5">
+              Sortiert nach Content-Runway — dringendste Kunden zuerst
+            </p>
           </div>
           {canCreate && <CreateClientDialog />}
         </div>
 
+        {/* Client grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-56 animate-pulse rounded-xl bg-card border border-border" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-48 animate-pulse rounded-lg bg-card border border-border" />
             ))}
           </div>
         ) : clients?.length === 0 ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="text-center">
-              <span className="text-4xl block mb-3">📋</span>
-              <p className="text-sm text-muted-foreground font-body">Noch keine Kunden angelegt</p>
-            </div>
+          <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card">
+            <p className="text-sm text-muted-foreground font-body">Noch keine Kunden angelegt</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {clients?.map((client, i) => (
               <motion.div
                 key={client.id}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.3 }}
+                transition={{ delay: i * 0.03, duration: 0.25 }}
               >
                 <ClientCard client={client} />
               </motion.div>
@@ -58,8 +51,8 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Meine Aufgaben Widget */}
-        <div className="mt-8">
+        {/* My Tasks */}
+        <div className="mt-6">
           <MyTasks />
         </div>
       </motion.div>

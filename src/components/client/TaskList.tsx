@@ -9,10 +9,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  Plus, CalendarIcon, Trash2, ClipboardList, Filter, Tag,
-  MessageSquare, Archive, AlertTriangle, Circle,
-  Clock, MessageCircle, CheckCircle2, Undo2,
-  Flame, ArrowDown, Minus, ChevronRight,
+  Plus, CalendarIcon, Trash2, Filter, Tag,
+  Archive, Undo2, ChevronRight, ChevronDown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -40,27 +38,27 @@ interface TaskListProps {
 }
 
 const TAG_COLORS: Record<string, string> = {
-  skripte: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  "bild-ads": "bg-purple-500/15 text-purple-700 dark:text-purple-400",
-  technik: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  admin: "bg-slate-500/15 text-slate-700 dark:text-slate-400",
-  feedback: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  briefing: "bg-rose-500/15 text-rose-700 dark:text-rose-400",
+  skripte: "bg-blue-500/15 text-blue-500",
+  "bild-ads": "bg-purple-500/15 text-purple-400",
+  technik: "bg-amber-500/15 text-amber-400",
+  admin: "bg-slate-500/15 text-slate-400",
+  feedback: "bg-emerald-500/15 text-emerald-400",
+  briefing: "bg-rose-500/15 text-rose-400",
 };
-const getTagColor = (tag: string) => TAG_COLORS[tag.toLowerCase()] || "bg-primary/10 text-primary";
+const getTagColor = (tag: string) => TAG_COLORS[tag.toLowerCase()] || "bg-primary/15 text-primary";
 
 const STATUS_CONFIG = [
-  { value: "not_started", label: "Nicht begonnen", icon: Circle, color: "text-muted-foreground", bg: "bg-muted/40", ring: "ring-muted-foreground/20" },
-  { value: "in_progress", label: "Begonnen", icon: Clock, color: "text-blue-500", bg: "bg-blue-500/10", ring: "ring-blue-500/30" },
-  { value: "review", label: "Zu besprechen", icon: MessageCircle, color: "text-amber-500", bg: "bg-amber-500/10", ring: "ring-amber-500/30" },
-  { value: "done", label: "Fertig", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10", ring: "ring-emerald-500/30" },
+  { value: "not_started", label: "Nicht begonnen", cssClass: "monday-status-default" },
+  { value: "in_progress", label: "Begonnen", cssClass: "monday-status-working" },
+  { value: "review", label: "Zu besprechen", cssClass: "monday-status-review" },
+  { value: "done", label: "Fertig", cssClass: "monday-status-done" },
 ];
 
 const PRIORITY_CONFIG = [
-  { value: "low", label: "Niedrig", icon: ArrowDown, color: "text-muted-foreground", bg: "bg-muted/40" },
-  { value: "normal", label: "Normal", icon: Minus, color: "text-foreground/60", bg: "bg-muted/40" },
-  { value: "high", label: "Hoch", icon: AlertTriangle, color: "text-orange-500", bg: "bg-orange-500/10" },
-  { value: "urgent", label: "Dringend", icon: Flame, color: "text-destructive", bg: "bg-destructive/10" },
+  { value: "low", label: "Niedrig", cssClass: "bg-status-default" },
+  { value: "normal", label: "Normal", cssClass: "bg-status-working" },
+  { value: "high", label: "Hoch", cssClass: "bg-status-review" },
+  { value: "urgent", label: "Dringend", cssClass: "bg-status-stuck" },
 ];
 
 const PRIORITY_WEIGHT: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
@@ -76,13 +74,9 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const { data: team } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
-      const { data: roles } = await supabase
-        .from("user_roles").select("user_id, role")
-        .in("role", ["cutter", "head_of_content", "admin"]);
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["cutter", "head_of_content", "admin"]);
       if (!roles?.length) return [];
-      const { data: profiles } = await supabase
-        .from("profiles").select("user_id, name, email")
-        .in("user_id", roles.map((r) => r.user_id));
+      const { data: profiles } = await supabase.from("profiles").select("user_id, name, email").in("user_id", roles.map((r) => r.user_id));
       return profiles ?? [];
     },
   });
@@ -90,10 +84,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["tasks", clientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tasks" as any).select("*")
-        .eq("client_id", clientId)
-        .order("created_at", { ascending: true });
+      const { data, error } = await supabase.from("tasks" as any).select("*").eq("client_id", clientId).order("created_at", { ascending: true });
       if (error) throw error;
       return (data as any[]) as Task[];
     },
@@ -118,16 +109,10 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const addTask = useMutation({
     mutationFn: async () => {
       if (!newTitle.trim()) return;
-      const { error } = await supabase.from("tasks" as any).insert({
-        client_id: clientId, title: newTitle.trim(), tag: newTag.trim() || null,
-      } as any);
+      const { error } = await supabase.from("tasks" as any).insert({ client_id: clientId, title: newTitle.trim(), tag: newTag.trim() || null } as any);
       if (error) throw error;
     },
-    onSuccess: () => {
-      setNewTitle(""); setNewTag("");
-      qc.invalidateQueries({ queryKey: ["tasks", clientId] });
-      toast.success("Aufgabe erstellt");
-    },
+    onSuccess: () => { setNewTitle(""); setNewTag(""); qc.invalidateQueries({ queryKey: ["tasks", clientId] }); toast.success("Aufgabe erstellt"); },
   });
 
   const updateTask = useCallback(async (taskId: string, updates: Record<string, any>) => {
@@ -138,19 +123,26 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
   const archiveTask = useCallback(async (taskId: string) => {
     await updateTask(taskId, { is_completed: true, status: "done" });
-    toast.success("Aufgabe archiviert ✓");
+    toast.success("✓ Archiviert");
   }, [updateTask]);
 
   const restoreTask = useCallback(async (taskId: string) => {
     await updateTask(taskId, { is_completed: false, status: "not_started" });
-    toast("Aufgabe wiederhergestellt");
+    toast("Wiederhergestellt");
   }, [updateTask]);
 
   const deleteTask = useCallback(async (taskId: string) => {
     await supabase.from("tasks" as any).delete().eq("id", taskId);
     qc.invalidateQueries({ queryKey: ["tasks", clientId] });
-    toast("Aufgabe gelöscht");
+    toast("Gelöscht");
   }, [qc, clientId]);
+
+  const getInitials = (userId: string | null) => {
+    if (!userId) return "?";
+    const m = team?.find((t) => t.user_id === userId);
+    const name = m?.name || m?.email || "?";
+    return name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+  };
 
   const getTeamName = (userId: string | null) => {
     if (!userId) return null;
@@ -158,122 +150,93 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     return m?.name || m?.email || null;
   };
 
-  const getInitials = (userId: string | null) => {
-    const name = getTeamName(userId);
-    if (!name) return "?";
-    return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
-  };
-
   const getSC = (s: string | null) => STATUS_CONFIG.find((c) => c.value === (s || "not_started")) || STATUS_CONFIG[0];
   const getPC = (p: string | null) => PRIORITY_CONFIG.find((c) => c.value === (p || "normal")) || PRIORITY_CONFIG[1];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-border bg-card overflow-hidden shadow-xl"
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 pt-5 pb-4">
-        <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 ring-1 ring-primary/20">
-          <ClipboardList className="h-4 w-4 text-primary" />
-        </div>
-        <div>
-          <h3 className="font-display text-base font-semibold tracking-tight">Aufgaben</h3>
-          <span className="font-mono text-[10px] text-muted-foreground">{activeTasks.length} offen</span>
-        </div>
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
+      {/* Group header - Monday style with colored left accent */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-surface-elevated border-b border-border">
+        <div className="w-1 h-5 rounded-full bg-primary" />
+        <h3 className="font-display text-sm font-semibold">Aufgaben</h3>
+        <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{activeTasks.length}</span>
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
-          <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+          <Filter className="h-3 w-3 text-muted-foreground" />
           <Select value={filterPerson} onValueChange={setFilterPerson}>
-            <SelectTrigger className="h-8 w-36 text-xs border-border/50 bg-background/50 backdrop-blur-sm">
+            <SelectTrigger className="h-7 w-32 text-[11px] border-border/50 bg-background/50">
               <SelectValue placeholder="Alle" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Alle</SelectItem>
-              {team?.map((t) => (
-                <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
-              ))}
+              {team?.map((t) => (<SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>))}
             </SelectContent>
           </Select>
         </div>
 
         {archivedTasks.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("h-8 gap-1.5 text-xs font-mono rounded-lg", showArchive && "text-primary bg-primary/5")}
+          <button
+            className={cn("flex items-center gap-1 text-[11px] font-mono px-2 py-1 rounded transition-colors", showArchive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")}
             onClick={() => setShowArchive(!showArchive)}
           >
-            <Archive className="h-3.5 w-3.5" />
-            {archivedTasks.length}
-          </Button>
+            <Archive className="h-3 w-3" /> {archivedTasks.length}
+          </button>
         )}
       </div>
 
       {/* Column headers */}
-      <div className="grid grid-cols-[40px_1fr_80px_100px_130px_90px_36px] items-center gap-2 px-5 py-2 border-y border-border/50 bg-muted/20">
-        <span className="text-[9px] font-mono text-muted-foreground/60 uppercase text-center">P</span>
-        <span className="text-[9px] font-mono text-muted-foreground/60 uppercase">Aufgabe</span>
-        <span className="text-[9px] font-mono text-muted-foreground/60 uppercase text-center">Status</span>
-        <span className="text-[9px] font-mono text-muted-foreground/60 uppercase text-center">Person</span>
-        <span className="text-[9px] font-mono text-muted-foreground/60 uppercase text-center">Deadline</span>
-        <span className="text-[9px] font-mono text-muted-foreground/60 uppercase text-center">Prio</span>
-        <span />
+      <div className="grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0 border-b border-border/50 bg-card text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider">
+        <span className="px-4 py-2">Aufgabe</span>
+        <span className="px-2 py-2 text-center border-l border-border/30">Person</span>
+        <span className="px-2 py-2 text-center border-l border-border/30">Status</span>
+        <span className="px-2 py-2 text-center border-l border-border/30">Deadline</span>
+        <span className="px-2 py-2 text-center border-l border-border/30">Priorität</span>
       </div>
 
-      {/* Add task */}
+      {/* Add row */}
       {canEdit && (
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-border/30 bg-muted/5">
-          <Input
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Neue Aufgabe…"
-            className="h-8 flex-1 text-sm bg-transparent border-0 border-b border-dashed border-muted-foreground/20 rounded-none px-1 focus-visible:border-primary focus-visible:ring-0"
-            onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
-          />
-          <div className="relative">
-            <Tag className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/40 pointer-events-none" />
+        <div className="grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0 border-b border-border/30 bg-card/50">
+          <div className="flex items-center gap-2 px-4 py-2">
+            <Plus className="h-3.5 w-3.5 text-muted-foreground/40" />
             <Input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              placeholder="Tag"
-              className="h-8 w-24 text-xs bg-transparent border-0 border-b border-dashed border-muted-foreground/20 rounded-none pl-6 focus-visible:border-primary focus-visible:ring-0"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="+ Aufgabe hinzufügen"
+              className="h-7 flex-1 text-sm bg-transparent border-0 px-0 focus-visible:ring-0 placeholder:text-muted-foreground/30"
               onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
             />
+            <div className="relative">
+              <Tag className="absolute left-1.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground/30 pointer-events-none" />
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="Tag"
+                className="h-7 w-16 text-[10px] bg-transparent border-0 pl-5 focus-visible:ring-0 placeholder:text-muted-foreground/30"
+                onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
+              />
+            </div>
           </div>
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border-0 shadow-none"
-            variant="outline"
-            onClick={() => addTask.mutate()}
-            disabled={!newTitle.trim() || addTask.isPending}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Hinzufügen
-          </Button>
+          <span className="border-l border-border/30" />
+          <span className="border-l border-border/30" />
+          <span className="border-l border-border/30" />
+          <span className="border-l border-border/30" />
         </div>
       )}
 
       {/* Task rows */}
-      <div className="min-h-[60px]">
+      <div className="min-h-[40px]">
         {isLoading ? (
-          <div className="flex justify-center py-10">
+          <div className="flex justify-center py-8">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
           </div>
         ) : activeTasks.length === 0 && !showArchive ? (
-          <div className="py-10 text-center">
-            <ClipboardList className="h-7 w-7 mx-auto mb-2 text-muted-foreground/20" />
-            <p className="text-xs text-muted-foreground/50 font-mono">Keine offenen Aufgaben</p>
-          </div>
+          <div className="py-8 text-center text-xs text-muted-foreground/40 font-mono">Keine offenen Aufgaben</div>
         ) : (
           <AnimatePresence mode="popLayout">
             {activeTasks.map((task) => {
               const sc = getSC(task.status);
               const pc = getPC(task.priority);
-              const StatusIcon = sc.icon;
-              const PrioIcon = pc.icon;
               const isOverdue = task.deadline && new Date(task.deadline) < new Date();
               const isExpanded = expandedTask === task.id;
 
@@ -281,111 +244,87 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                 <motion.div
                   key={task.id}
                   layout
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: 30, transition: { duration: 0.15 } }}
-                  className={cn(
-                    "border-b border-border/30 transition-colors",
-                    isExpanded ? "bg-primary/[0.03]" : "hover:bg-muted/10"
-                  )}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, x: 20, transition: { duration: 0.12 } }}
+                  className="monday-row"
                 >
-                  {/* Main grid row */}
-                  <div
-                    className="grid grid-cols-[40px_1fr_80px_100px_130px_90px_36px] items-center gap-2 px-5 py-2.5 cursor-pointer"
-                    onClick={() => setExpandedTask(isExpanded ? null : task.id)}
-                  >
-                    {/* Priority icon */}
-                    <div className="flex justify-center">
-                      <div className={cn("h-6 w-6 rounded-md flex items-center justify-center", pc.bg)}>
-                        <PrioIcon className={cn("h-3 w-3", pc.color)} />
-                      </div>
-                    </div>
-
-                    {/* Title + tag */}
-                    <div className="flex items-center gap-2 min-w-0">
+                  <div className="grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0">
+                    {/* Title cell */}
+                    <div
+                      className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer group"
+                      onClick={() => setExpandedTask(isExpanded ? null : task.id)}
+                    >
+                      <ChevronRight className={cn("h-3 w-3 text-muted-foreground/30 transition-transform shrink-0", isExpanded && "rotate-90 text-primary")} />
                       {task.tag && (
-                        <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-4 rounded border-0 shrink-0", getTagColor(task.tag))}>
+                        <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0", getTagColor(task.tag))}>
                           {task.tag}
                         </Badge>
                       )}
-                      <span className="text-sm font-body truncate">{task.title}</span>
-                      {task.notes && <MessageSquare className="h-3 w-3 text-primary/50 shrink-0" />}
+                      <span className="text-sm font-body truncate group-hover:text-primary transition-colors">{task.title}</span>
                     </div>
 
-                    {/* Status */}
-                    <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                      <Select
-                        value={task.status || "not_started"}
-                        onValueChange={(v) => v === "done" ? archiveTask(task.id) : updateTask(task.id, { status: v })}
-                        disabled={!canEdit}
-                      >
-                        <SelectTrigger className={cn("h-6 w-auto gap-1 border-0 px-2 rounded-md text-[10px] font-mono shadow-none", sc.bg, sc.color)}>
-                          <StatusIcon className="h-3 w-3" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_CONFIG.map((s) => {
-                            const Icon = s.icon;
-                            return (
-                              <SelectItem key={s.value} value={s.value}>
-                                <span className={cn("flex items-center gap-2 text-xs", s.color)}>
-                                  <Icon className="h-3 w-3" />{s.label}
-                                </span>
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Person avatar */}
-                    <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                    {/* Person cell */}
+                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
                       {canEdit ? (
-                        <Select
-                          value={task.assigned_to || "unassigned"}
-                          onValueChange={(v) => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })}
-                        >
-                          <SelectTrigger className="h-7 w-auto border-0 px-0 shadow-none bg-transparent">
+                        <Select value={task.assigned_to || "unassigned"} onValueChange={(v) => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })}>
+                          <SelectTrigger className="h-auto w-auto border-0 p-0 shadow-none bg-transparent">
                             {task.assigned_to ? (
-                              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 ring-1 ring-primary/20 flex items-center justify-center">
-                                <span className="text-[9px] font-mono font-bold text-primary">{getInitials(task.assigned_to)}</span>
+                              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(task.assigned_to) || ""}>
+                                <span className="text-[9px] font-bold text-white">{getInitials(task.assigned_to)}</span>
                               </div>
                             ) : (
-                              <div className="h-6 w-6 rounded-full bg-muted/40 ring-1 ring-border flex items-center justify-center">
-                                <span className="text-[9px] text-muted-foreground/40">—</span>
+                              <div className="h-7 w-7 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center">
+                                <span className="text-[9px] text-muted-foreground/30">+</span>
                               </div>
                             )}
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="unassigned">— Keine —</SelectItem>
-                            {team?.map((t) => (
-                              <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
-                            ))}
+                            {team?.map((t) => (<SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>))}
                           </SelectContent>
                         </Select>
                       ) : task.assigned_to ? (
-                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 ring-1 ring-primary/20 flex items-center justify-center" title={getTeamName(task.assigned_to) || ""}>
-                          <span className="text-[9px] font-mono font-bold text-primary">{getInitials(task.assigned_to)}</span>
+                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(task.assigned_to) || ""}>
+                          <span className="text-[9px] font-bold text-white">{getInitials(task.assigned_to)}</span>
                         </div>
                       ) : null}
                     </div>
 
-                    {/* Deadline */}
-                    <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                    {/* Status cell - Monday pill */}
+                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
+                      <Select
+                        value={task.status || "not_started"}
+                        onValueChange={(v) => v === "done" ? archiveTask(task.id) : updateTask(task.id, { status: v })}
+                        disabled={!canEdit}
+                      >
+                        <SelectTrigger className={cn("monday-status border-0 shadow-none h-auto cursor-pointer", sc.cssClass)}>
+                          <span>{sc.label}</span>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUS_CONFIG.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>
+                              <span className="flex items-center gap-2">
+                                <span className={cn("w-2 h-2 rounded-full", s.cssClass)} />
+                                {s.label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Deadline cell */}
+                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
                       {canEdit ? (
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button
-                              className={cn(
-                                "h-6 px-2.5 rounded-md text-[11px] font-mono flex items-center gap-1.5 transition-colors",
-                                isOverdue
-                                  ? "bg-destructive/10 text-destructive font-semibold ring-1 ring-destructive/20"
-                                  : task.deadline
-                                    ? "bg-muted/40 text-muted-foreground hover:bg-muted/60"
-                                    : "text-muted-foreground/30 hover:text-muted-foreground/50"
-                              )}
-                            >
+                            <button className={cn(
+                              "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded transition-colors",
+                              isOverdue ? "text-destructive font-semibold bg-destructive/10" : task.deadline ? "text-foreground/70 hover:bg-muted/50" : "text-muted-foreground/30 hover:text-muted-foreground"
+                            )}>
                               <CalendarIcon className="h-3 w-3" />
-                              {task.deadline ? format(new Date(task.deadline), "dd. MMM", { locale: de }) : "—"}
+                              {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "—"}
                             </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="center">
@@ -393,50 +332,39 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                               mode="single"
                               selected={task.deadline ? new Date(task.deadline) : undefined}
                               onSelect={(date) => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
-                              initialFocus
-                              locale={de}
+                              initialFocus locale={de}
                               className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
                       ) : task.deadline ? (
                         <span className={cn("text-[11px] font-mono", isOverdue ? "text-destructive" : "text-muted-foreground")}>
-                          {format(new Date(task.deadline), "dd. MMM", { locale: de })}
+                          {format(new Date(task.deadline), "dd MMM", { locale: de })}
                         </span>
                       ) : null}
                     </div>
 
-                    {/* Priority select */}
-                    <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                    {/* Priority cell - Monday pill */}
+                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
                       <Select
                         value={task.priority || "normal"}
                         onValueChange={(v) => updateTask(task.id, { priority: v })}
                         disabled={!canEdit}
                       >
-                        <SelectTrigger className={cn("h-6 w-auto gap-1 border-0 px-2 rounded-md text-[10px] font-mono shadow-none", pc.bg, pc.color)}>
+                        <SelectTrigger className={cn("monday-priority border-0 shadow-none h-auto cursor-pointer", pc.cssClass)}>
                           <span>{pc.label}</span>
                         </SelectTrigger>
                         <SelectContent>
-                          {PRIORITY_CONFIG.map((p) => {
-                            const Icon = p.icon;
-                            return (
-                              <SelectItem key={p.value} value={p.value}>
-                                <span className={cn("flex items-center gap-2 text-xs", p.color)}>
-                                  <Icon className="h-3 w-3" />{p.label}
-                                </span>
-                              </SelectItem>
-                            );
-                          })}
+                          {PRIORITY_CONFIG.map((p) => (
+                            <SelectItem key={p.value} value={p.value}>
+                              <span className="flex items-center gap-2">
+                                <span className={cn("w-2 h-2 rounded-full", p.cssClass)} />
+                                {p.label}
+                              </span>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
-                    </div>
-
-                    {/* Expand chevron */}
-                    <div className="flex justify-center">
-                      <ChevronRight className={cn(
-                        "h-3.5 w-3.5 text-muted-foreground/30 transition-transform duration-200",
-                        isExpanded && "rotate-90 text-primary/50"
-                      )} />
                     </div>
                   </div>
 
@@ -447,14 +375,14 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.15 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-5 pb-4 pt-1 ml-[40px]">
+                        <div className="px-4 pb-3 pt-0 ml-6">
                           <Textarea
                             value={task.notes || ""}
-                            placeholder="Notizen, Links, Kontext hinzufügen…"
-                            className="min-h-[56px] text-xs font-body bg-background/50 border-border/50 resize-none rounded-lg focus-visible:ring-primary/30"
+                            placeholder="Notizen, Links, Kontext…"
+                            className="min-h-[50px] text-xs font-body bg-background/50 border-border/50 resize-none rounded"
                             onChange={(e) => updateTask(task.id, { notes: e.target.value })}
                             disabled={!canEdit}
                           />
@@ -472,37 +400,26 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
       {/* Archive */}
       <AnimatePresence>
         {showArchive && archivedTasks.length > 0 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden"
-          >
-            <div className="border-t border-border/50">
-              <div className="flex items-center gap-2 px-5 py-3 bg-muted/10">
-                <Archive className="h-3.5 w-3.5 text-muted-foreground/50" />
-                <span className="text-[10px] font-mono font-semibold text-muted-foreground/50 uppercase tracking-widest">
-                  Archiv · {archivedTasks.length}
-                </span>
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <div className="border-t border-border">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-surface-elevated">
+                <div className="w-1 h-4 rounded-full bg-status-default" />
+                <span className="text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Archiv</span>
+                <span className="text-[10px] font-mono text-muted-foreground/50">{archivedTasks.length}</span>
               </div>
               {archivedTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 px-5 py-2 border-b border-border/20 opacity-40 hover:opacity-60 transition-opacity">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                  {task.tag && (
-                    <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-4 rounded border-0 shrink-0 opacity-60">
-                      {task.tag}
-                    </Badge>
-                  )}
+                <div key={task.id} className="flex items-center gap-3 px-4 py-2 border-b border-border/20 opacity-40 hover:opacity-60 transition-opacity">
+                  <span className="monday-status monday-status-done text-[9px] py-0.5 px-2 min-w-0">✓</span>
+                  {task.tag && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 rounded border-0 opacity-60">{task.tag}</Badge>}
                   <span className="flex-1 text-sm font-body line-through text-muted-foreground truncate">{task.title}</span>
                   {canEdit && (
                     <>
-                      <Button size="sm" variant="ghost" className="h-6 gap-1 text-[10px] text-muted-foreground hover:text-foreground" onClick={() => restoreTask(task.id)}>
+                      <button className="text-[10px] font-mono text-muted-foreground hover:text-foreground flex items-center gap-1" onClick={() => restoreTask(task.id)}>
                         <Undo2 className="h-3 w-3" /> Zurück
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" onClick={() => deleteTask(task.id)}>
+                      </button>
+                      <button className="text-muted-foreground hover:text-destructive" onClick={() => deleteTask(task.id)}>
                         <Trash2 className="h-3 w-3" />
-                      </Button>
+                      </button>
                     </>
                   )}
                 </div>
@@ -511,7 +428,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
 
