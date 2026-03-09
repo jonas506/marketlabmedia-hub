@@ -33,11 +33,11 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
-  const { data: clips } = useQuery({
-    queryKey: ["clips", id],
+  const { data: contentPieces } = useQuery({
+    queryKey: ["content-pieces", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("clips")
+        .from("content_pieces")
         .select("*")
         .eq("client_id", id!)
         .order("created_at", { ascending: false });
@@ -71,7 +71,6 @@ const ClientDetail = () => {
     );
   }
 
-  // Generate month options (6 months back + 6 months forward)
   const monthOptions = Array.from({ length: 13 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - 6 + i);
     return {
@@ -84,18 +83,15 @@ const ClientDetail = () => {
 
   return (
     <AppLayout>
-      {/* Back button */}
       <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground font-body mb-4">
         <ArrowLeft className="h-4 w-4" />
         Dashboard
       </Link>
 
-      {/* Client Info Panel (collapsible) */}
       <div className="mb-6">
         <ClientInfoPanel client={client} canEdit={canEdit} />
       </div>
 
-      {/* Month selector */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-mono text-sm font-semibold tracking-wider text-muted-foreground">MONATSZYKLUS</h2>
         <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
@@ -114,11 +110,10 @@ const ClientDetail = () => {
         </Select>
       </div>
 
-      {/* Monthly sections */}
       <div className="space-y-4">
-        <KontingentTracker client={client} clips={clips ?? []} month={selectedMonth} year={selectedYear} />
+        <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} />
         <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
-        <MonthlyPipeline clientId={client.id} clips={clips ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+        <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
         <MonthlyChecklist clientId={client.id} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
       </div>
     </AppLayout>

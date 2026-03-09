@@ -10,9 +10,7 @@ interface ClientCardProps {
 }
 
 const KontingentBar: React.FC<{ label: string; posted: number; target: number }> = ({
-  label,
-  posted,
-  target,
+  label, posted, target,
 }) => {
   if (target === 0) return null;
   const pct = Math.min((posted / target) * 100, 100);
@@ -20,38 +18,23 @@ const KontingentBar: React.FC<{ label: string; posted: number; target: number }>
     <div className="flex items-center gap-2">
       <span className="w-6 font-mono text-xs text-muted-foreground">{label}</span>
       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-        <div
-          className="h-full rounded-full bg-primary transition-all"
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <span className="font-mono text-xs text-muted-foreground">
-        {posted}/{target}
-      </span>
+      <span className="font-mono text-xs text-muted-foreground">{posted}/{target}</span>
     </div>
   );
 };
 
 const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
-  const totalPipeline =
-    client.clipCounts.filmed +
-    client.clipCounts.editing +
-    client.clipCounts.approved;
-
   return (
     <Link
       to={`/client/${client.id}`}
       className="block rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30"
     >
-      {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           {client.logo_url ? (
-            <img
-              src={client.logo_url}
-              alt={client.name}
-              className="h-8 w-8 rounded object-cover"
-            />
+            <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded object-cover" />
           ) : (
             <div className="flex h-8 w-8 items-center justify-center rounded bg-muted font-mono text-xs text-muted-foreground">
               {client.name.charAt(0)}
@@ -67,17 +50,15 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
         <RunwayBadge days={client.runway} />
       </div>
 
-      {/* Kontingent */}
       <div className="space-y-1.5 mb-4">
-        <KontingentBar label="R" posted={client.postedThisMonth.reels} target={client.monthly_reels} />
-        <KontingentBar label="K" posted={client.postedThisMonth.carousels} target={client.monthly_carousels} />
-        <KontingentBar label="S" posted={client.postedThisMonth.stories} target={client.monthly_stories} />
+        <KontingentBar label="R" posted={client.handedOverThisMonth.reels} target={client.monthly_reels} />
+        <KontingentBar label="K" posted={client.handedOverThisMonth.carousels} target={client.monthly_carousels} />
+        <KontingentBar label="S" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} />
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-between border-t border-border pt-3">
         <span className="font-mono text-xs text-muted-foreground">
-          {totalPipeline} CLIPS IN PIPELINE
+          {client.pipelineCounts.inPipeline} IN PIPELINE
         </span>
         {client.nextShootDay && (
           <span className="flex items-center gap-1 font-body text-xs text-muted-foreground">
