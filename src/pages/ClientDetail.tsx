@@ -9,6 +9,7 @@ import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import MonthlyChecklist from "@/components/client/MonthlyChecklist";
+import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, CalendarDays } from "lucide-react";
 import { format } from "date-fns";
