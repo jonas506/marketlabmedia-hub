@@ -511,6 +511,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </AnimatePresence>
         </div>
       )}
+      </div>
     </motion.div>
   );
 };
