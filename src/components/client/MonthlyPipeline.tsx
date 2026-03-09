@@ -363,6 +363,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       </div>
 
       {/* Piece list */}
+      <div className="min-h-[280px]">
       {phasePieces.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
           <span className="text-4xl block mb-3">{config.phases.find(p => p.key === activePhase)?.emoji}</span>
@@ -510,6 +511,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </AnimatePresence>
         </div>
       )}
+      </div>
     </motion.div>
   );
 };
