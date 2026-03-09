@@ -392,6 +392,8 @@ export type Database = {
           id: string
           is_completed: boolean | null
           notes: string | null
+          priority: string | null
+          status: string | null
           tag: string | null
           title: string
         }
@@ -403,6 +405,8 @@ export type Database = {
           id?: string
           is_completed?: boolean | null
           notes?: string | null
+          priority?: string | null
+          status?: string | null
           tag?: string | null
           title: string
         }
@@ -414,6 +418,8 @@ export type Database = {
           id?: string
           is_completed?: boolean | null
           notes?: string | null
+          priority?: string | null
+          status?: string | null
           tag?: string | null
           title?: string
         }
