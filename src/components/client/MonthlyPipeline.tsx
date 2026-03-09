@@ -128,14 +128,13 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     },
   });
 
-  // Add piece manually
+  // Add piece manually in current phase
   const addPiece = useMutation({
     mutationFn: async () => {
-      const firstPhase = config.phases[0].key;
       await supabase.from("content_pieces").insert({
         client_id: clientId,
         type: activeType,
-        phase: firstPhase,
+        phase: activePhase,
         target_month: month,
         target_year: year,
       });
@@ -253,7 +252,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
         {canEdit && (
           <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-            <Plus className="h-3 w-3" /> {config.addLabel}
+            <Plus className="h-3 w-3" /> {config.addLabel} in {config.phases.find(p => p.key === activePhase)?.label}
           </Button>
         )}
       </div>
