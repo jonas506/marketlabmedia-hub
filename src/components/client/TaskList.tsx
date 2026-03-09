@@ -7,13 +7,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Plus, CalendarIcon, Trash2, ClipboardList, Filter, Tag } from "lucide-react";
+import { Plus, CalendarIcon, Trash2, ClipboardList, Filter, Tag, MessageSquare, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Task {
   id: string;
@@ -23,6 +24,7 @@ interface Task {
   assigned_to: string | null;
   deadline: string | null;
   is_completed: boolean;
+  notes: string | null;
   created_at: string;
 }
 
@@ -50,6 +52,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const [newTitle, setNewTitle] = useState("");
   const [newTag, setNewTag] = useState("");
   const [filterPerson, setFilterPerson] = useState("all");
+  const [expandedTask, setExpandedTask] = useState<string | null>(null);
 
   const { data: team } = useQuery({
     queryKey: ["team-members"],
@@ -223,131 +226,174 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20, transition: { duration: 0.15 } }}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg border p-3 transition-all",
+                  "rounded-lg border transition-all",
                   task.is_completed
                     ? "border-border/50 bg-muted/20 opacity-60"
-                    : "border-border hover:border-primary/20 hover:bg-card/80"
+                    : "border-border hover:border-primary/20"
                 )}
               >
-                <Checkbox
-                  checked={task.is_completed}
-                  onCheckedChange={(checked) =>
-                    updateTask(task.id, { is_completed: !!checked })
-                  }
-                  disabled={!canEdit}
-                />
-
-                {/* Tag badge */}
-                {task.tag && (
-                  <Badge
-                    variant="secondary"
-                    className={cn(
-                      "text-[10px] font-mono px-2 py-0.5 rounded-md border-0 shrink-0",
-                      getTagColor(task.tag),
-                      task.is_completed && "opacity-50"
-                    )}
-                  >
-                    {task.tag}
-                  </Badge>
-                )}
-
-                {/* Title */}
-                <span
-                  className={cn(
-                    "flex-1 text-sm font-body",
-                    task.is_completed && "line-through text-muted-foreground"
-                  )}
-                >
-                  {task.title}
-                </span>
-
-                {/* Assigned */}
-                {!task.is_completed && canEdit ? (
-                  <Select
-                    value={task.assigned_to || "unassigned"}
-                    onValueChange={(v) =>
-                      updateTask(task.id, {
-                        assigned_to: v === "unassigned" ? null : v,
-                      })
+                <div className="flex items-center gap-3 p-3">
+                  <Checkbox
+                    checked={task.is_completed}
+                    onCheckedChange={(checked) =>
+                      updateTask(task.id, { is_completed: !!checked })
                     }
-                  >
-                    <SelectTrigger className="h-7 w-32 text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md">
-                      <SelectValue placeholder="Zuweisen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">— Keine —</SelectItem>
-                      {team?.map((t) => (
-                        <SelectItem key={t.user_id} value={t.user_id}>
-                          {t.name || t.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : task.assigned_to && !task.is_completed ? (
-                  <span className="text-xs font-mono text-muted-foreground">
-                    {getTeamName(task.assigned_to)}
-                  </span>
-                ) : null}
+                    disabled={!canEdit}
+                  />
 
-                {/* Deadline */}
-                {!task.is_completed && canEdit ? (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className={cn(
-                          "h-7 px-2.5 text-xs font-mono gap-1.5 rounded-md",
-                          !task.deadline && "text-muted-foreground/50",
-                          task.deadline &&
-                            new Date(task.deadline) < new Date() &&
-                            "text-destructive bg-destructive/10"
-                        )}
-                      >
-                        <CalendarIcon className="h-3 w-3" />
-                        {task.deadline
-                          ? format(new Date(task.deadline), "dd.MM.", { locale: de })
-                          : "Deadline"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        mode="single"
-                        selected={task.deadline ? new Date(task.deadline) : undefined}
-                        onSelect={(date) =>
-                          updateTask(task.id, {
-                            deadline: date ? format(date, "yyyy-MM-dd") : null,
-                          })
-                        }
-                        initialFocus
-                        locale={de}
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                ) : task.deadline && !task.is_completed ? (
+                  {/* Tag badge */}
+                  {task.tag && (
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "text-[10px] font-mono px-2 py-0.5 rounded-md border-0 shrink-0",
+                        getTagColor(task.tag),
+                        task.is_completed && "opacity-50"
+                      )}
+                    >
+                      {task.tag}
+                    </Badge>
+                  )}
+
+                  {/* Title */}
                   <span
                     className={cn(
-                      "text-xs font-mono",
-                      new Date(task.deadline) < new Date()
-                        ? "text-destructive"
-                        : "text-muted-foreground"
+                      "flex-1 text-sm font-body cursor-pointer",
+                      task.is_completed && "line-through text-muted-foreground"
                     )}
+                    onClick={() => !task.is_completed && setExpandedTask(expandedTask === task.id ? null : task.id)}
                   >
-                    {format(new Date(task.deadline), "dd.MM.", { locale: de })}
+                    {task.title}
                   </span>
-                ) : null}
 
-                {/* Delete (only completed tasks) */}
-                {task.is_completed && canEdit && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => deleteTask(task.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                )}
+                  {/* Notes indicator */}
+                  {!task.is_completed && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className={cn(
+                        "h-7 w-7 p-0 rounded-md",
+                        task.notes
+                          ? "text-primary"
+                          : "text-muted-foreground/40 hover:text-muted-foreground"
+                      )}
+                      onClick={() => setExpandedTask(expandedTask === task.id ? null : task.id)}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+
+                  {/* Assigned */}
+                  {!task.is_completed && canEdit ? (
+                    <Select
+                      value={task.assigned_to || "unassigned"}
+                      onValueChange={(v) =>
+                        updateTask(task.id, {
+                          assigned_to: v === "unassigned" ? null : v,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-7 w-32 text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md">
+                        <SelectValue placeholder="Zuweisen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">— Keine —</SelectItem>
+                        {team?.map((t) => (
+                          <SelectItem key={t.user_id} value={t.user_id}>
+                            {t.name || t.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : task.assigned_to && !task.is_completed ? (
+                    <span className="text-xs font-mono text-muted-foreground">
+                      {getTeamName(task.assigned_to)}
+                    </span>
+                  ) : null}
+
+                  {/* Deadline */}
+                  {!task.is_completed && canEdit ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            "h-7 px-2.5 text-xs font-mono gap-1.5 rounded-md",
+                            !task.deadline && "text-muted-foreground/50",
+                            task.deadline &&
+                              new Date(task.deadline) < new Date() &&
+                              "text-destructive bg-destructive/10"
+                          )}
+                        >
+                          <CalendarIcon className="h-3 w-3" />
+                          {task.deadline
+                            ? format(new Date(task.deadline), "dd.MM.", { locale: de })
+                            : "Deadline"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                          mode="single"
+                          selected={task.deadline ? new Date(task.deadline) : undefined}
+                          onSelect={(date) =>
+                            updateTask(task.id, {
+                              deadline: date ? format(date, "yyyy-MM-dd") : null,
+                            })
+                          }
+                          initialFocus
+                          locale={de}
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  ) : task.deadline && !task.is_completed ? (
+                    <span
+                      className={cn(
+                        "text-xs font-mono",
+                        new Date(task.deadline) < new Date()
+                          ? "text-destructive"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {format(new Date(task.deadline), "dd.MM.", { locale: de })}
+                    </span>
+                  ) : null}
+
+                  {/* Delete (only completed tasks) */}
+                  {task.is_completed && canEdit && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => deleteTask(task.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Expandable notes */}
+                <AnimatePresence>
+                  {expandedTask === task.id && !task.is_completed && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3 pb-3 pt-0 pl-10">
+                        <Textarea
+                          value={task.notes || ""}
+                          placeholder="Notizen, Links, Kontext…"
+                          className="min-h-[60px] text-xs font-body bg-muted/30 border-border resize-none"
+                          onChange={(e) => updateTask(task.id, { notes: e.target.value })}
+                          disabled={!canEdit}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </AnimatePresence>
