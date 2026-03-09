@@ -600,6 +600,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </div>
       )}
       </div>
+      </div>
     </motion.div>
   );
 };
