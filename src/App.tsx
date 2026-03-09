@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import ClientDetail from "./pages/ClientDetail";
 import TeamOverview from "./pages/TeamOverview";
-import Checklisten from "./pages/Checklisten";
+
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -38,7 +38,7 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
             <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
-            <Route path="/checklisten" element={<ProtectedRoute><Checklisten /></ProtectedRoute>} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
