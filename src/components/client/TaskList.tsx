@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Task {
   id: string;
