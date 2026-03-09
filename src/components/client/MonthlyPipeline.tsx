@@ -128,14 +128,13 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     },
   });
 
-  // Add piece manually
+  // Add piece manually in current phase
   const addPiece = useMutation({
     mutationFn: async () => {
-      const firstPhase = config.phases[0].key;
       await supabase.from("content_pieces").insert({
         client_id: clientId,
         type: activeType,
-        phase: firstPhase,
+        phase: activePhase,
         target_month: month,
         target_year: year,
       });
