@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, CheckSquare, LogOut } from "lucide-react";
+import logoLight from "@/assets/logo-light.png";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -18,7 +19,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-56 flex-col border-r border-border bg-sidebar">
         <div className="px-4 py-6">
-          <h2 className="text-xs font-bold tracking-widest text-muted-foreground">CONTENT PIPELINE</h2>
+          <img src={logoLight} alt="Marketlab Media" className="h-5 w-auto" />
         </div>
 
         <nav className="flex-1 space-y-1 px-2">

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import logoLight from "@/assets/logo-light.png";
 
 const Login = () => {
   const { signIn, user, loading: authLoading } = useAuth();
@@ -32,9 +33,9 @@ const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-8 p-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">CONTENT PIPELINE</h1>
-          <p className="mt-2 text-sm text-muted-foreground font-body">Produktionsmanagement</p>
+        <div className="flex flex-col items-center gap-3">
+          <img src={logoLight} alt="Marketlab Media" className="h-6 w-auto" />
+          <p className="text-sm text-muted-foreground font-body">Content Pipeline</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
