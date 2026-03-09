@@ -7,17 +7,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Plus, CalendarIcon, Trash2, ClipboardList } from "lucide-react";
+import { Plus, CalendarIcon, Trash2, ClipboardList, Filter, Tag } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface Task {
   id: string;
   client_id: string;
   title: string;
+  tag: string | null;
   assigned_to: string | null;
   deadline: string | null;
   is_completed: boolean;
@@ -29,9 +31,25 @@ interface TaskListProps {
   canEdit: boolean;
 }
 
+const TAG_COLORS: Record<string, string> = {
+  skripte: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
+  "bild-ads": "bg-purple-500/15 text-purple-700 dark:text-purple-400",
+  technik: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  admin: "bg-slate-500/15 text-slate-700 dark:text-slate-400",
+  feedback: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  briefing: "bg-rose-500/15 text-rose-700 dark:text-rose-400",
+};
+
+const getTagColor = (tag: string) => {
+  const key = tag.toLowerCase();
+  return TAG_COLORS[key] || "bg-primary/10 text-primary";
+};
+
 const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const qc = useQueryClient();
   const [newTitle, setNewTitle] = useState("");
+  const [newTag, setNewTag] = useState("");
+  const [filterPerson, setFilterPerson] = useState("all");
 
   const { data: team } = useQuery({
     queryKey: ["team-members"],
@@ -64,15 +82,19 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   });
 
   const sortedTasks = useMemo(() => {
-    const open = tasks.filter((t) => !t.is_completed).sort((a, b) => {
+    let filtered = tasks;
+    if (filterPerson !== "all") {
+      filtered = filtered.filter((t) => t.assigned_to === filterPerson);
+    }
+    const open = filtered.filter((t) => !t.is_completed).sort((a, b) => {
       if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
       if (a.deadline) return -1;
       if (b.deadline) return 1;
       return 0;
     });
-    const done = tasks.filter((t) => t.is_completed);
+    const done = filtered.filter((t) => t.is_completed);
     return [...open, ...done];
-  }, [tasks]);
+  }, [tasks, filterPerson]);
 
   const addTask = useMutation({
     mutationFn: async () => {
@@ -80,11 +102,13 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
       const { error } = await supabase.from("tasks" as any).insert({
         client_id: clientId,
         title: newTitle.trim(),
+        tag: newTag.trim() || null,
       } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       setNewTitle("");
+      setNewTag("");
       qc.invalidateQueries({ queryKey: ["tasks", clientId] });
       toast.success("Aufgabe erstellt");
     },
@@ -122,6 +146,24 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         <span className="font-mono text-xs text-muted-foreground">
           {tasks.filter((t) => !t.is_completed).length} offen
         </span>
+        <div className="flex-1" />
+        {/* Person filter */}
+        <div className="flex items-center gap-2">
+          <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+          <Select value={filterPerson} onValueChange={setFilterPerson}>
+            <SelectTrigger className="h-8 w-36 text-xs border-border bg-muted/30">
+              <SelectValue placeholder="Alle" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alle</SelectItem>
+              {team?.map((t) => (
+                <SelectItem key={t.user_id} value={t.user_id}>
+                  {t.name || t.email}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Add task */}
@@ -136,6 +178,18 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
               if (e.key === "Enter" && newTitle.trim()) addTask.mutate();
             }}
           />
+          <div className="relative">
+            <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+            <Input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="Tag…"
+              className="h-9 w-28 text-xs bg-muted/30 border-border pl-7"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newTitle.trim()) addTask.mutate();
+              }}
+            />
+          </div>
           <Button
             size="sm"
             className="h-9 gap-1.5 text-sm"
@@ -182,6 +236,20 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                   }
                   disabled={!canEdit}
                 />
+
+                {/* Tag badge */}
+                {task.tag && (
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "text-[10px] font-mono px-2 py-0.5 rounded-md border-0 shrink-0",
+                      getTagColor(task.tag),
+                      task.is_completed && "opacity-50"
+                    )}
+                  >
+                    {task.tag}
+                  </Badge>
+                )}
 
                 {/* Title */}
                 <span
