@@ -264,7 +264,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-border bg-card p-5 shadow-lg"
+      className="rounded-lg border border-border bg-card overflow-hidden"
     >
       {/* Header with progress */}
       <div className="flex items-center justify-between mb-2">
