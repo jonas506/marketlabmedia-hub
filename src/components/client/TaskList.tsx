@@ -24,6 +24,7 @@ interface Task {
   assigned_to: string | null;
   deadline: string | null;
   is_completed: boolean;
+  notes: string | null;
   created_at: string;
 }
 
