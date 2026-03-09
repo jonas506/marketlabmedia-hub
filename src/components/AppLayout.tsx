@@ -7,7 +7,6 @@ import logoLight from "@/assets/logo-light.png";
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/team", label: "Team", icon: Users },
-  { to: "/checklisten", label: "Checklisten", icon: CheckSquare },
 ];
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
