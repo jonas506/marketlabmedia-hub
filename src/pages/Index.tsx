@@ -57,6 +57,11 @@ const Dashboard = () => {
             ))}
           </div>
         )}
+
+        {/* Meine Aufgaben Widget */}
+        <div className="mt-8">
+          <MyTasks />
+        </div>
       </motion.div>
     </AppLayout>
   );
