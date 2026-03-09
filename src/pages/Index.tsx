@@ -2,6 +2,7 @@ import { useClients } from "@/hooks/useClients";
 import ClientCard from "@/components/ClientCard";
 import AppLayout from "@/components/AppLayout";
 import CreateClientDialog from "@/components/CreateClientDialog";
+import MyTasks from "@/components/MyTasks";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { LayoutGrid } from "lucide-react";
@@ -56,6 +57,11 @@ const Dashboard = () => {
             ))}
           </div>
         )}
+
+        {/* Meine Aufgaben Widget */}
+        <div className="mt-8">
+          <MyTasks />
+        </div>
       </motion.div>
     </AppLayout>
   );

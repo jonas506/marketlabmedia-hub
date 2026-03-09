@@ -391,6 +391,7 @@ export type Database = {
           deadline: string | null
           id: string
           is_completed: boolean | null
+          tag: string | null
           title: string
         }
         Insert: {
@@ -400,6 +401,7 @@ export type Database = {
           deadline?: string | null
           id?: string
           is_completed?: boolean | null
+          tag?: string | null
           title: string
         }
         Update: {
@@ -409,6 +411,7 @@ export type Database = {
           deadline?: string | null
           id?: string
           is_completed?: boolean | null
+          tag?: string | null
           title?: string
         }
         Relationships: [
