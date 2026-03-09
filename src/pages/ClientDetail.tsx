@@ -1,20 +1,27 @@
-import { useParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
-import RunwayBadge from "@/components/RunwayBadge";
-import BrandingSection from "@/components/client/BrandingSection";
-import KontingentSection from "@/components/client/KontingentSection";
-import ShootDaySection from "@/components/client/ShootDaySection";
-import MaterialPipeline from "@/components/client/MaterialPipeline";
-import { Button } from "@/components/ui/button";
+import ClientInfoPanel from "@/components/client/ClientInfoPanel";
+import KontingentTracker from "@/components/client/KontingentTracker";
+import MonthlyShootDays from "@/components/client/MonthlyShootDays";
+import MonthlyPipeline from "@/components/client/MonthlyPipeline";
+import MonthlyChecklist from "@/components/client/MonthlyChecklist";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { role } = useAuth();
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
+  const canEdit = role === "admin" || role === "head_of_content";
 
   const { data: client, isLoading } = useQuery({
     queryKey: ["client", id],
@@ -64,47 +71,55 @@ const ClientDetail = () => {
     );
   }
 
-  const totalMonthly = client.monthly_reels + client.monthly_carousels + client.monthly_stories;
-  const dailyFreq = totalMonthly / 30;
-  const doneClips = clips?.filter((c) => c.phase === "done" || c.phase === "scheduled").length ?? 0;
-  const runway = dailyFreq > 0 ? Math.round(doneClips / dailyFreq) : 999;
-  const canEdit = role === "admin" || role === "head_of_content";
+  // Generate month options (6 months back + 6 months forward)
+  const monthOptions = Array.from({ length: 13 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 6 + i);
+    return {
+      month: d.getMonth() + 1,
+      year: d.getFullYear(),
+      label: format(d, "MMMM yyyy", { locale: de }),
+      value: `${d.getMonth() + 1}-${d.getFullYear()}`,
+    };
+  });
 
   return (
     <AppLayout>
-      {/* Header */}
-      <div className="mb-8">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground font-body mb-4">
-          <ArrowLeft className="h-4 w-4" />
-          Dashboard
-        </Link>
+      {/* Back button */}
+      <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground font-body mb-4">
+        <ArrowLeft className="h-4 w-4" />
+        Dashboard
+      </Link>
 
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            {client.logo_url ? (
-              <img src={client.logo_url} alt={client.name} className="h-12 w-12 rounded object-cover" />
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded bg-muted font-mono text-lg text-muted-foreground">
-                {client.name.charAt(0)}
-              </div>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold">{client.name}</h1>
-              <span className={`font-mono text-xs uppercase ${client.status === "active" ? "text-runway-green" : "text-muted-foreground"}`}>
-                {client.status === "active" ? "AKTIV" : "PAUSIERT"}
-              </span>
-            </div>
-          </div>
-          <RunwayBadge days={runway} size="lg" />
-        </div>
+      {/* Client Info Panel (collapsible) */}
+      <div className="mb-6">
+        <ClientInfoPanel client={client} canEdit={canEdit} />
       </div>
 
-      {/* Sections */}
-      <div className="space-y-8">
-        <BrandingSection client={client} canEdit={canEdit} />
-        <KontingentSection client={client} clips={clips ?? []} canEdit={canEdit} />
-        <ShootDaySection clientId={client.id} shootDays={shootDays ?? []} canEdit={canEdit} />
-        <MaterialPipeline clientId={client.id} clips={clips ?? []} canEdit={canEdit} />
+      {/* Month selector */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="font-mono text-sm font-semibold tracking-wider text-muted-foreground">MONATSZYKLUS</h2>
+        <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
+          const [m, y] = v.split("-").map(Number);
+          setSelectedMonth(m);
+          setSelectedYear(y);
+        }}>
+          <SelectTrigger className="w-48 h-8 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {monthOptions.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Monthly sections */}
+      <div className="space-y-4">
+        <KontingentTracker client={client} clips={clips ?? []} month={selectedMonth} year={selectedYear} />
+        <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+        <MonthlyPipeline clientId={client.id} clips={clips ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+        <MonthlyChecklist clientId={client.id} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
       </div>
     </AppLayout>
   );
