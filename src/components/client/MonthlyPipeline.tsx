@@ -251,8 +251,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         )}
 
         {canEdit && (
-          <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-            <Plus className="h-3 w-3" /> {config.addLabel} in {config.phases.find(p => p.key === activePhase)?.label}
+          <Button size="default" variant="outline" className="gap-1.5 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
+            <Plus className="h-4 w-4" /> {config.addLabel} in {config.phases.find(p => p.key === activePhase)?.label}
           </Button>
         )}
       </div>
