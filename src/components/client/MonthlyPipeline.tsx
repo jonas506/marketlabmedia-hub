@@ -244,9 +244,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         <div className="flex-1" />
 
         {selected.size > 0 && nextPhaseMap[activePhase] && (
-          <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => bulkMove.mutate()} disabled={bulkMove.isPending}>
+          <Button size="default" variant="outline" className="gap-1.5 text-sm" onClick={() => bulkMove.mutate()} disabled={bulkMove.isPending}>
             {selected.size} → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         )}
 
