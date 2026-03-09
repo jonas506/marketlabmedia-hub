@@ -57,7 +57,13 @@ export type Database = {
       }
       clients: {
         Row: {
+          additional_products: string[] | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           content_topics: string | null
+          contract_duration: string | null
+          contract_start: string | null
           created_at: string
           drive_branding_link: string | null
           drive_logo_link: string | null
@@ -66,18 +72,28 @@ export type Database = {
           industry: string | null
           logo_url: string | null
           monthly_carousels: number
+          monthly_price: number | null
           monthly_reels: number
           monthly_stories: number
           name: string
+          sector: string | null
           status: string
+          strategy_text: string | null
           summary: string | null
           target_audience: string | null
           tonality: string | null
           updated_at: string
           usps: string | null
+          website_url: string | null
         }
         Insert: {
+          additional_products?: string[] | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           content_topics?: string | null
+          contract_duration?: string | null
+          contract_start?: string | null
           created_at?: string
           drive_branding_link?: string | null
           drive_logo_link?: string | null
@@ -86,18 +102,28 @@ export type Database = {
           industry?: string | null
           logo_url?: string | null
           monthly_carousels?: number
+          monthly_price?: number | null
           monthly_reels?: number
           monthly_stories?: number
           name: string
+          sector?: string | null
           status?: string
+          strategy_text?: string | null
           summary?: string | null
           target_audience?: string | null
           tonality?: string | null
           updated_at?: string
           usps?: string | null
+          website_url?: string | null
         }
         Update: {
+          additional_products?: string[] | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           content_topics?: string | null
+          contract_duration?: string | null
+          contract_start?: string | null
           created_at?: string
           drive_branding_link?: string | null
           drive_logo_link?: string | null
@@ -106,15 +132,19 @@ export type Database = {
           industry?: string | null
           logo_url?: string | null
           monthly_carousels?: number
+          monthly_price?: number | null
           monthly_reels?: number
           monthly_stories?: number
           name?: string
+          sector?: string | null
           status?: string
+          strategy_text?: string | null
           summary?: string | null
           target_audience?: string | null
           tonality?: string | null
           updated_at?: string
           usps?: string | null
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -123,9 +153,12 @@ export type Database = {
           assigned_to: string | null
           client_id: string
           created_at: string
+          has_script: boolean | null
           id: string
           phase: string
           shoot_day_id: string | null
+          target_month: number | null
+          target_year: number | null
           title: string | null
           type: string | null
           updated_at: string
@@ -134,9 +167,12 @@ export type Database = {
           assigned_to?: string | null
           client_id: string
           created_at?: string
+          has_script?: boolean | null
           id?: string
           phase?: string
           shoot_day_id?: string | null
+          target_month?: number | null
+          target_year?: number | null
           title?: string | null
           type?: string | null
           updated_at?: string
@@ -145,9 +181,12 @@ export type Database = {
           assigned_to?: string | null
           client_id?: string
           created_at?: string
+          has_script?: boolean | null
           id?: string
           phase?: string
           shoot_day_id?: string | null
+          target_month?: number | null
+          target_year?: number | null
           title?: string | null
           type?: string | null
           updated_at?: string
@@ -165,6 +204,44 @@ export type Database = {
             columns: ["shoot_day_id"]
             isOneToOne: false
             referencedRelation: "shoot_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_changes: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          client_id: string
+          field_changed: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          client_id: string
+          field_changed: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          client_id?: string
+          field_changed?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_changes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
