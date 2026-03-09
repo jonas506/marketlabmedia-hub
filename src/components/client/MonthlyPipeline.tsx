@@ -266,33 +266,36 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       animate={{ opacity: 1, y: 0 }}
       className="rounded-lg border border-border bg-card overflow-hidden"
     >
-      {/* Header with progress */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <h3 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground">MATERIAL-PIPELINE</h3>
-          {totalPieces > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-[hsl(var(--runway-green))]"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                />
-              </div>
-              <span className="font-mono text-[10px] text-muted-foreground">{progress}%</span>
+      {/* Header - Monday group style */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-surface-elevated border-b border-border">
+        <div className="w-1 h-5 rounded-full bg-primary" />
+        <h3 className="font-display text-sm font-semibold">Material-Pipeline</h3>
+        {totalPieces > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-[5px] rounded-full bg-muted/50 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-status-done"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              />
             </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+            <span className="font-mono text-[10px] text-muted-foreground">{progress}%</span>
+          </div>
+        )}
+        <div className="flex-1" />
+        <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
           {phaseSummary.map((p, i) => (
-            <span key={p.key}>
-              {i > 0 && <span className="mx-1 text-border">·</span>}
-              <span className={p.count > 0 ? "text-foreground" : ""}>{p.count}</span> {p.label}
+            <span key={p.key} className="flex items-center gap-1">
+              {i > 0 && <span className="text-border mx-0.5">·</span>}
+              <span className={p.count > 0 ? "text-foreground font-semibold" : ""}>{p.count}</span>
+              <span>{p.label}</span>
             </span>
           ))}
         </div>
       </div>
+
+      <div className="p-4">
 
       {/* Type tabs */}
       <Tabs value={activeType} onValueChange={handleTypeChange} className="mb-4">
