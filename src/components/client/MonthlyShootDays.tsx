@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Plus, CheckCircle2 } from "lucide-react";
+import { Calendar, Plus, CheckCircle2, Clapperboard } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
+import { toast } from "sonner";
 
 interface ShootDay {
   id: string;
@@ -58,6 +61,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
       setPlanOpen(false);
       setNewDate("");
       setNewNotes("");
+      toast.success("📅 Drehtag geplant!", { description: `Am ${format(new Date(newDate), "dd. MMMM yyyy", { locale: de })}` });
     },
   });
 
@@ -76,6 +80,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
           phase: "filmed",
           target_month: targetMonth,
           target_year: targetYear,
+          title: `Reel ${i + 1}`,
         });
       }
       for (let i = 0; i < storyCount; i++) {
@@ -86,17 +91,31 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
           phase: "filmed",
           target_month: targetMonth,
           target_year: targetYear,
+          title: `Story ${i + 1}`,
         });
       }
       if (pieces.length > 0) {
         await supabase.from("content_pieces").insert(pieces);
       }
+      return totalClips;
     },
-    onSuccess: () => {
+    onSuccess: (totalClips) => {
       qc.invalidateQueries({ queryKey: ["shoot-days", clientId] });
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
       setCompleteOpen(false);
       setSelectedDay(null);
+      
+      // Big celebration for completing a shoot day
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ["#0083F7", "#21089B", "#FAFBFF", "#10B981", "#F59E0B"],
+      });
+      toast.success(`🎬 Drehtag abgeschlossen!`, {
+        description: `${totalClips} Clips wurden als "Gedreht" in die Pipeline gelegt`,
+        duration: 5000,
+      });
     },
   });
 
@@ -114,60 +133,99 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
     return { month: d.getMonth() + 1, year: d.getFullYear(), label: format(d, "MMMM yyyy", { locale: de }) };
   });
 
+  const totalClips = reelCount + storyCount;
+
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl border border-border bg-card p-5 shadow-lg"
+    >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground">DREHTAGE</h3>
+        <div className="flex items-center gap-2">
+          <Clapperboard className="h-4 w-4 text-primary" />
+          <h3 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground">DREHTAGE</h3>
+        </div>
         {canEdit && (
-          <Button size="sm" variant="outline" onClick={() => setPlanOpen(true)} className="gap-1 text-xs h-7">
-            <Plus className="h-3 w-3" /> Planen
+          <Button variant="outline" onClick={() => setPlanOpen(true)} className="gap-2 text-sm">
+            <Plus className="h-4 w-4" /> Drehtag planen
           </Button>
         )}
       </div>
 
       {monthDays.length === 0 ? (
-        <p className="text-xs text-muted-foreground font-body">Keine Drehtage in diesem Monat.</p>
+        <div className="py-8 text-center">
+          <span className="text-3xl block mb-2">📹</span>
+          <p className="text-sm text-muted-foreground font-body">Noch keine Drehtage in diesem Monat</p>
+          {canEdit && (
+            <Button variant="ghost" className="mt-2 text-primary gap-1.5" onClick={() => setPlanOpen(true)}>
+              <Plus className="h-4 w-4" /> Ersten Drehtag planen
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="space-y-2">
-          {monthDays.map((day) => (
-            <div key={day.id} className="flex items-center gap-3 rounded border border-border p-3">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="font-mono text-sm">{format(new Date(day.date), "dd. MMMM yyyy", { locale: de })}</span>
-                {day.notes && <p className="text-xs text-muted-foreground font-body truncate">{day.notes}</p>}
-              </div>
-              {day.status === "completed" ? (
-                <span className="flex items-center gap-1 text-xs font-mono text-runway-green">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> {day.clip_count} CLIPS
-                </span>
-              ) : canEdit ? (
-                <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => openComplete(day)}>
-                  Abschließen
-                </Button>
-              ) : (
-                <span className="font-mono text-xs text-muted-foreground">GEPLANT</span>
-              )}
-            </div>
-          ))}
+          <AnimatePresence>
+            {monthDays.map((day, i) => (
+              <motion.div
+                key={day.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: i * 0.05 } }}
+                className={`flex items-center gap-4 rounded-lg border p-4 transition-all ${
+                  day.status === "completed"
+                    ? "border-[hsl(var(--runway-green))]/20 bg-[hsl(var(--runway-green))]/5"
+                    : "border-border hover:border-primary/20"
+                }`}
+              >
+                <div className={`flex items-center justify-center h-10 w-10 rounded-lg ${
+                  day.status === "completed" ? "bg-[hsl(var(--runway-green))]/10" : "bg-muted"
+                }`}>
+                  <Calendar className={`h-5 w-5 ${day.status === "completed" ? "text-[hsl(var(--runway-green))]" : "text-muted-foreground"}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-mono text-sm font-medium">{format(new Date(day.date), "dd. MMMM yyyy", { locale: de })}</span>
+                  {day.notes && <p className="text-xs text-muted-foreground font-body truncate mt-0.5">{day.notes}</p>}
+                </div>
+                {day.status === "completed" ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="flex items-center gap-2 rounded-lg bg-[hsl(var(--runway-green))]/10 px-3 py-1.5"
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-[hsl(var(--runway-green))]" />
+                    <span className="text-sm font-mono font-bold text-[hsl(var(--runway-green))]">{day.clip_count} Clips</span>
+                  </motion.div>
+                ) : canEdit ? (
+                  <Button variant="outline" className="text-sm gap-1.5" onClick={() => openComplete(day)}>
+                    <CheckCircle2 className="h-4 w-4" /> Abschließen
+                  </Button>
+                ) : (
+                  <span className="font-mono text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded">GEPLANT</span>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
 
       {/* Plan Dialog */}
       <Dialog open={planOpen} onOpenChange={setPlanOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Drehtag planen</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>📅 Drehtag planen</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-muted-foreground font-body mb-1 block">Datum</label>
-              <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+              <label className="text-sm text-muted-foreground font-body mb-1.5 block">Datum</label>
+              <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="h-10" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground font-body mb-1 block">Notizen</label>
+              <label className="text-sm text-muted-foreground font-body mb-1.5 block">Notizen</label>
               <Textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} placeholder="Location, Themen, etc." rows={3} />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => createMutation.mutate()} disabled={!newDate || createMutation.isPending}>Speichern</Button>
+            <Button onClick={() => createMutation.mutate()} disabled={!newDate || createMutation.isPending} className="gap-2">
+              <Calendar className="h-4 w-4" /> Drehtag planen
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -175,24 +233,46 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
       {/* Complete Dialog */}
       <Dialog open={completeOpen} onOpenChange={setCompleteOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Drehtag abschließen</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground font-body mb-1 block">Reels entstanden</label>
-              <Input type="number" min={0} value={reelCount} onChange={(e) => setReelCount(Number(e.target.value))} />
+          <DialogHeader>
+            <DialogTitle>🎬 Drehtag abschließen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5">
+            <p className="text-sm text-muted-foreground">
+              Wie viele Clips sind beim Dreh entstanden? Die Clips werden direkt als „Gedreht" in die Pipeline gelegt.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-lg border border-border p-4 text-center">
+                <span className="text-2xl block mb-2">🎬</span>
+                <label className="text-sm text-muted-foreground font-body mb-2 block">Reels</label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={reelCount}
+                  onChange={(e) => setReelCount(Number(e.target.value))}
+                  className="h-12 text-center text-xl font-mono font-bold"
+                />
+              </div>
+              <div className="rounded-lg border border-border p-4 text-center">
+                <span className="text-2xl block mb-2">📱</span>
+                <label className="text-sm text-muted-foreground font-body mb-2 block">Stories</label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={storyCount}
+                  onChange={(e) => setStoryCount(Number(e.target.value))}
+                  className="h-12 text-center text-xl font-mono font-bold"
+                />
+              </div>
             </div>
+            
             <div>
-              <label className="text-xs text-muted-foreground font-body mb-1 block">Stories entstanden</label>
-              <Input type="number" min={0} value={storyCount} onChange={(e) => setStoryCount(Number(e.target.value))} />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground font-body mb-1 block">Zielmonat</label>
+              <label className="text-sm text-muted-foreground font-body mb-1.5 block">Zielmonat</label>
               <Select value={`${targetMonth}-${targetYear}`} onValueChange={(v) => {
                 const [m, y] = v.split("-").map(Number);
                 setTargetMonth(m);
                 setTargetYear(y);
               }}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {monthOptions.map((o) => (
                     <SelectItem key={`${o.month}-${o.year}`} value={`${o.month}-${o.year}`}>{o.label}</SelectItem>
@@ -200,15 +280,30 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
                 </SelectContent>
               </Select>
             </div>
+
+            {totalClips > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-lg bg-primary/10 border border-primary/20 p-3 text-center"
+              >
+                <span className="font-mono text-lg font-bold text-primary">{totalClips} Clips</span>
+                <span className="text-sm text-muted-foreground ml-2">werden in „Gedreht" angelegt</span>
+              </motion.div>
+            )}
           </div>
           <DialogFooter>
-            <Button onClick={() => completeMutation.mutate()} disabled={completeMutation.isPending}>
-              Abschließen & {reelCount + storyCount} Pieces anlegen
+            <Button
+              onClick={() => completeMutation.mutate()}
+              disabled={completeMutation.isPending || totalClips === 0}
+              className="gap-2 bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] shadow-lg shadow-primary/20"
+            >
+              🚀 Abschließen & {totalClips} Pieces anlegen
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 
