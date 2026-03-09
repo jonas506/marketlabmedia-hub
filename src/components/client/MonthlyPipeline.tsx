@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Filter, Plus, FileText } from "lucide-react";
+import { ChevronRight, Filter, Plus, FileText, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -22,6 +22,7 @@ interface ContentPiece {
   target_month: number;
   target_year: number;
   has_script: boolean;
+  preview_link?: string | null;
 }
 
 interface MonthlyPipelineProps {
@@ -267,61 +268,89 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             <span className="text-[10px] font-mono text-muted-foreground">{phasePieces.length} PIECES</span>
           </div>
 
-          {phasePieces.map((piece) => (
-            <div key={piece.id} className="flex items-center gap-3 rounded border border-border p-3 hover:border-primary/20 transition-colors">
-              <Checkbox checked={selected.has(piece.id)} onCheckedChange={() => toggleSelect(piece.id)} />
+          {phasePieces.map((piece) => {
+            const isLatePhase = activePhase === "done" || activePhase === "handed_over" || activePhase === "approved";
+            return (
+            <div key={piece.id} className="flex flex-col gap-2 rounded border border-border p-3 hover:border-primary/20 transition-colors">
+              <div className="flex items-center gap-3">
+                <Checkbox checked={selected.has(piece.id)} onCheckedChange={() => toggleSelect(piece.id)} />
 
-              {/* Title */}
-              <Input value={piece.title || ""} placeholder="Titel..." className="h-6 flex-1 border-0 bg-transparent text-sm px-1"
-                onChange={(e) => updatePiece(piece.id, { title: e.target.value })} disabled={!canEdit} />
+                {/* Title */}
+                <Input value={piece.title || ""} placeholder="Titel..." className="h-6 flex-1 border-0 bg-transparent text-sm px-1"
+                  onChange={(e) => updatePiece(piece.id, { title: e.target.value })} disabled={!canEdit} />
 
-              {/* Script badge */}
-              {piece.has_script && (
-                <Badge variant="outline" className="text-[10px] gap-0.5 h-5">
-                  <FileText className="h-2.5 w-2.5" /> Skript
-                </Badge>
-              )}
-              <Checkbox checked={piece.has_script || false}
-                onCheckedChange={(v) => updatePiece(piece.id, { has_script: !!v })}
-                disabled={!canEdit} className="h-3.5 w-3.5" />
+                {/* Script badge */}
+                {piece.has_script && (
+                  <Badge variant="outline" className="text-[10px] gap-0.5 h-5">
+                    <FileText className="h-2.5 w-2.5" /> Skript
+                  </Badge>
+                )}
+                <Checkbox checked={piece.has_script || false}
+                  onCheckedChange={(v) => updatePiece(piece.id, { has_script: !!v })}
+                  disabled={!canEdit} className="h-3.5 w-3.5" />
 
-              {/* Assigned */}
-              <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
-                <SelectTrigger className="h-6 w-28 text-[10px] font-mono border-0 bg-muted px-2">
-                  <SelectValue placeholder="Person" />
-                </SelectTrigger>
-                <SelectContent>
-                  {team?.map((t) => (
-                    <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {/* Assigned */}
+                <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
+                  <SelectTrigger className="h-6 w-28 text-[10px] font-mono border-0 bg-muted px-2">
+                    <SelectValue placeholder="Person" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {team?.map((t) => (
+                      <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              {/* Target month */}
-              <Select value={`${piece.target_month}-${piece.target_year}`}
-                onValueChange={(v) => {
-                  const [m, y] = v.split("-").map(Number);
-                  updatePiece(piece.id, { target_month: m, target_year: y });
-                }} disabled={!canEdit}>
-                <SelectTrigger className="h-6 w-20 text-[10px] font-mono border-0 bg-muted px-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthOptions.map((o) => (
-                    <SelectItem key={`${o.month}-${o.year}`} value={`${o.month}-${o.year}`}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {/* Target month — only from "done" / "approved" phase onwards */}
+                {isLatePhase && (
+                  <Select value={`${piece.target_month}-${piece.target_year}`}
+                    onValueChange={(v) => {
+                      const [m, y] = v.split("-").map(Number);
+                      updatePiece(piece.id, { target_month: m, target_year: y });
+                    }} disabled={!canEdit}>
+                    <SelectTrigger className="h-6 w-20 text-[10px] font-mono border-0 bg-muted px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthOptions.map((o) => (
+                        <SelectItem key={`${o.month}-${o.year}`} value={`${o.month}-${o.year}`}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
 
-              {/* Move to next phase */}
-              {nextPhaseMap[activePhase] && (
-                <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
-                  onClick={() => updatePiece(piece.id, { phase: nextPhaseMap[activePhase] })}>
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
+                {/* Move to next phase */}
+                {nextPhaseMap[activePhase] && (
+                  <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
+                    onClick={() => updatePiece(piece.id, { phase: nextPhaseMap[activePhase] })}>
+                    → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}
+                    <ChevronRight className="h-3 w-3 ml-0.5" />
+                  </Button>
+                )}
+              </div>
+
+              {/* Preview link — shown from "done" phase onwards */}
+              {isLatePhase && (
+                <div className="flex items-center gap-2 pl-8">
+                  <LinkIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <Input
+                    value={piece.preview_link || ""}
+                    placeholder="Preview-Link einfügen..."
+                    className="h-6 flex-1 border-0 bg-muted/50 text-xs px-2"
+                    onChange={(e) => updatePiece(piece.id, { preview_link: e.target.value })}
+                    disabled={!canEdit}
+                  />
+                  {piece.preview_link && (
+                    <a href={piece.preview_link} target="_blank" rel="noopener noreferrer"
+                      className="text-primary hover:text-primary/80 shrink-0">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

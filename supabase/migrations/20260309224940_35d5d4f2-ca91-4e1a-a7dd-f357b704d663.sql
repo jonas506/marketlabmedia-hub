@@ -1,0 +1,1 @@
+ALTER TABLE public.content_pieces ADD COLUMN IF NOT EXISTS preview_link text;

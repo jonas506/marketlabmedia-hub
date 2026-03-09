@@ -216,6 +216,7 @@ export type Database = {
           has_script: boolean | null
           id: string
           phase: string
+          preview_link: string | null
           shoot_day_id: string | null
           target_month: number
           target_year: number
@@ -230,6 +231,7 @@ export type Database = {
           has_script?: boolean | null
           id?: string
           phase: string
+          preview_link?: string | null
           shoot_day_id?: string | null
           target_month: number
           target_year: number
@@ -244,6 +246,7 @@ export type Database = {
           has_script?: boolean | null
           id?: string
           phase?: string
+          preview_link?: string | null
           shoot_day_id?: string | null
           target_month?: number
           target_year?: number
