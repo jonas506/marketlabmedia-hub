@@ -6,54 +6,75 @@
 
 @layer base {
   :root {
-    --background: 228 12% 10%;
-    --foreground: 220 20% 97%;
+    --background: 230 15% 11%;
+    --foreground: 220 20% 96%;
 
-    --card: 228 10% 14%;
-    --card-foreground: 220 20% 97%;
+    --card: 230 13% 14%;
+    --card-foreground: 220 20% 96%;
 
-    --popover: 228 10% 14%;
-    --popover-foreground: 220 20% 97%;
+    --popover: 230 13% 16%;
+    --popover-foreground: 220 20% 96%;
 
-    --primary: 211 100% 49%;
-    --primary-foreground: 220 20% 97%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 249 89% 32%;
-    --secondary-foreground: 220 20% 97%;
+    --secondary: 260 70% 55%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 228 8% 20%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 230 10% 20%;
+    --muted-foreground: 220 10% 50%;
 
-    --accent: 249 89% 32%;
-    --accent-foreground: 220 20% 97%;
+    --accent: 260 70% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 56%;
-    --destructive-foreground: 220 20% 97%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 228 8% 18%;
-    --input: 228 8% 20%;
-    --ring: 211 100% 49%;
+    --border: 230 10% 18%;
+    --input: 230 10% 20%;
+    --ring: 211 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --runway-green: 160 60% 45%;
-    --runway-yellow: 40 95% 55%;
+    /* Monday-style status colors */
+    --status-done: 154 60% 48%;
+    --status-working: 211 100% 50%;
+    --status-review: 35 95% 55%;
+    --status-stuck: 0 72% 56%;
+    --status-default: 230 10% 35%;
+
+    /* Monday-style priority */
+    --prio-critical: 0 72% 56%;
+    --prio-high: 25 95% 55%;
+    --prio-medium: 211 100% 50%;
+    --prio-low: 230 10% 45%;
+
+    /* Runway */
+    --runway-green: 154 60% 48%;
+    --runway-yellow: 35 95% 55%;
     --runway-red: 0 72% 56%;
 
-    --surface: 228 10% 14%;
-    --surface-elevated: 228 10% 17%;
-    --glass: 228 10% 14% / 0.6;
-    --glow-primary: 211 100% 49% / 0.15;
-    --glow-green: 160 60% 45% / 0.15;
+    /* Surface levels */
+    --surface: 230 13% 14%;
+    --surface-elevated: 230 13% 17%;
+    --surface-hover: 230 13% 19%;
+    --glass: 230 13% 14% / 0.7;
 
-    --sidebar-background: 228 12% 8%;
-    --sidebar-foreground: 220 20% 97%;
-    --sidebar-primary: 211 100% 49%;
-    --sidebar-primary-foreground: 220 20% 97%;
-    --sidebar-accent: 249 89% 32%;
-    --sidebar-accent-foreground: 220 20% 97%;
-    --sidebar-border: 228 8% 16%;
-    --sidebar-ring: 211 100% 49%;
+    /* Sidebar - darker */
+    --sidebar-background: 230 20% 7%;
+    --sidebar-foreground: 220 15% 85%;
+    --sidebar-primary: 211 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 260 70% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 230 15% 13%;
+    --sidebar-ring: 211 100% 50%;
+
+    /* Monday-style group colors */
+    --group-blue: 211 100% 50%;
+    --group-green: 154 60% 48%;
+    --group-purple: 260 70% 55%;
+    --group-orange: 25 95% 55%;
   }
 }
 
@@ -72,7 +93,6 @@
     @apply font-display tracking-tight;
   }
 
-  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -89,23 +109,36 @@
 }
 
 @layer components {
-  .runway-green {
-    color: hsl(var(--runway-green));
+  .runway-green { color: hsl(var(--runway-green)); }
+  .runway-yellow { color: hsl(var(--runway-yellow)); }
+  .runway-red { color: hsl(var(--runway-red)); }
+  .bg-runway-green { background-color: hsl(var(--runway-green)); }
+  .bg-runway-yellow { background-color: hsl(var(--runway-yellow)); }
+  .bg-runway-red { background-color: hsl(var(--runway-red)); }
+
+  /* Monday-style status pills */
+  .monday-status {
+    @apply px-3 py-1 rounded-full text-[11px] font-semibold text-white text-center min-w-[90px] inline-flex items-center justify-center;
   }
-  .runway-yellow {
-    color: hsl(var(--runway-yellow));
+  .monday-status-done { background: hsl(var(--status-done)); }
+  .monday-status-working { background: hsl(var(--status-working)); }
+  .monday-status-review { background: hsl(var(--status-review)); }
+  .monday-status-stuck { background: hsl(var(--status-stuck)); }
+  .monday-status-default { background: hsl(var(--status-default)); }
+
+  /* Monday-style priority pills */
+  .monday-priority {
+    @apply px-3 py-1 rounded-full text-[11px] font-semibold text-white text-center min-w-[80px] inline-flex items-center justify-center gap-1;
   }
-  .runway-red {
-    color: hsl(var(--runway-red));
+
+  /* Monday-style table row */
+  .monday-row {
+    @apply border-b border-border/40 transition-colors hover:bg-surface-hover;
   }
-  .bg-runway-green {
-    background-color: hsl(var(--runway-green));
-  }
-  .bg-runway-yellow {
-    background-color: hsl(var(--runway-yellow));
-  }
-  .bg-runway-red {
-    background-color: hsl(var(--runway-red));
+
+  /* Monday-style group header */
+  .monday-group-header {
+    @apply flex items-center gap-3 py-2.5 px-4 text-sm font-display font-semibold;
   }
 
   /* Glass effect */
@@ -115,22 +148,12 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
 
-  /* Subtle glow */
-  .glow-primary {
-    box-shadow: 0 0 40px hsl(var(--glow-primary)), 0 0 80px hsl(var(--glow-primary));
-  }
-  .glow-green {
-    box-shadow: 0 0 30px hsl(var(--glow-green)), 0 0 60px hsl(var(--glow-green));
-  }
-
-  /* Premium card */
   .card-elevated {
     background: hsl(var(--surface-elevated));
     border: 1px solid hsl(var(--border));
     box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
   }
 
-  /* Gradient text */
   .text-gradient {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
     -webkit-background-clip: text;
