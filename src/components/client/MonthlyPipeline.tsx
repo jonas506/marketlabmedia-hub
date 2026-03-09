@@ -28,7 +28,16 @@ interface ContentPiece {
   target_year: number;
   has_script: boolean;
   preview_link?: string | null;
+  deadline?: string | null;
+  priority?: string | null;
 }
+
+const PRIORITY_OPTIONS = [
+  { value: "low", label: "Niedrig", color: "text-muted-foreground", bg: "bg-muted/60" },
+  { value: "normal", label: "Normal", color: "text-foreground", bg: "bg-muted/60" },
+  { value: "high", label: "Hoch", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/10" },
+  { value: "urgent", label: "Dringend", color: "text-destructive", bg: "bg-destructive/10" },
+];
 
 interface MonthlyPipelineProps {
   clientId: string;
