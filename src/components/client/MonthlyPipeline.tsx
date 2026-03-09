@@ -216,11 +216,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           const count = monthPieces.filter((c) => c.phase === p.key).length;
           return (
             <button key={p.key} onClick={() => { setActivePhase(p.key); setSelected(new Set()); }}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-mono transition-colors ${
+              className={`flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-mono transition-colors ${
                 activePhase === p.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}>
               {p.label}
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+              <span className={`rounded-full px-2 py-0.5 text-xs ${
                 activePhase === p.key ? "bg-primary-foreground/20" : "bg-background"
               }`}>{count}</span>
             </button>
@@ -232,7 +232,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       <div className="flex items-center gap-3 mb-3">
         <Filter className="h-3.5 w-3.5 text-muted-foreground" />
         <Select value={filterPerson} onValueChange={setFilterPerson}>
-          <SelectTrigger className="h-7 w-36 text-xs"><SelectValue placeholder="Person" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-40 text-sm"><SelectValue placeholder="Person" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle</SelectItem>
             {team?.map((t) => (
@@ -244,15 +244,15 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         <div className="flex-1" />
 
         {selected.size > 0 && nextPhaseMap[activePhase] && (
-          <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => bulkMove.mutate()} disabled={bulkMove.isPending}>
+          <Button size="default" variant="outline" className="gap-1.5 text-sm" onClick={() => bulkMove.mutate()} disabled={bulkMove.isPending}>
             {selected.size} → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         )}
 
         {canEdit && (
-          <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-            <Plus className="h-3 w-3" /> {config.addLabel} in {config.phases.find(p => p.key === activePhase)?.label}
+          <Button size="default" variant="outline" className="gap-1.5 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
+            <Plus className="h-4 w-4" /> {config.addLabel} in {config.phases.find(p => p.key === activePhase)?.label}
           </Button>
         )}
       </div>
@@ -278,15 +278,14 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                 <Input value={piece.title || ""} placeholder="Titel..." className="h-6 flex-1 border-0 bg-transparent text-sm px-1"
                   onChange={(e) => updatePiece(piece.id, { title: e.target.value })} disabled={!canEdit} />
 
-                {/* Script badge */}
-                {piece.has_script && (
-                  <Badge variant="outline" className="text-[10px] gap-0.5 h-5">
-                    <FileText className="h-2.5 w-2.5" /> Skript
-                  </Badge>
-                )}
-                <Checkbox checked={piece.has_script || false}
-                  onCheckedChange={(v) => updatePiece(piece.id, { has_script: !!v })}
-                  disabled={!canEdit} className="h-3.5 w-3.5" />
+                {/* Script badge — click to toggle */}
+                <button
+                  onClick={() => canEdit && updatePiece(piece.id, { has_script: !piece.has_script })}
+                  className={`inline-flex items-center gap-0.5 rounded border px-1.5 h-5 text-[10px] font-mono transition-colors ${
+                    piece.has_script ? "border-primary/30 text-primary bg-primary/10" : "border-border text-muted-foreground hover:text-foreground"
+                  }`}>
+                  <FileText className="h-2.5 w-2.5" /> Skript
+                </button>
 
                 {/* Assigned */}
                 <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
