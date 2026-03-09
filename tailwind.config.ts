@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Manrope', 'sans-serif'],
-        body: ['Manrope', 'sans-serif'],
+        display: ['Poppins', 'sans-serif'],
+        body: ['Poppins', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
