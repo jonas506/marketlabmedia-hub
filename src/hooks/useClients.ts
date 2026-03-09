@@ -14,16 +14,14 @@ export interface Client {
   drive_styleguide_link: string | null;
 }
 
-export interface ClipPhaseCounts {
-  filmed: number;
-  editing: number;
-  approved: number;
-  scheduled_posted: number;
+export interface PipelineCounts {
+  inPipeline: number;
+  handedOver: number;
 }
 
 export interface ClientDashboardData extends Client {
-  clipCounts: ClipPhaseCounts;
-  postedThisMonth: { reels: number; carousels: number; stories: number };
+  pipelineCounts: PipelineCounts;
+  handedOverThisMonth: { reels: number; carousels: number; stories: number };
   nextShootDay: string | null;
   runway: number;
 }
@@ -43,8 +41,8 @@ export const useClients = () => {
 
       const clientIds = clients.map((c) => c.id);
 
-      const { data: allClips } = await supabase
-        .from("clips")
+      const { data: allPieces } = await supabase
+        .from("content_pieces")
         .select("client_id, phase, type, target_month, target_year")
         .in("client_id", clientIds);
 
@@ -60,34 +58,33 @@ export const useClients = () => {
       const { month, year } = getCurrentMonth();
 
       return clients.map((client) => {
-        const clips = allClips?.filter((c) => c.client_id === client.id) ?? [];
+        const pieces = allPieces?.filter((c) => c.client_id === client.id) ?? [];
         
-        const clipCounts: ClipPhaseCounts = {
-          filmed: clips.filter((c) => c.phase === "filmed").length,
-          editing: clips.filter((c) => c.phase === "editing").length,
-          approved: clips.filter((c) => c.phase === "approved").length,
-          scheduled_posted: clips.filter((c) => c.phase === "scheduled_posted").length,
-        };
+        const inPipeline = pieces.filter((c) => c.phase !== "handed_over").length;
+        const handedOver = pieces.filter((c) => c.phase === "handed_over").length;
 
-        // Posted this month (scheduled_posted clips for current month)
-        const postedThisMonth = clips.filter(
-          (c) => c.phase === "scheduled_posted" && c.target_month === month && c.target_year === year
+        const handedOverThisMonth = pieces.filter(
+          (c) => c.phase === "handed_over" && c.target_month === month && c.target_year === year
         );
 
-        const totalMonthly = client.monthly_reels + client.monthly_carousels + client.monthly_stories;
-        const dailyFreq = totalMonthly / 30;
-        const readyClips = clipCounts.approved + clipCounts.scheduled_posted;
-        const runway = dailyFreq > 0 ? Math.round(readyClips / dailyFreq) : 999;
+        // Runway: only reels + stories, done + handed_over
+        const reelStoryTarget = client.monthly_reels + client.monthly_stories;
+        const dailyFreq = reelStoryTarget / 30;
+        const readyPieces = pieces.filter(
+          (c) => (c.type === "reel" || c.type === "story") && (c.phase === "done" || c.phase === "handed_over") &&
+          c.target_month === month && c.target_year === year
+        ).length;
+        const runway = dailyFreq > 0 ? Math.round(readyPieces / dailyFreq) : 999;
 
         const nextShoot = shootDays?.find((s) => s.client_id === client.id);
 
         return {
           ...client,
-          clipCounts,
-          postedThisMonth: {
-            reels: postedThisMonth.filter((c) => c.type === "reel").length,
-            carousels: postedThisMonth.filter((c) => c.type === "carousel").length,
-            stories: postedThisMonth.filter((c) => c.type === "story").length,
+          pipelineCounts: { inPipeline, handedOver },
+          handedOverThisMonth: {
+            reels: handedOverThisMonth.filter((c) => c.type === "reel").length,
+            carousels: handedOverThisMonth.filter((c) => c.type === "carousel").length,
+            stories: handedOverThisMonth.filter((c) => c.type === "story").length,
           },
           nextShootDay: nextShoot?.date ?? null,
           runway,

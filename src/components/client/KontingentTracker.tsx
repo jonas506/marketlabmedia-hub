@@ -1,26 +1,26 @@
 import { Progress } from "@/components/ui/progress";
 import RunwayBadge from "@/components/RunwayBadge";
 
-interface Clip {
+interface ContentPiece {
   phase: string;
-  type: string | null;
-  target_month: number | null;
-  target_year: number | null;
+  type: string;
+  target_month: number;
+  target_year: number;
 }
 
 interface KontingentTrackerProps {
   client: any;
-  clips: Clip[];
+  contentPieces: ContentPiece[];
   month: number;
   year: number;
 }
 
-const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, clips, month, year }) => {
-  const monthClips = clips.filter((c) => c.target_month === month && c.target_year === year);
+const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces, month, year }) => {
+  const monthPieces = contentPieces.filter((c) => c.target_month === month && c.target_year === year);
 
-  // "Ist" = clips that are scheduled_posted for this month
+  // "Ist" = pieces with phase "handed_over"
   const countByType = (type: string) =>
-    monthClips.filter((c) => c.type === type && c.phase === "scheduled_posted").length;
+    monthPieces.filter((c) => c.type === type && c.phase === "handed_over").length;
 
   const types = [
     { label: "Reels", type: "reel", target: client.monthly_reels, current: countByType("reel") },
@@ -28,15 +28,18 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, clips, mo
     { label: "Stories", type: "story", target: client.monthly_stories, current: countByType("story") },
   ];
 
-  const totalMonthly = client.monthly_reels + client.monthly_carousels + client.monthly_stories;
-  const dailyRate = totalMonthly / 30;
+  // Runway only for reels + stories (no carousel dependency on shoot days)
+  const reelStoryTarget = client.monthly_reels + client.monthly_stories;
+  const dailyRate = reelStoryTarget / 30;
 
-  // Conservative: approved + scheduled_posted
-  const conservative = monthClips.filter((c) => c.phase === "approved" || c.phase === "scheduled_posted").length;
+  const reelStoryPieces = monthPieces.filter((c) => c.type === "reel" || c.type === "story");
+
+  // Gesichert: done + handed_over
+  const conservative = reelStoryPieces.filter((c) => c.phase === "done" || c.phase === "handed_over").length;
   const conservativeDays = dailyRate > 0 ? Math.round(conservative / dailyRate) : 999;
 
-  // Prognose: editing + approved + scheduled_posted
-  const prognose = monthClips.filter((c) => c.phase === "editing" || c.phase === "approved" || c.phase === "scheduled_posted").length;
+  // Prognose: editing + done + handed_over
+  const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "done" || c.phase === "handed_over").length;
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
   return (
@@ -44,7 +47,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, clips, mo
       <h3 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground mb-4">KONTINGENT</h3>
 
       <div className="flex gap-6">
-        {/* Progress bars */}
         <div className="flex-1 space-y-3">
           {types.map((t) => {
             const pct = t.target > 0 ? Math.min((t.current / t.target) * 100, 100) : 0;
@@ -62,14 +64,13 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, clips, mo
           })}
         </div>
 
-        {/* Runway displays */}
         <div className="flex gap-4 border-l border-border pl-4">
           <div className="text-center">
             <span className="font-mono text-[10px] text-muted-foreground block mb-1">GESICHERT</span>
             <RunwayBadge days={conservativeDays} />
           </div>
           <div className="text-center">
-            <span className="font-mono text-[10px] text-muted-foreground block mb-1">INKL. SCHNITT</span>
+            <span className="font-mono text-[10px] text-muted-foreground block mb-1">PROGNOSE</span>
             <RunwayBadge days={prognoseDays} />
           </div>
         </div>

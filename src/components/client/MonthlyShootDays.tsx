@@ -34,11 +34,11 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
   const [selectedDay, setSelectedDay] = useState<ShootDay | null>(null);
   const [newDate, setNewDate] = useState("");
   const [newNotes, setNewNotes] = useState("");
-  const [clipCount, setClipCount] = useState(5);
+  const [reelCount, setReelCount] = useState(5);
+  const [storyCount, setStoryCount] = useState(0);
   const [targetMonth, setTargetMonth] = useState(month);
   const [targetYear, setTargetYear] = useState(year);
 
-  // Filter shoot days for this month
   const monthDays = shootDays.filter((d) => {
     const dt = new Date(d.date);
     return dt.getMonth() + 1 === month && dt.getFullYear() === year;
@@ -64,23 +64,37 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
   const completeMutation = useMutation({
     mutationFn: async () => {
       if (!selectedDay) return;
-      // Update shoot day
-      await supabase.from("shoot_days").update({ status: "completed", clip_count: clipCount }).eq("id", selectedDay.id);
-      // Create clips
-      if (clipCount > 0) {
-        const clips = Array.from({ length: clipCount }, () => ({
+      const totalClips = reelCount + storyCount;
+      await supabase.from("shoot_days").update({ status: "completed", clip_count: totalClips }).eq("id", selectedDay.id);
+      
+      const pieces: any[] = [];
+      for (let i = 0; i < reelCount; i++) {
+        pieces.push({
           client_id: clientId,
           shoot_day_id: selectedDay.id,
+          type: "reel",
           phase: "filmed",
           target_month: targetMonth,
           target_year: targetYear,
-        }));
-        await supabase.from("clips").insert(clips);
+        });
+      }
+      for (let i = 0; i < storyCount; i++) {
+        pieces.push({
+          client_id: clientId,
+          shoot_day_id: selectedDay.id,
+          type: "story",
+          phase: "filmed",
+          target_month: targetMonth,
+          target_year: targetYear,
+        });
+      }
+      if (pieces.length > 0) {
+        await supabase.from("content_pieces").insert(pieces);
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["shoot-days", clientId] });
-      qc.invalidateQueries({ queryKey: ["clips", clientId] });
+      qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
       setCompleteOpen(false);
       setSelectedDay(null);
     },
@@ -88,13 +102,13 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
 
   const openComplete = (day: ShootDay) => {
     setSelectedDay(day);
-    setClipCount(5);
+    setReelCount(5);
+    setStoryCount(0);
     setTargetMonth(month);
     setTargetYear(year);
     setCompleteOpen(true);
   };
 
-  // Month options for target selection
   const monthOptions = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(year, month - 1 + i);
     return { month: d.getMonth() + 1, year: d.getFullYear(), label: format(d, "MMMM yyyy", { locale: de }) };
@@ -164,8 +178,12 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
           <DialogHeader><DialogTitle>Drehtag abschließen</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-muted-foreground font-body mb-1 block">Wie viele Clips sind entstanden?</label>
-              <Input type="number" min={0} value={clipCount} onChange={(e) => setClipCount(Number(e.target.value))} />
+              <label className="text-xs text-muted-foreground font-body mb-1 block">Reels entstanden</label>
+              <Input type="number" min={0} value={reelCount} onChange={(e) => setReelCount(Number(e.target.value))} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground font-body mb-1 block">Stories entstanden</label>
+              <Input type="number" min={0} value={storyCount} onChange={(e) => setStoryCount(Number(e.target.value))} />
             </div>
             <div>
               <label className="text-xs text-muted-foreground font-body mb-1 block">Zielmonat</label>
@@ -185,7 +203,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
           </div>
           <DialogFooter>
             <Button onClick={() => completeMutation.mutate()} disabled={completeMutation.isPending}>
-              Abschließen & {clipCount} Clips anlegen
+              Abschließen & {reelCount + storyCount} Pieces anlegen
             </Button>
           </DialogFooter>
         </DialogContent>
