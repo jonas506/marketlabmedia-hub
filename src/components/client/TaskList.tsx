@@ -52,6 +52,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const [newTitle, setNewTitle] = useState("");
   const [newTag, setNewTag] = useState("");
   const [filterPerson, setFilterPerson] = useState("all");
+  const [expandedTask, setExpandedTask] = useState<string | null>(null);
 
   const { data: team } = useQuery({
     queryKey: ["team-members"],
