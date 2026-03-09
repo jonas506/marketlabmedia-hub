@@ -216,11 +216,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           const count = monthPieces.filter((c) => c.phase === p.key).length;
           return (
             <button key={p.key} onClick={() => { setActivePhase(p.key); setSelected(new Set()); }}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-mono transition-colors ${
+              className={`flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-mono transition-colors ${
                 activePhase === p.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
               }`}>
               {p.label}
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+              <span className={`rounded-full px-2 py-0.5 text-xs ${
                 activePhase === p.key ? "bg-primary-foreground/20" : "bg-background"
               }`}>{count}</span>
             </button>
