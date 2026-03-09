@@ -34,10 +34,9 @@ const KontingentBar: React.FC<{ label: string; posted: number; target: number }>
 
 const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
   const totalPipeline =
-    client.clipCounts.raw +
+    client.clipCounts.filmed +
     client.clipCounts.editing +
-    client.clipCounts.done +
-    client.clipCounts.scheduled;
+    client.clipCounts.approved;
 
   return (
     <Link
