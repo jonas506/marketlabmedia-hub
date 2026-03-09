@@ -19,6 +19,8 @@ interface Task {
   assigned_to: string | null;
   deadline: string | null;
   is_completed: boolean;
+  priority: string | null;
+  status: string | null;
   created_at: string;
 }
 
