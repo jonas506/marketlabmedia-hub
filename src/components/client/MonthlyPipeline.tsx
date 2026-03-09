@@ -232,7 +232,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       <div className="flex items-center gap-3 mb-3">
         <Filter className="h-3.5 w-3.5 text-muted-foreground" />
         <Select value={filterPerson} onValueChange={setFilterPerson}>
-          <SelectTrigger className="h-7 w-36 text-xs"><SelectValue placeholder="Person" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-40 text-sm"><SelectValue placeholder="Person" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle</SelectItem>
             {team?.map((t) => (
