@@ -4,9 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ChevronDown, Plus, ListChecks } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface MonthlyChecklistProps {
   clientId: string;
@@ -15,7 +15,6 @@ interface MonthlyChecklistProps {
   canEdit: boolean;
 }
 
-// Get ISO weeks that fall in a given month
 const getWeeksInMonth = (month: number, year: number) => {
   const weeks: { week: number; year: number }[] = [];
   const d = new Date(year, month - 1, 1);
@@ -61,26 +60,43 @@ const MonthlyChecklist: React.FC<MonthlyChecklistProps> = ({ clientId, month, ye
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
-        <button className="w-full flex items-center gap-3 rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors text-left">
-          <h3 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground">WOCHEN-CHECKLISTE</h3>
+        <button className="w-full flex items-center gap-4 rounded-xl border border-border bg-card p-5 hover:border-primary/20 transition-all duration-300 text-left group">
+          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted/50">
+            <ListChecks className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <h3 className="font-display text-sm font-semibold tracking-tight">Wochen-Checkliste</h3>
           <div className="flex-1" />
           {totalCount > 0 && (
-            <span className="font-mono text-xs text-muted-foreground">{pct}%</span>
+            <div className="flex items-center gap-3">
+              <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-runway-green"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                />
+              </div>
+              <span className="font-mono text-xs text-muted-foreground">{pct}%</span>
+            </div>
           )}
-          <div className="w-20">
-            <Progress value={pct} className="h-1.5" />
+          <div className={`flex items-center justify-center h-8 w-8 rounded-lg bg-muted/50 text-muted-foreground transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
+            <ChevronDown className="h-4 w-4" />
           </div>
-          {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-1 rounded-lg border border-border bg-card p-4 space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mt-2 rounded-xl border border-border bg-card p-6 space-y-6"
+        >
           {weeks.map((w) => (
             <WeekSection key={`${w.week}-${w.year}`} clientId={clientId} week={w.week} year={w.year}
               items={items?.filter((i) => i.week_number === w.week && i.year === w.year) ?? []}
               canEdit={canEdit} queryKey={["checklist", clientId, month, year]} />
           ))}
-        </div>
+        </motion.div>
       </CollapsibleContent>
     </Collapsible>
   );
@@ -114,25 +130,31 @@ const WeekSection: React.FC<{
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2">
-        <span className="font-mono text-xs font-semibold">KW {week}</span>
-        {items.length > 0 && <span className="font-mono text-[10px] text-muted-foreground">{pct}%</span>}
+      <div className="flex items-center gap-3 mb-3">
+        <span className="font-mono text-xs font-semibold text-foreground bg-muted/50 px-2.5 py-1 rounded-md">KW {week}</span>
+        {items.length > 0 && (
+          <span className={`font-mono text-xs ${pct === 100 ? 'text-runway-green' : 'text-muted-foreground'}`}>
+            {pct === 100 ? '✓ Fertig' : `${pct}%`}
+          </span>
+        )}
       </div>
-      <div className="space-y-1.5 mb-2">
+      <div className="space-y-2 mb-3">
         {items.map((item) => (
-          <label key={item.id} className="flex items-center gap-2 cursor-pointer group">
+          <label key={item.id} className="flex items-center gap-3 cursor-pointer group rounded-lg px-3 py-2 hover:bg-muted/30 transition-colors">
             <Checkbox checked={item.is_completed} disabled={!canEdit}
               onCheckedChange={(v) => toggleMutation.mutate({ id: item.id, completed: !!v })} />
-            <span className={`text-sm font-body ${item.is_completed ? "line-through text-muted-foreground" : ""}`}>{item.label}</span>
+            <span className={`text-sm font-body transition-all ${item.is_completed ? "line-through text-muted-foreground/50" : "text-foreground"}`}>
+              {item.label}
+            </span>
           </label>
         ))}
       </div>
       {canEdit && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 pl-3">
           <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="Neuer Eintrag..."
-            className="h-7 text-xs flex-1" onKeyDown={(e) => { if (e.key === "Enter" && newLabel.trim()) addMutation.mutate(); }} />
-          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => newLabel.trim() && addMutation.mutate()}>
-            <Plus className="h-3 w-3" />
+            className="h-9 text-sm flex-1 bg-muted/20 border-0" onKeyDown={(e) => { if (e.key === "Enter" && newLabel.trim()) addMutation.mutate(); }} />
+          <Button size="sm" variant="ghost" className="h-9 px-3 hover:bg-primary/10 hover:text-primary" onClick={() => newLabel.trim() && addMutation.mutate()}>
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
       )}
