@@ -278,15 +278,14 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                 <Input value={piece.title || ""} placeholder="Titel..." className="h-6 flex-1 border-0 bg-transparent text-sm px-1"
                   onChange={(e) => updatePiece(piece.id, { title: e.target.value })} disabled={!canEdit} />
 
-                {/* Script badge */}
-                {piece.has_script && (
-                  <Badge variant="outline" className="text-[10px] gap-0.5 h-5">
-                    <FileText className="h-2.5 w-2.5" /> Skript
-                  </Badge>
-                )}
-                <Checkbox checked={piece.has_script || false}
-                  onCheckedChange={(v) => updatePiece(piece.id, { has_script: !!v })}
-                  disabled={!canEdit} className="h-3.5 w-3.5" />
+                {/* Script badge — click to toggle */}
+                <button
+                  onClick={() => canEdit && updatePiece(piece.id, { has_script: !piece.has_script })}
+                  className={`inline-flex items-center gap-0.5 rounded border px-1.5 h-5 text-[10px] font-mono transition-colors ${
+                    piece.has_script ? "border-primary/30 text-primary bg-primary/10" : "border-border text-muted-foreground hover:text-foreground"
+                  }`}>
+                  <FileText className="h-2.5 w-2.5" /> Skript
+                </button>
 
                 {/* Assigned */}
                 <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
