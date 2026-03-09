@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Filter, Plus, FileText, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -278,14 +278,6 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                 <Input value={piece.title || ""} placeholder="Titel..." className="h-6 flex-1 border-0 bg-transparent text-sm px-1"
                   onChange={(e) => updatePiece(piece.id, { title: e.target.value })} disabled={!canEdit} />
 
-                {/* Script badge — click to toggle */}
-                <button
-                  onClick={() => canEdit && updatePiece(piece.id, { has_script: !piece.has_script })}
-                  className={`inline-flex items-center gap-0.5 rounded border px-1.5 h-5 text-[10px] font-mono transition-colors ${
-                    piece.has_script ? "border-primary/30 text-primary bg-primary/10" : "border-border text-muted-foreground hover:text-foreground"
-                  }`}>
-                  <FileText className="h-2.5 w-2.5" /> Skript
-                </button>
 
                 {/* Assigned */}
                 <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
