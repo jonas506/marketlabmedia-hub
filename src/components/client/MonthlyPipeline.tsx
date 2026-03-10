@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import CaptionStudio from "./CaptionStudio";
 
 interface ContentPiece {
   id: string;
@@ -131,6 +132,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkTitles, setBulkTitles] = useState("");
+  const [captionStudioOpen, setCaptionStudioOpen] = useState(false);
 
   const config = PIPELINE_CONFIG[activeType];
 
@@ -364,6 +366,17 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </div>
         )}
         <div className="flex-1" />
+        {canEdit && monthPieces.length > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs font-mono gap-1.5 mr-2"
+            onClick={() => setCaptionStudioOpen(true)}
+          >
+            <FileText className="h-3 w-3" />
+            Caption Studio
+          </Button>
+        )}
         <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
           {phaseSummary.map((p, i) => (
             <span key={p.key} className="flex items-center gap-1">
@@ -753,66 +766,29 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       )}
                     </motion.div>
                   )}
-                  {/* Transcript & Caption — shown in approved/handed_over phases */}
-                  {(activePhase === "approved" || activePhase === "handed_over") && (piece.caption || piece.transcript) && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-2 pl-9"
-                    >
-                      {piece.caption && (
-                        <div className="flex items-start gap-2">
-                          <FileText className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Caption</span>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(piece.caption || "");
-                                  toast.success("Caption kopiert!");
-                                }}
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                            </div>
-                            <p className="text-xs text-foreground/80 bg-muted/40 rounded-md p-2 whitespace-pre-wrap">{piece.caption}</p>
-                          </div>
-                        </div>
+                  {/* Caption indicator — compact, opens studio for editing */}
+                  {(activePhase === "approved" || activePhase === "handed_over") && (
+                    <div className="flex items-center gap-2 pl-9">
+                      {piece.caption ? (
+                        <>
+                          <FileText className="h-3 w-3 text-[hsl(var(--runway-green))] shrink-0" />
+                          <span className="text-[10px] font-mono text-[hsl(var(--runway-green))]">Caption vorhanden</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              navigator.clipboard.writeText(piece.caption || "");
+                              toast.success("Caption kopiert!");
+                            }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="text-[10px] font-mono text-muted-foreground/50">Keine Caption</span>
                       )}
-                      {piece.transcript && (
-                        <details className="group">
-                          <summary className="flex items-center gap-2 cursor-pointer text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground">
-                            <Sparkles className="h-3 w-3" />
-                            Transkript anzeigen
-                          </summary>
-                          <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-2 mt-1 whitespace-pre-wrap">{piece.transcript}</p>
-                        </details>
-                      )}
-                      {/* Manual trigger if no caption yet but has preview_link */}
-                    </motion.div>
-                  )}
-                  {(activePhase === "approved" || activePhase === "handed_over") && !piece.caption && piece.preview_link && piece.type !== "carousel" && canEdit && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="pl-9"
-                    >
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs gap-1.5 font-mono"
-                        onClick={() => {
-                          toast.info("🎙️ Transkription wird gestartet...");
-                          triggerTranscription(piece.id);
-                        }}
-                      >
-                        <Sparkles className="h-3 w-3" />
-                        Caption generieren
-                      </Button>
-                    </motion.div>
+                    </div>
                   )}
                 </motion.div>
               );
@@ -822,6 +798,14 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       )}
       </div>
       </div>
+
+      {/* Caption Studio Dialog */}
+      <CaptionStudio
+        open={captionStudioOpen}
+        onOpenChange={setCaptionStudioOpen}
+        pieces={monthPieces}
+        clientId={clientId}
+      />
     </motion.div>
   );
 };
