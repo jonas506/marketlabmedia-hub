@@ -24,6 +24,7 @@ const ClientDetail = () => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [copied, setCopied] = useState(false);
 
   const canEdit = role === "admin" || role === "head_of_content";
 
