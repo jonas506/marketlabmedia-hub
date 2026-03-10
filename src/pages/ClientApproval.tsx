@@ -95,14 +95,15 @@ const ClientApproval = () => {
   const handleAction = async (pieceId: string, action: "approve" | "reject", commentText?: string) => {
     setActionLoading(pieceId);
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const projectUrl = import.meta.env.VITE_SUPABASE_URL;
+      const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/client-approval`,
+        `${projectUrl}/functions/v1/client-approval`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            "apikey": apiKey,
           },
           body: JSON.stringify({ token, piece_id: pieceId, action, comment: commentText }),
         }
