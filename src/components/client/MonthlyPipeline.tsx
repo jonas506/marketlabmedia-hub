@@ -599,6 +599,29 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       )}
                     </motion.div>
                   )}
+                  {/* Client comment — shown when piece was rejected */}
+                  {piece.client_comment && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="flex items-start gap-2 pl-9"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5 text-[hsl(var(--runway-yellow))] shrink-0 mt-0.5" />
+                      <span className="text-xs text-[hsl(var(--runway-yellow))] font-body bg-[hsl(var(--runway-yellow))]/10 rounded px-2 py-1">
+                        Kundenfeedback: {piece.client_comment}
+                      </span>
+                      {canEdit && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-2 text-[10px] text-muted-foreground"
+                          onClick={() => updatePiece(piece.id, { client_comment: null })}
+                        >
+                          ✕
+                        </Button>
+                      )}
+                    </motion.div>
+                  )}
                 </motion.div>
               );
             })}
