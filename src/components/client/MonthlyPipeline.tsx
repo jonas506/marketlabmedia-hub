@@ -768,27 +768,34 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       )}
                     </motion.div>
                   )}
-                  {/* Caption indicator — compact, opens studio for editing */}
+                  {/* Caption/Transcript indicator — click opens detail dialog */}
                   {(activePhase === "approved" || activePhase === "handed_over") && (
                     <div className="flex items-center gap-2 pl-9">
-                      {piece.caption ? (
-                        <>
-                          <FileText className="h-3 w-3 text-[hsl(var(--runway-green))] shrink-0" />
-                          <span className="text-[10px] font-mono text-[hsl(var(--runway-green))]">Caption vorhanden</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-                            onClick={() => {
-                              navigator.clipboard.writeText(piece.caption || "");
-                              toast.success("Caption kopiert!");
-                            }}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </>
-                      ) : (
-                        <span className="text-[10px] font-mono text-muted-foreground/50">Keine Caption</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-[10px] font-mono gap-1.5 hover:bg-primary/10"
+                        onClick={() => setDetailPiece(piece)}
+                      >
+                        <FileText className="h-3 w-3" />
+                        {piece.caption ? (
+                          <span className="text-[hsl(var(--runway-green))]">Caption & Transkript öffnen</span>
+                        ) : (
+                          <span className="text-muted-foreground">Caption & Transkript erstellen</span>
+                        )}
+                      </Button>
+                      {piece.caption && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            navigator.clipboard.writeText(piece.caption || "");
+                            toast.success("Caption kopiert!");
+                          }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
                       )}
                     </div>
                   )}
