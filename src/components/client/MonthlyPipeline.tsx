@@ -202,9 +202,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         if (result.next === "handed_over") {
           fireConfetti();
           toast.success(`🚀 ${result.count} Pieces übergeben!`, { description: "Alles zählt jetzt ins Kontingent" });
-        } else if (result.next === "done") {
+        } else if (result.next === "approved") {
           fireSmallCelebration();
-          toast.success(`✅ ${result.count} Pieces fertig!`);
+          toast.success(`✅ ${result.count} Pieces freigegeben!`);
         } else {
           toast.success(`${result.count} Pieces → ${getPhaseLabel(result.next)}`);
         }
