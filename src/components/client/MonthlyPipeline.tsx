@@ -597,7 +597,24 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     )}
                   </div>
 
-                  {/* Deadline & Priority — shown in editing phase */}
+                  {/* Script text — shown in script phase for carousels */}
+                  {activePhase === "script" && activeType === "carousel" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="pl-9"
+                    >
+                      <Textarea
+                        value={piece.script_text || ""}
+                        placeholder="Skript hier reinschreiben..."
+                        className="text-sm border-0 bg-muted/30 rounded-md resize-y min-h-[60px]"
+                        rows={3}
+                        onChange={(e) => updatePiece(piece.id, { script_text: e.target.value })}
+                        disabled={!canEdit}
+                      />
+                    </motion.div>
+                  )}
+
                   {activePhase === "editing" && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
