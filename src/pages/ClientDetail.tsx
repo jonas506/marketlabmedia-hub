@@ -12,7 +12,8 @@ import ClientChecklists from "@/components/client/ClientChecklists";
 
 import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, CalendarDays } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
