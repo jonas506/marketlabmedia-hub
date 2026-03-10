@@ -33,6 +33,7 @@ interface ContentPiece {
   deadline?: string | null;
   priority?: string | null;
   client_comment?: string | null;
+  script_text?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
