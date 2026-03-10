@@ -262,7 +262,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   }));
 
   const totalPieces = monthPieces.length;
-  const handedOver = monthPieces.filter(c => c.phase === "handed_over" || c.phase === "done").length;
+  const handedOver = monthPieces.filter(c => c.phase === "handed_over" || c.phase === "approved").length;
   const progress = totalPieces > 0 ? Math.round((handedOver / totalPieces) * 100) : 0;
 
   return (
