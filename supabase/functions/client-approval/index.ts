@@ -46,13 +46,26 @@ Deno.serve(async (req) => {
         .eq("phase", "review")
         .order("created_at", { ascending: false });
 
-      return new Response(JSON.stringify({ client, pieces: pieces || [] }), {
+      // Fetch comments for all review pieces
+      const pieceIds = (pieces || []).map((p: any) => p.id);
+      let comments: any[] = [];
+      if (pieceIds.length > 0) {
+        const { data: commentsData } = await supabase
+          .from("content_piece_comments")
+          .select("id, content_piece_id, timestamp_seconds, comment_text, created_at")
+          .in("content_piece_id", pieceIds)
+          .order("created_at", { ascending: true });
+        comments = commentsData || [];
+      }
+
+      return new Response(JSON.stringify({ client, pieces: pieces || [], comments }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (req.method === "POST") {
-      const { token, piece_id, action, comment } = await req.json();
+      const body = await req.json();
+      const { token, piece_id, action, comment, timestamp_seconds, comments: timestampComments } = body;
 
       const { data: client } = await supabase
         .from("clients")
@@ -67,6 +80,58 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Handle adding a single timestamp comment
+      if (action === "add_comment") {
+        const { data: piece } = await supabase
+          .from("content_pieces")
+          .select("id, client_id, phase")
+          .eq("id", piece_id)
+          .single();
+
+        if (!piece || piece.client_id !== client.id || piece.phase !== "review") {
+          return new Response(JSON.stringify({ error: "Invalid piece" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const { data: newComment, error: insertError } = await supabase
+          .from("content_piece_comments")
+          .insert({
+            content_piece_id: piece_id,
+            client_id: client.id,
+            timestamp_seconds: timestamp_seconds ?? null,
+            comment_text: comment,
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          return new Response(JSON.stringify({ error: insertError.message }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        return new Response(JSON.stringify({ success: true, comment: newComment }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Handle deleting a comment
+      if (action === "delete_comment") {
+        await supabase
+          .from("content_piece_comments")
+          .delete()
+          .eq("id", body.comment_id)
+          .eq("client_id", client.id);
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Handle approve / reject
       const { data: piece } = await supabase
         .from("content_pieces")
         .select("id, client_id, phase, type")
@@ -85,11 +150,29 @@ Deno.serve(async (req) => {
           .from("content_pieces")
           .update({ phase: "approved", client_comment: null })
           .eq("id", piece_id);
+        // Clear comments on approve
+        await supabase
+          .from("content_piece_comments")
+          .delete()
+          .eq("content_piece_id", piece_id);
       } else if (action === "reject") {
         const backPhase = piece.type === "carousel" ? "script" : "editing";
+        // Build combined comment from timestamp comments
+        let combinedComment = comment || "";
+        if (timestampComments && timestampComments.length > 0) {
+          const parts = timestampComments.map((c: any) => {
+            if (c.timestamp_seconds != null) {
+              const mins = Math.floor(c.timestamp_seconds / 60);
+              const secs = Math.floor(c.timestamp_seconds % 60);
+              return `[${mins}:${String(secs).padStart(2, "0")}] ${c.comment_text}`;
+            }
+            return c.comment_text;
+          });
+          combinedComment = parts.join("\n");
+        }
         await supabase
           .from("content_pieces")
-          .update({ phase: backPhase, client_comment: comment || "Änderung gewünscht" })
+          .update({ phase: backPhase, client_comment: combinedComment || "Änderung gewünscht" })
           .eq("id", piece_id);
       }
 
