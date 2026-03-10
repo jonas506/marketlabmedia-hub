@@ -36,18 +36,21 @@ const TYPE_LABELS: Record<string, string> = {
   reel: "Reel",
   story: "Story",
   carousel: "Karussell",
+  ad: "Ad",
 };
 
 const TYPE_COLORS: Record<string, string> = {
   reel: "from-blue-500/20 to-blue-600/10 text-blue-400 border-blue-500/20",
   story: "from-purple-500/20 to-purple-600/10 text-purple-400 border-purple-500/20",
   carousel: "from-amber-500/20 to-amber-600/10 text-amber-400 border-amber-500/20",
+  ad: "from-violet-500/20 to-violet-600/10 text-violet-400 border-violet-500/20",
 };
 
 const TYPE_DOT: Record<string, string> = {
   reel: "bg-blue-400",
   story: "bg-purple-400",
   carousel: "bg-amber-400",
+  ad: "bg-violet-400",
 };
 
 const formatTimestamp = (seconds: number): string => {
@@ -364,7 +367,7 @@ const ClientApproval = () => {
                 <div className="flex items-center gap-2.5">
                   <div className={`w-2 h-2 rounded-full ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
                   <span className={`text-xs font-semibold uppercase tracking-wider ${
-                    currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : "text-amber-400"
+                    currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : currentPiece.type === "ad" ? "text-violet-400" : "text-amber-400"
                   }`}>
                     {TYPE_LABELS[currentPiece.type] || currentPiece.type}
                   </span>
