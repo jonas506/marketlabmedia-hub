@@ -366,6 +366,7 @@ export type Database = {
           transcript: string | null
           type: string
           updated_at: string | null
+          video_path: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -387,6 +388,7 @@ export type Database = {
           transcript?: string | null
           type: string
           updated_at?: string | null
+          video_path?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -408,6 +410,7 @@ export type Database = {
           transcript?: string | null
           type?: string
           updated_at?: string | null
+          video_path?: string | null
         }
         Relationships: [
           {
