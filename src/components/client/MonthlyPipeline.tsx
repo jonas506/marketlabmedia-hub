@@ -134,6 +134,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkTitles, setBulkTitles] = useState("");
   const [captionStudioOpen, setCaptionStudioOpen] = useState(false);
+  const [detailPiece, setDetailPiece] = useState<ContentPiece | null>(null);
 
   const config = PIPELINE_CONFIG[activeType];
 
