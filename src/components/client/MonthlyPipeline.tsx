@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import CaptionStudio from "./CaptionStudio";
 
 interface ContentPiece {
   id: string;
