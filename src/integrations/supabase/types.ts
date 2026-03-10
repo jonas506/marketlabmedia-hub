@@ -303,6 +303,48 @@ export type Database = {
           },
         ]
       }
+      content_piece_comments: {
+        Row: {
+          client_id: string
+          comment_text: string
+          content_piece_id: string
+          created_at: string
+          id: string
+          timestamp_seconds: number | null
+        }
+        Insert: {
+          client_id: string
+          comment_text: string
+          content_piece_id: string
+          created_at?: string
+          id?: string
+          timestamp_seconds?: number | null
+        }
+        Update: {
+          client_id?: string
+          comment_text?: string
+          content_piece_id?: string
+          created_at?: string
+          id?: string
+          timestamp_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_piece_comments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_piece_comments_content_piece_id_fkey"
+            columns: ["content_piece_id"]
+            isOneToOne: false
+            referencedRelation: "content_pieces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_pieces: {
         Row: {
           assigned_to: string | null
