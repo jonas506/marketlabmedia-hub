@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNewClientChecklists } from "@/hooks/useChecklistTriggers";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -128,7 +129,7 @@ const CreateClientDialog = () => {
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!profile) throw new Error("Kein Profil");
-      const { error } = await supabase.from("clients").insert({
+      const { data, error } = await supabase.from("clients").insert({
         name: profile.name,
         summary: profile.summary,
         industry: profile.industry,
@@ -139,8 +140,10 @@ const CreateClientDialog = () => {
         monthly_reels: reels,
         monthly_carousels: carousels,
         monthly_stories: stories,
-      });
+      }).select("id").single();
       if (error) throw error;
+      // Trigger new_client SOP checklists
+      await createNewClientChecklists(data.id);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["clients-dashboard"] });

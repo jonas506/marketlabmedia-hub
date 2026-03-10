@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ClientDetail from "./pages/ClientDetail";
 import TeamOverview from "./pages/TeamOverview";
 import Checklists from "./pages/Checklists";
+import SOPs from "./pages/SOPs";
 
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
             <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
             <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
+            <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

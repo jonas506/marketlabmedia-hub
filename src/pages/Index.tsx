@@ -5,11 +5,13 @@ import CreateClientDialog from "@/components/CreateClientDialog";
 import MyTasks from "@/components/MyTasks";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
 
 const Dashboard = () => {
   const { data: clients, isLoading } = useClients();
   const { role } = useAuth();
   const canCreate = role === "admin" || role === "head_of_content";
+  useMonthlyChecklistTrigger();
 
   return (
     <AppLayout>

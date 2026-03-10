@@ -55,6 +55,98 @@ export type Database = {
           },
         ]
       }
+      checklist_steps: {
+        Row: {
+          assigned_to: string | null
+          checklist_id: string
+          completed_at: string | null
+          description: string | null
+          id: string
+          is_completed: boolean
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          checklist_id: string
+          completed_at?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          assigned_to?: string | null
+          checklist_id?: string
+          completed_at?: string | null
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_steps_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklists: {
+        Row: {
+          category: string | null
+          client_id: string
+          created_at: string
+          id: string
+          month: number | null
+          name: string
+          status: string
+          template_id: string | null
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          month?: number | null
+          name: string
+          status?: string
+          template_id?: string | null
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          month?: number | null
+          name?: string
+          status?: string
+          template_id?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklists_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklists_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "sop_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           additional_products: string[] | null
@@ -382,6 +474,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sop_template_steps: {
+        Row: {
+          created_at: string
+          default_role: string | null
+          description: string | null
+          id: string
+          sort_order: number
+          template_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          default_role?: string | null
+          description?: string | null
+          id?: string
+          sort_order?: number
+          template_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          default_role?: string | null
+          description?: string | null
+          id?: string
+          sort_order?: number
+          template_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sop_template_steps_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "sop_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sop_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          trigger_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          trigger_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          trigger_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       tasks: {
         Row: {

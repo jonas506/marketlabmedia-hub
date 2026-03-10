@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Scissors, ChevronRight } from "lucide-react";
+import { CalendarIcon, Scissors, ChevronRight, ClipboardCheck } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,9 +33,22 @@ interface EditingPiece {
   deadline: string | null;
 }
 
+interface ChecklistStepItem {
+  id: string;
+  checklist_id: string;
+  title: string;
+  is_completed: boolean;
+  assigned_to: string | null;
+  checklist_name: string;
+  client_id: string;
+}
+
 interface Client { id: string; name: string; }
 
-type UnifiedItem = { kind: "task"; data: Task } | { kind: "editing"; data: EditingPiece };
+type UnifiedItem =
+  | { kind: "task"; data: Task }
+  | { kind: "editing"; data: EditingPiece }
+  | { kind: "sop"; data: ChecklistStepItem };
 
 const TAG_COLORS: Record<string, string> = {
   skripte: "bg-blue-500/15 text-blue-500",
@@ -79,6 +92,37 @@ const MyTasks = () => {
     enabled: !!user?.id,
   });
 
+  const { data: checklistSteps = [] } = useQuery({
+    queryKey: ["my-checklist-steps", user?.id],
+    queryFn: async () => {
+      // Get open steps assigned to user
+      const { data: steps, error } = await supabase
+        .from("checklist_steps")
+        .select("id, checklist_id, title, is_completed, assigned_to")
+        .eq("assigned_to", user!.id)
+        .eq("is_completed", false);
+      if (error) throw error;
+      if (!steps || steps.length === 0) return [];
+
+      // Get checklist info for these steps
+      const checklistIds = [...new Set(steps.map((s: any) => s.checklist_id))];
+      const { data: checklists } = await supabase
+        .from("checklists")
+        .select("id, name, client_id")
+        .in("id", checklistIds);
+
+      const clMap: Record<string, { name: string; client_id: string }> = {};
+      (checklists || []).forEach((cl: any) => { clMap[cl.id] = { name: cl.name, client_id: cl.client_id }; });
+
+      return steps.map((s: any) => ({
+        ...s,
+        checklist_name: clMap[s.checklist_id]?.name || "",
+        client_id: clMap[s.checklist_id]?.client_id || "",
+      })) as ChecklistStepItem[];
+    },
+    enabled: !!user?.id,
+  });
+
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-names"],
     queryFn: async () => {
@@ -97,6 +141,7 @@ const MyTasks = () => {
   const grouped = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
     const editingItems: UnifiedItem[] = editingPieces.map((p) => ({ kind: "editing", data: p }));
+    const sopItems: UnifiedItem[] = checklistSteps.map((s) => ({ kind: "sop", data: s }));
     const taskItems: UnifiedItem[] = tasks.map((t) => ({ kind: "task", data: t }));
     taskItems.sort((a, b) => {
       const aT = a.data as Task, bT = b.data as Task;
@@ -108,18 +153,16 @@ const MyTasks = () => {
       if (bT.deadline) return 1;
       return 0;
     });
-    const allItems = [...editingItems, ...taskItems];
+    const allItems = [...editingItems, ...sopItems, ...taskItems];
     const groups: Record<string, UnifiedItem[]> = {};
     allItems.forEach((item) => {
-      const cid = item.data.client_id;
+      const cid = item.kind === "sop" ? (item.data as ChecklistStepItem).client_id : item.data.client_id;
+      if (!cid) return;
       if (!groups[cid]) groups[cid] = [];
       groups[cid].push(item);
     });
-    Object.values(groups).forEach((items) => {
-      items.sort((a, b) => (a.kind === "editing" && b.kind !== "editing") ? -1 : (a.kind !== "editing" && b.kind === "editing") ? 1 : 0);
-    });
     return groups;
-  }, [tasks, editingPieces]);
+  }, [tasks, editingPieces, checklistSteps]);
 
   const completeTask = async (taskId: string, clientId: string) => {
     await supabase.from("tasks" as any).update({ is_completed: true, status: "done" } as any).eq("id", taskId);
@@ -127,7 +170,12 @@ const MyTasks = () => {
     qc.invalidateQueries({ queryKey: ["tasks", clientId] });
   };
 
-  const totalCount = tasks.length + editingPieces.length;
+  const completeChecklistStep = async (stepId: string) => {
+    await supabase.from("checklist_steps").update({ is_completed: true, completed_at: new Date().toISOString() }).eq("id", stepId);
+    qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
+  };
+
+  const totalCount = tasks.length + editingPieces.length + checklistSteps.length;
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -175,6 +223,31 @@ const MyTasks = () => {
                           </span>
                         )}
                       </div>
+                    );
+                  }
+
+                  if (item.kind === "sop") {
+                    const step = item.data as ChecklistStepItem;
+                    return (
+                      <Link
+                        key={`sop-${step.id}`}
+                        to={`/client/${step.client_id}`}
+                        className="monday-row flex items-center gap-3 px-4 py-2 pl-10 hover:bg-surface-hover transition-colors"
+                      >
+                        <Checkbox
+                          checked={false}
+                          onCheckedChange={(e) => {
+                            e && completeChecklistStep(step.id);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="shrink-0"
+                        />
+                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-emerald-500/15 text-emerald-400 shrink-0">
+                          SOP
+                        </Badge>
+                        <span className="flex-1 text-sm font-body truncate">{step.title}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono truncate max-w-32">{step.checklist_name}</span>
+                      </Link>
                     );
                   }
 
