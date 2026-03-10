@@ -30,6 +30,7 @@ interface ContentPiece {
   preview_link?: string | null;
   deadline?: string | null;
   priority?: string | null;
+  client_comment?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
