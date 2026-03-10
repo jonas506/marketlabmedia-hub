@@ -54,7 +54,8 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     phases: [
       { key: "filmed", label: "Gedreht", emoji: "📹" },
       { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "done", label: "Fertig", emoji: "✅" },
+      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
+      { key: "approved", label: "Freigegeben", emoji: "✅" },
       { key: "handed_over", label: "Übergeben", emoji: "🚀" },
     ],
     addLabel: "+ Reel",
@@ -64,6 +65,7 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     emoji: "🖼️",
     phases: [
       { key: "script", label: "Skript", emoji: "📝" },
+      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
       { key: "approved", label: "Freigegeben", emoji: "✅" },
       { key: "handed_over", label: "Übergeben", emoji: "🚀" },
     ],
@@ -75,7 +77,8 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     phases: [
       { key: "filmed", label: "Gedreht", emoji: "📹" },
       { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "done", label: "Fertig", emoji: "✅" },
+      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
+      { key: "approved", label: "Freigegeben", emoji: "✅" },
       { key: "handed_over", label: "Übergeben", emoji: "🚀" },
     ],
     addLabel: "+ Story",
