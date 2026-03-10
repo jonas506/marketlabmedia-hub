@@ -57,23 +57,32 @@ const ClientApproval = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    if (!token) return;
+    if (!token || token === ":token") {
+      setError("Kein gültiger Token");
+      setLoading(false);
+      return;
+    }
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/client-approval?token=${token}`,
-        {
-          headers: {
-            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-        }
+      const res = await supabase.functions.invoke("client-approval", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        body: null,
+      });
+      
+      // Since functions.invoke doesn't support query params for GET well,
+      // use direct fetch instead
+      const projectUrl = import.meta.env.VITE_SUPABASE_URL;
+      const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const response = await fetch(
+        `${projectUrl}/functions/v1/client-approval?token=${encodeURIComponent(token)}`,
+        { headers: { "apikey": apiKey } }
       );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Fehler beim Laden");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Fehler beim Laden");
       setClient(data.client);
       setPieces(data.pieces);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Unbekannter Fehler");
     } finally {
       setLoading(false);
     }
