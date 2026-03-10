@@ -435,9 +435,49 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </AnimatePresence>
 
         {canEdit && (
-          <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-            <Plus className="h-4 w-4" /> {config.addLabel} in {getPhaseLabel(activePhase)}
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
+              <Plus className="h-4 w-4" /> {config.addLabel}
+            </Button>
+            <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="icon" className="h-9 w-9" title="Mehrere auf einmal erstellen">
+                  <ListPlus className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <span>{config.emoji}</span> Mehrere {config.label} erstellen
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Ein Titel pro Zeile. Kopiere z.B. die Titel aus deinem Google Sheet.
+                  </p>
+                  <Textarea
+                    placeholder={"Karussell 1: Thema A\nKarussell 2: Thema B\nKarussell 3: Thema C\n..."}
+                    value={bulkTitles}
+                    onChange={(e) => setBulkTitles(e.target.value)}
+                    rows={8}
+                    className="font-mono text-sm"
+                  />
+                  {bulkTitles.trim() && (
+                    <p className="text-xs text-muted-foreground font-mono">
+                      {bulkTitles.split("\n").filter(l => l.trim()).length} Pieces werden erstellt → Phase „{getPhaseLabel(config.phases[0].key)}"
+                    </p>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setBulkOpen(false)}>Abbrechen</Button>
+                  <Button onClick={handleBulkCreate} disabled={bulkAddPieces.isPending} className="gap-2">
+                    <ListPlus className="h-4 w-4" />
+                    {bulkAddPieces.isPending ? "Erstelle..." : "Alle erstellen"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
 
