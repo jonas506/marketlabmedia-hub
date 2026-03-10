@@ -815,6 +815,14 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         pieces={monthPieces}
         clientId={clientId}
       />
+
+      {/* Piece Detail Dialog */}
+      <PieceDetailDialog
+        open={!!detailPiece}
+        onOpenChange={(open) => !open && setDetailPiece(null)}
+        piece={detailPiece ? { ...detailPiece, client_id: clientId } : null}
+        clientId={clientId}
+      />
     </motion.div>
   );
 };
