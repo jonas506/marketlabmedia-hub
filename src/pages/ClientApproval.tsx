@@ -280,13 +280,45 @@ const ClientApproval = () => {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-5 py-6">
         {/* Title section */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1">Content-Freigabe</h1>
-          <p className="text-white/40 text-sm">
-            {pieces.length > 0
-              ? `${pieces.length} ${pieces.length === 1 ? "Piece" : "Pieces"} warten auf deine Freigabe`
-              : ""}
-          </p>
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Content-Freigabe</h1>
+            <p className="text-white/40 text-sm">
+              {pieces.length > 0
+                ? `${pieces.length} ${pieces.length === 1 ? "Piece" : "Pieces"} warten auf deine Freigabe`
+                : ""}
+            </p>
+          </div>
+          {pieces.length > 1 && (
+            <Button
+              onClick={async () => {
+                setBulkApproving(true);
+                try {
+                  for (const piece of [...pieces]) {
+                    await fetch(`${projectUrl}/functions/v1/client-approval`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json", apikey: apiKey },
+                      body: JSON.stringify({ token, piece_id: piece.id, action: "approve" }),
+                    });
+                  }
+                  setApprovedCount((c) => c + pieces.length);
+                  setPieces([]);
+                  setComments([]);
+                  confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ["#0083F7", "#21089B", "#10B981", "#FAFBFF"] });
+                  toast.success(`Alle ${pieces.length} Pieces freigegeben! 🎉`);
+                } catch {
+                  toast.error("Fehler bei der Freigabe");
+                } finally {
+                  setBulkApproving(false);
+                }
+              }}
+              disabled={bulkApproving}
+              className="gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold h-10 rounded-xl shadow-lg shadow-emerald-500/20 shrink-0"
+            >
+              {bulkApproving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}
+              Alle freigeben
+            </Button>
+          )}
         </div>
 
         {pieces.length === 0 ? (
