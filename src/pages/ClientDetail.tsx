@@ -133,6 +133,11 @@ const ClientDetail = () => {
         <div className="mt-6">
           <TaskList clientId={client.id} canEdit={canEdit} />
         </div>
+
+        {/* Checklisten */}
+        <div className="mt-6">
+          <ClientChecklists clientId={client.id} canEdit={canEdit} />
+        </div>
       </motion.div>
     </AppLayout>
   );
