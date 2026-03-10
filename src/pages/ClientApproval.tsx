@@ -63,14 +63,6 @@ const ClientApproval = () => {
       return;
     }
     try {
-      const res = await supabase.functions.invoke("client-approval", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        body: null,
-      });
-      
-      // Since functions.invoke doesn't support query params for GET well,
-      // use direct fetch instead
       const projectUrl = import.meta.env.VITE_SUPABASE_URL;
       const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const response = await fetch(
