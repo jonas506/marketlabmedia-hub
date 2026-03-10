@@ -71,8 +71,9 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
       <div className="flex gap-6">
         <div className="flex-1 space-y-4">
           {types.map((t) => {
-            const pct = t.target > 0 ? Math.min((t.current / t.target) * 100, 100) : 0;
-            const isComplete = t.current >= t.target && t.target > 0;
+            const isAd = t.type === "ad";
+            const pct = t.target > 0 ? Math.min((t.current / t.target) * 100, 100) : isAd ? 100 : 0;
+            const isComplete = t.target > 0 && t.current >= t.target;
             return (
               <div key={t.type} className="flex items-center gap-3">
                 <span className="text-base w-6">{t.emoji}</span>
@@ -81,7 +82,9 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                     <motion.div
                       className={`h-full rounded-full ${
-                        isComplete
+                        isAd
+                          ? "bg-gradient-to-r from-violet-500 to-violet-400"
+                          : isComplete
                           ? "bg-gradient-to-r from-[hsl(var(--runway-green))] to-[hsl(145,63%,50%)]"
                           : "bg-gradient-to-r from-primary to-primary/70"
                       }`}
@@ -96,10 +99,10 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   initial={{ scale: 1.3 }}
                   animate={{ scale: 1 }}
                   className={`font-mono text-sm font-bold w-14 text-right ${
-                    isComplete ? "text-[hsl(var(--runway-green))]" : "text-foreground"
+                    isAd ? "text-violet-400" : isComplete ? "text-[hsl(var(--runway-green))]" : "text-foreground"
                   }`}
                 >
-                  {t.current}/{t.target}
+                  {isAd ? t.current : `${t.current}/${t.target}`}
                 </motion.span>
                 {isComplete && <span className="text-sm">✅</span>}
               </div>
