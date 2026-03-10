@@ -184,6 +184,23 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const getPhaseLabel = useCallback((key: string) => config.phases.find(p => p.key === key)?.label ?? key, [config]);
 
+  // Trigger transcription for a piece
+  const triggerTranscription = useCallback(async (pieceId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
+        body: { piece_id: pieceId },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+        toast.success("🎙️ Transkript & Caption erstellt!", { description: "Wurde automatisch generiert" });
+      }
+    } catch (err: any) {
+      console.error("Transcription error:", err);
+      toast.error("Transkription fehlgeschlagen", { description: err.message || "Bitte manuell versuchen" });
+    }
+  }, [qc, clientId]);
+
   // Move single piece
   const movePiece = useCallback(async (pieceId: string, nextPhase: string) => {
     await supabase.from("content_pieces").update({ phase: nextPhase }).eq("id", pieceId);
@@ -197,6 +214,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     } else if (nextPhase === "approved") {
       fireSmallCelebration();
       toast.success(`✅ Freigegeben!`, { description: "Kunde hat freigegeben" });
+      // Auto-trigger transcription for video types with preview link
+      const piece = monthPieces.find(p => p.id === pieceId);
+      if (piece?.preview_link && piece.type !== "carousel") {
+        toast.info("🎙️ Transkription wird gestartet...", { description: "Caption wird automatisch generiert" });
+        triggerTranscription(pieceId);
+      }
     } else if (nextPhase === "review") {
       toast.success(`👁️ Zur Freigabe`, { description: "Warte auf Kunden-Freigabe" });
     } else {
@@ -204,7 +227,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     }
     
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
-  }, [qc, clientId, config, getPhaseLabel]);
+  }, [qc, clientId, config, getPhaseLabel, monthPieces, triggerTranscription]);
 
   // Bulk move
   const bulkMove = useMutation({
