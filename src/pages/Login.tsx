@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,13 +77,33 @@ const Login = () => {
               variant="outline"
               className="w-full font-mono text-xs text-muted-foreground"
               disabled={loading}
-              onClick={() => {
-                setEmail("jonas@marketlab-media.de");
-                setPassword("");
-                setTimeout(() => {
-                  const form = document.querySelector("form");
-                  form?.requestSubmit();
-                }, 100);
+              onClick={async () => {
+                setLoading(true);
+                setError("");
+                try {
+                  const { data, error: fnError } = await supabase.functions.invoke("dev-login", {
+                    body: { email: "jonas@marketlab-media.de" },
+                  });
+                  if (fnError || data?.error) {
+                    setError(fnError?.message || data?.error || "Dev-Login fehlgeschlagen");
+                    setLoading(false);
+                    return;
+                  }
+                  const { error: otpError } = await supabase.auth.verifyOtp({
+                    email: "jonas@marketlab-media.de",
+                    token: data.token_hash,
+                    type: "magiclink",
+                  });
+                  if (otpError) {
+                    setError(otpError.message);
+                    setLoading(false);
+                  } else {
+                    navigate("/", { replace: true });
+                  }
+                } catch (e: any) {
+                  setError(e.message);
+                  setLoading(false);
+                }
               }}
             >
               DEV LOGIN
