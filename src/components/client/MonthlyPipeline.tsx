@@ -18,6 +18,7 @@ import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import CaptionStudio from "./CaptionStudio";
+import PieceDetailDialog from "./PieceDetailDialog";
 
 interface ContentPiece {
   id: string;
