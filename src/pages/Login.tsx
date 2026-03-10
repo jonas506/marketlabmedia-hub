@@ -69,6 +69,25 @@ const Login = () => {
           <Button type="submit" className="w-full font-mono text-sm" disabled={loading}>
             {loading ? "ANMELDEN..." : "ANMELDEN"}
           </Button>
+
+          {import.meta.env.DEV && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full font-mono text-xs text-muted-foreground"
+              disabled={loading}
+              onClick={() => {
+                setEmail("dev@marketlab.de");
+                setPassword("dev123456");
+                setTimeout(() => {
+                  const form = document.querySelector("form");
+                  form?.requestSubmit();
+                }, 100);
+              }}
+            >
+              DEV LOGIN
+            </Button>
+          )}
         </form>
       </div>
     </div>
