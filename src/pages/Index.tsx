@@ -11,6 +11,7 @@ const Dashboard = () => {
   const { data: clients, isLoading } = useClients();
   const { role } = useAuth();
   const canCreate = role === "admin" || role === "head_of_content";
+  useMonthlyChecklistTrigger();
 
   return (
     <AppLayout>
