@@ -1,0 +1,1 @@
+ALTER TABLE public.content_pieces ADD COLUMN script_text text;
