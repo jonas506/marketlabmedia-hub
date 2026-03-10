@@ -77,8 +77,8 @@ const Login = () => {
               className="w-full font-mono text-xs text-muted-foreground"
               disabled={loading}
               onClick={() => {
-                setEmail("dev@marketlab.de");
-                setPassword("dev123456");
+                setEmail("jonas@marketlab-media.de");
+                setPassword("");
                 setTimeout(() => {
                   const form = document.querySelector("form");
                   form?.requestSubmit();
