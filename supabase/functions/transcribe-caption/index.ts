@@ -2,10 +2,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function getClient() {
+function getClient() {
   return createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -53,6 +53,62 @@ async function getClientContext(supabase: any, clientId: string): Promise<string
   return `Kunde: ${client.name}. Branche: ${client.industry || "k.A."}. Tonalität: ${client.tonality || "professionell"}. Zielgruppe: ${client.target_audience || "k.A."}. Themen: ${client.content_topics || "k.A."}. USPs: ${client.usps || "k.A."}.`;
 }
 
+// ── ElevenLabs Speech-to-Text ──
+async function transcribeWithElevenLabs(audioBytes: Uint8Array, fileName: string): Promise<string> {
+  const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
+  if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured. Bitte ElevenLabs verbinden.");
+
+  const formData = new FormData();
+  const blob = new Blob([audioBytes], { type: "video/mp4" });
+  formData.append("file", blob, fileName);
+  formData.append("model_id", "scribe_v1");
+  formData.append("language_code", "deu");
+
+  const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    method: "POST",
+    headers: {
+      "xi-api-key": ELEVENLABS_API_KEY,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    if (response.status === 401) {
+      throw new Error("ElevenLabs: Zugang verweigert. Bitte prüfe ob dein ElevenLabs-Plan aktiv ist (Free Tier kann blockiert sein).");
+    }
+    throw new Error(`ElevenLabs STT failed [${response.status}]: ${errText}`);
+  }
+
+  const data = await response.json();
+  
+  // Build transcript with timestamps from words
+  if (data.words && data.words.length > 0) {
+    let transcript = "";
+    let currentTimestamp = -1;
+    
+    for (const word of data.words) {
+      const seconds = Math.floor(word.start_time || 0);
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      
+      // Add timestamp every ~10 seconds
+      if (seconds - currentTimestamp >= 10 || currentTimestamp === -1) {
+        if (transcript) transcript += "\n\n";
+        transcript += `[${timeStr}] `;
+        currentTimestamp = seconds;
+      }
+      
+      transcript += (word.text || "") + " ";
+    }
+    
+    return transcript.trim();
+  }
+  
+  return data.text || "";
+}
+
 function buildCaptionSystemPrompt(clientContext: string, customPrompt?: string): string {
   const base = `Du bist ein Social Media Experte. Erstelle eine Instagram/TikTok Caption für ein Content Piece.
 Die Caption soll:
@@ -70,20 +126,6 @@ ${clientContext}`;
     return base + `\n\nZusätzliche Anweisung vom User:\n${customPrompt}\n\nAntworte NUR mit der fertigen Caption, keine Erklärungen.`;
   }
   return base + `\n\nAntworte NUR mit der fertigen Caption, keine Erklärungen.`;
-}
-
-function buildTranscriptSystemPrompt(clientContext: string): string {
-  return `Du bist ein Content-Analyst. Erstelle basierend auf dem Titel und dem Skript-Text ein detailliertes Transkript/Sprechertext für ein Social Media Video.
-Das Transkript soll:
-- Den natürlichen Sprechtext des Videos wiedergeben
-- Zur Tonalität des Kunden passen
-- Klar strukturiert und leicht lesbar sein
-- Zeitmarken wie [00:00] am Anfang jedes Abschnitts enthalten
-- Realistisch und authentisch klingen
-
-${clientContext}
-
-Antworte NUR mit dem Transkript, keine Erklärungen.`;
 }
 
 function buildRefineSystemPrompt(clientContext: string): string {
@@ -105,9 +147,60 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const supabase = await getClient();
+    const supabase = getClient();
 
-    // ── Single generate (caption + transcript) ──
+    // ── Transcribe video via ElevenLabs ──
+    if (action === "transcribe") {
+      const { piece_id } = body;
+      if (!piece_id) {
+        return new Response(JSON.stringify({ error: "piece_id required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: piece } = await supabase
+        .from("content_pieces")
+        .select("id, client_id, video_path")
+        .eq("id", piece_id)
+        .single();
+
+      if (!piece) {
+        return new Response(JSON.stringify({ error: "Piece not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!piece.video_path) {
+        return new Response(JSON.stringify({ error: "Kein Video hochgeladen. Bitte lade zuerst ein Video hoch." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Download video from storage
+      const { data: fileData, error: dlError } = await supabase.storage
+        .from("content-videos")
+        .download(piece.video_path);
+
+      if (dlError || !fileData) {
+        return new Response(JSON.stringify({ error: "Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt") }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const arrayBuf = await fileData.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuf);
+      const fileName = piece.video_path.split("/").pop() || "video.mp4";
+
+      const transcript = await transcribeWithElevenLabs(bytes, fileName);
+
+      await supabase.from("content_pieces").update({ transcript }).eq("id", piece_id);
+
+      return new Response(JSON.stringify({ success: true, transcript }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Generate caption ──
     if (action === "generate") {
       const { piece_id, custom_prompt } = body;
       if (!piece_id) {
@@ -131,23 +224,13 @@ Deno.serve(async (req) => {
       const clientContext = await getClientContext(supabase, piece.client_id);
       let userPrompt = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.`;
       if (piece.script_text) userPrompt += `\n\nSkript:\n${piece.script_text}`;
-
-      // Generate transcript if not exists (for video types)
-      let transcript = piece.transcript || "";
-      if (!transcript && piece.type !== "carousel") {
-        const transcriptPrompt = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.`;
-        const transcriptExtra = piece.script_text ? `\n\nSkript/Notizen:\n${piece.script_text}` : "";
-        transcript = await callAI(LOVABLE_API_KEY, buildTranscriptSystemPrompt(clientContext), transcriptPrompt + transcriptExtra);
-      }
-
-      // Use transcript in caption generation if available
-      if (transcript) userPrompt += `\n\nTranskript:\n${transcript}`;
+      if (piece.transcript) userPrompt += `\n\nEchtes Transkript des Videos:\n${piece.transcript}`;
 
       const caption = await callAI(LOVABLE_API_KEY, buildCaptionSystemPrompt(clientContext, custom_prompt), userPrompt);
 
-      await supabase.from("content_pieces").update({ caption, transcript }).eq("id", piece_id);
+      await supabase.from("content_pieces").update({ caption }).eq("id", piece_id);
 
-      return new Response(JSON.stringify({ success: true, caption, transcript }), {
+      return new Response(JSON.stringify({ success: true, caption }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -174,28 +257,20 @@ Deno.serve(async (req) => {
 
       const clientContext = await getClientContext(supabase, pieces[0].client_id);
       const captionSystemPrompt = buildCaptionSystemPrompt(clientContext);
-      const transcriptSystemPrompt = buildTranscriptSystemPrompt(clientContext);
 
-      const results: { id: string; caption: string; transcript: string; error?: string }[] = [];
+      const results: { id: string; caption: string; error?: string }[] = [];
 
       for (const piece of pieces) {
         try {
-          // Generate transcript first if needed
-          let transcript = piece.transcript || "";
-          if (!transcript && piece.type !== "carousel") {
-            const tp = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.${piece.script_text ? `\n\nSkript:\n${piece.script_text}` : ""}`;
-            transcript = await callAI(LOVABLE_API_KEY, transcriptSystemPrompt, tp);
-          }
-
           let userPrompt = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.`;
           if (piece.script_text) userPrompt += `\n\nSkript:\n${piece.script_text}`;
-          if (transcript) userPrompt += `\n\nTranskript:\n${transcript}`;
+          if (piece.transcript) userPrompt += `\n\nEchtes Transkript des Videos:\n${piece.transcript}`;
 
           const caption = await callAI(LOVABLE_API_KEY, captionSystemPrompt, userPrompt);
-          await supabase.from("content_pieces").update({ caption, transcript }).eq("id", piece.id);
-          results.push({ id: piece.id, caption, transcript });
+          await supabase.from("content_pieces").update({ caption }).eq("id", piece.id);
+          results.push({ id: piece.id, caption });
         } catch (err) {
-          results.push({ id: piece.id, caption: "", transcript: "", error: err.message });
+          results.push({ id: piece.id, caption: "", error: err.message });
         }
       }
 

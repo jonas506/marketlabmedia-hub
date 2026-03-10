@@ -38,6 +38,7 @@ interface ContentPiece {
   script_text?: string | null;
   transcript?: string | null;
   caption?: string | null;
+  video_path?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
