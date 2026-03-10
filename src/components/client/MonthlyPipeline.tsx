@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,6 +34,8 @@ interface ContentPiece {
   priority?: string | null;
   client_comment?: string | null;
   script_text?: string | null;
+  transcript?: string | null;
+  caption?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
@@ -182,6 +184,23 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const getPhaseLabel = useCallback((key: string) => config.phases.find(p => p.key === key)?.label ?? key, [config]);
 
+  // Trigger transcription for a piece
+  const triggerTranscription = useCallback(async (pieceId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
+        body: { piece_id: pieceId },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+        toast.success("🎙️ Transkript & Caption erstellt!", { description: "Wurde automatisch generiert" });
+      }
+    } catch (err: any) {
+      console.error("Transcription error:", err);
+      toast.error("Transkription fehlgeschlagen", { description: err.message || "Bitte manuell versuchen" });
+    }
+  }, [qc, clientId]);
+
   // Move single piece
   const movePiece = useCallback(async (pieceId: string, nextPhase: string) => {
     await supabase.from("content_pieces").update({ phase: nextPhase }).eq("id", pieceId);
@@ -195,6 +214,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     } else if (nextPhase === "approved") {
       fireSmallCelebration();
       toast.success(`✅ Freigegeben!`, { description: "Kunde hat freigegeben" });
+      // Auto-trigger transcription for video types with preview link
+      const piece = monthPieces.find(p => p.id === pieceId);
+      if (piece?.preview_link && piece.type !== "carousel") {
+        toast.info("🎙️ Transkription wird gestartet...", { description: "Caption wird automatisch generiert" });
+        triggerTranscription(pieceId);
+      }
     } else if (nextPhase === "review") {
       toast.success(`👁️ Zur Freigabe`, { description: "Warte auf Kunden-Freigabe" });
     } else {
@@ -202,7 +227,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     }
     
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
-  }, [qc, clientId, config, getPhaseLabel]);
+  }, [qc, clientId, config, getPhaseLabel, monthPieces, triggerTranscription]);
 
   // Bulk move
   const bulkMove = useMutation({
@@ -726,6 +751,67 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                           ✕
                         </Button>
                       )}
+                    </motion.div>
+                  )}
+                  {/* Transcript & Caption — shown in approved/handed_over phases */}
+                  {(activePhase === "approved" || activePhase === "handed_over") && (piece.caption || piece.transcript) && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="space-y-2 pl-9"
+                    >
+                      {piece.caption && (
+                        <div className="flex items-start gap-2">
+                          <FileText className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Caption</span>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(piece.caption || "");
+                                  toast.success("Caption kopiert!");
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <p className="text-xs text-foreground/80 bg-muted/40 rounded-md p-2 whitespace-pre-wrap">{piece.caption}</p>
+                          </div>
+                        </div>
+                      )}
+                      {piece.transcript && (
+                        <details className="group">
+                          <summary className="flex items-center gap-2 cursor-pointer text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground">
+                            <Sparkles className="h-3 w-3" />
+                            Transkript anzeigen
+                          </summary>
+                          <p className="text-xs text-muted-foreground bg-muted/30 rounded-md p-2 mt-1 whitespace-pre-wrap">{piece.transcript}</p>
+                        </details>
+                      )}
+                      {/* Manual trigger if no caption yet but has preview_link */}
+                    </motion.div>
+                  )}
+                  {(activePhase === "approved" || activePhase === "handed_over") && !piece.caption && piece.preview_link && piece.type !== "carousel" && canEdit && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="pl-9"
+                    >
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1.5 font-mono"
+                        onClick={() => {
+                          toast.info("🎙️ Transkription wird gestartet...");
+                          triggerTranscription(piece.id);
+                        }}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        Caption generieren
+                      </Button>
                     </motion.div>
                   )}
                 </motion.div>

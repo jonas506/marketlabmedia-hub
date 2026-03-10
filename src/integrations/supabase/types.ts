@@ -348,6 +348,7 @@ export type Database = {
       content_pieces: {
         Row: {
           assigned_to: string | null
+          caption: string | null
           client_comment: string | null
           client_id: string
           created_at: string | null
@@ -362,11 +363,13 @@ export type Database = {
           target_month: number
           target_year: number
           title: string | null
+          transcript: string | null
           type: string
           updated_at: string | null
         }
         Insert: {
           assigned_to?: string | null
+          caption?: string | null
           client_comment?: string | null
           client_id: string
           created_at?: string | null
@@ -381,11 +384,13 @@ export type Database = {
           target_month: number
           target_year: number
           title?: string | null
+          transcript?: string | null
           type: string
           updated_at?: string | null
         }
         Update: {
           assigned_to?: string | null
+          caption?: string | null
           client_comment?: string | null
           client_id?: string
           created_at?: string | null
@@ -400,6 +405,7 @@ export type Database = {
           target_month?: number
           target_year?: number
           title?: string | null
+          transcript?: string | null
           type?: string
           updated_at?: string | null
         }
