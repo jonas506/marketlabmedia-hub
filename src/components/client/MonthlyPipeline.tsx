@@ -366,6 +366,17 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </div>
         )}
         <div className="flex-1" />
+        {canEdit && monthPieces.length > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs font-mono gap-1.5 mr-2"
+            onClick={() => setCaptionStudioOpen(true)}
+          >
+            <FileText className="h-3 w-3" />
+            Caption Studio
+          </Button>
+        )}
         <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
           {phaseSummary.map((p, i) => (
             <span key={p.key} className="flex items-center gap-1">
