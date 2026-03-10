@@ -73,6 +73,7 @@ const ClientApproval = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [addingComment, setAddingComment] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
+  const [bulkApproving, setBulkApproving] = useState(false);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
   const projectUrl = import.meta.env.VITE_SUPABASE_URL;
