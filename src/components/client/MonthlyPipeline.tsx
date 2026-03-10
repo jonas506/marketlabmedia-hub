@@ -3,12 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -124,6 +126,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filterPerson, setFilterPerson] = useState<string>("all");
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkTitles, setBulkTitles] = useState("");
 
   const config = PIPELINE_CONFIG[activeType];
 
@@ -241,6 +245,38 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       toast.success(`${config.emoji} Neues Piece erstellt`, { description: `In "${getPhaseLabel(activePhase)}"` });
     },
   });
+
+  // Bulk add pieces
+  const bulkAddPieces = useMutation({
+    mutationFn: async (titles: string[]) => {
+      const rows = titles.map((title) => ({
+        client_id: clientId,
+        type: activeType,
+        phase: config.phases[0].key,
+        target_month: month,
+        target_year: year,
+        title: title.trim() || null,
+      }));
+      await supabase.from("content_pieces").insert(rows);
+      return rows.length;
+    },
+    onSuccess: (count) => {
+      qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+      setBulkOpen(false);
+      setBulkTitles("");
+      setActivePhase(config.phases[0].key);
+      toast.success(`${config.emoji} ${count} Pieces erstellt`, { description: `In "${getPhaseLabel(config.phases[0].key)}"` });
+    },
+  });
+
+  const handleBulkCreate = () => {
+    const lines = bulkTitles.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      toast.error("Bitte mindestens einen Titel eingeben");
+      return;
+    }
+    bulkAddPieces.mutate(lines);
+  };
 
   const updatePiece = async (pieceId: string, updates: Record<string, any>) => {
     await supabase.from("content_pieces").update(updates).eq("id", pieceId);
@@ -399,9 +435,49 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </AnimatePresence>
 
         {canEdit && (
-          <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-            <Plus className="h-4 w-4" /> {config.addLabel} in {getPhaseLabel(activePhase)}
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
+              <Plus className="h-4 w-4" /> {config.addLabel}
+            </Button>
+            <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="icon" className="h-9 w-9" title="Mehrere auf einmal erstellen">
+                  <ListPlus className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <span>{config.emoji}</span> Mehrere {config.label} erstellen
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Ein Titel pro Zeile. Kopiere z.B. die Titel aus deinem Google Sheet.
+                  </p>
+                  <Textarea
+                    placeholder={"Karussell 1: Thema A\nKarussell 2: Thema B\nKarussell 3: Thema C\n..."}
+                    value={bulkTitles}
+                    onChange={(e) => setBulkTitles(e.target.value)}
+                    rows={8}
+                    className="font-mono text-sm"
+                  />
+                  {bulkTitles.trim() && (
+                    <p className="text-xs text-muted-foreground font-mono">
+                      {bulkTitles.split("\n").filter(l => l.trim()).length} Pieces werden erstellt → Phase „{getPhaseLabel(config.phases[0].key)}"
+                    </p>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setBulkOpen(false)}>Abbrechen</Button>
+                  <Button onClick={handleBulkCreate} disabled={bulkAddPieces.isPending} className="gap-2">
+                    <ListPlus className="h-4 w-4" />
+                    {bulkAddPieces.isPending ? "Erstelle..." : "Alle erstellen"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
 
