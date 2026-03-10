@@ -367,7 +367,7 @@ const ClientApproval = () => {
                 <div className="flex items-center gap-2.5">
                   <div className={`w-2 h-2 rounded-full ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
                   <span className={`text-xs font-semibold uppercase tracking-wider ${
-                    currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : "text-amber-400"
+                    currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : currentPiece.type === "ad" ? "text-violet-400" : "text-amber-400"
                   }`}>
                     {TYPE_LABELS[currentPiece.type] || currentPiece.type}
                   </span>
