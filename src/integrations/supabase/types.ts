@@ -357,6 +357,7 @@ export type Database = {
           phase: string
           preview_link: string | null
           priority: string | null
+          script_text: string | null
           shoot_day_id: string | null
           target_month: number
           target_year: number
@@ -375,6 +376,7 @@ export type Database = {
           phase: string
           preview_link?: string | null
           priority?: string | null
+          script_text?: string | null
           shoot_day_id?: string | null
           target_month: number
           target_year: number
@@ -393,6 +395,7 @@ export type Database = {
           phase?: string
           preview_link?: string | null
           priority?: string | null
+          script_text?: string | null
           shoot_day_id?: string | null
           target_month?: number
           target_year?: number
