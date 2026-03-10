@@ -413,7 +413,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
           <AnimatePresence mode="popLayout">
             {phasePieces.map((piece, index) => {
-              const isLatePhase = activePhase === "done" || activePhase === "handed_over" || activePhase === "approved";
+              const isLatePhase = activePhase === "review" || activePhase === "approved" || activePhase === "handed_over";
               const isSelected = selected.has(piece.id);
               const wasRecentlyMoved = recentlyMoved.has(piece.id);
               return (
