@@ -1,13 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList },
   { to: "/sops", label: "SOPs", icon: BookOpen },
+  { to: "/prompts", label: "Prompts", icon: BookmarkIcon },
   { to: "/team", label: "Team", icon: Users },
 ];
 

@@ -26,7 +26,7 @@ async function callAI(apiKey: string, systemPrompt: string, userPrompt: string):
         { role: "user", content: userPrompt },
       ],
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 2000,
     }),
   });
 
@@ -42,29 +42,6 @@ async function callAI(apiKey: string, systemPrompt: string, userPrompt: string):
   return data.choices?.[0]?.message?.content || "";
 }
 
-function buildCaptionSystemPrompt(clientContext: string): string {
-  return `Du bist ein Social Media Experte. Erstelle eine Instagram/TikTok Caption für ein Content Piece.
-Die Caption soll:
-- Aufmerksamkeit erregen (Hook am Anfang)
-- Den Kerninhalt zusammenfassen
-- Einen Call-to-Action enthalten
-- 3-5 relevante Hashtags am Ende haben
-- Zur Tonalität des Kunden passen
-- Emojis sparsam aber effektiv einsetzen
-- Maximal 2200 Zeichen lang sein
-
-${clientContext}
-
-Antworte NUR mit der fertigen Caption, keine Erklärungen.`;
-}
-
-function buildRefineSystemPrompt(clientContext: string): string {
-  return `Du bist ein Social Media Experte. Passe die folgende Caption nach den Wünschen des Users an.
-Behalte den grundsätzlichen Stil und die Hashtags bei, es sei denn der User wünscht etwas anderes.
-${clientContext}
-Antworte NUR mit der überarbeiteten Caption, keine Erklärungen.`;
-}
-
 async function getClientContext(supabase: any, clientId: string): Promise<string> {
   const { data: client } = await supabase
     .from("clients")
@@ -74,6 +51,46 @@ async function getClientContext(supabase: any, clientId: string): Promise<string
 
   if (!client) return "";
   return `Kunde: ${client.name}. Branche: ${client.industry || "k.A."}. Tonalität: ${client.tonality || "professionell"}. Zielgruppe: ${client.target_audience || "k.A."}. Themen: ${client.content_topics || "k.A."}. USPs: ${client.usps || "k.A."}.`;
+}
+
+function buildCaptionSystemPrompt(clientContext: string, customPrompt?: string): string {
+  const base = `Du bist ein Social Media Experte. Erstelle eine Instagram/TikTok Caption für ein Content Piece.
+Die Caption soll:
+- Aufmerksamkeit erregen (Hook am Anfang)
+- Den Kerninhalt zusammenfassen
+- Einen Call-to-Action enthalten
+- 3-5 relevante Hashtags am Ende haben
+- Zur Tonalität des Kunden passen
+- Emojis sparsam aber effektiv einsetzen
+- Maximal 2200 Zeichen lang sein
+
+${clientContext}`;
+
+  if (customPrompt) {
+    return base + `\n\nZusätzliche Anweisung vom User:\n${customPrompt}\n\nAntworte NUR mit der fertigen Caption, keine Erklärungen.`;
+  }
+  return base + `\n\nAntworte NUR mit der fertigen Caption, keine Erklärungen.`;
+}
+
+function buildTranscriptSystemPrompt(clientContext: string): string {
+  return `Du bist ein Content-Analyst. Erstelle basierend auf dem Titel und dem Skript-Text ein detailliertes Transkript/Sprechertext für ein Social Media Video.
+Das Transkript soll:
+- Den natürlichen Sprechtext des Videos wiedergeben
+- Zur Tonalität des Kunden passen
+- Klar strukturiert und leicht lesbar sein
+- Zeitmarken wie [00:00] am Anfang jedes Abschnitts enthalten
+- Realistisch und authentisch klingen
+
+${clientContext}
+
+Antworte NUR mit dem Transkript, keine Erklärungen.`;
+}
+
+function buildRefineSystemPrompt(clientContext: string): string {
+  return `Du bist ein Social Media Experte. Passe die folgende Caption nach den Wünschen des Users an.
+Behalte den grundsätzlichen Stil und die Hashtags bei, es sei denn der User wünscht etwas anderes.
+${clientContext}
+Antworte NUR mit der überarbeiteten Caption, keine Erklärungen.`;
 }
 
 Deno.serve(async (req) => {
@@ -90,9 +107,9 @@ Deno.serve(async (req) => {
 
     const supabase = await getClient();
 
-    // ── Single generate ──
+    // ── Single generate (caption + transcript) ──
     if (action === "generate") {
-      const { piece_id } = body;
+      const { piece_id, custom_prompt } = body;
       if (!piece_id) {
         return new Response(JSON.stringify({ error: "piece_id required" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -101,7 +118,7 @@ Deno.serve(async (req) => {
 
       const { data: piece } = await supabase
         .from("content_pieces")
-        .select("id, type, title, client_id, script_text")
+        .select("id, type, title, client_id, script_text, transcript")
         .eq("id", piece_id)
         .single();
 
@@ -115,11 +132,22 @@ Deno.serve(async (req) => {
       let userPrompt = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.`;
       if (piece.script_text) userPrompt += `\n\nSkript:\n${piece.script_text}`;
 
-      const caption = await callAI(LOVABLE_API_KEY, buildCaptionSystemPrompt(clientContext), userPrompt);
+      // Generate transcript if not exists (for video types)
+      let transcript = piece.transcript || "";
+      if (!transcript && piece.type !== "carousel") {
+        const transcriptPrompt = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.`;
+        const transcriptExtra = piece.script_text ? `\n\nSkript/Notizen:\n${piece.script_text}` : "";
+        transcript = await callAI(LOVABLE_API_KEY, buildTranscriptSystemPrompt(clientContext), transcriptPrompt + transcriptExtra);
+      }
 
-      await supabase.from("content_pieces").update({ caption }).eq("id", piece_id);
+      // Use transcript in caption generation if available
+      if (transcript) userPrompt += `\n\nTranskript:\n${transcript}`;
 
-      return new Response(JSON.stringify({ success: true, caption }), {
+      const caption = await callAI(LOVABLE_API_KEY, buildCaptionSystemPrompt(clientContext, custom_prompt), userPrompt);
+
+      await supabase.from("content_pieces").update({ caption, transcript }).eq("id", piece_id);
+
+      return new Response(JSON.stringify({ success: true, caption, transcript }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -135,7 +163,7 @@ Deno.serve(async (req) => {
 
       const { data: pieces } = await supabase
         .from("content_pieces")
-        .select("id, type, title, client_id, script_text")
+        .select("id, type, title, client_id, script_text, transcript")
         .in("id", piece_ids);
 
       if (!pieces?.length) {
@@ -144,23 +172,30 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Get client context (assume all pieces are same client)
       const clientContext = await getClientContext(supabase, pieces[0].client_id);
-      const systemPrompt = buildCaptionSystemPrompt(clientContext);
+      const captionSystemPrompt = buildCaptionSystemPrompt(clientContext);
+      const transcriptSystemPrompt = buildTranscriptSystemPrompt(clientContext);
 
-      const results: { id: string; caption: string; error?: string }[] = [];
+      const results: { id: string; caption: string; transcript: string; error?: string }[] = [];
 
-      // Process sequentially to avoid rate limits
       for (const piece of pieces) {
         try {
+          // Generate transcript first if needed
+          let transcript = piece.transcript || "";
+          if (!transcript && piece.type !== "carousel") {
+            const tp = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.${piece.script_text ? `\n\nSkript:\n${piece.script_text}` : ""}`;
+            transcript = await callAI(LOVABLE_API_KEY, transcriptSystemPrompt, tp);
+          }
+
           let userPrompt = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.`;
           if (piece.script_text) userPrompt += `\n\nSkript:\n${piece.script_text}`;
+          if (transcript) userPrompt += `\n\nTranskript:\n${transcript}`;
 
-          const caption = await callAI(LOVABLE_API_KEY, systemPrompt, userPrompt);
-          await supabase.from("content_pieces").update({ caption }).eq("id", piece.id);
-          results.push({ id: piece.id, caption });
+          const caption = await callAI(LOVABLE_API_KEY, captionSystemPrompt, userPrompt);
+          await supabase.from("content_pieces").update({ caption, transcript }).eq("id", piece.id);
+          results.push({ id: piece.id, caption, transcript });
         } catch (err) {
-          results.push({ id: piece.id, caption: "", error: err.message });
+          results.push({ id: piece.id, caption: "", transcript: "", error: err.message });
         }
       }
 

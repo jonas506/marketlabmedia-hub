@@ -18,6 +18,7 @@ import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import CaptionStudio from "./CaptionStudio";
+import PieceDetailDialog from "./PieceDetailDialog";
 
 interface ContentPiece {
   id: string;
@@ -133,6 +134,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkTitles, setBulkTitles] = useState("");
   const [captionStudioOpen, setCaptionStudioOpen] = useState(false);
+  const [detailPiece, setDetailPiece] = useState<ContentPiece | null>(null);
 
   const config = PIPELINE_CONFIG[activeType];
 
@@ -766,27 +768,34 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       )}
                     </motion.div>
                   )}
-                  {/* Caption indicator — compact, opens studio for editing */}
+                  {/* Caption/Transcript indicator — click opens detail dialog */}
                   {(activePhase === "approved" || activePhase === "handed_over") && (
                     <div className="flex items-center gap-2 pl-9">
-                      {piece.caption ? (
-                        <>
-                          <FileText className="h-3 w-3 text-[hsl(var(--runway-green))] shrink-0" />
-                          <span className="text-[10px] font-mono text-[hsl(var(--runway-green))]">Caption vorhanden</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-                            onClick={() => {
-                              navigator.clipboard.writeText(piece.caption || "");
-                              toast.success("Caption kopiert!");
-                            }}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </>
-                      ) : (
-                        <span className="text-[10px] font-mono text-muted-foreground/50">Keine Caption</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-[10px] font-mono gap-1.5 hover:bg-primary/10"
+                        onClick={() => setDetailPiece(piece)}
+                      >
+                        <FileText className="h-3 w-3" />
+                        {piece.caption ? (
+                          <span className="text-[hsl(var(--runway-green))]">Caption & Transkript öffnen</span>
+                        ) : (
+                          <span className="text-muted-foreground">Caption & Transkript erstellen</span>
+                        )}
+                      </Button>
+                      {piece.caption && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            navigator.clipboard.writeText(piece.caption || "");
+                            toast.success("Caption kopiert!");
+                          }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
                       )}
                     </div>
                   )}
@@ -804,6 +813,14 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         open={captionStudioOpen}
         onOpenChange={setCaptionStudioOpen}
         pieces={monthPieces}
+        clientId={clientId}
+      />
+
+      {/* Piece Detail Dialog */}
+      <PieceDetailDialog
+        open={!!detailPiece}
+        onOpenChange={(open) => !open && setDetailPiece(null)}
+        piece={detailPiece ? { ...detailPiece, client_id: clientId } : null}
         clientId={clientId}
       />
     </motion.div>
