@@ -174,9 +174,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     if (nextPhase === "handed_over") {
       fireConfetti();
       toast.success(`${config.emoji} ${config.label.slice(0, -1)} übergeben!`, { description: "Zählt jetzt ins Kontingent 🎯" });
-    } else if (nextPhase === "done") {
+    } else if (nextPhase === "approved") {
       fireSmallCelebration();
-      toast.success(`${config.phases.find(p => p.key === "done")?.emoji} Fertig!`, { description: "Ab jetzt zählt es im Kontingent" });
+      toast.success(`✅ Freigegeben!`, { description: "Kunde hat freigegeben" });
+    } else if (nextPhase === "review") {
+      toast.success(`👁️ Zur Freigabe`, { description: "Warte auf Kunden-Freigabe" });
     } else {
       toast.success(`→ ${getPhaseLabel(nextPhase)}`);
     }
