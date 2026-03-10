@@ -24,10 +24,13 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const countByType = (type: string) =>
     monthPieces.filter((c) => c.type === type && (c.phase === "approved" || c.phase === "handed_over")).length;
 
+  const adsDone = countByType("ad");
+
   const types = [
     { label: "Reels", emoji: "🎬", type: "reel", target: client.monthly_reels, current: countByType("reel") },
     { label: "Karussells", emoji: "🖼️", type: "carousel", target: client.monthly_carousels, current: countByType("carousel") },
     { label: "Stories", emoji: "📱", type: "story", target: client.monthly_stories, current: countByType("story") },
+    ...(adsDone > 0 ? [{ label: "Ads", emoji: "📢", type: "ad", target: 0, current: adsDone }] : []),
   ];
 
   const reelStoryTarget = client.monthly_reels + client.monthly_stories;
