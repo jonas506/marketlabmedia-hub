@@ -129,7 +129,7 @@ const CreateClientDialog = () => {
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!profile) throw new Error("Kein Profil");
-      const { error } = await supabase.from("clients").insert({
+      const { data, error } = await supabase.from("clients").insert({
         name: profile.name,
         summary: profile.summary,
         industry: profile.industry,
@@ -140,8 +140,10 @@ const CreateClientDialog = () => {
         monthly_reels: reels,
         monthly_carousels: carousels,
         monthly_stories: stories,
-      });
+      }).select("id").single();
       if (error) throw error;
+      // Trigger new_client SOP checklists
+      await createNewClientChecklists(data.id);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
