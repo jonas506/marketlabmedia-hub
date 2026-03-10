@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ClientDetail from "./pages/ClientDetail";
 import TeamOverview from "./pages/TeamOverview";
 import Checklists from "./pages/Checklists";
+import SOPs from "./pages/SOPs";
 
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
