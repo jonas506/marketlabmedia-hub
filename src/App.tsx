@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import ClientDetail from "./pages/ClientDetail";
+import ClientApproval from "./pages/ClientApproval";
 import TeamOverview from "./pages/TeamOverview";
 import Checklists from "./pages/Checklists";
 import SOPs from "./pages/SOPs";
@@ -37,6 +38,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/approve/:token" element={<ClientApproval />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
             <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />

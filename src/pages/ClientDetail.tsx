@@ -12,7 +12,8 @@ import ClientChecklists from "@/components/client/ClientChecklists";
 
 import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, CalendarDays } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
@@ -23,6 +24,7 @@ const ClientDetail = () => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [copied, setCopied] = useState(false);
 
   const canEdit = role === "admin" || role === "head_of_content";
 
@@ -87,11 +89,29 @@ const ClientDetail = () => {
   return (
     <AppLayout>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-        {/* Back link */}
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-body mb-6 transition-colors group">
-          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
-          Dashboard
-        </Link>
+        {/* Back link + Approval link */}
+        <div className="flex items-center justify-between mb-6">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-body transition-colors group">
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+            Dashboard
+          </Link>
+          {canEdit && (client as any).approval_token && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-xs font-mono"
+              onClick={() => {
+                const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
+                navigator.clipboard.writeText(url);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-[hsl(var(--runway-green))]" /> : <LinkIcon className="h-3.5 w-3.5" />}
+              {copied ? "Link kopiert!" : "Freigabe-Link kopieren"}
+            </Button>
+          )}
+        </div>
 
         {/* Client info panel */}
         <div className="mb-8">

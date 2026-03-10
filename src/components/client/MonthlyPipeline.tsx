@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +30,7 @@ interface ContentPiece {
   preview_link?: string | null;
   deadline?: string | null;
   priority?: string | null;
+  client_comment?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
@@ -54,7 +55,8 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     phases: [
       { key: "filmed", label: "Gedreht", emoji: "📹" },
       { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "done", label: "Fertig", emoji: "✅" },
+      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
+      { key: "approved", label: "Freigegeben", emoji: "✅" },
       { key: "handed_over", label: "Übergeben", emoji: "🚀" },
     ],
     addLabel: "+ Reel",
@@ -64,6 +66,7 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     emoji: "🖼️",
     phases: [
       { key: "script", label: "Skript", emoji: "📝" },
+      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
       { key: "approved", label: "Freigegeben", emoji: "✅" },
       { key: "handed_over", label: "Übergeben", emoji: "🚀" },
     ],
@@ -75,7 +78,8 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     phases: [
       { key: "filmed", label: "Gedreht", emoji: "📹" },
       { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "done", label: "Fertig", emoji: "✅" },
+      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
+      { key: "approved", label: "Freigegeben", emoji: "✅" },
       { key: "handed_over", label: "Übergeben", emoji: "🚀" },
     ],
     addLabel: "+ Story",
@@ -171,9 +175,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     if (nextPhase === "handed_over") {
       fireConfetti();
       toast.success(`${config.emoji} ${config.label.slice(0, -1)} übergeben!`, { description: "Zählt jetzt ins Kontingent 🎯" });
-    } else if (nextPhase === "done") {
+    } else if (nextPhase === "approved") {
       fireSmallCelebration();
-      toast.success(`${config.phases.find(p => p.key === "done")?.emoji} Fertig!`, { description: "Ab jetzt zählt es im Kontingent" });
+      toast.success(`✅ Freigegeben!`, { description: "Kunde hat freigegeben" });
+    } else if (nextPhase === "review") {
+      toast.success(`👁️ Zur Freigabe`, { description: "Warte auf Kunden-Freigabe" });
     } else {
       toast.success(`→ ${getPhaseLabel(nextPhase)}`);
     }
@@ -197,9 +203,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         if (result.next === "handed_over") {
           fireConfetti();
           toast.success(`🚀 ${result.count} Pieces übergeben!`, { description: "Alles zählt jetzt ins Kontingent" });
-        } else if (result.next === "done") {
+        } else if (result.next === "approved") {
           fireSmallCelebration();
-          toast.success(`✅ ${result.count} Pieces fertig!`);
+          toast.success(`✅ ${result.count} Pieces freigegeben!`);
         } else {
           toast.success(`${result.count} Pieces → ${getPhaseLabel(result.next)}`);
         }
@@ -257,7 +263,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   }));
 
   const totalPieces = monthPieces.length;
-  const handedOver = monthPieces.filter(c => c.phase === "handed_over" || c.phase === "done").length;
+  const handedOver = monthPieces.filter(c => c.phase === "handed_over" || c.phase === "approved").length;
   const progress = totalPieces > 0 ? Math.round((handedOver / totalPieces) * 100) : 0;
 
   return (
@@ -408,7 +414,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
           <AnimatePresence mode="popLayout">
             {phasePieces.map((piece, index) => {
-              const isLatePhase = activePhase === "done" || activePhase === "handed_over" || activePhase === "approved";
+              const isLatePhase = activePhase === "review" || activePhase === "approved" || activePhase === "handed_over";
               const isSelected = selected.has(piece.id);
               const wasRecentlyMoved = recentlyMoved.has(piece.id);
               return (
@@ -590,6 +596,29 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         >
                           <ExternalLink className="h-4 w-4" />
                         </motion.a>
+                      )}
+                    </motion.div>
+                  )}
+                  {/* Client comment — shown when piece was rejected */}
+                  {piece.client_comment && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="flex items-start gap-2 pl-9"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5 text-[hsl(var(--runway-yellow))] shrink-0 mt-0.5" />
+                      <span className="text-xs text-[hsl(var(--runway-yellow))] font-body bg-[hsl(var(--runway-yellow))]/10 rounded px-2 py-1">
+                        Kundenfeedback: {piece.client_comment}
+                      </span>
+                      {canEdit && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-2 text-[10px] text-muted-foreground"
+                          onClick={() => updatePiece(piece.id, { client_comment: null })}
+                        >
+                          ✕
+                        </Button>
                       )}
                     </motion.div>
                   )}

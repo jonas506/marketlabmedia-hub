@@ -20,9 +20,9 @@ interface KontingentTrackerProps {
 const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces = [], month, year }) => {
   const monthPieces = (contentPieces ?? []).filter((c) => c.target_month === month && c.target_year === year);
 
-  // "Ist" = pieces with phase "done" or "handed_over" (ab Fertig zählt es)
+  // "Ist" = pieces with phase "approved" or "handed_over" (ab Freigegeben zählt es)
   const countByType = (type: string) =>
-    monthPieces.filter((c) => c.type === type && (c.phase === "done" || c.phase === "handed_over")).length;
+    monthPieces.filter((c) => c.type === type && (c.phase === "approved" || c.phase === "handed_over")).length;
 
   const types = [
     { label: "Reels", emoji: "🎬", type: "reel", target: client.monthly_reels, current: countByType("reel") },
@@ -35,10 +35,10 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
 
   const reelStoryPieces = monthPieces.filter((c) => c.type === "reel" || c.type === "story");
 
-  const conservative = reelStoryPieces.filter((c) => c.phase === "done" || c.phase === "handed_over").length;
+  const conservative = reelStoryPieces.filter((c) => c.phase === "approved" || c.phase === "handed_over").length;
   const conservativeDays = dailyRate > 0 ? Math.round(conservative / dailyRate) : 999;
 
-  const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "done" || c.phase === "handed_over").length;
+  const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length;
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
   const totalTarget = client.monthly_reels + client.monthly_carousels + client.monthly_stories;

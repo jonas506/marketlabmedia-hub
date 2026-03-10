@@ -150,6 +150,7 @@ export type Database = {
       clients: {
         Row: {
           additional_products: string[] | null
+          approval_token: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
@@ -180,6 +181,7 @@ export type Database = {
         }
         Insert: {
           additional_products?: string[] | null
+          approval_token?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -210,6 +212,7 @@ export type Database = {
         }
         Update: {
           additional_products?: string[] | null
+          approval_token?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -303,6 +306,7 @@ export type Database = {
       content_pieces: {
         Row: {
           assigned_to: string | null
+          client_comment: string | null
           client_id: string
           created_at: string | null
           deadline: string | null
@@ -320,6 +324,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          client_comment?: string | null
           client_id: string
           created_at?: string | null
           deadline?: string | null
@@ -337,6 +342,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          client_comment?: string | null
           client_id?: string
           created_at?: string | null
           deadline?: string | null

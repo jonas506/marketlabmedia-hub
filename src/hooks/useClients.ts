@@ -71,7 +71,7 @@ export const useClients = () => {
         const reelStoryTarget = client.monthly_reels + client.monthly_stories;
         const dailyFreq = reelStoryTarget / 30;
         const readyPieces = pieces.filter(
-          (c) => (c.type === "reel" || c.type === "story") && (c.phase === "done" || c.phase === "handed_over") &&
+          (c) => (c.type === "reel" || c.type === "story") && (c.phase === "approved" || c.phase === "handed_over") &&
           c.target_month === month && c.target_year === year
         ).length;
         const runway = dailyFreq > 0 ? Math.round(readyPieces / dailyFreq) : 999;
