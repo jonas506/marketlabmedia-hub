@@ -34,6 +34,8 @@ interface ContentPiece {
   priority?: string | null;
   client_comment?: string | null;
   script_text?: string | null;
+  transcript?: string | null;
+  caption?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
