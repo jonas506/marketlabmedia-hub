@@ -246,6 +246,38 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     },
   });
 
+  // Bulk add pieces
+  const bulkAddPieces = useMutation({
+    mutationFn: async (titles: string[]) => {
+      const rows = titles.map((title) => ({
+        client_id: clientId,
+        type: activeType,
+        phase: config.phases[0].key,
+        target_month: month,
+        target_year: year,
+        title: title.trim() || null,
+      }));
+      await supabase.from("content_pieces").insert(rows);
+      return rows.length;
+    },
+    onSuccess: (count) => {
+      qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+      setBulkOpen(false);
+      setBulkTitles("");
+      setActivePhase(config.phases[0].key);
+      toast.success(`${config.emoji} ${count} Pieces erstellt`, { description: `In "${getPhaseLabel(config.phases[0].key)}"` });
+    },
+  });
+
+  const handleBulkCreate = () => {
+    const lines = bulkTitles.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      toast.error("Bitte mindestens einen Titel eingeben");
+      return;
+    }
+    bulkAddPieces.mutate(lines);
+  };
+
   const updatePiece = async (pieceId: string, updates: Record<string, any>) => {
     await supabase.from("content_pieces").update(updates).eq("id", pieceId);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
