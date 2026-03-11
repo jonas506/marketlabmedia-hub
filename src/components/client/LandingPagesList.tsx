@@ -82,11 +82,14 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           <Globe className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Noch keine Landing Pages erstellt</p>
           {canEdit && (
-            <Link to={`/client/${clientId}/landing-page`}>
-              <Button size="sm" variant="outline" className="mt-3 h-8 text-xs gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Erste Landing Page erstellen
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3 h-8 text-xs gap-1.5"
+              onClick={() => setShowTemplatePicker(true)}
+            >
+              <Plus className="h-3.5 w-3.5" /> Erste Landing Page erstellen
+            </Button>
           )}
         </div>
       ) : (
