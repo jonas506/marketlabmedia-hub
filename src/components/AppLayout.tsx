@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 
-const navItems = [
+// roles: which roles can see this nav item (undefined = all)
+const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/checklists", label: "Checklisten", icon: ClipboardList },
-  { to: "/sops", label: "SOPs", icon: BookOpen },
-  { to: "/prompts", label: "Prompts", icon: BookmarkIcon },
-  { to: "/team", label: "Team", icon: Users },
+  { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
+  { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
+  { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
+  { to: "/team", label: "Team", icon: Users, roles: ["admin"] },
 ];
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -31,7 +32,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         {/* Nav items */}
         <nav className="flex-1 flex flex-col items-center gap-1 pt-2">
-          {navItems.map(({ to, label, icon: Icon }) => {
+          {navItems.filter(item => !item.roles || (role && item.roles.includes(role))).map(({ to, label, icon: Icon }) => {
             const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
             return (
               <Link

@@ -244,8 +244,10 @@ export type Database = {
           monthly_price: number | null
           monthly_reels: number
           monthly_stories: number
+          monthly_youtube_longform: number
           name: string
           sector: string | null
+          services: string[]
           status: string
           strategy_text: string | null
           summary: string | null
@@ -275,8 +277,10 @@ export type Database = {
           monthly_price?: number | null
           monthly_reels?: number
           monthly_stories?: number
+          monthly_youtube_longform?: number
           name: string
           sector?: string | null
+          services?: string[]
           status?: string
           strategy_text?: string | null
           summary?: string | null
@@ -306,8 +310,10 @@ export type Database = {
           monthly_price?: number | null
           monthly_reels?: number
           monthly_stories?: number
+          monthly_youtube_longform?: number
           name?: string
           sector?: string | null
+          services?: string[]
           status?: string
           strategy_text?: string | null
           summary?: string | null

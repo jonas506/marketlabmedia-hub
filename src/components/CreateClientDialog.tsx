@@ -46,10 +46,12 @@ const CreateClientDialog = () => {
   // Step 2: AI Profile
   const [profile, setProfile] = useState<ClientProfile | null>(null);
 
-  // Step 3: Kontingent
+  // Step 3: Services & Kontingent
+  const [services, setServices] = useState<string[]>([]);
   const [reels, setReels] = useState(0);
   const [carousels, setCarousels] = useState(0);
   const [stories, setStories] = useState(0);
+  const [youtubeLongform, setYoutubeLongform] = useState(0);
 
   const qc = useQueryClient();
 
@@ -61,9 +63,11 @@ const CreateClientDialog = () => {
     setPdfTexts([]);
     setPdfNames([]);
     setProfile(null);
+    setServices([]);
     setReels(0);
     setCarousels(0);
     setStories(0);
+    setYoutubeLongform(0);
     setIsAnalyzing(false);
     setEditingField(null);
   };
@@ -137,9 +141,11 @@ const CreateClientDialog = () => {
         usps: profile.usps,
         tonality: profile.tonality,
         content_topics: profile.content_topics,
+        services: services,
         monthly_reels: reels,
         monthly_carousels: carousels,
         monthly_stories: stories,
+        monthly_youtube_longform: youtubeLongform,
       }).select("id").single();
       if (error) throw error;
       // Trigger new_client SOP checklists
@@ -171,12 +177,12 @@ const CreateClientDialog = () => {
           <DialogTitle className="font-display text-lg">
             {step === 1 && "Quellen hinzufügen"}
             {step === 2 && "KI-Kundenprofil"}
-            {step === 3 && "Kontingent festlegen"}
+            {step === 3 && "Leistungen & Kontingent"}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-xs">
             {step === 1 && "Lade PDFs, Links oder Notizen hoch – die KI analysiert den Kunden."}
             {step === 2 && "Das KI-generierte Profil. Klicke auf ein Feld zum Bearbeiten."}
-            {step === 3 && "Lege die monatlichen Content-Kontingente fest."}
+            {step === 3 && "Wähle die Leistungen und lege Kontingente fest."}
           </DialogDescription>
         </DialogHeader>
 
@@ -374,26 +380,78 @@ const CreateClientDialog = () => {
           </div>
         )}
 
-        {/* Step 3: Kontingent */}
+        {/* Step 3: Services & Kontingent */}
         {step === 3 && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: "Reels / Monat", value: reels, set: setReels, color: "from-blue-500/15 to-blue-600/5" },
-                { label: "Carousels / Monat", value: carousels, set: setCarousels, color: "from-emerald-500/15 to-emerald-600/5" },
-                { label: "Stories / Monat", value: stories, set: setStories, color: "from-purple-500/15 to-purple-600/5" },
-              ].map(({ label, value, set, color }) => (
-                <div key={label} className={`rounded-xl bg-gradient-to-br ${color} border border-border/30 p-3 space-y-2`}>
-                  <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</Label>
-                  <Input type="number" min={0} value={value} onChange={(e) => set(Number(e.target.value))} className="bg-background/50 text-center text-lg font-bold h-10" />
-                </div>
-              ))}
+          <div className="space-y-5">
+            {/* Service Selection */}
+            <div>
+              <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3 block">Was machen wir für diesen Kunden?</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {[
+                  { key: "shortform", label: "Shortform / Reels", emoji: "🎬" },
+                  { key: "carousels", label: "Karussells", emoji: "🖼️" },
+                  { key: "stories", label: "Stories", emoji: "📱" },
+                  { key: "youtube_longform", label: "YouTube Longform", emoji: "🎥" },
+                  { key: "website", label: "Website", emoji: "🌐" },
+                ].map(({ key, label, emoji }) => {
+                  const active = services.includes(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setServices(prev => active ? prev.filter(s => s !== key) : [...prev, key])}
+                      className={`flex items-center gap-2.5 rounded-xl border p-3 text-left text-sm transition-all ${
+                        active
+                          ? "border-primary bg-primary/10 text-foreground shadow-sm shadow-primary/10"
+                          : "border-border/40 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:border-border"
+                      }`}
+                    >
+                      <span className="text-base">{emoji}</span>
+                      <span className="font-medium">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Kontingent — only for selected services */}
+            {services.length > 0 && (
+              <div>
+                <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3 block">Monatliches Kontingent</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {services.includes("shortform") && (
+                    <div className="rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-border/30 p-3 space-y-2">
+                      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reels / Monat</Label>
+                      <Input type="number" min={0} value={reels} onChange={(e) => setReels(Number(e.target.value))} className="bg-background/50 text-center text-lg font-bold h-10" />
+                    </div>
+                  )}
+                  {services.includes("carousels") && (
+                    <div className="rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 border border-border/30 p-3 space-y-2">
+                      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Karussells / Monat</Label>
+                      <Input type="number" min={0} value={carousels} onChange={(e) => setCarousels(Number(e.target.value))} className="bg-background/50 text-center text-lg font-bold h-10" />
+                    </div>
+                  )}
+                  {services.includes("stories") && (
+                    <div className="rounded-xl bg-gradient-to-br from-purple-500/15 to-purple-600/5 border border-border/30 p-3 space-y-2">
+                      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Stories / Monat</Label>
+                      <Input type="number" min={0} value={stories} onChange={(e) => setStories(Number(e.target.value))} className="bg-background/50 text-center text-lg font-bold h-10" />
+                    </div>
+                  )}
+                  {services.includes("youtube_longform") && (
+                    <div className="rounded-xl bg-gradient-to-br from-red-500/15 to-red-600/5 border border-border/30 p-3 space-y-2">
+                      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">YouTube Videos / Monat</Label>
+                      <Input type="number" min={0} value={youtubeLongform} onChange={(e) => setYoutubeLongform(Number(e.target.value))} className="bg-background/50 text-center text-lg font-bold h-10" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(2)} className="gap-1">
                 <ChevronLeft className="h-4 w-4" /> Zurück
               </Button>
-              <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="flex-1 gap-1">
+              <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || services.length === 0} className="flex-1 gap-1">
                 {saveMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Wird gespeichert...</> : "Kunde anlegen"}
               </Button>
             </div>
