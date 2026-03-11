@@ -188,7 +188,26 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
         </div>
       </div>
 
-      {/* Entries */}
+      {/* Inline Add */}
+      {showAdd && canEdit && (
+        <div className="rounded-lg border border-primary/20 bg-card p-3 space-y-2">
+          <Textarea
+            placeholder="Informationen einfach hier reinpasten – Gesprächsnotizen, Links, Transkriptionen, Produktinfos…"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="min-h-[100px] text-sm"
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={resetForm}>Abbrechen</Button>
+            <Button size="sm" className="h-7 text-xs" onClick={addEntry} disabled={!content.trim() || saving}>
+              {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+              Speichern
+            </Button>
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="py-6 flex justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
