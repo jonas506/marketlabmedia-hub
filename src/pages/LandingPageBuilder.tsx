@@ -35,6 +35,7 @@ const LandingPageBuilder = () => {
   const { id: clientId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const pageId = searchParams.get("page");
+  const templateId = searchParams.get("template");
   const qc = useQueryClient();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
