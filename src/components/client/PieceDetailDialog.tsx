@@ -62,41 +62,47 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     
   }
 
-  // Auto-generate: when dialog opens with no caption, auto-run transcribe→caption
+  // Auto-generate: when dialog opens, transcribe if missing, then caption if missing
   useEffect(() => {
     if (!open || !piece) return;
-    if (autoTriggeredRef.current === piece.id) return; // already triggered for this piece
+    if (autoTriggeredRef.current === piece.id) return;
 
+    const hasTranscript = !!piece.transcript;
     const hasCaption = !!piece.caption;
     const canTranscribe = !!piece.preview_link || !!piece.video_path;
 
-    if (!hasCaption && canTranscribe) {
+    if ((!hasTranscript || !hasCaption) && canTranscribe) {
       autoTriggeredRef.current = piece.id;
-      runAutoGenerate(piece.id);
+      runAutoGenerate(piece.id, hasTranscript, hasCaption);
     }
   }, [open, piece?.id]);
 
-  const runAutoGenerate = async (pieceId: string) => {
+  const runAutoGenerate = async (pieceId: string, alreadyHasTranscript: boolean, alreadyHasCaption: boolean) => {
     setAutoGenerating(true);
     try {
-      // Step 1: Transcribe
-      const { data: tData, error: tErr } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "transcribe", piece_id: pieceId },
-      });
-      if (tErr) throw tErr;
-      if (tData?.transcript) {
-        setTranscript(tData.transcript);
+      // Step 1: Transcribe (if missing)
+      if (!alreadyHasTranscript) {
+        const { data: tData, error: tErr } = await supabase.functions.invoke("transcribe-caption", {
+          body: { action: "transcribe", piece_id: pieceId },
+        });
+        if (tErr) throw tErr;
+        if (tData?.transcript) {
+          setTranscript(tData.transcript);
+        }
       }
 
-      // Step 2: Generate caption
-      const { data: cData, error: cErr } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "generate", piece_id: pieceId },
-      });
-      if (cErr) throw cErr;
-      if (cData?.caption) {
-        setCaption(cData.caption);
-        toast.success("Caption automatisch erstellt!");
+      // Step 2: Generate caption (if missing)
+      if (!alreadyHasCaption) {
+        const { data: cData, error: cErr } = await supabase.functions.invoke("transcribe-caption", {
+          body: { action: "generate", piece_id: pieceId },
+        });
+        if (cErr) throw cErr;
+        if (cData?.caption) {
+          setCaption(cData.caption);
+          toast.success("Caption automatisch erstellt!");
+        }
       }
+
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     } catch (err: any) {
       toast.error("Auto-Generierung fehlgeschlagen", { description: err.message });
