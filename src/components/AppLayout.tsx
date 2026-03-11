@@ -32,7 +32,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         {/* Nav items */}
         <nav className="flex-1 flex flex-col items-center gap-1 pt-2">
-          {navItems.map(({ to, label, icon: Icon }) => {
+          {navItems.filter(item => !item.roles || (role && item.roles.includes(role))).map(({ to, label, icon: Icon }) => {
             const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
             return (
               <Link

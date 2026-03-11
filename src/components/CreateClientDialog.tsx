@@ -182,7 +182,7 @@ const CreateClientDialog = () => {
           <DialogDescription className="text-muted-foreground text-xs">
             {step === 1 && "Lade PDFs, Links oder Notizen hoch – die KI analysiert den Kunden."}
             {step === 2 && "Das KI-generierte Profil. Klicke auf ein Feld zum Bearbeiten."}
-            {step === 3 && "Lege die monatlichen Content-Kontingente fest."}
+            {step === 3 && "Wähle die Leistungen und lege Kontingente fest."}
           </DialogDescription>
         </DialogHeader>
 
