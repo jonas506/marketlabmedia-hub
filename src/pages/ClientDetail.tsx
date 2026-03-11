@@ -160,6 +160,11 @@ const ClientDetail = () => {
         <div className="mt-6">
           <ClientChecklists clientId={client.id} canEdit={canEdit} />
         </div>
+
+        {/* Landing Pages */}
+        <div className="mt-6">
+          <LandingPagesList clientId={client.id} canEdit={canEdit} />
+        </div>
       </motion.div>
     </AppLayout>
   );
