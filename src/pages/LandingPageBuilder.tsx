@@ -174,8 +174,14 @@ const LandingPageBuilder = () => {
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isGenerating) return;
 
-    const attachmentContext = uploadedFiles.length > 0
-      ? `\n\n[Hochgeladene CI-Dateien - bitte in der Landing Page verwenden:\n${uploadedFiles.map((f) => `- ${f.name}: ${f.url}`).join("\n")}\n]`
+    // Include CI assets from branding + any manually uploaded files
+    const allAssets = [
+      ...(ciAssets || []).map((a) => ({ name: a.name, url: a.url, type: a.type })),
+      ...uploadedFiles,
+    ];
+
+    const attachmentContext = allAssets.length > 0
+      ? `\n\n[Hochgeladene CI-Dateien - bitte in der Landing Page verwenden:\n${allAssets.map((f) => `- ${f.name}: ${f.url}`).join("\n")}\n]`
       : "";
 
     const userMsg: ChatMessage = {
