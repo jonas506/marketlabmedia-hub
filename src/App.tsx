@@ -44,7 +44,7 @@ const App = () => (
             <Route path="/approve/:token" element={<ClientApproval />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
-            <Route path="/client/:id/landing-page" element={<ProtectedRoute><LandingPageBuilder /></ProtectedRoute>} />
+            
             <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
             <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
             <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
