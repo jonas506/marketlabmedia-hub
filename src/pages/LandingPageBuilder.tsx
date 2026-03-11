@@ -405,9 +405,22 @@ const LandingPageBuilder = () => {
                       <Sparkles className="h-7 w-7 text-primary" />
                     </div>
                     <h3 className="text-sm font-semibold mb-1">KI Landing Page Builder</h3>
-                    <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-4">
-                      Beschreibe die Seite, die du bauen willst. Lade CI-Assets hoch (Logo, Bilder), damit die KI sie direkt einbaut.
+                    <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-3">
+                      Beschreibe die Seite, die du bauen willst. Die KI nutzt automatisch die CI-Assets des Kunden.
                     </p>
+                    {ciAssets && ciAssets.length > 0 && (
+                      <div className="mb-4 p-2.5 rounded-lg bg-muted/50 border border-border text-left">
+                        <p className="text-[10px] font-medium text-muted-foreground mb-1.5">CI-Assets geladen:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {ciAssets.map((a, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 text-[10px] bg-background rounded px-1.5 py-0.5 border border-border">
+                              <FileImage className="h-2.5 w-2.5" />
+                              {a.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       {[
                         "Erstelle eine moderne Landing Page für diesen Kunden",
