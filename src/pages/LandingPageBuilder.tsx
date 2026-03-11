@@ -617,6 +617,62 @@ const LandingPageBuilder = () => {
                         </button>
                       ))}
                     </div>
+
+                    {/* Clone URL input */}
+                    <AnimatePresence>
+                      {showCloneInput && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-3 overflow-hidden"
+                        >
+                          <div className="p-3 rounded-xl border border-primary/30 bg-primary/5 space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-medium">
+                              <Link2 className="h-3.5 w-3.5 text-primary" />
+                              Seite nachbauen
+                            </div>
+                            <Input
+                              value={cloneUrl}
+                              onChange={(e) => setCloneUrl(e.target.value)}
+                              placeholder="https://www.beispiel.de"
+                              className="h-8 text-xs font-mono"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  cloneFromUrl();
+                                }
+                              }}
+                              disabled={isCloning}
+                              autoFocus
+                            />
+                            <div className="flex gap-1.5">
+                              <Button
+                                size="sm"
+                                className="h-7 text-[11px] flex-1 gap-1"
+                                onClick={cloneFromUrl}
+                                disabled={!cloneUrl.trim() || isCloning}
+                              >
+                                {isCloning ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                                {isCloning ? "Wird nachgebaut..." : "Nachbauen"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-[11px]"
+                                onClick={() => { setShowCloneInput(false); setCloneUrl(""); }}
+                              >
+                                Abbrechen
+                              </Button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
 
