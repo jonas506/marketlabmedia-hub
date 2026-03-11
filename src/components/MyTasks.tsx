@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Scissors, ChevronRight, ClipboardCheck } from "lucide-react";
+import { CalendarIcon, Scissors, ChevronRight, ClipboardCheck, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,6 +48,7 @@ interface Client { id: string; name: string; }
 type UnifiedItem =
   | { kind: "task"; data: Task }
   | { kind: "editing"; data: EditingPiece }
+  | { kind: "review"; data: EditingPiece }
   | { kind: "sop"; data: ChecklistStepItem };
 
 const TAG_COLORS: Record<string, string> = {
@@ -69,8 +70,9 @@ const STATUS_LABELS: Record<string, { label: string; css: string }> = {
 };
 
 const MyTasks = () => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const qc = useQueryClient();
+  const isHoC = role === "head_of_content" || role === "admin";
 
   const { data: tasks = [] } = useQuery({
     queryKey: ["my-tasks", user?.id],
@@ -92,10 +94,20 @@ const MyTasks = () => {
     enabled: !!user?.id,
   });
 
+  // HoC/Admin: show all pieces awaiting review
+  const { data: reviewPieces = [] } = useQuery({
+    queryKey: ["review-pieces"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("content_pieces").select("id, client_id, title, type, phase, deadline").eq("phase", "review");
+      if (error) throw error;
+      return (data ?? []) as EditingPiece[];
+    },
+    enabled: isHoC,
+  });
+
   const { data: checklistSteps = [] } = useQuery({
     queryKey: ["my-checklist-steps", user?.id],
     queryFn: async () => {
-      // Get open steps assigned to user
       const { data: steps, error } = await supabase
         .from("checklist_steps")
         .select("id, checklist_id, title, is_completed, assigned_to")
@@ -104,7 +116,6 @@ const MyTasks = () => {
       if (error) throw error;
       if (!steps || steps.length === 0) return [];
 
-      // Get checklist info for these steps
       const checklistIds = [...new Set(steps.map((s: any) => s.checklist_id))];
       const { data: checklists } = await supabase
         .from("checklists")
@@ -141,6 +152,7 @@ const MyTasks = () => {
   const grouped = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
     const editingItems: UnifiedItem[] = editingPieces.map((p) => ({ kind: "editing", data: p }));
+    const reviewItems: UnifiedItem[] = reviewPieces.map((p) => ({ kind: "review", data: p }));
     const sopItems: UnifiedItem[] = checklistSteps.map((s) => ({ kind: "sop", data: s }));
     const taskItems: UnifiedItem[] = tasks.map((t) => ({ kind: "task", data: t }));
     taskItems.sort((a, b) => {
@@ -153,7 +165,7 @@ const MyTasks = () => {
       if (bT.deadline) return 1;
       return 0;
     });
-    const allItems = [...editingItems, ...sopItems, ...taskItems];
+    const allItems = [...reviewItems, ...editingItems, ...sopItems, ...taskItems];
     const groups: Record<string, UnifiedItem[]> = {};
     allItems.forEach((item) => {
       const cid = item.kind === "sop" ? (item.data as ChecklistStepItem).client_id : item.data.client_id;
@@ -162,7 +174,7 @@ const MyTasks = () => {
       groups[cid].push(item);
     });
     return groups;
-  }, [tasks, editingPieces, checklistSteps]);
+  }, [tasks, editingPieces, reviewPieces, checklistSteps]);
 
   const completeTask = async (taskId: string, clientId: string) => {
     await supabase.from("tasks" as any).update({ is_completed: true, status: "done" } as any).eq("id", taskId);
@@ -175,7 +187,7 @@ const MyTasks = () => {
     qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
   };
 
-  const totalCount = tasks.length + editingPieces.length + checklistSteps.length;
+  const totalCount = tasks.length + editingPieces.length + reviewPieces.length + checklistSteps.length;
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -185,6 +197,11 @@ const MyTasks = () => {
         <div className="w-1 h-5 rounded-full bg-secondary" />
         <h3 className="font-display text-sm font-semibold">Meine Aufgaben</h3>
         <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{totalCount}</span>
+        {reviewPieces.length > 0 && (
+          <span className="text-[10px] font-mono text-status-review bg-status-review/15 px-2 py-0.5 rounded-full">
+            {reviewPieces.length} zur Freigabe
+          </span>
+        )}
       </div>
 
       {totalCount === 0 ? (
@@ -206,6 +223,30 @@ const MyTasks = () => {
 
                 {/* Items */}
                 {items.map((item) => {
+                  if (item.kind === "review") {
+                    const piece = item.data as EditingPiece;
+                    return (
+                      <Link
+                        key={`r-${piece.id}`}
+                        to={`/client/${piece.client_id}`}
+                        className="monday-row flex items-center gap-3 px-4 py-2 pl-10 hover:bg-surface-hover transition-colors"
+                      >
+                        <Eye className="h-3 w-3 text-status-review shrink-0" />
+                        <span className="monday-status monday-status-review text-[9px] py-0.5 px-2 min-w-0">Freigabe</span>
+                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-muted/50 text-muted-foreground">
+                          {TYPE_LABELS[piece.type] || piece.type}
+                        </Badge>
+                        <span className="flex-1 text-sm font-body truncate">{piece.title || "Ohne Titel"}</span>
+                        {piece.deadline && (
+                          <span className={cn("flex items-center gap-1 text-[11px] font-mono", piece.deadline < today ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                            <CalendarIcon className="h-3 w-3" />
+                            {format(new Date(piece.deadline), "dd MMM", { locale: de })}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  }
+
                   if (item.kind === "editing") {
                     const piece = item.data as EditingPiece;
                     return (
@@ -263,10 +304,7 @@ const MyTasks = () => {
                           {task.tag}
                         </Badge>
                       )}
-                      <span className="monday-status text-[9px] py-0.5 px-2 min-w-0 shrink-0" style={{ minWidth: "auto" }}>
-                        <span className={sc.css.replace("monday-status-", "bg-status-").replace("monday-status-default", "bg-status-default")} />
-                      </span>
-                      <span className={cn("monday-status text-[9px] py-0.5 min-w-0 shrink-0", sc.css)}>{sc.label}</span>
+                      <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0 shrink-0", sc.css)}>{sc.label}</span>
                       <span className="flex-1 text-sm font-body truncate">{task.title}</span>
                       {task.deadline && (
                         <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
