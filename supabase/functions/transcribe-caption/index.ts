@@ -53,6 +53,59 @@ async function getClientContext(supabase: any, clientId: string): Promise<string
   return `Kunde: ${client.name}. Branche: ${client.industry || "k.A."}. Tonalität: ${client.tonality || "professionell"}. Zielgruppe: ${client.target_audience || "k.A."}. Themen: ${client.content_topics || "k.A."}. USPs: ${client.usps || "k.A."}.`;
 }
 
+// ── Google Drive download helper ──
+function getGoogleDriveDirectUrl(url: string): string | null {
+  // Handle various Google Drive URL formats
+  let fileId: string | null = null;
+  
+  // Format: https://drive.google.com/file/d/FILE_ID/...
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) fileId = fileMatch[1];
+  
+  // Format: https://drive.google.com/open?id=FILE_ID
+  if (!fileId) {
+    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch) fileId = idMatch[1];
+  }
+  
+  if (!fileId) return null;
+  return `https://drive.google.com/uc?export=download&id=${fileId}`;
+}
+
+async function downloadFromUrl(url: string): Promise<{ bytes: Uint8Array; fileName: string }> {
+  // Try Google Drive direct download
+  const driveUrl = getGoogleDriveDirectUrl(url);
+  const downloadUrl = driveUrl || url;
+  
+  console.log("Downloading from:", downloadUrl);
+  
+  const response = await fetch(downloadUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Download fehlgeschlagen [${response.status}]: ${response.statusText}`);
+  }
+  
+  // Check if Google Drive returned an HTML warning page (file too large for virus scan)
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("text/html") && driveUrl) {
+    // Try with confirm parameter
+    const confirmUrl = driveUrl + "&confirm=t";
+    console.log("Retrying with confirm:", confirmUrl);
+    const retryResp = await fetch(confirmUrl, { redirect: "follow", headers: { "User-Agent": "Mozilla/5.0" } });
+    if (!retryResp.ok) throw new Error(`Download (retry) fehlgeschlagen [${retryResp.status}]`);
+    const buf = await retryResp.arrayBuffer();
+    return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+  }
+  
+  const buf = await response.arrayBuffer();
+  return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+}
+
 // ── ElevenLabs Speech-to-Text ──
 async function transcribeWithElevenLabs(audioBytes: Uint8Array, fileName: string): Promise<string> {
   const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
@@ -160,7 +213,7 @@ Deno.serve(async (req) => {
 
       const { data: piece } = await supabase
         .from("content_pieces")
-        .select("id, client_id, video_path")
+        .select("id, client_id, video_path, preview_link")
         .eq("id", piece_id)
         .single();
 
@@ -170,27 +223,35 @@ Deno.serve(async (req) => {
         });
       }
 
-      if (!piece.video_path) {
-        return new Response(JSON.stringify({ error: "Kein Video hochgeladen. Bitte lade zuerst ein Video hoch." }), {
+      let bytes: Uint8Array;
+      let fileName: string;
+
+      // Priority: preview_link (Google Drive) > uploaded video
+      if (piece.preview_link) {
+        console.log("Transcribing from preview_link:", piece.preview_link);
+        const downloaded = await downloadFromUrl(piece.preview_link);
+        bytes = downloaded.bytes;
+        fileName = downloaded.fileName;
+      } else if (piece.video_path) {
+        // Fallback to uploaded video
+        const { data: fileData, error: dlError } = await supabase.storage
+          .from("content-videos")
+          .download(piece.video_path);
+        if (dlError || !fileData) {
+          return new Response(JSON.stringify({ error: "Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt") }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const arrayBuf = await fileData.arrayBuffer();
+        bytes = new Uint8Array(arrayBuf);
+        fileName = piece.video_path.split("/").pop() || "video.mp4";
+      } else {
+        return new Response(JSON.stringify({ error: "Kein Video-Link oder Video vorhanden. Bitte einen Preview-Link setzen." }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Download video from storage
-      const { data: fileData, error: dlError } = await supabase.storage
-        .from("content-videos")
-        .download(piece.video_path);
-
-      if (dlError || !fileData) {
-        return new Response(JSON.stringify({ error: "Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt") }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const arrayBuf = await fileData.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuf);
-      const fileName = piece.video_path.split("/").pop() || "video.mp4";
-
+      console.log(`Transcribing ${bytes.length} bytes via ElevenLabs...`);
       const transcript = await transcribeWithElevenLabs(bytes, fileName);
 
       await supabase.from("content_pieces").update({ transcript }).eq("id", piece_id);

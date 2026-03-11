@@ -23,6 +23,7 @@ interface PieceDetailDialogProps {
     transcript?: string | null;
     script_text?: string | null;
     video_path?: string | null;
+    preview_link?: string | null;
     phase: string;
     client_id: string;
   } | null;
@@ -191,6 +192,8 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const TYPE_EMOJI: Record<string, string> = { reel: "🎬", carousel: "📸", story: "📱", ad: "📢" };
   const isLoading = generating || refining;
   const hasVideo = !!videoPath;
+  const hasPreviewLink = !!piece.preview_link;
+  const canTranscribe = hasPreviewLink || hasVideo;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -296,12 +299,26 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
               </TabsContent>
 
               <TabsContent value="transcript" className="px-6 py-4 space-y-4 mt-0">
-                {/* Video upload section */}
+                {/* Transcription source section */}
                 <div className="rounded-lg border border-dashed border-border bg-muted/10 p-4">
                   <div className="flex items-center gap-3">
                     <Video className="h-5 w-5 text-muted-foreground" />
                     <div className="flex-1">
-                      {hasVideo ? (
+                      {hasPreviewLink ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Preview-Link vorhanden</span>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs font-mono gap-1"
+                            onClick={transcribeVideo}
+                            disabled={transcribing}
+                          >
+                            {transcribing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                            {transcript ? "Neu transkribieren" : "Transkribieren"}
+                          </Button>
+                        </div>
+                      ) : hasVideo ? (
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Video hochgeladen</span>
                           <Button
@@ -316,26 +333,30 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
                           </Button>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Video hochladen für echte Transkription</span>
+                        <span className="text-xs text-muted-foreground">Setze einen Preview-Link, um das Video zu transkribieren</span>
                       )}
                     </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="video/*,audio/*"
-                      className="hidden"
-                      onChange={handleVideoUpload}
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs font-mono gap-1"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                    >
-                      {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
-                      {hasVideo ? "Ersetzen" : "Video hochladen"}
-                    </Button>
+                    {!hasPreviewLink && (
+                      <>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="video/*,audio/*"
+                          className="hidden"
+                          onChange={handleVideoUpload}
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs font-mono gap-1"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                        >
+                          {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                          {hasVideo ? "Ersetzen" : "Oder Video hochladen"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
 
