@@ -17,6 +17,8 @@ interface LandingPagesListProps {
 
 const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const { data: pages, isLoading } = useQuery({
     queryKey: ["landing-pages", clientId],
