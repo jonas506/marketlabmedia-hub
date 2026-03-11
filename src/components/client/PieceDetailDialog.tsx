@@ -40,7 +40,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedPromptId, setSelectedPromptId] = useState("");
-  const [showTranscript, setShowTranscript] = useState(false);
+  
   const autoTriggeredRef = useRef<string | null>(null);
 
   const { data: savedPrompts = [] } = useQuery({
