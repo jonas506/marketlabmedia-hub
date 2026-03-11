@@ -23,6 +23,7 @@ interface PieceDetailDialogProps {
     transcript?: string | null;
     script_text?: string | null;
     video_path?: string | null;
+    preview_link?: string | null;
     phase: string;
     client_id: string;
   } | null;
