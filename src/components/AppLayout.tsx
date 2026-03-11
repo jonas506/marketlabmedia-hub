@@ -9,6 +9,7 @@ const navItems = [
   { to: "/checklists", label: "Checklisten", icon: ClipboardList },
   { to: "/sops", label: "SOPs", icon: BookOpen },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon },
+  { to: "/templates", label: "Vorlagen", icon: LayoutTemplate },
   { to: "/team", label: "Team", icon: Users },
 ];
 
