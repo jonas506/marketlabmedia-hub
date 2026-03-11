@@ -141,9 +141,11 @@ const CreateClientDialog = () => {
         usps: profile.usps,
         tonality: profile.tonality,
         content_topics: profile.content_topics,
+        services: services,
         monthly_reels: reels,
         monthly_carousels: carousels,
         monthly_stories: stories,
+        monthly_youtube_longform: youtubeLongform,
       }).select("id").single();
       if (error) throw error;
       // Trigger new_client SOP checklists
