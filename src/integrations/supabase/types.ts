@@ -509,9 +509,11 @@ export type Database = {
           client_id: string
           created_at: string
           custom_domain: string | null
+          edit_url: string | null
           html_content: string | null
           id: string
           is_published: boolean
+          published_url: string | null
           slug: string | null
           title: string
           updated_at: string
@@ -521,9 +523,11 @@ export type Database = {
           client_id: string
           created_at?: string
           custom_domain?: string | null
+          edit_url?: string | null
           html_content?: string | null
           id?: string
           is_published?: boolean
+          published_url?: string | null
           slug?: string | null
           title?: string
           updated_at?: string
@@ -533,9 +537,11 @@ export type Database = {
           client_id?: string
           created_at?: string
           custom_domain?: string | null
+          edit_url?: string | null
           html_content?: string | null
           id?: string
           is_published?: boolean
+          published_url?: string | null
           slug?: string | null
           title?: string
           updated_at?: string
