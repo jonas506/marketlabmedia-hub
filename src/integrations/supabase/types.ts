@@ -147,6 +147,82 @@ export type Database = {
           },
         ]
       }
+      client_ai_messages: {
+        Row: {
+          client_id: string
+          content: string
+          created_at: string
+          id: string
+          mode: string | null
+          role: string
+        }
+        Insert: {
+          client_id: string
+          content: string
+          created_at?: string
+          id?: string
+          mode?: string | null
+          role?: string
+        }
+        Update: {
+          client_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          mode?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_ai_messages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_knowledge: {
+        Row: {
+          category: string
+          client_id: string
+          content: string
+          created_at: string
+          id: string
+          source_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          client_id: string
+          content: string
+          created_at?: string
+          id?: string
+          source_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          client_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          source_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_knowledge_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           additional_products: string[] | null
