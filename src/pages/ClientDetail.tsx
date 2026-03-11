@@ -126,20 +126,11 @@ const ClientDetail = () => {
           <BrandingSection client={client} canEdit={canEdit} />
         </div>
 
-        {/* Notebook (NotebookLM-style) */}
-        <div className="mb-8">
-          <ClientNotebook
-            clientId={client.id}
-            canEdit={canEdit}
-            websiteUrl={client.website_url}
-          />
-        </div>
-
         {/* Month selector */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
-              <CalendarDays className="h-4 w-4 text-primary" />
+            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10">
+              <CalendarDays className="h-4.5 w-4.5 text-primary" />
             </div>
             <h2 className="font-display text-lg font-semibold tracking-tight">Monatszyklus</h2>
           </div>
@@ -148,7 +139,7 @@ const ClientDetail = () => {
             setSelectedMonth(m);
             setSelectedYear(y);
           }}>
-            <SelectTrigger className="w-52 h-10 text-sm bg-card border-border">
+            <SelectTrigger className="w-56 h-11 text-sm bg-card border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -160,26 +151,29 @@ const ClientDetail = () => {
         </div>
 
         {/* Sections */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} />
           <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
-          
         </div>
 
-        {/* Aufgaben — always visible */}
-        <div className="mt-6">
+        {/* Aufgaben */}
+        <div className="mt-8">
           <TaskList clientId={client.id} canEdit={canEdit} />
         </div>
 
-        {/* Checklisten */}
-        <div className="mt-6">
-          <ClientChecklists clientId={client.id} canEdit={canEdit} />
+        {/* Landing Pages */}
+        <div className="mt-8">
+          <LandingPagesList clientId={client.id} canEdit={canEdit} />
         </div>
 
-        {/* Landing Pages */}
-        <div className="mt-6">
-          <LandingPagesList clientId={client.id} canEdit={canEdit} />
+        {/* Notebook (ganz unten) */}
+        <div className="mt-8">
+          <ClientNotebook
+            clientId={client.id}
+            canEdit={canEdit}
+            websiteUrl={client.website_url}
+          />
         </div>
       </motion.div>
     </AppLayout>
