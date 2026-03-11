@@ -4,9 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Plus, Trash2, Globe, Loader2, Search, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
@@ -37,10 +35,7 @@ interface KnowledgeBaseProps {
 const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) => {
   const qc = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("sonstiges");
-  const [sourceUrl, setSourceUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [scraping, setScraping] = useState(false);
   const [search, setSearch] = useState("");
@@ -67,21 +62,24 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
   });
 
   const addEntry = async () => {
-    if (!title.trim() || !content.trim()) return;
+    if (!content.trim()) return;
     setSaving(true);
+    // Auto-generate title from first line or first 50 chars
+    const autoTitle = content.trim().split("\n")[0].slice(0, 80) || "Eintrag";
     const { error } = await supabase.from("client_knowledge").insert({
       client_id: clientId,
-      title: title.trim(),
+      title: autoTitle,
       content: content.trim(),
-      category,
-      source_url: sourceUrl.trim() || null,
+      category: "sonstiges",
+      source_url: null,
     });
     setSaving(false);
     if (error) toast.error("Fehler beim Speichern");
     else {
       toast.success("Eintrag hinzugefügt");
       qc.invalidateQueries({ queryKey: ["client-knowledge", clientId] });
-      resetForm();
+      setContent("");
+      setShowAdd(false);
     }
   };
 
@@ -125,10 +123,7 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
 
   const resetForm = () => {
     setShowAdd(false);
-    setTitle("");
     setContent("");
-    setCategory("sonstiges");
-    setSourceUrl("");
   };
 
   const usedCategories = [...new Set(entries.map((e: any) => e.category))];
@@ -183,15 +178,34 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
               Website importieren
             </Button>
           )}
-          {canEdit && (
+          {canEdit && !showAdd && (
             <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setShowAdd(true)}>
-              <Plus className="h-3 w-3" /> Eintrag
+              <Plus className="h-3 w-3" /> Info hinzufügen
             </Button>
           )}
         </div>
       </div>
 
-      {/* Entries */}
+      {/* Inline Add */}
+      {showAdd && canEdit && (
+        <div className="rounded-lg border border-primary/20 bg-card p-3 space-y-2">
+          <Textarea
+            placeholder="Informationen einfach hier reinpasten – Gesprächsnotizen, Links, Transkriptionen, Produktinfos…"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="min-h-[100px] text-sm"
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={resetForm}>Abbrechen</Button>
+            <Button size="sm" className="h-7 text-xs" onClick={addEntry} disabled={!content.trim() || saving}>
+              {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+              Speichern
+            </Button>
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="py-6 flex justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -269,52 +283,6 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
         </div>
       )}
 
-      {/* Add Dialog */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Wissen hinzufügen</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Titel</Label>
-              <Input placeholder="z.B. Call-Notizen 15.03." value={title} onChange={(e) => setTitle(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Kategorie</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Inhalt</Label>
-              <Textarea
-                placeholder="Alle relevanten Informationen hier einfügen..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="min-h-[120px]"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Quelle (optional)</Label>
-              <Input placeholder="URL oder Referenz" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={resetForm}>Abbrechen</Button>
-            <Button onClick={addEntry} disabled={!title.trim() || !content.trim() || saving}>
-              {saving ? "Speichern…" : "Hinzufügen"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
