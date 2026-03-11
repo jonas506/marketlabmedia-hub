@@ -5,7 +5,8 @@ import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Send, Loader2, Globe, ExternalLink, Save, Eye, EyeOff,
   Monitor, Tablet, Smartphone, Upload, Image, X, Code, Sparkles,
-  PanelLeftClose, PanelLeft, FileImage, Paperclip, ChevronDown, BookmarkPlus
+  PanelLeftClose, PanelLeft, FileImage, Paperclip, ChevronDown, BookmarkPlus,
+  Link2, Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,9 @@ const LandingPageBuilder = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [cloneUrl, setCloneUrl] = useState("");
+  const [isCloning, setIsCloning] = useState(false);
+  const [showCloneInput, setShowCloneInput] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -194,6 +198,139 @@ const LandingPageBuilder = () => {
   const removeUploadedFile = (index: number) => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const cloneFromUrl = useCallback(async () => {
+    if (!cloneUrl.trim() || isCloning) return;
+    setIsCloning(true);
+    setShowCloneInput(false);
+
+    const scrapingMsg: ChatMessage = {
+      role: "user",
+      content: `Baue diese Seite 1:1 nach: ${cloneUrl.trim()}`,
+    };
+    const newMessages = [...messages, scrapingMsg];
+    setMessages(newMessages);
+
+    try {
+      // Step 1: Scrape the URL
+      toast.info("Seite wird gescraped...");
+      const scrapeResp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/firecrawl-scrape`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            url: cloneUrl.trim(),
+            options: { formats: ["html", "markdown"], onlyMainContent: false, waitFor: 3000 },
+          }),
+        }
+      );
+
+      if (!scrapeResp.ok) {
+        const err = await scrapeResp.json().catch(() => ({}));
+        throw new Error(err.error || "Scraping fehlgeschlagen");
+      }
+
+      const scrapeData = await scrapeResp.json();
+      const scrapedHtml = scrapeData?.data?.html || "";
+      const scrapedMarkdown = scrapeData?.data?.markdown || "";
+
+      if (!scrapedHtml && !scrapedMarkdown) {
+        throw new Error("Keine Inhalte auf der Seite gefunden");
+      }
+
+      // Step 2: Send scraped content to AI to recreate
+      toast.info("KI erstellt die Seite nach...");
+
+      // Truncate HTML if too long, use markdown as fallback context
+      const htmlSnippet = scrapedHtml.length > 80000 ? scrapedHtml.slice(0, 80000) + "\n<!-- truncated -->" : scrapedHtml;
+
+      const clonePrompt = `Hier ist der HTML-Quellcode einer bestehenden Seite. Baue sie EXAKT 1:1 nach – gleiches Layout, gleiche Farben, gleiche Struktur, gleiche Abstände. Verwende die gleichen Bilder (URLs beibehalten). Mache sie vollständig responsive.\n\n--- ORIGINAL HTML ---\n${htmlSnippet}\n--- ENDE ---`;
+
+      const apiMessages = [
+        ...newMessages.slice(0, -1).map((m) => ({ role: m.role, content: m.content })),
+        { role: "user" as const, content: clonePrompt },
+      ];
+
+      setIsGenerating(true);
+      let assistantContent = "";
+      const updateAssistant = (chunk: string) => {
+        assistantContent += chunk;
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") {
+            return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
+          }
+          return [...prev, { role: "assistant", content: assistantContent }];
+        });
+      };
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-landing-page`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: apiMessages, clientId, landingPageId: currentPageId }),
+        }
+      );
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Fehler" }));
+        throw new Error(err.error || "Fehler bei der Generierung");
+      }
+
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) updateAssistant(content);
+          } catch {
+            buffer = line + "\n" + buffer;
+            break;
+          }
+        }
+      }
+
+      const html = extractHtml(assistantContent);
+      if (html) {
+        setHtmlContent(html);
+        toast.success("Seite erfolgreich nachgebaut!");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Fehler beim Klonen");
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Fehler: ${e.message}` },
+      ]);
+    } finally {
+      setIsCloning(false);
+      setIsGenerating(false);
+      setCloneUrl("");
+    }
+  }, [cloneUrl, isCloning, messages, clientId, currentPageId]);
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isGenerating) return;
@@ -457,6 +594,15 @@ const LandingPageBuilder = () => {
                       </div>
                     )}
                     <div className="space-y-1.5">
+                      <button
+                        onClick={() => setShowCloneInput(true)}
+                        className="block w-full text-left text-xs px-3 py-2 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Link2 className="h-3.5 w-3.5 text-primary" />
+                          URL einfügen & Seite 1:1 nachbauen
+                        </span>
+                      </button>
                       {[
                         "Erstelle eine moderne Landing Page für diesen Kunden",
                         "Baue eine Lead-Gen Seite mit Kontaktformular",
@@ -471,6 +617,62 @@ const LandingPageBuilder = () => {
                         </button>
                       ))}
                     </div>
+
+                    {/* Clone URL input */}
+                    <AnimatePresence>
+                      {showCloneInput && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-3 overflow-hidden"
+                        >
+                          <div className="p-3 rounded-xl border border-primary/30 bg-primary/5 space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-medium">
+                              <Link2 className="h-3.5 w-3.5 text-primary" />
+                              Seite nachbauen
+                            </div>
+                            <Input
+                              value={cloneUrl}
+                              onChange={(e) => setCloneUrl(e.target.value)}
+                              placeholder="https://www.beispiel.de"
+                              className="h-8 text-xs font-mono"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  cloneFromUrl();
+                                }
+                              }}
+                              disabled={isCloning}
+                              autoFocus
+                            />
+                            <div className="flex gap-1.5">
+                              <Button
+                                size="sm"
+                                className="h-7 text-[11px] flex-1 gap-1"
+                                onClick={cloneFromUrl}
+                                disabled={!cloneUrl.trim() || isCloning}
+                              >
+                                {isCloning ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                                {isCloning ? "Wird nachgebaut..." : "Nachbauen"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-[11px]"
+                                onClick={() => { setShowCloneInput(false); setCloneUrl(""); }}
+                              >
+                                Abbrechen
+                              </Button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
 
@@ -573,6 +775,37 @@ const LandingPageBuilder = () => {
               )}
             </AnimatePresence>
 
+            {/* Clone URL input (when chat has messages) */}
+            <AnimatePresence>
+              {showCloneInput && messages.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="px-3 border-t border-border overflow-hidden"
+                >
+                  <div className="py-2 flex gap-1.5">
+                    <Input
+                      value={cloneUrl}
+                      onChange={(e) => setCloneUrl(e.target.value)}
+                      placeholder="https://www.beispiel.de"
+                      className="h-8 text-xs font-mono flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") { e.preventDefault(); cloneFromUrl(); }
+                        if (e.key === "Escape") { setShowCloneInput(false); setCloneUrl(""); }
+                      }}
+                      disabled={isCloning}
+                      autoFocus
+                    />
+                    <Button size="sm" className="h-8 text-xs gap-1" onClick={cloneFromUrl} disabled={!cloneUrl.trim() || isCloning}>
+                      {isCloning ? <Loader2 className="h-3 w-3 animate-spin" /> : <Copy className="h-3 w-3" />}
+                      Nachbauen
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Input area */}
             <div className="p-3 border-t border-border shrink-0">
               <form
@@ -596,6 +829,16 @@ const LandingPageBuilder = () => {
                   disabled={isGenerating}
                 />
                 <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={() => setShowCloneInput((v) => !v)}
+                    title="URL nachbauen"
+                  >
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
                   <Button
                     type="button"
                     size="icon"
