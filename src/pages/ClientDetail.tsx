@@ -11,13 +11,11 @@ import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
 import LandingPagesList from "@/components/client/LandingPagesList";
-import KnowledgeBase from "@/components/client/KnowledgeBase";
-import ClientAIChat from "@/components/client/ClientAIChat";
+import ClientNotebook from "@/components/client/ClientNotebook";
 
 import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, BookOpen, Bot } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
