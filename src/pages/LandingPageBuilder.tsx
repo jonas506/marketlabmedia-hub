@@ -192,7 +192,7 @@ const LandingPageBuilder = () => {
         slug: slug || null,
         custom_domain: customDomain || null,
         is_published: isPublished,
-        chat_history: messages,
+        chat_history: JSON.parse(JSON.stringify(messages)),
         updated_at: new Date().toISOString(),
       };
 
