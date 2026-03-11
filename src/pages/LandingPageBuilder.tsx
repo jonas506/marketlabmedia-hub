@@ -80,6 +80,29 @@ const LandingPageBuilder = () => {
     enabled: !!clientId,
   });
 
+  // Auto-load CI assets from client branding storage
+  const { data: ciAssets } = useQuery({
+    queryKey: ["ci-assets", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from("landing-page-assets")
+        .list(`${clientId}/ci`, { limit: 100 });
+      if (error || !data) return [];
+      return data
+        .filter((f) => f.name !== ".emptyFolderPlaceholder")
+        .map((file) => {
+          const path = `${clientId}/ci/${file.name}`;
+          const { data: urlData } = supabase.storage.from("landing-page-assets").getPublicUrl(path);
+          return {
+            name: file.name.replace(/^\d+-/, ""),
+            url: urlData.publicUrl,
+            type: file.metadata?.mimetype?.startsWith("image/") ? "image" : "file",
+          };
+        });
+    },
+    enabled: !!clientId,
+  });
+
   useEffect(() => {
     if (landingPage) {
       setTitle(landingPage.title);
