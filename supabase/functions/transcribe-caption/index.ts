@@ -66,32 +66,83 @@ async function downloadFromUrl(url: string): Promise<{ bytes: Uint8Array; fileNa
   const fileId = getGoogleDriveFileId(url);
   
   if (fileId) {
-    // Use the newer usercontent domain which handles large files better
-    const downloadUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
-    console.log("Downloading from Google Drive:", downloadUrl);
+    // Strategy 1: Try direct usercontent download with confirm
+    const urls = [
+      `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`,
+      `https://drive.google.com/uc?export=download&id=${fileId}&confirm=t`,
+    ];
     
-    const response = await fetch(downloadUrl, {
-      redirect: "follow",
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Google Drive download failed [${response.status}]: ${response.statusText}`);
+    for (const downloadUrl of urls) {
+      console.log("Trying Google Drive URL:", downloadUrl);
+      
+      const response = await fetch(downloadUrl, {
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "*/*",
+        },
+      });
+      
+      if (!response.ok) {
+        console.log(`URL failed [${response.status}], trying next...`);
+        await response.text(); // consume body
+        continue;
+      }
+      
+      const contentType = response.headers.get("content-type") || "";
+      console.log("Response content-type:", contentType);
+      
+      // If HTML, try to extract the actual download URL from the confirmation page
+      if (contentType.includes("text/html")) {
+        const html = await response.text();
+        console.log("Got HTML page, length:", html.length);
+        
+        // Look for download form action or direct link in the HTML
+        const formMatch = html.match(/action="(https:\/\/drive\.usercontent\.google\.com\/download[^"]+)"/);
+        if (formMatch) {
+          const realUrl = formMatch[1].replace(/&amp;/g, "&");
+          console.log("Found real download URL from form:", realUrl);
+          const realResp = await fetch(realUrl, {
+            redirect: "follow",
+            headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+          });
+          if (realResp.ok) {
+            const realCt = realResp.headers.get("content-type") || "";
+            if (!realCt.includes("text/html")) {
+              const buf = await realResp.arrayBuffer();
+              console.log(`Downloaded ${buf.byteLength} bytes from form URL`);
+              return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+            }
+            await realResp.text();
+          } else {
+            await realResp.text();
+          }
+        }
+        
+        // Try finding a direct download link
+        const linkMatch = html.match(/href="(\/uc\?export=download[^"]+)"/);
+        if (linkMatch) {
+          const directUrl = "https://drive.google.com" + linkMatch[1].replace(/&amp;/g, "&");
+          console.log("Found direct download link:", directUrl);
+          const directResp = await fetch(directUrl, { redirect: "follow" });
+          if (directResp.ok) {
+            const buf = await directResp.arrayBuffer();
+            console.log(`Downloaded ${buf.byteLength} bytes from direct link`);
+            return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+          }
+          await directResp.text();
+        }
+        
+        continue; // try next URL pattern
+      }
+      
+      // Got actual file content
+      const buf = await response.arrayBuffer();
+      console.log(`Downloaded ${buf.byteLength} bytes, content-type: ${contentType}`);
+      return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
     }
     
-    const contentType = response.headers.get("content-type") || "";
-    console.log("Response content-type:", contentType, "status:", response.status);
-    
-    // If we still got HTML, the file is likely not publicly shared
-    if (contentType.includes("text/html")) {
-      const html = await response.text();
-      console.log("Got HTML response (first 500 chars):", html.substring(0, 500));
-      throw new Error("Google Drive Datei konnte nicht heruntergeladen werden. Bitte stelle sicher, dass der Link auf 'Jeder mit dem Link' freigegeben ist.");
-    }
-    
-    const buf = await response.arrayBuffer();
-    console.log(`Downloaded ${buf.byteLength} bytes, content-type: ${contentType}`);
-    return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+    throw new Error("Google Drive Download fehlgeschlagen. Bitte stelle sicher, dass die Datei auf 'Jeder mit dem Link' freigegeben ist und versuche es erneut.");
   }
   
   // Non-Google-Drive URL: direct download
