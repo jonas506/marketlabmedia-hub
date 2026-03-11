@@ -96,8 +96,8 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     }
   }, [piece, clientId, qc]);
 
-  // Transcribe video via ElevenLabs
-  const transcribeVideo = useCallback(async () => {
+  // Transcribe video via ElevenLabs, optionally generate caption after
+  const transcribeVideo = useCallback(async (andCaption = false) => {
     if (!piece) return;
     setTranscribing(true);
     try {
@@ -108,6 +108,30 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
       if (data?.transcript) {
         setTranscript(data.transcript);
         toast.success("Transkript erstellt!");
+        qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+
+        // Combined flow: generate caption based on fresh transcript
+        if (andCaption) {
+          setTranscribing(false);
+          setGenerating(true);
+          setActiveTab("caption");
+          try {
+            const capBody: any = { action: "generate", piece_id: piece.id };
+            if (promptInput.trim()) capBody.custom_prompt = promptInput.trim();
+            const { data: capData, error: capErr } = await supabase.functions.invoke("transcribe-caption", { body: capBody });
+            if (capErr) throw capErr;
+            if (capData?.caption) {
+              setCaption(capData.caption);
+              toast.success("Caption aus Transkript generiert!");
+            }
+            qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+          } catch (err: any) {
+            toast.error("Caption-Generierung fehlgeschlagen", { description: err.message });
+          } finally {
+            setGenerating(false);
+          }
+          return;
+        }
       }
       if (data?.error) {
         toast.error("Transkription fehlgeschlagen", { description: data.error });
@@ -118,7 +142,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     } finally {
       setTranscribing(false);
     }
-  }, [piece, clientId, qc]);
+  }, [piece, clientId, qc, promptInput]);
 
   // Generate caption (uses transcript if available)
   const generateCaption = useCallback(async () => {
