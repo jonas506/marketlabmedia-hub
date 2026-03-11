@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Copy, Check, Loader2, Wand2, Save, BookmarkIcon, ChevronDown } from "lucide-react";
+import { Sparkles, Copy, Check, Loader2, Wand2, Save, BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
 
 interface PieceDetailDialogProps {
@@ -40,7 +40,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedPromptId, setSelectedPromptId] = useState("");
-  const [showTranscript, setShowTranscript] = useState(false);
+  
   const autoTriggeredRef = useRef<string | null>(null);
 
   const { data: savedPrompts = [] } = useQuery({
@@ -59,7 +59,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     setTranscript(piece.transcript || "");
     setPromptInput("");
     setSelectedPromptId("");
-    setShowTranscript(false);
+    
   }
 
   // Auto-generate: when dialog opens with no caption, auto-run transcribe→caption
@@ -275,31 +275,29 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
               </div>
             </div>
 
-            {/* Collapsible transcript */}
-            {transcript && (
-              <div>
-                <button
-                  onClick={() => setShowTranscript(!showTranscript)}
-                  className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors w-full"
+            {/* Transcript – always visible */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Transkript</label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-5 px-1.5 text-[10px] font-mono gap-1"
+                  onClick={() => copyText("transcript", transcript)}
+                  disabled={!transcript}
                 >
-                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showTranscript ? "rotate-0" : "-rotate-90"}`} />
-                  Transkript anzeigen
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-5 px-1.5 text-[10px] font-mono gap-1 ml-auto"
-                    onClick={e => { e.stopPropagation(); copyText("transcript", transcript); }}
-                  >
-                    {copiedField === "transcript" ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
-                  </Button>
-                </button>
-                {showTranscript && (
-                  <div className="mt-2 text-xs text-muted-foreground bg-muted/30 rounded-md p-3 whitespace-pre-wrap max-h-[200px] overflow-y-auto">
-                    {transcript}
-                  </div>
+                  {copiedField === "transcript" ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
+                  Kopieren
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground bg-muted/30 rounded-md p-3 whitespace-pre-wrap max-h-[200px] overflow-y-auto min-h-[60px]">
+                {autoGenerating && !transcript ? (
+                  <span className="italic text-muted-foreground/60">Wird transkribiert…</span>
+                ) : transcript || (
+                  <span className="italic text-muted-foreground/60">Kein Transkript vorhanden</span>
                 )}
               </div>
-            )}
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>

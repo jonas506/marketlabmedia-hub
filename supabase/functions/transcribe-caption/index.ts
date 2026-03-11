@@ -159,15 +159,24 @@ async function transcribeWithElevenLabs(audioBytes: Uint8Array, fileName: string
 }
 
 function buildCaptionSystemPrompt(clientContext: string, customPrompt?: string): string {
-  const base = `Du bist ein Social Media Experte. Erstelle eine Instagram/TikTok Caption für ein Content Piece.
+  const base = `Du bist ein Social Media Experte und SEO-Spezialist. Erstelle eine Instagram/TikTok Caption basierend auf dem Transkript eines Content Pieces.
+
 Die Caption soll:
-- Aufmerksamkeit erregen (Hook am Anfang)
-- Den Kerninhalt zusammenfassen
-- Einen Call-to-Action enthalten
-- 3-5 relevante Hashtags am Ende haben
+- SEO-optimiert sein mit relevanten Keywords im Text
+- Einen starken Hook am Anfang haben (Frage, Statement, Provokation)
+- Den Kerninhalt des Transkripts zusammenfassen
+- Einen passenden Call-to-Action enthalten – wähle den sinnvollsten je nach Content-Art:
+  • "Folge für mehr [Thema]" bei lehrreichen/informativen Inhalten
+  • "Speichere diesen Post für später 🔖" bei Tipps, Anleitungen, Listen
+  • "Teile das mit jemandem, der das braucht" bei relatable/motivierenden Inhalten
+  • "Schreib mir in die Kommentare..." bei Meinungs-/Diskussionsthemen
+  • "Link in Bio" bei produktbezogenen Inhalten
+  • Kombiniere max. 2 CTAs wenn sinnvoll
+- 5-10 relevante Hashtags am Ende (Mix aus Nischen- und Reichweiten-Hashtags)
 - Zur Tonalität des Kunden passen
 - Emojis sparsam aber effektiv einsetzen
 - Maximal 2200 Zeichen lang sein
+- Absätze und Zeilenumbrüche für Lesbarkeit nutzen
 
 ${clientContext}`;
 
