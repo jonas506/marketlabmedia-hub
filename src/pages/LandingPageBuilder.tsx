@@ -803,6 +803,16 @@ const LandingPageBuilder = () => {
                     size="icon"
                     variant="ghost"
                     className="h-8 w-8"
+                    onClick={() => setShowCloneInput((v) => !v)}
+                    title="URL nachbauen"
+                  >
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
                   >
