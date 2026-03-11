@@ -3,6 +3,7 @@ import ClientCard from "@/components/ClientCard";
 import AppLayout from "@/components/AppLayout";
 import CreateClientDialog from "@/components/CreateClientDialog";
 import MyTasks from "@/components/MyTasks";
+import WeeklyKPIs from "@/components/WeeklyKPIs";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
