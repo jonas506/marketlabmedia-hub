@@ -775,6 +775,37 @@ const LandingPageBuilder = () => {
               )}
             </AnimatePresence>
 
+            {/* Clone URL input (when chat has messages) */}
+            <AnimatePresence>
+              {showCloneInput && messages.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="px-3 border-t border-border overflow-hidden"
+                >
+                  <div className="py-2 flex gap-1.5">
+                    <Input
+                      value={cloneUrl}
+                      onChange={(e) => setCloneUrl(e.target.value)}
+                      placeholder="https://www.beispiel.de"
+                      className="h-8 text-xs font-mono flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") { e.preventDefault(); cloneFromUrl(); }
+                        if (e.key === "Escape") { setShowCloneInput(false); setCloneUrl(""); }
+                      }}
+                      disabled={isCloning}
+                      autoFocus
+                    />
+                    <Button size="sm" className="h-8 text-xs gap-1" onClick={cloneFromUrl} disabled={!cloneUrl.trim() || isCloning}>
+                      {isCloning ? <Loader2 className="h-3 w-3 animate-spin" /> : <Copy className="h-3 w-3" />}
+                      Nachbauen
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Input area */}
             <div className="p-3 border-t border-border shrink-0">
               <form
