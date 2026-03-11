@@ -285,52 +285,6 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
         </div>
       )}
 
-      {/* Add Dialog */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Wissen hinzufügen</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Titel</Label>
-              <Input placeholder="z.B. Call-Notizen 15.03." value={title} onChange={(e) => setTitle(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Kategorie</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Inhalt</Label>
-              <Textarea
-                placeholder="Alle relevanten Informationen hier einfügen..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="min-h-[120px]"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Quelle (optional)</Label>
-              <Input placeholder="URL oder Referenz" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={resetForm}>Abbrechen</Button>
-            <Button onClick={addEntry} disabled={!title.trim() || !content.trim() || saving}>
-              {saving ? "Speichern…" : "Hinzufügen"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
