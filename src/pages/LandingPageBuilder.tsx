@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Send, Loader2, Globe, ExternalLink, Save, Eye, EyeOff,
   Monitor, Tablet, Smartphone, Upload, Image, X, Code, Sparkles,
-  PanelLeftClose, PanelLeft, FileImage, Paperclip, ChevronDown
+  PanelLeftClose, PanelLeft, FileImage, Paperclip, ChevronDown, BookmarkPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SaveTemplateDialog from "@/components/client/SaveTemplateDialog";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -34,6 +35,7 @@ const LandingPageBuilder = () => {
   const { id: clientId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const pageId = searchParams.get("page");
+  const templateId = searchParams.get("template");
   const qc = useQueryClient();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -51,6 +53,7 @@ const LandingPageBuilder = () => {
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string; type: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,6 +105,27 @@ const LandingPageBuilder = () => {
     },
     enabled: !!clientId,
   });
+
+  // Load template HTML if templateId is provided
+  useEffect(() => {
+    if (templateId && !pageId) {
+      (async () => {
+        const { data, error } = await supabase
+          .from("landing_page_templates" as any)
+          .select("*")
+          .eq("id", templateId)
+          .single();
+        if (data && !error) {
+          setHtmlContent((data as any).html_content || "");
+          setTitle(`${(data as any).name} – Kopie`);
+          setMessages([{
+            role: "assistant",
+            content: `Vorlage "${(data as any).name}" geladen. Du kannst jetzt Anpassungen beschreiben.`,
+          }]);
+        }
+      })();
+    }
+  }, [templateId, pageId]);
 
   useEffect(() => {
     if (landingPage) {
@@ -384,6 +408,17 @@ const LandingPageBuilder = () => {
                 <Button size="sm" variant="outline" className="h-7 text-[11px] flex-1 gap-1" onClick={savePage}>
                   <Save className="h-3 w-3" /> Speichern
                 </Button>
+                {htmlContent && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px] gap-1"
+                    onClick={() => setShowSaveTemplate(true)}
+                    title="Als Vorlage speichern"
+                  >
+                    <BookmarkPlus className="h-3 w-3" />
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant={isPublished ? "default" : "outline"}
@@ -712,6 +747,12 @@ const LandingPageBuilder = () => {
           )}
         </div>
       </div>
+
+      <SaveTemplateDialog
+        open={showSaveTemplate}
+        onOpenChange={setShowSaveTemplate}
+        htmlContent={htmlContent}
+      />
     </div>
   );
 };

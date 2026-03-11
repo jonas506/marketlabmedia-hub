@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Globe, Plus, ExternalLink, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
+import TemplatePickerDialog from "./TemplatePickerDialog";
 
 interface LandingPagesListProps {
   clientId: string;
@@ -15,6 +17,8 @@ interface LandingPagesListProps {
 
 const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const { data: pages, isLoading } = useQuery({
     queryKey: ["landing-pages", clientId],
@@ -58,11 +62,14 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           <h2 className="font-display text-base font-semibold">Landing Pages</h2>
         </div>
         {canEdit && (
-          <Link to={`/client/${clientId}/landing-page`}>
-            <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Neue Landing Page
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => setShowTemplatePicker(true)}
+          >
+            <Plus className="h-3.5 w-3.5" /> Neue Landing Page
+          </Button>
         )}
       </div>
 
@@ -75,11 +82,14 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           <Globe className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Noch keine Landing Pages erstellt</p>
           {canEdit && (
-            <Link to={`/client/${clientId}/landing-page`}>
-              <Button size="sm" variant="outline" className="mt-3 h-8 text-xs gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Erste Landing Page erstellen
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3 h-8 text-xs gap-1.5"
+              onClick={() => setShowTemplatePicker(true)}
+            >
+              <Plus className="h-3.5 w-3.5" /> Erste Landing Page erstellen
+            </Button>
           )}
         </div>
       ) : (
@@ -144,6 +154,19 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           ))}
         </div>
       )}
+
+      <TemplatePickerDialog
+        open={showTemplatePicker}
+        onOpenChange={setShowTemplatePicker}
+        onBlank={() => {
+          setShowTemplatePicker(false);
+          navigate(`/client/${clientId}/landing-page`);
+        }}
+        onSelect={(tpl) => {
+          setShowTemplatePicker(false);
+          navigate(`/client/${clientId}/landing-page?template=${tpl.id}`);
+        }}
+      />
     </div>
   );
 };
