@@ -53,6 +53,59 @@ async function getClientContext(supabase: any, clientId: string): Promise<string
   return `Kunde: ${client.name}. Branche: ${client.industry || "k.A."}. Tonalität: ${client.tonality || "professionell"}. Zielgruppe: ${client.target_audience || "k.A."}. Themen: ${client.content_topics || "k.A."}. USPs: ${client.usps || "k.A."}.`;
 }
 
+// ── Google Drive download helper ──
+function getGoogleDriveDirectUrl(url: string): string | null {
+  // Handle various Google Drive URL formats
+  let fileId: string | null = null;
+  
+  // Format: https://drive.google.com/file/d/FILE_ID/...
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) fileId = fileMatch[1];
+  
+  // Format: https://drive.google.com/open?id=FILE_ID
+  if (!fileId) {
+    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch) fileId = idMatch[1];
+  }
+  
+  if (!fileId) return null;
+  return `https://drive.google.com/uc?export=download&id=${fileId}`;
+}
+
+async function downloadFromUrl(url: string): Promise<{ bytes: Uint8Array; fileName: string }> {
+  // Try Google Drive direct download
+  const driveUrl = getGoogleDriveDirectUrl(url);
+  const downloadUrl = driveUrl || url;
+  
+  console.log("Downloading from:", downloadUrl);
+  
+  const response = await fetch(downloadUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Download fehlgeschlagen [${response.status}]: ${response.statusText}`);
+  }
+  
+  // Check if Google Drive returned an HTML warning page (file too large for virus scan)
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("text/html") && driveUrl) {
+    // Try with confirm parameter
+    const confirmUrl = driveUrl + "&confirm=t";
+    console.log("Retrying with confirm:", confirmUrl);
+    const retryResp = await fetch(confirmUrl, { redirect: "follow", headers: { "User-Agent": "Mozilla/5.0" } });
+    if (!retryResp.ok) throw new Error(`Download (retry) fehlgeschlagen [${retryResp.status}]`);
+    const buf = await retryResp.arrayBuffer();
+    return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+  }
+  
+  const buf = await response.arrayBuffer();
+  return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+}
+
 // ── ElevenLabs Speech-to-Text ──
 async function transcribeWithElevenLabs(audioBytes: Uint8Array, fileName: string): Promise<string> {
   const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
