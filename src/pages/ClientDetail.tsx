@@ -9,6 +9,7 @@ import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
+import LandingPagesList from "@/components/client/LandingPagesList";
 
 import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -158,6 +159,11 @@ const ClientDetail = () => {
         {/* Checklisten */}
         <div className="mt-6">
           <ClientChecklists clientId={client.id} canEdit={canEdit} />
+        </div>
+
+        {/* Landing Pages */}
+        <div className="mt-6">
+          <LandingPagesList clientId={client.id} canEdit={canEdit} />
         </div>
       </motion.div>
     </AppLayout>
