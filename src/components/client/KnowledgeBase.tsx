@@ -125,10 +125,7 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
 
   const resetForm = () => {
     setShowAdd(false);
-    setTitle("");
     setContent("");
-    setCategory("sonstiges");
-    setSourceUrl("");
   };
 
   const usedCategories = [...new Set(entries.map((e: any) => e.category))];
