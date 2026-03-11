@@ -54,54 +54,50 @@ async function getClientContext(supabase: any, clientId: string): Promise<string
 }
 
 // ── Google Drive download helper ──
-function getGoogleDriveDirectUrl(url: string): string | null {
-  // Handle various Google Drive URL formats
-  let fileId: string | null = null;
-  
-  // Format: https://drive.google.com/file/d/FILE_ID/...
+function getGoogleDriveFileId(url: string): string | null {
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (fileMatch) fileId = fileMatch[1];
-  
-  // Format: https://drive.google.com/open?id=FILE_ID
-  if (!fileId) {
-    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (idMatch) fileId = idMatch[1];
-  }
-  
-  if (!fileId) return null;
-  return `https://drive.google.com/uc?export=download&id=${fileId}`;
+  if (fileMatch) return fileMatch[1];
+  const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idMatch) return idMatch[1];
+  return null;
 }
 
 async function downloadFromUrl(url: string): Promise<{ bytes: Uint8Array; fileName: string }> {
-  // Try Google Drive direct download
-  const driveUrl = getGoogleDriveDirectUrl(url);
-  const downloadUrl = driveUrl || url;
+  const fileId = getGoogleDriveFileId(url);
   
-  console.log("Downloading from:", downloadUrl);
-  
-  const response = await fetch(downloadUrl, {
-    redirect: "follow",
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-    },
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Download fehlgeschlagen [${response.status}]: ${response.statusText}`);
-  }
-  
-  // Check if Google Drive returned an HTML warning page (file too large for virus scan)
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("text/html") && driveUrl) {
-    // Try with confirm parameter
-    const confirmUrl = driveUrl + "&confirm=t";
-    console.log("Retrying with confirm:", confirmUrl);
-    const retryResp = await fetch(confirmUrl, { redirect: "follow", headers: { "User-Agent": "Mozilla/5.0" } });
-    if (!retryResp.ok) throw new Error(`Download (retry) fehlgeschlagen [${retryResp.status}]`);
-    const buf = await retryResp.arrayBuffer();
+  if (fileId) {
+    // Use the newer usercontent domain which handles large files better
+    const downloadUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
+    console.log("Downloading from Google Drive:", downloadUrl);
+    
+    const response = await fetch(downloadUrl, {
+      redirect: "follow",
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Google Drive download failed [${response.status}]: ${response.statusText}`);
+    }
+    
+    const contentType = response.headers.get("content-type") || "";
+    console.log("Response content-type:", contentType, "status:", response.status);
+    
+    // If we still got HTML, the file is likely not publicly shared
+    if (contentType.includes("text/html")) {
+      const html = await response.text();
+      console.log("Got HTML response (first 500 chars):", html.substring(0, 500));
+      throw new Error("Google Drive Datei konnte nicht heruntergeladen werden. Bitte stelle sicher, dass der Link auf 'Jeder mit dem Link' freigegeben ist.");
+    }
+    
+    const buf = await response.arrayBuffer();
+    console.log(`Downloaded ${buf.byteLength} bytes, content-type: ${contentType}`);
     return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
   }
   
+  // Non-Google-Drive URL: direct download
+  console.log("Downloading from URL:", url);
+  const response = await fetch(url, { redirect: "follow" });
+  if (!response.ok) throw new Error(`Download failed [${response.status}]`);
   const buf = await response.arrayBuffer();
   return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
 }
