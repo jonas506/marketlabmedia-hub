@@ -142,6 +142,7 @@ const CreateClientDialog = () => {
         usps: profile.usps,
         tonality: profile.tonality,
         content_topics: profile.content_topics,
+        logo_url: profile.logo_url || null,
         services: services,
         monthly_reels: reels,
         monthly_carousels: carousels,
