@@ -1,14 +1,11 @@
-import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Globe, Plus, ExternalLink, Trash2, Eye, EyeOff } from "lucide-react";
+import { Globe, Trash2, Eye, EyeOff, ExternalLink, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
-import TemplatePickerDialog from "./TemplatePickerDialog";
 
 interface LandingPagesListProps {
   clientId: string;
@@ -17,8 +14,6 @@ interface LandingPagesListProps {
 
 const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
   const qc = useQueryClient();
-  const navigate = useNavigate();
-  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const { data: pages, isLoading } = useQuery({
     queryKey: ["landing-pages", clientId],
@@ -52,6 +47,18 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
     }
   };
 
+  const getLiveUrl = (page: { slug?: string | null; custom_domain?: string | null }) => {
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (page.custom_domain) return `https://${page.custom_domain}`;
+    if (page.slug) return `${baseUrl}/functions/v1/serve-landing-page?slug=${page.slug}`;
+    return null;
+  };
+
+  const copyUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast.success("URL kopiert");
+  };
+
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="flex items-center justify-between p-4 border-b border-border">
@@ -61,16 +68,6 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           </div>
           <h2 className="font-display text-base font-semibold">Landing Pages</h2>
         </div>
-        {canEdit && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs gap-1.5"
-            onClick={() => setShowTemplatePicker(true)}
-          >
-            <Plus className="h-3.5 w-3.5" /> Neue Landing Page
-          </Button>
-        )}
       </div>
 
       {isLoading ? (
@@ -81,92 +78,88 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
         <div className="p-8 text-center">
           <Globe className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Noch keine Landing Pages erstellt</p>
-          {canEdit && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="mt-3 h-8 text-xs gap-1.5"
-              onClick={() => setShowTemplatePicker(true)}
-            >
-              <Plus className="h-3.5 w-3.5" /> Erste Landing Page erstellen
-            </Button>
-          )}
         </div>
       ) : (
         <div className="divide-y divide-border">
-          {pages.map((page, i) => (
-            <motion.div
-              key={page.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: i * 0.05 }}
-              className="flex items-center gap-3 p-3 hover:bg-accent/30 transition-colors group"
-            >
-              <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-muted shrink-0">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <Link
-                  to={`/client/${clientId}/landing-page?page=${page.id}`}
-                  className="text-sm font-medium hover:text-primary transition-colors truncate block"
-                >
-                  {page.title}
-                </Link>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{format(new Date(page.created_at), "dd. MMM yyyy", { locale: de })}</span>
-                  {page.custom_domain && (
-                    <span className="font-mono text-[10px]">• {page.custom_domain}</span>
+          {pages.map((page, i) => {
+            const liveUrl = getLiveUrl(page);
+            return (
+              <motion.div
+                key={page.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="flex items-center gap-3 p-3 hover:bg-accent/30 transition-colors group"
+              >
+                <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-muted shrink-0">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{page.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{format(new Date(page.created_at), "dd. MMM yyyy", { locale: de })}</span>
+                    {page.custom_domain && (
+                      <span className="font-mono text-[10px]">• {page.custom_domain}</span>
+                    )}
+                    {page.slug && !page.custom_domain && (
+                      <span className="font-mono text-[10px]">• /{page.slug}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {liveUrl && page.is_published && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => copyUrl(liveUrl)}
+                        title="URL kopieren"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <a href={liveUrl} target="_blank" rel="noopener noreferrer">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Seite öffnen">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Button>
+                      </a>
+                    </>
+                  )}
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => togglePublish(page.id, page.is_published)}
+                      >
+                        {page.is_published ? (
+                          <Eye className="h-3.5 w-3.5 text-[hsl(var(--runway-green))]" />
+                        ) : (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => deletePage(page.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
                   )}
                 </div>
-              </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                {canEdit && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => togglePublish(page.id, page.is_published)}
-                    >
-                      {page.is_published ? (
-                        <Eye className="h-3.5 w-3.5 text-[hsl(var(--runway-green))]" />
-                      ) : (
-                        <EyeOff className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive"
-                      onClick={() => deletePage(page.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </>
-                )}
-              </div>
-              <div
-                className={`h-2 w-2 rounded-full shrink-0 ${
-                  page.is_published ? "bg-[hsl(var(--runway-green))]" : "bg-muted-foreground/30"
-                }`}
-              />
-            </motion.div>
-          ))}
+                <div
+                  className={`h-2 w-2 rounded-full shrink-0 ${
+                    page.is_published ? "bg-[hsl(var(--runway-green))]" : "bg-muted-foreground/30"
+                  }`}
+                />
+              </motion.div>
+            );
+          })}
         </div>
       )}
-
-      <TemplatePickerDialog
-        open={showTemplatePicker}
-        onOpenChange={setShowTemplatePicker}
-        onBlank={() => {
-          setShowTemplatePicker(false);
-          navigate(`/client/${clientId}/landing-page`);
-        }}
-        onSelect={(tpl) => {
-          setShowTemplatePicker(false);
-          navigate(`/client/${clientId}/landing-page?template=${tpl.id}`);
-        }}
-      />
     </div>
   );
 };
