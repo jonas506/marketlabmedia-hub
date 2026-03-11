@@ -594,6 +594,15 @@ const LandingPageBuilder = () => {
                       </div>
                     )}
                     <div className="space-y-1.5">
+                      <button
+                        onClick={() => setShowCloneInput(true)}
+                        className="block w-full text-left text-xs px-3 py-2 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Link2 className="h-3.5 w-3.5 text-primary" />
+                          URL einfügen & Seite 1:1 nachbauen
+                        </span>
+                      </button>
                       {[
                         "Erstelle eine moderne Landing Page für diesen Kunden",
                         "Baue eine Lead-Gen Seite mit Kontaktformular",
