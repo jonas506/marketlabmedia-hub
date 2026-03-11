@@ -80,6 +80,29 @@ const LandingPageBuilder = () => {
     enabled: !!clientId,
   });
 
+  // Auto-load CI assets from client branding storage
+  const { data: ciAssets } = useQuery({
+    queryKey: ["ci-assets", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from("landing-page-assets")
+        .list(`${clientId}/ci`, { limit: 100 });
+      if (error || !data) return [];
+      return data
+        .filter((f) => f.name !== ".emptyFolderPlaceholder")
+        .map((file) => {
+          const path = `${clientId}/ci/${file.name}`;
+          const { data: urlData } = supabase.storage.from("landing-page-assets").getPublicUrl(path);
+          return {
+            name: file.name.replace(/^\d+-/, ""),
+            url: urlData.publicUrl,
+            type: file.metadata?.mimetype?.startsWith("image/") ? "image" : "file",
+          };
+        });
+    },
+    enabled: !!clientId,
+  });
+
   useEffect(() => {
     if (landingPage) {
       setTitle(landingPage.title);
@@ -151,8 +174,14 @@ const LandingPageBuilder = () => {
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isGenerating) return;
 
-    const attachmentContext = uploadedFiles.length > 0
-      ? `\n\n[Hochgeladene CI-Dateien - bitte in der Landing Page verwenden:\n${uploadedFiles.map((f) => `- ${f.name}: ${f.url}`).join("\n")}\n]`
+    // Include CI assets from branding + any manually uploaded files
+    const allAssets = [
+      ...(ciAssets || []).map((a) => ({ name: a.name, url: a.url, type: a.type })),
+      ...uploadedFiles,
+    ];
+
+    const attachmentContext = allAssets.length > 0
+      ? `\n\n[Hochgeladene CI-Dateien - bitte in der Landing Page verwenden:\n${allAssets.map((f) => `- ${f.name}: ${f.url}`).join("\n")}\n]`
       : "";
 
     const userMsg: ChatMessage = {
@@ -376,9 +405,22 @@ const LandingPageBuilder = () => {
                       <Sparkles className="h-7 w-7 text-primary" />
                     </div>
                     <h3 className="text-sm font-semibold mb-1">KI Landing Page Builder</h3>
-                    <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-4">
-                      Beschreibe die Seite, die du bauen willst. Lade CI-Assets hoch (Logo, Bilder), damit die KI sie direkt einbaut.
+                    <p className="text-xs text-muted-foreground max-w-[280px] mx-auto mb-3">
+                      Beschreibe die Seite, die du bauen willst. Die KI nutzt automatisch die CI-Assets des Kunden.
                     </p>
+                    {ciAssets && ciAssets.length > 0 && (
+                      <div className="mb-4 p-2.5 rounded-lg bg-muted/50 border border-border text-left">
+                        <p className="text-[10px] font-medium text-muted-foreground mb-1.5">CI-Assets geladen:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {ciAssets.map((a, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 text-[10px] bg-background rounded px-1.5 py-0.5 border border-border">
+                              <FileImage className="h-2.5 w-2.5" />
+                              {a.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       {[
                         "Erstelle eine moderne Landing Page für diesen Kunden",
