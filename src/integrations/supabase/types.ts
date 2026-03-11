@@ -467,6 +467,53 @@ export type Database = {
           },
         ]
       }
+      landing_pages: {
+        Row: {
+          chat_history: Json | null
+          client_id: string
+          created_at: string
+          custom_domain: string | null
+          html_content: string | null
+          id: string
+          is_published: boolean
+          slug: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chat_history?: Json | null
+          client_id: string
+          created_at?: string
+          custom_domain?: string | null
+          html_content?: string | null
+          id?: string
+          is_published?: boolean
+          slug?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          chat_history?: Json | null
+          client_id?: string
+          created_at?: string
+          custom_domain?: string | null
+          html_content?: string | null
+          id?: string
+          is_published?: boolean
+          slug?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_pages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
