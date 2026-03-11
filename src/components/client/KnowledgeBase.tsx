@@ -180,9 +180,9 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
               Website importieren
             </Button>
           )}
-          {canEdit && (
+          {canEdit && !showAdd && (
             <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setShowAdd(true)}>
-              <Plus className="h-3 w-3" /> Eintrag
+              <Plus className="h-3 w-3" /> Info hinzufügen
             </Button>
           )}
         </div>
