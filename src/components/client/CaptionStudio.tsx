@@ -40,6 +40,20 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bulkGenerating, setBulkGenerating] = useState(false);
 
+  const { data: savedPrompts = [] } = useQuery({
+    queryKey: ["saved-prompts-caption"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("saved_prompts")
+        .select("id, name, prompt_text, category")
+        .in("category", ["caption", "refine"])
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: open,
+  });
+
   const toggleSelect = (id: string) => {
     setSelected(prev => {
       const s = new Set(prev);
