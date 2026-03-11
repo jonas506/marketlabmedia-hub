@@ -747,6 +747,12 @@ const LandingPageBuilder = () => {
           )}
         </div>
       </div>
+
+      <SaveTemplateDialog
+        open={showSaveTemplate}
+        onOpenChange={setShowSaveTemplate}
+        htmlContent={htmlContent}
+      />
     </div>
   );
 };
