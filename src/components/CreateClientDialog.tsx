@@ -20,6 +20,7 @@ interface ClientProfile {
   tonality: string;
   content_topics: string;
   summary: string;
+  logo_url?: string;
 }
 
 const PROFILE_SECTIONS = [
