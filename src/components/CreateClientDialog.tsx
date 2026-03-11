@@ -46,10 +46,12 @@ const CreateClientDialog = () => {
   // Step 2: AI Profile
   const [profile, setProfile] = useState<ClientProfile | null>(null);
 
-  // Step 3: Kontingent
+  // Step 3: Services & Kontingent
+  const [services, setServices] = useState<string[]>([]);
   const [reels, setReels] = useState(0);
   const [carousels, setCarousels] = useState(0);
   const [stories, setStories] = useState(0);
+  const [youtubeLongform, setYoutubeLongform] = useState(0);
 
   const qc = useQueryClient();
 
