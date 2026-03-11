@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Globe, Trash2, Eye, EyeOff, ExternalLink, Copy } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Globe, Trash2, Eye, EyeOff, ExternalLink, Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -14,6 +24,11 @@ interface LandingPagesListProps {
 
 const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
   const qc = useQueryClient();
+  const [showAdd, setShowAdd] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newEditUrl, setNewEditUrl] = useState("");
+  const [newPublishedUrl, setNewPublishedUrl] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const { data: pages, isLoading } = useQuery({
     queryKey: ["landing-pages", clientId],
@@ -27,6 +42,27 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
       return data;
     },
   });
+
+  const addPage = async () => {
+    if (!newTitle.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.from("landing_pages").insert({
+      client_id: clientId,
+      title: newTitle.trim(),
+      edit_url: newEditUrl.trim() || null,
+      published_url: newPublishedUrl.trim() || null,
+    });
+    setSaving(false);
+    if (error) toast.error("Fehler beim Erstellen");
+    else {
+      toast.success("Landing Page hinzugefügt");
+      qc.invalidateQueries({ queryKey: ["landing-pages", clientId] });
+      setShowAdd(false);
+      setNewTitle("");
+      setNewEditUrl("");
+      setNewPublishedUrl("");
+    }
+  };
 
   const deletePage = async (id: string) => {
     if (!confirm("Landing Page wirklich löschen?")) return;
@@ -47,18 +83,6 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
     }
   };
 
-  const getLiveUrl = (page: { slug?: string | null; custom_domain?: string | null }) => {
-    const baseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (page.custom_domain) return `https://${page.custom_domain}`;
-    if (page.slug) return `${baseUrl}/functions/v1/serve-landing-page?slug=${page.slug}`;
-    return null;
-  };
-
-  const copyUrl = (url: string) => {
-    navigator.clipboard.writeText(url);
-    toast.success("URL kopiert");
-  };
-
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="flex items-center justify-between p-4 border-b border-border">
@@ -68,6 +92,16 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           </div>
           <h2 className="font-display text-base font-semibold">Landing Pages</h2>
         </div>
+        {canEdit && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => setShowAdd(true)}
+          >
+            <Plus className="h-3.5 w-3.5" /> Hinzufügen
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -77,89 +111,129 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
       ) : !pages?.length ? (
         <div className="p-8 text-center">
           <Globe className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">Noch keine Landing Pages erstellt</p>
+          <p className="text-sm text-muted-foreground">Noch keine Landing Pages</p>
+          {canEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3 h-8 text-xs gap-1.5"
+              onClick={() => setShowAdd(true)}
+            >
+              <Plus className="h-3.5 w-3.5" /> Erste Landing Page hinzufügen
+            </Button>
+          )}
         </div>
       ) : (
         <div className="divide-y divide-border">
-          {pages.map((page, i) => {
-            const liveUrl = getLiveUrl(page);
-            return (
-              <motion.div
-                key={page.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.05 }}
-                className="flex items-center gap-3 p-3 hover:bg-accent/30 transition-colors group"
-              >
-                <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-muted shrink-0">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
+          {pages.map((page: any, i: number) => (
+            <motion.div
+              key={page.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: i * 0.05 }}
+              className="flex items-center gap-3 p-3 hover:bg-accent/30 transition-colors group"
+            >
+              <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-muted shrink-0">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{page.title}</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{format(new Date(page.created_at), "dd. MMM yyyy", { locale: de })}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{page.title}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{format(new Date(page.created_at), "dd. MMM yyyy", { locale: de })}</span>
-                    {page.custom_domain && (
-                      <span className="font-mono text-[10px]">• {page.custom_domain}</span>
-                    )}
-                    {page.slug && !page.custom_domain && (
-                      <span className="font-mono text-[10px]">• /{page.slug}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {liveUrl && page.is_published && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => copyUrl(liveUrl)}
-                        title="URL kopieren"
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                      <a href={liveUrl} target="_blank" rel="noopener noreferrer">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Seite öffnen">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Button>
-                      </a>
-                    </>
-                  )}
-                  {canEdit && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => togglePublish(page.id, page.is_published)}
-                      >
-                        {page.is_published ? (
-                          <Eye className="h-3.5 w-3.5 text-[hsl(var(--runway-green))]" />
-                        ) : (
-                          <EyeOff className="h-3.5 w-3.5" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive"
-                        onClick={() => deletePage(page.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-                <div
-                  className={`h-2 w-2 rounded-full shrink-0 ${
-                    page.is_published ? "bg-[hsl(var(--runway-green))]" : "bg-muted-foreground/30"
-                  }`}
-                />
-              </motion.div>
-            );
-          })}
+              </div>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {page.edit_url && (
+                  <a href={page.edit_url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Bearbeiten">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </a>
+                )}
+                {page.published_url && page.is_published && (
+                  <a href={page.published_url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Veröffentlichte Seite öffnen">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Button>
+                  </a>
+                )}
+                {canEdit && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => togglePublish(page.id, page.is_published)}
+                    >
+                      {page.is_published ? (
+                        <Eye className="h-3.5 w-3.5 text-[hsl(var(--runway-green))]" />
+                      ) : (
+                        <EyeOff className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive"
+                      onClick={() => deletePage(page.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </>
+                )}
+              </div>
+              <div
+                className={`h-2 w-2 rounded-full shrink-0 ${
+                  page.is_published ? "bg-[hsl(var(--runway-green))]" : "bg-muted-foreground/30"
+                }`}
+              />
+            </motion.div>
+          ))}
         </div>
       )}
+
+      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Landing Page hinzufügen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="lp-title">Titel</Label>
+              <Input
+                id="lp-title"
+                placeholder="z.B. Hauptseite Redesign"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lp-edit">Bearbeitungslink (Lovable-Projekt)</Label>
+              <Input
+                id="lp-edit"
+                placeholder="https://lovable.dev/projects/..."
+                value={newEditUrl}
+                onChange={(e) => setNewEditUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lp-published">Veröffentlichter Link</Label>
+              <Input
+                id="lp-published"
+                placeholder="https://kunde.lovable.app oder Custom Domain"
+                value={newPublishedUrl}
+                onChange={(e) => setNewPublishedUrl(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdd(false)}>Abbrechen</Button>
+            <Button onClick={addPage} disabled={!newTitle.trim() || saving}>
+              {saving ? "Speichern…" : "Hinzufügen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
