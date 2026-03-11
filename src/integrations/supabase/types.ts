@@ -467,6 +467,42 @@ export type Database = {
           },
         ]
       }
+      landing_page_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          html_content: string
+          id: string
+          name: string
+          preview_image_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          html_content?: string
+          id?: string
+          name: string
+          preview_image_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          html_content?: string
+          id?: string
+          name?: string
+          preview_image_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           chat_history: Json | null
