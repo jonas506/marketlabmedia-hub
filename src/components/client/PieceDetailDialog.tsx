@@ -329,31 +329,51 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
                     <Video className="h-5 w-5 text-muted-foreground" />
                     <div className="flex-1">
                       {hasPreviewLink ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Preview-Link vorhanden</span>
                           <Button
                             size="sm"
-                            variant="default"
+                            variant="outline"
                             className="h-7 text-xs font-mono gap-1"
-                            onClick={transcribeVideo}
-                            disabled={transcribing}
+                            onClick={() => transcribeVideo(false)}
+                            disabled={transcribing || generating}
                           >
                             {transcribing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                             {transcript ? "Neu transkribieren" : "Transkribieren"}
                           </Button>
-                        </div>
-                      ) : hasVideo ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Video hochgeladen</span>
                           <Button
                             size="sm"
                             variant="default"
                             className="h-7 text-xs font-mono gap-1"
-                            onClick={transcribeVideo}
-                            disabled={transcribing}
+                            onClick={() => transcribeVideo(true)}
+                            disabled={transcribing || generating}
+                          >
+                            {(transcribing || generating) ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                            Transkript → Caption
+                          </Button>
+                        </div>
+                      ) : hasVideo ? (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Video hochgeladen</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs font-mono gap-1"
+                            onClick={() => transcribeVideo(false)}
+                            disabled={transcribing || generating}
                           >
                             {transcribing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                             {transcript ? "Neu transkribieren" : "Transkribieren"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs font-mono gap-1"
+                            onClick={() => transcribeVideo(true)}
+                            disabled={transcribing || generating}
+                          >
+                            {(transcribing || generating) ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                            Transkript → Caption
                           </Button>
                         </div>
                       ) : (
