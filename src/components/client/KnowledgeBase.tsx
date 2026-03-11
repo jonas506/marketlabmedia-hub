@@ -37,10 +37,7 @@ interface KnowledgeBaseProps {
 const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) => {
   const qc = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("sonstiges");
-  const [sourceUrl, setSourceUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [scraping, setScraping] = useState(false);
   const [search, setSearch] = useState("");
