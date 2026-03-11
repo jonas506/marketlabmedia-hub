@@ -154,6 +154,19 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           ))}
         </div>
       )}
+
+      <TemplatePickerDialog
+        open={showTemplatePicker}
+        onOpenChange={setShowTemplatePicker}
+        onBlank={() => {
+          setShowTemplatePicker(false);
+          navigate(`/client/${clientId}/landing-page`);
+        }}
+        onSelect={(tpl) => {
+          setShowTemplatePicker(false);
+          navigate(`/client/${clientId}/landing-page?template=${tpl.id}`);
+        }}
+      />
     </div>
   );
 };
