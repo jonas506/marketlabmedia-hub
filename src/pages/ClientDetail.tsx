@@ -9,8 +9,8 @@ import BrandingSection from "@/components/client/BrandingSection";
 import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
-import ClientChecklists from "@/components/client/ClientChecklists";
 import LandingPagesList from "@/components/client/LandingPagesList";
+import ClientNotebook from "@/components/client/ClientNotebook";
 import ClientNotebook from "@/components/client/ClientNotebook";
 
 import TaskList from "@/components/client/TaskList";
