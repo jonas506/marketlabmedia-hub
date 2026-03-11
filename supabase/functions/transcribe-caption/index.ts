@@ -61,7 +61,7 @@ async function transcribeWithElevenLabs(audioBytes: Uint8Array, fileName: string
   const formData = new FormData();
   const blob = new Blob([audioBytes], { type: "video/mp4" });
   formData.append("file", blob, fileName);
-  formData.append("model_id", "scribe_v1");
+  formData.append("model_id", "scribe_v2");
   formData.append("language_code", "deu");
 
   const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
