@@ -408,6 +408,17 @@ const LandingPageBuilder = () => {
                 <Button size="sm" variant="outline" className="h-7 text-[11px] flex-1 gap-1" onClick={savePage}>
                   <Save className="h-3 w-3" /> Speichern
                 </Button>
+                {htmlContent && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px] gap-1"
+                    onClick={() => setShowSaveTemplate(true)}
+                    title="Als Vorlage speichern"
+                  >
+                    <BookmarkPlus className="h-3 w-3" />
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant={isPublished ? "default" : "outline"}
