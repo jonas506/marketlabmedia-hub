@@ -199,6 +199,139 @@ const LandingPageBuilder = () => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const cloneFromUrl = useCallback(async () => {
+    if (!cloneUrl.trim() || isCloning) return;
+    setIsCloning(true);
+    setShowCloneInput(false);
+
+    const scrapingMsg: ChatMessage = {
+      role: "user",
+      content: `Baue diese Seite 1:1 nach: ${cloneUrl.trim()}`,
+    };
+    const newMessages = [...messages, scrapingMsg];
+    setMessages(newMessages);
+
+    try {
+      // Step 1: Scrape the URL
+      toast.info("Seite wird gescraped...");
+      const scrapeResp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/firecrawl-scrape`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            url: cloneUrl.trim(),
+            options: { formats: ["html", "markdown"], onlyMainContent: false, waitFor: 3000 },
+          }),
+        }
+      );
+
+      if (!scrapeResp.ok) {
+        const err = await scrapeResp.json().catch(() => ({}));
+        throw new Error(err.error || "Scraping fehlgeschlagen");
+      }
+
+      const scrapeData = await scrapeResp.json();
+      const scrapedHtml = scrapeData?.data?.html || "";
+      const scrapedMarkdown = scrapeData?.data?.markdown || "";
+
+      if (!scrapedHtml && !scrapedMarkdown) {
+        throw new Error("Keine Inhalte auf der Seite gefunden");
+      }
+
+      // Step 2: Send scraped content to AI to recreate
+      toast.info("KI erstellt die Seite nach...");
+
+      // Truncate HTML if too long, use markdown as fallback context
+      const htmlSnippet = scrapedHtml.length > 80000 ? scrapedHtml.slice(0, 80000) + "\n<!-- truncated -->" : scrapedHtml;
+
+      const clonePrompt = `Hier ist der HTML-Quellcode einer bestehenden Seite. Baue sie EXAKT 1:1 nach – gleiches Layout, gleiche Farben, gleiche Struktur, gleiche Abstände. Verwende die gleichen Bilder (URLs beibehalten). Mache sie vollständig responsive.\n\n--- ORIGINAL HTML ---\n${htmlSnippet}\n--- ENDE ---`;
+
+      const apiMessages = [
+        ...newMessages.slice(0, -1).map((m) => ({ role: m.role, content: m.content })),
+        { role: "user" as const, content: clonePrompt },
+      ];
+
+      setIsGenerating(true);
+      let assistantContent = "";
+      const updateAssistant = (chunk: string) => {
+        assistantContent += chunk;
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") {
+            return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
+          }
+          return [...prev, { role: "assistant", content: assistantContent }];
+        });
+      };
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-landing-page`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: apiMessages, clientId, landingPageId: currentPageId }),
+        }
+      );
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Fehler" }));
+        throw new Error(err.error || "Fehler bei der Generierung");
+      }
+
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) updateAssistant(content);
+          } catch {
+            buffer = line + "\n" + buffer;
+            break;
+          }
+        }
+      }
+
+      const html = extractHtml(assistantContent);
+      if (html) {
+        setHtmlContent(html);
+        toast.success("Seite erfolgreich nachgebaut!");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Fehler beim Klonen");
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `Fehler: ${e.message}` },
+      ]);
+    } finally {
+      setIsCloning(false);
+      setIsGenerating(false);
+      setCloneUrl("");
+    }
+  }, [cloneUrl, isCloning, messages, clientId, currentPageId]);
+
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isGenerating) return;
 
