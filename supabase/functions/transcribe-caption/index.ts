@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
 
       const { data: piece } = await supabase
         .from("content_pieces")
-        .select("id, client_id, video_path")
+        .select("id, client_id, video_path, preview_link")
         .eq("id", piece_id)
         .single();
 
@@ -223,27 +223,35 @@ Deno.serve(async (req) => {
         });
       }
 
-      if (!piece.video_path) {
-        return new Response(JSON.stringify({ error: "Kein Video hochgeladen. Bitte lade zuerst ein Video hoch." }), {
+      let bytes: Uint8Array;
+      let fileName: string;
+
+      // Priority: preview_link (Google Drive) > uploaded video
+      if (piece.preview_link) {
+        console.log("Transcribing from preview_link:", piece.preview_link);
+        const downloaded = await downloadFromUrl(piece.preview_link);
+        bytes = downloaded.bytes;
+        fileName = downloaded.fileName;
+      } else if (piece.video_path) {
+        // Fallback to uploaded video
+        const { data: fileData, error: dlError } = await supabase.storage
+          .from("content-videos")
+          .download(piece.video_path);
+        if (dlError || !fileData) {
+          return new Response(JSON.stringify({ error: "Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt") }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const arrayBuf = await fileData.arrayBuffer();
+        bytes = new Uint8Array(arrayBuf);
+        fileName = piece.video_path.split("/").pop() || "video.mp4";
+      } else {
+        return new Response(JSON.stringify({ error: "Kein Video-Link oder Video vorhanden. Bitte einen Preview-Link setzen." }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Download video from storage
-      const { data: fileData, error: dlError } = await supabase.storage
-        .from("content-videos")
-        .download(piece.video_path);
-
-      if (dlError || !fileData) {
-        return new Response(JSON.stringify({ error: "Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt") }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const arrayBuf = await fileData.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuf);
-      const fileName = piece.video_path.split("/").pop() || "video.mp4";
-
+      console.log(`Transcribing ${bytes.length} bytes via ElevenLabs...`);
       const transcript = await transcribeWithElevenLabs(bytes, fileName);
 
       await supabase.from("content_pieces").update({ transcript }).eq("id", piece_id);
