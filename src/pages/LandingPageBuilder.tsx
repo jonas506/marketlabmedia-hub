@@ -55,6 +55,9 @@ const LandingPageBuilder = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [cloneUrl, setCloneUrl] = useState("");
+  const [isCloning, setIsCloning] = useState(false);
+  const [showCloneInput, setShowCloneInput] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
