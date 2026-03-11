@@ -106,6 +106,27 @@ const LandingPageBuilder = () => {
     enabled: !!clientId,
   });
 
+  // Load template HTML if templateId is provided
+  useEffect(() => {
+    if (templateId && !pageId) {
+      (async () => {
+        const { data, error } = await supabase
+          .from("landing_page_templates" as any)
+          .select("*")
+          .eq("id", templateId)
+          .single();
+        if (data && !error) {
+          setHtmlContent((data as any).html_content || "");
+          setTitle(`${(data as any).name} – Kopie`);
+          setMessages([{
+            role: "assistant",
+            content: `Vorlage "${(data as any).name}" geladen. Du kannst jetzt Anpassungen beschreiben.`,
+          }]);
+        }
+      })();
+    }
+  }, [templateId, pageId]);
+
   useEffect(() => {
     if (landingPage) {
       setTitle(landingPage.title);
