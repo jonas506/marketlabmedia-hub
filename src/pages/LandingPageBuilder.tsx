@@ -66,7 +66,7 @@ const LandingPageBuilder = () => {
       setCustomDomain(landingPage.custom_domain || "");
       setIsPublished(landingPage.is_published);
       if (landingPage.chat_history && Array.isArray(landingPage.chat_history)) {
-        setMessages(landingPage.chat_history as ChatMessage[]);
+        setMessages(landingPage.chat_history as unknown as ChatMessage[]);
       }
     }
   }, [landingPage]);
