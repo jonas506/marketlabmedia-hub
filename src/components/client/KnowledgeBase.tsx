@@ -67,21 +67,24 @@ const KnowledgeBase = ({ clientId, canEdit, websiteUrl }: KnowledgeBaseProps) =>
   });
 
   const addEntry = async () => {
-    if (!title.trim() || !content.trim()) return;
+    if (!content.trim()) return;
     setSaving(true);
+    // Auto-generate title from first line or first 50 chars
+    const autoTitle = content.trim().split("\n")[0].slice(0, 80) || "Eintrag";
     const { error } = await supabase.from("client_knowledge").insert({
       client_id: clientId,
-      title: title.trim(),
+      title: autoTitle,
       content: content.trim(),
-      category,
-      source_url: sourceUrl.trim() || null,
+      category: "sonstiges",
+      source_url: null,
     });
     setSaving(false);
     if (error) toast.error("Fehler beim Speichern");
     else {
       toast.success("Eintrag hinzugefügt");
       qc.invalidateQueries({ queryKey: ["client-knowledge", clientId] });
-      resetForm();
+      setContent("");
+      setShowAdd(false);
     }
   };
 
