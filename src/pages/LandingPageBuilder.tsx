@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Send, Loader2, Globe, ExternalLink, Save, Eye, EyeOff,
   Monitor, Tablet, Smartphone, Upload, Image, X, Code, Sparkles,
-  PanelLeftClose, PanelLeft, FileImage, Paperclip, ChevronDown
+  PanelLeftClose, PanelLeft, FileImage, Paperclip, ChevronDown, BookmarkPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
