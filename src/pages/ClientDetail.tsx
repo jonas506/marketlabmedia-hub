@@ -120,6 +120,11 @@ const ClientDetail = () => {
           <ClientInfoPanel client={client} canEdit={canEdit} />
         </div>
 
+        {/* Branding & CI */}
+        <div className="mb-8">
+          <BrandingSection client={client} canEdit={canEdit} />
+        </div>
+
         {/* Month selector */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
