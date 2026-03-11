@@ -357,13 +357,38 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
                                       className="overflow-hidden"
                                     >
                                       <div className="flex gap-2 mt-2">
-                                        <Input
-                                          value={refineInput[piece.id] || ""}
-                                          placeholder="z.B. 'Kürzer machen' oder 'Mehr Emojis' oder 'Professioneller'"
-                                          className="h-8 text-xs flex-1 bg-background/50"
-                                          onChange={(e) => setRefineInput(prev => ({ ...prev, [piece.id]: e.target.value }))}
-                                          onKeyDown={(e) => e.key === "Enter" && refineSingle(piece.id)}
-                                        />
+                                        <div className="flex-1 flex gap-1">
+                                          <Input
+                                            value={refineInput[piece.id] || ""}
+                                            placeholder="z.B. 'Kürzer machen' oder 'Mehr Emojis'"
+                                            className="h-8 text-xs flex-1 bg-background/50"
+                                            onChange={(e) => setRefineInput(prev => ({ ...prev, [piece.id]: e.target.value }))}
+                                            onKeyDown={(e) => e.key === "Enter" && refineSingle(piece.id)}
+                                          />
+                                          {savedPrompts.length > 0 && (
+                                            <Popover>
+                                              <PopoverTrigger asChild>
+                                                <Button variant="outline" size="sm" className="h-8 w-8 p-0 shrink-0" title="Gespeicherte Prompts">
+                                                  <BookmarkIcon className="h-3.5 w-3.5" />
+                                                </Button>
+                                              </PopoverTrigger>
+                                              <PopoverContent className="w-64 p-2" align="end">
+                                                <p className="text-[10px] font-mono uppercase text-muted-foreground px-2 py-1">Gespeicherte Prompts</p>
+                                                <div className="max-h-48 overflow-y-auto space-y-0.5">
+                                                  {savedPrompts.map((sp) => (
+                                                    <button
+                                                      key={sp.id}
+                                                      className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-accent transition-colors truncate"
+                                                      onClick={() => setRefineInput(prev => ({ ...prev, [piece.id]: sp.prompt_text }))}
+                                                    >
+                                                      {sp.name}
+                                                    </button>
+                                                  ))}
+                                                </div>
+                                              </PopoverContent>
+                                            </Popover>
+                                          )}
+                                        </div>
                                         <Button
                                           size="sm"
                                           className="h-8 text-xs font-mono gap-1"
