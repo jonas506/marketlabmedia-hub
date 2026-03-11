@@ -718,31 +718,97 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       </Select>
                     </motion.div>
                   )}
-                  {/* Preview link — shown from done phase onwards */}
+                  {/* Bottom action row — link + caption compact */}
                   {isLatePhase && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="flex items-center gap-2 pl-9"
+                      className="flex items-center gap-2 pl-9 flex-wrap"
                     >
-                      <LinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <Input
-                        value={piece.preview_link || ""}
-                        placeholder="Preview-Link einfügen..."
-                        className="h-7 flex-1 border-0 bg-muted/30 text-xs px-2.5 rounded-md"
-                        onChange={(e) => updatePiece(piece.id, { preview_link: e.target.value })}
-                        disabled={!canEdit}
-                      />
+                      {/* Preview link — compact chip with popover edit */}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className={cn(
+                              "h-6 px-2 text-[10px] font-mono gap-1.5",
+                              piece.preview_link
+                                ? "text-primary hover:bg-primary/10"
+                                : "text-muted-foreground hover:bg-muted/60"
+                            )}
+                          >
+                            <LinkIcon className="h-3 w-3 shrink-0" />
+                            {piece.preview_link ? (
+                              <span className="max-w-[160px] truncate">
+                                {(() => {
+                                  try {
+                                    const u = new URL(piece.preview_link);
+                                    const host = u.hostname.replace("www.", "");
+                                    const path = u.pathname.length > 15 ? u.pathname.slice(0, 13) + "…" : u.pathname;
+                                    return host + (path !== "/" ? path : "");
+                                  } catch {
+                                    return piece.preview_link!.slice(0, 25) + (piece.preview_link!.length > 25 ? "…" : "");
+                                  }
+                                })()}
+                              </span>
+                            ) : (
+                              <span>Link</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-3" align="start">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Preview-Link</label>
+                            <Input
+                              value={piece.preview_link || ""}
+                              placeholder="https://drive.google.com/..."
+                              className="h-8 text-xs font-mono"
+                              onChange={(e) => updatePiece(piece.id, { preview_link: e.target.value })}
+                              disabled={!canEdit}
+                            />
+                            {piece.preview_link && (
+                              <a href={piece.preview_link} target="_blank" rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                                <ExternalLink className="h-3 w-3" /> Öffnen
+                              </a>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+
                       {piece.preview_link && (
-                        <motion.a
-                          href={piece.preview_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          whileHover={{ scale: 1.1 }}
-                          className="text-primary hover:text-primary/80 shrink-0"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </motion.a>
+                        <a href={piece.preview_link} target="_blank" rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary transition-colors">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+
+                      {/* Caption/Transcript — same row */}
+                      {(activePhase === "approved" || activePhase === "handed_over") && (
+                        <>
+                          <span className="text-border">·</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-[10px] font-mono gap-1.5 hover:bg-primary/10"
+                            onClick={() => setDetailPiece(piece)}
+                          >
+                            <FileText className="h-3 w-3" />
+                            {piece.caption ? (
+                              <span className="text-[hsl(var(--runway-green))]">Caption & Transkript</span>
+                            ) : (
+                              <span className="text-muted-foreground">Caption & Transkript</span>
+                            )}
+                          </Button>
+                          {piece.caption && (
+                            <Button size="sm" variant="ghost"
+                              className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                              onClick={() => { navigator.clipboard.writeText(piece.caption || ""); toast.success("Caption kopiert!"); }}>
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </>
                       )}
                     </motion.div>
                   )}
@@ -758,47 +824,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         Kundenfeedback: {piece.client_comment}
                       </span>
                       {canEdit && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 px-2 text-[10px] text-muted-foreground"
-                          onClick={() => updatePiece(piece.id, { client_comment: null })}
-                        >
-                          ✕
-                        </Button>
+                        <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-muted-foreground"
+                          onClick={() => updatePiece(piece.id, { client_comment: null })}>✕</Button>
                       )}
                     </motion.div>
-                  )}
-                  {/* Caption/Transcript indicator — click opens detail dialog */}
-                  {(activePhase === "approved" || activePhase === "handed_over") && (
-                    <div className="flex items-center gap-2 pl-9">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-2 text-[10px] font-mono gap-1.5 hover:bg-primary/10"
-                        onClick={() => setDetailPiece(piece)}
-                      >
-                        <FileText className="h-3 w-3" />
-                        {piece.caption ? (
-                          <span className="text-[hsl(var(--runway-green))]">Caption & Transkript öffnen</span>
-                        ) : (
-                          <span className="text-muted-foreground">Caption & Transkript erstellen</span>
-                        )}
-                      </Button>
-                      {piece.caption && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-                          onClick={() => {
-                            navigator.clipboard.writeText(piece.caption || "");
-                            toast.success("Caption kopiert!");
-                          }}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
                   )}
                 </motion.div>
               );
