@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import ClientInfoPanel from "@/components/client/ClientInfoPanel";
+import BrandingSection from "@/components/client/BrandingSection";
 import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
