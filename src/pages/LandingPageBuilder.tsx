@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SaveTemplateDialog from "@/components/client/SaveTemplateDialog";
 
 interface ChatMessage {
   role: "user" | "assistant";
