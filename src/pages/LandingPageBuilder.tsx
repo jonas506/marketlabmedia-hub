@@ -52,6 +52,7 @@ const LandingPageBuilder = () => {
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string; type: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
