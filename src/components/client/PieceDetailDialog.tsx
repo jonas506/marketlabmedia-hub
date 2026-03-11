@@ -59,7 +59,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     setTranscript(piece.transcript || "");
     setPromptInput("");
     setSelectedPromptId("");
-    setShowTranscript(false);
+    
   }
 
   // Auto-generate: when dialog opens with no caption, auto-run transcribe→caption
