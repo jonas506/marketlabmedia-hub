@@ -192,6 +192,8 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const TYPE_EMOJI: Record<string, string> = { reel: "🎬", carousel: "📸", story: "📱", ad: "📢" };
   const isLoading = generating || refining;
   const hasVideo = !!videoPath;
+  const hasPreviewLink = !!piece.preview_link;
+  const canTranscribe = hasPreviewLink || hasVideo;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
