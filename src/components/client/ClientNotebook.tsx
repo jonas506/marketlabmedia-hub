@@ -273,20 +273,20 @@ const ClientNotebook = ({ clientId, canEdit, websiteUrl }: ClientNotebookProps) 
   const selectedSource = selectedSourceId ? sources.find((s: any) => s.id === selectedSourceId) : null;
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-lg">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-surface-elevated">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
-            <BookOpen className="h-4 w-4 text-primary" />
+          <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10">
+            <BookOpen className="h-4.5 w-4.5 text-primary" />
           </div>
           <div>
             <h2 className="font-display text-base font-semibold">Kunden-Notebook</h2>
-            <p className="text-[10px] text-muted-foreground">{sources.length} Quellen geladen</p>
+            <p className="text-[11px] text-muted-foreground">{sources.length} Quellen geladen</p>
           </div>
         </div>
         <Select value={mode} onValueChange={setMode}>
-          <SelectTrigger className="h-8 text-xs w-auto min-w-[150px]">
+          <SelectTrigger className="h-9 text-xs w-auto min-w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -298,7 +298,7 @@ const ClientNotebook = ({ clientId, canEdit, websiteUrl }: ClientNotebookProps) 
       </div>
 
       {/* Body: Sources | Chat */}
-      <div className="flex h-[560px]">
+      <div className="flex h-[640px]">
         {/* ─── LEFT: Sources panel ─── */}
         <div className={cn(
           "border-r border-border flex flex-col bg-background/50 transition-all",

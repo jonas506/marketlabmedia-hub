@@ -3,8 +3,9 @@ import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLink, Pencil, Check, X, Upload, Trash2, FileImage, Loader2 } from "lucide-react";
+import { ExternalLink, Pencil, Check, X, Upload, Trash2, FileImage, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 interface CIAsset {
   name: string;
@@ -16,6 +17,8 @@ interface CIAsset {
 interface BrandingSectionProps {
   client: {
     id: string;
+    name: string;
+    logo_url: string | null;
     drive_branding_link: string | null;
     drive_logo_link: string | null;
     drive_styleguide_link: string | null;
@@ -42,7 +45,6 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
   const fileInputRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
 
-  // Load existing CI assets from storage
   useEffect(() => {
     loadCIAssets();
   }, [client.id]);
@@ -71,7 +73,6 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
 
       setCiAssets(assets);
     } catch {
-      // Folder might not exist yet
       setCiAssets([]);
     } finally {
       setLoadingAssets(false);
@@ -110,6 +111,20 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
     toast.success("Datei gelöscht");
   };
 
+  const downloadFile = async (url: string, filename: string) => {
+    try {
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      toast.error("Download fehlgeschlagen");
+    }
+  };
+
   const save = async () => {
     await supabase.from("clients").update(values).eq("id", client.id);
     qc.invalidateQueries({ queryKey: ["client", client.id] });
@@ -117,7 +132,11 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
   };
 
   return (
-    <section className="rounded-lg border border-border bg-card p-6">
+    <motion.section
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl border border-border bg-card p-6"
+    >
       <input
         ref={fileInputRef}
         type="file"
@@ -127,66 +146,108 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
         onChange={(e) => handleUpload(e.target.files)}
       />
 
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-bold tracking-widest text-muted-foreground">BRANDING & CI</h2>
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10">
+            <FileImage className="h-4.5 w-4.5 text-primary" />
+          </div>
+          <h2 className="font-display text-base font-semibold">Branding & CI</h2>
+        </div>
+        <div className="flex gap-1.5">
           {canEdit && !editing && (
-            <Button variant="ghost" size="icon" onClick={() => setEditing(true)}>
-              <Pencil className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-8 gap-1.5" onClick={() => setEditing(true)}>
+              <Pencil className="h-3.5 w-3.5" /> Bearbeiten
             </Button>
           )}
           {canEdit && (
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
             >
-              {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              Hochladen
             </Button>
           )}
           {editing && (
             <>
-              <Button variant="ghost" size="icon" onClick={save}><Check className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => setEditing(false)}><X className="h-4 w-4" /></Button>
+              <Button variant="default" size="sm" className="h-8 gap-1" onClick={save}><Check className="h-3.5 w-3.5" /> Speichern</Button>
+              <Button variant="ghost" size="sm" className="h-8" onClick={() => setEditing(false)}><X className="h-3.5 w-3.5" /></Button>
             </>
           )}
         </div>
       </div>
 
+      {/* Logo prominent display */}
+      {client.logo_url && (
+        <div className="mb-5 flex items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border/50">
+          <img
+            src={client.logo_url}
+            alt={`${client.name} Logo`}
+            className="h-16 w-16 rounded-xl object-contain bg-background p-2 ring-1 ring-border"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="font-display text-sm font-semibold">{client.name} — Logo</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Automatisch von Website extrahiert</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-2"
+            onClick={() => downloadFile(client.logo_url!, `${client.name}-logo.png`)}
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </Button>
+        </div>
+      )}
+
       {/* CI Assets Grid */}
       {(ciAssets.length > 0 || loadingAssets) && (
-        <div className="mb-4">
-          <p className="text-[11px] font-medium text-muted-foreground mb-2">CI-Dateien</p>
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">CI-Dateien</p>
           {loadingAssets ? (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Laden...
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+              <Loader2 className="h-4 w-4 animate-spin" /> Laden...
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {ciAssets.map((asset) => (
                 <div
                   key={asset.path}
-                  className="group relative flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs"
+                  className="group relative flex flex-col items-center gap-2 rounded-xl border border-border bg-background p-4 hover:border-primary/30 transition-all cursor-pointer"
+                  onClick={() => downloadFile(asset.url, asset.name.replace(/^\d+-/, ""))}
                 >
                   {asset.type === "image" ? (
                     <img
                       src={asset.url}
                       alt={asset.name}
-                      className="h-8 w-8 rounded object-contain bg-muted"
+                      className="h-14 w-14 rounded-lg object-contain bg-muted"
                     />
                   ) : (
-                    <FileImage className="h-4 w-4 text-muted-foreground" />
+                    <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center">
+                      <FileImage className="h-6 w-6 text-muted-foreground" />
+                    </div>
                   )}
-                  <span className="max-w-[120px] truncate text-foreground">{asset.name.replace(/^\d+-/, "")}</span>
-                  {canEdit && (
+                  <span className="text-xs text-center truncate w-full text-foreground font-medium">{asset.name.replace(/^\d+-/, "")}</span>
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => deleteAsset(asset)}
-                      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-6 w-6 rounded-md bg-background/80 border border-border flex items-center justify-center hover:bg-muted"
+                      onClick={(e) => { e.stopPropagation(); downloadFile(asset.url, asset.name.replace(/^\d+-/, "")); }}
                     >
-                      <X className="h-3 w-3" />
+                      <Download className="h-3 w-3" />
                     </button>
-                  )}
+                    {canEdit && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteAsset(asset); }}
+                        className="h-6 w-6 rounded-md bg-destructive/10 border border-destructive/20 flex items-center justify-center hover:bg-destructive/20"
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -195,13 +256,14 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
       )}
 
       {/* Quick upload drop zone when empty */}
-      {ciAssets.length === 0 && !loadingAssets && canEdit && (
+      {ciAssets.length === 0 && !loadingAssets && !client.logo_url && canEdit && (
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-full mb-4 rounded-lg border-2 border-dashed border-border hover:border-primary/40 transition-colors p-4 flex flex-col items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          className="w-full mb-5 rounded-xl border-2 border-dashed border-border hover:border-primary/40 transition-colors p-6 flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground"
         >
-          <Upload className="h-5 w-5" />
-          <span className="text-xs">CI-Dateien hochladen (Logo, Styleguide, Schriften…)</span>
+          <Upload className="h-6 w-6" />
+          <span className="text-sm font-medium">CI-Dateien hochladen</span>
+          <span className="text-xs text-muted-foreground">Logo, Styleguide, Schriften, etc.</span>
         </button>
       )}
 
@@ -209,13 +271,13 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
       <div className="flex flex-wrap gap-3">
         {links.map(({ key, label }) =>
           editing ? (
-            <div key={key} className="flex-1 min-w-[200px] space-y-1">
-              <label className="font-body text-xs text-muted-foreground">{label}</label>
+            <div key={key} className="flex-1 min-w-[200px] space-y-1.5">
+              <label className="font-body text-xs font-medium text-muted-foreground">{label}</label>
               <Input
                 value={values[key]}
                 onChange={(e) => setValues({ ...values, [key]: e.target.value })}
                 placeholder="https://..."
-                className="bg-background border-border font-body text-sm"
+                className="bg-background border-border font-body text-sm h-10"
               />
             </div>
           ) : (
@@ -225,16 +287,16 @@ const BrandingSection: React.FC<BrandingSectionProps> = ({ client, canEdit }) =>
                 href={client[key] ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 font-body text-sm text-foreground hover:border-primary/30 transition-colors"
+                className="inline-flex items-center gap-2.5 rounded-lg border border-border bg-background px-4 py-2.5 font-body text-sm text-foreground hover:border-primary/30 hover:bg-muted/30 transition-all"
               >
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
                 {label}
               </a>
             ) : null
           )
         )}
       </div>
-    </section>
+    </motion.section>
   );
 };
 
