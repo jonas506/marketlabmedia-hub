@@ -12,6 +12,7 @@ import TeamOverview from "./pages/TeamOverview";
 import Checklists from "./pages/Checklists";
 import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
+import Templates from "./pages/Templates";
 
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
             <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
             <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
+            <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
