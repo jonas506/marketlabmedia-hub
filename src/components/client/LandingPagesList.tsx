@@ -62,11 +62,14 @@ const LandingPagesList = ({ clientId, canEdit }: LandingPagesListProps) => {
           <h2 className="font-display text-base font-semibold">Landing Pages</h2>
         </div>
         {canEdit && (
-          <Link to={`/client/${clientId}/landing-page`}>
-            <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Neue Landing Page
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => setShowTemplatePicker(true)}
+          >
+            <Plus className="h-3.5 w-3.5" /> Neue Landing Page
+          </Button>
         )}
       </div>
 
