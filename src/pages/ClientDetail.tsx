@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import ClientInfoPanel from "@/components/client/ClientInfoPanel";
+import BrandingSection from "@/components/client/BrandingSection";
 import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
@@ -117,6 +118,11 @@ const ClientDetail = () => {
         {/* Client info panel */}
         <div className="mb-8">
           <ClientInfoPanel client={client} canEdit={canEdit} />
+        </div>
+
+        {/* Branding & CI */}
+        <div className="mb-8">
+          <BrandingSection client={client} canEdit={canEdit} />
         </div>
 
         {/* Month selector */}
