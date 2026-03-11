@@ -229,13 +229,17 @@ const ClientAIChat = ({ clientId }: ClientAIChatProps) => {
               )}
               <div
                 className={cn(
-                  "rounded-xl px-3.5 py-2.5 text-sm max-w-[85%] whitespace-pre-wrap",
+                  "rounded-xl px-3.5 py-2.5 text-sm max-w-[85%]",
                   msg.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/60 text-foreground"
+                    ? "bg-primary text-primary-foreground whitespace-pre-wrap"
+                    : "bg-muted/60 text-foreground prose prose-sm prose-neutral dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_p]:my-1.5 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_h1]:font-bold [&_h2]:font-semibold [&_h3]:font-medium [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded-lg [&_pre]:text-xs [&_blockquote]:border-l-2 [&_blockquote]:border-primary/30 [&_blockquote]:pl-3 [&_blockquote]:italic"
                 )}
               >
-                {msg.content}
+                {msg.role === "assistant" ? (
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                ) : (
+                  msg.content
+                )}
               </div>
               {msg.role === "user" && (
                 <div className="flex items-start shrink-0 mt-0.5">
