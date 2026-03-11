@@ -12,7 +12,7 @@ import TeamOverview from "./pages/TeamOverview";
 import Checklists from "./pages/Checklists";
 import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
-import Templates from "./pages/Templates";
+
 
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
