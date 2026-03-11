@@ -126,41 +126,13 @@ const ClientDetail = () => {
           <BrandingSection client={client} canEdit={canEdit} />
         </div>
 
-        {/* Knowledge Base + AI Chat */}
+        {/* Notebook (NotebookLM-style) */}
         <div className="mb-8">
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <Tabs defaultValue="knowledge">
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
-                    <BookOpen className="h-4 w-4 text-primary" />
-                  </div>
-                  <h2 className="font-display text-base font-semibold">Kunden-KI</h2>
-                </div>
-                <TabsList className="h-8">
-                  <TabsTrigger value="knowledge" className="text-xs gap-1.5 h-7 px-3">
-                    <BookOpen className="h-3 w-3" /> Wissensbasis
-                  </TabsTrigger>
-                  <TabsTrigger value="chat" className="text-xs gap-1.5 h-7 px-3">
-                    <Bot className="h-3 w-3" /> KI-Assistent
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <div className="p-4">
-                <TabsContent value="knowledge" className="mt-0">
-                  <KnowledgeBase
-                    clientId={client.id}
-                    canEdit={canEdit}
-                    websiteUrl={client.website_url}
-                  />
-                </TabsContent>
-                <TabsContent value="chat" className="mt-0">
-                  <ClientAIChat clientId={client.id} />
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
+          <ClientNotebook
+            clientId={client.id}
+            canEdit={canEdit}
+            websiteUrl={client.website_url}
+          />
         </div>
 
         {/* Month selector */}
