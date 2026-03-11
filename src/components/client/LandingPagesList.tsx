@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Globe, Plus, ExternalLink, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
+import TemplatePickerDialog from "./TemplatePickerDialog";
 
 interface LandingPagesListProps {
   clientId: string;
