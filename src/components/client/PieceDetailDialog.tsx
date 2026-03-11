@@ -96,8 +96,8 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     }
   }, [piece, clientId, qc]);
 
-  // Transcribe video via ElevenLabs
-  const transcribeVideo = useCallback(async () => {
+  // Transcribe video via ElevenLabs, optionally generate caption after
+  const transcribeVideo = useCallback(async (andCaption = false) => {
     if (!piece) return;
     setTranscribing(true);
     try {
@@ -108,6 +108,30 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
       if (data?.transcript) {
         setTranscript(data.transcript);
         toast.success("Transkript erstellt!");
+        qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+
+        // Combined flow: generate caption based on fresh transcript
+        if (andCaption) {
+          setTranscribing(false);
+          setGenerating(true);
+          setActiveTab("caption");
+          try {
+            const capBody: any = { action: "generate", piece_id: piece.id };
+            if (promptInput.trim()) capBody.custom_prompt = promptInput.trim();
+            const { data: capData, error: capErr } = await supabase.functions.invoke("transcribe-caption", { body: capBody });
+            if (capErr) throw capErr;
+            if (capData?.caption) {
+              setCaption(capData.caption);
+              toast.success("Caption aus Transkript generiert!");
+            }
+            qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+          } catch (err: any) {
+            toast.error("Caption-Generierung fehlgeschlagen", { description: err.message });
+          } finally {
+            setGenerating(false);
+          }
+          return;
+        }
       }
       if (data?.error) {
         toast.error("Transkription fehlgeschlagen", { description: data.error });
@@ -118,7 +142,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     } finally {
       setTranscribing(false);
     }
-  }, [piece, clientId, qc]);
+  }, [piece, clientId, qc, promptInput]);
 
   // Generate caption (uses transcript if available)
   const generateCaption = useCallback(async () => {
@@ -305,31 +329,51 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
                     <Video className="h-5 w-5 text-muted-foreground" />
                     <div className="flex-1">
                       {hasPreviewLink ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Preview-Link vorhanden</span>
                           <Button
                             size="sm"
-                            variant="default"
+                            variant="outline"
                             className="h-7 text-xs font-mono gap-1"
-                            onClick={transcribeVideo}
-                            disabled={transcribing}
+                            onClick={() => transcribeVideo(false)}
+                            disabled={transcribing || generating}
                           >
                             {transcribing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                             {transcript ? "Neu transkribieren" : "Transkribieren"}
                           </Button>
-                        </div>
-                      ) : hasVideo ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Video hochgeladen</span>
                           <Button
                             size="sm"
                             variant="default"
                             className="h-7 text-xs font-mono gap-1"
-                            onClick={transcribeVideo}
-                            disabled={transcribing}
+                            onClick={() => transcribeVideo(true)}
+                            disabled={transcribing || generating}
+                          >
+                            {(transcribing || generating) ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                            Transkript → Caption
+                          </Button>
+                        </div>
+                      ) : hasVideo ? (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-mono text-[hsl(var(--runway-green))]">✓ Video hochgeladen</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs font-mono gap-1"
+                            onClick={() => transcribeVideo(false)}
+                            disabled={transcribing || generating}
                           >
                             {transcribing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                             {transcript ? "Neu transkribieren" : "Transkribieren"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs font-mono gap-1"
+                            onClick={() => transcribeVideo(true)}
+                            disabled={transcribing || generating}
+                          >
+                            {(transcribing || generating) ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                            Transkript → Caption
                           </Button>
                         </div>
                       ) : (
