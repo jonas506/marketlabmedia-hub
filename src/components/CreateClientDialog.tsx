@@ -63,9 +63,11 @@ const CreateClientDialog = () => {
     setPdfTexts([]);
     setPdfNames([]);
     setProfile(null);
+    setServices([]);
     setReels(0);
     setCarousels(0);
     setStories(0);
+    setYoutubeLongform(0);
     setIsAnalyzing(false);
     setEditingField(null);
   };
