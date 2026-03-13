@@ -72,6 +72,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
             <RunwayBadge days={client.runway} />
             {canDelete && <DeleteClientDialog clientId={client.id} clientName={client.name} />}
           </div>
+        </div>
 
         {/* Kontingent */}
         <div className="space-y-1.5 mb-4">
