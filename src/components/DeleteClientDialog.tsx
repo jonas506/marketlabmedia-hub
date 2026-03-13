@@ -59,7 +59,11 @@ const DeleteClientDialog: React.FC<DeleteClientDialogProps> = ({ clientId, clien
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <button
-            onClick={(e) => e.preventDefault()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
             className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
             title="Kunde löschen"
           >
