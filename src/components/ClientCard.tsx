@@ -40,62 +40,65 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
   const { role } = useAuth();
   const canDelete = role === "admin";
   return (
-    <Link
-      to={`/client/${client.id}`}
-      className="group block rounded-lg border border-border bg-card hover:bg-surface-elevated transition-all duration-200 overflow-hidden"
-    >
-      {/* Colored top bar */}
-      <div className="h-1 bg-gradient-to-r from-primary to-secondary" />
+    <div className="group relative rounded-lg border border-border bg-card hover:bg-surface-elevated transition-all duration-200 overflow-hidden">
+      {/* Delete button positioned absolutely, outside the Link */}
+      {canDelete && (
+        <div className="absolute top-3 right-3 z-10">
+          <DeleteClientDialog clientId={client.id} clientName={client.name} />
+        </div>
+      )}
 
-      <div className="p-4">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-border" />
-          ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 font-display text-sm font-bold text-primary">
-              {client.name.charAt(0)}
+      <Link to={`/client/${client.id}`} className="block">
+        {/* Colored top bar */}
+        <div className="h-1 bg-gradient-to-r from-primary to-secondary" />
+
+        <div className="p-4">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-4">
+            {client.logo_url ? (
+              <img src={client.logo_url} alt={client.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-border" />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 font-display text-sm font-bold text-primary">
+                {client.name.charAt(0)}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="font-display text-sm font-semibold truncate">{client.name}</h3>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary transition-all shrink-0" />
+              </div>
+              <span className={`monday-status text-[9px] py-0.5 px-2 min-w-0 mt-1 ${
+                client.status === "active" ? "monday-status-done" : "monday-status-default"
+              }`}>
+                {client.status === "active" ? "Aktiv" : "Pausiert"}
+              </span>
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-display text-sm font-semibold truncate">{client.name}</h3>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary transition-all shrink-0" />
-            </div>
-            <span className={`monday-status text-[9px] py-0.5 px-2 min-w-0 mt-1 ${
-              client.status === "active" ? "monday-status-done" : "monday-status-default"
-            }`}>
-              {client.status === "active" ? "Aktiv" : "Pausiert"}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
             <RunwayBadge days={client.runway} />
-            {canDelete && <DeleteClientDialog clientId={client.id} clientName={client.name} />}
+          </div>
+
+          {/* Kontingent */}
+          <div className="space-y-1.5 mb-4">
+            <KontingentBar label="Reels" posted={client.handedOverThisMonth.reels} target={client.monthly_reels} color="bg-primary" />
+            <KontingentBar label="Karussell" posted={client.handedOverThisMonth.carousels} target={client.monthly_carousels} color="bg-secondary" />
+            <KontingentBar label="Stories" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} color="bg-status-review" />
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-3 border-t border-border/50">
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-soft" />
+              <span className="font-mono text-[10px] text-muted-foreground">{client.pipelineCounts.inPipeline} in Pipeline</span>
+            </div>
+            {client.nextShootDay && (
+              <span className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                {format(new Date(client.nextShootDay), "dd. MMM", { locale: de })}
+              </span>
+            )}
           </div>
         </div>
-
-        {/* Kontingent */}
-        <div className="space-y-1.5 mb-4">
-          <KontingentBar label="Reels" posted={client.handedOverThisMonth.reels} target={client.monthly_reels} color="bg-primary" />
-          <KontingentBar label="Karussell" posted={client.handedOverThisMonth.carousels} target={client.monthly_carousels} color="bg-secondary" />
-          <KontingentBar label="Stories" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} color="bg-status-review" />
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-border/50">
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-soft" />
-            <span className="font-mono text-[10px] text-muted-foreground">{client.pipelineCounts.inPipeline} in Pipeline</span>
-          </div>
-          {client.nextShootDay && (
-            <span className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              {format(new Date(client.nextShootDay), "dd. MMM", { locale: de })}
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 
