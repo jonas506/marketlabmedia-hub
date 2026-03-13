@@ -68,8 +68,10 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
               {client.status === "active" ? "Aktiv" : "Pausiert"}
             </span>
           </div>
-          <RunwayBadge days={client.runway} />
-        </div>
+          <div className="flex items-center gap-1.5">
+            <RunwayBadge days={client.runway} />
+            {canDelete && <DeleteClientDialog clientId={client.id} clientName={client.name} />}
+          </div>
 
         {/* Kontingent */}
         <div className="space-y-1.5 mb-4">
