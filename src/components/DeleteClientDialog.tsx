@@ -12,7 +12,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -31,6 +30,7 @@ interface DeleteClientDialogProps {
 }
 
 const DeleteClientDialog: React.FC<DeleteClientDialogProps> = ({ clientId, clientName }) => {
+  const [showAlert, setShowAlert] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const queryClient = useQueryClient();
@@ -55,22 +55,21 @@ const DeleteClientDialog: React.FC<DeleteClientDialogProps> = ({ clientId, clien
 
   return (
     <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          setShowAlert(true);
+        }}
+        className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
+        title="Kunde löschen"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+
       {/* Step 1: Initial confirmation */}
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
-            title="Kunde löschen"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </AlertDialogTrigger>
-        <AlertDialogContent onClick={(e) => e.preventDefault()}>
+      <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Kunde wirklich löschen?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -79,12 +78,10 @@ const DeleteClientDialog: React.FC<DeleteClientDialogProps> = ({ clientId, clien
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Abbrechen</AlertDialogCancel>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+              onClick={() => {
                 setShowConfirmDialog(true);
               }}
             >
@@ -101,7 +98,7 @@ const DeleteClientDialog: React.FC<DeleteClientDialogProps> = ({ clientId, clien
           setNameInput("");
         }
       }}>
-        <DialogContent onClick={(e) => e.preventDefault()} className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-destructive">Endgültige Bestätigung</DialogTitle>
             <DialogDescription>
@@ -117,14 +114,12 @@ const DeleteClientDialog: React.FC<DeleteClientDialogProps> = ({ clientId, clien
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               autoFocus
-              onClick={(e) => e.stopPropagation()}
             />
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 setShowConfirmDialog(false);
                 setNameInput("");
               }}
@@ -134,10 +129,7 @@ const DeleteClientDialog: React.FC<DeleteClientDialogProps> = ({ clientId, clien
             <Button
               variant="destructive"
               disabled={!nameMatches || deleteMutation.isPending}
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteMutation.mutate();
-              }}
+              onClick={() => deleteMutation.mutate()}
             >
               {deleteMutation.isPending ? "Wird gelöscht…" : "Unwiderruflich löschen"}
             </Button>
