@@ -37,6 +37,8 @@ const KontingentBar: React.FC<{ label: string; posted: number; target: number; c
 };
 
 const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
+  const { role } = useAuth();
+  const canDelete = role === "admin";
   return (
     <Link
       to={`/client/${client.id}`}
