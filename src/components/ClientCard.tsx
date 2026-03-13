@@ -5,6 +5,8 @@ import { Calendar, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import DeleteClientDialog from "./DeleteClientDialog";
 
 interface ClientCardProps {
   client: ClientDashboardData;
@@ -35,6 +37,8 @@ const KontingentBar: React.FC<{ label: string; posted: number; target: number; c
 };
 
 const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
+  const { role } = useAuth();
+  const canDelete = role === "admin";
   return (
     <Link
       to={`/client/${client.id}`}
@@ -64,7 +68,10 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
               {client.status === "active" ? "Aktiv" : "Pausiert"}
             </span>
           </div>
-          <RunwayBadge days={client.runway} />
+          <div className="flex items-center gap-1.5">
+            <RunwayBadge days={client.runway} />
+            {canDelete && <DeleteClientDialog clientId={client.id} clientName={client.name} />}
+          </div>
         </div>
 
         {/* Kontingent */}
