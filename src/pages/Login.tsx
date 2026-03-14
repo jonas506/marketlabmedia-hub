@@ -71,7 +71,7 @@ const Login = () => {
             {loading ? "ANMELDEN..." : "ANMELDEN"}
           </Button>
 
-          {import.meta.env.DEV && (
+          {(
             <Button
               type="button"
               variant="outline"
