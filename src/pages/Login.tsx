@@ -71,7 +71,7 @@ const Login = () => {
             {loading ? "ANMELDEN..." : "ANMELDEN"}
           </Button>
 
-          {(window.location.hostname.includes('preview') || window.location.hostname === 'localhost') && (
+          {(window.location.hostname.includes('preview') || window.location.hostname.includes('lovableproject.com') || window.location.hostname === 'localhost') && (
             <Button
               type="button"
               variant="outline"
@@ -90,8 +90,7 @@ const Login = () => {
                     return;
                   }
                   const { error: otpError } = await supabase.auth.verifyOtp({
-                    email: "jonas@marketlab-media.de",
-                    token: data.token_hash,
+                    token_hash: data.token_hash,
                     type: "magiclink",
                   });
                   if (otpError) {

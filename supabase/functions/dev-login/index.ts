@@ -37,9 +37,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Extract the token from the generated link
-    const url = new URL(data.properties.action_link);
-    const token_hash = url.searchParams.get("token") || url.hash?.match(/token=([^&]+)/)?.[1];
+    // Use the hashed_token directly from properties
+    const token_hash = data.properties.hashed_token;
 
     return new Response(
       JSON.stringify({ token_hash, email }),
