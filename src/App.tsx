@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
             <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
             <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
+            <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
