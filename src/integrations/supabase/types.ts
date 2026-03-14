@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      cb_brands: {
+        Row: {
+          colors: string[]
+          created_at: string
+          description: string | null
+          guides: string[]
+          id: string
+          logos: string[]
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          colors?: string[]
+          created_at?: string
+          description?: string | null
+          guides?: string[]
+          id?: string
+          logos?: string[]
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          colors?: string[]
+          created_at?: string
+          description?: string | null
+          guides?: string[]
+          id?: string
+          logos?: string[]
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cb_projects: {
+        Row: {
+          connections: Json
+          created_at: string
+          id: string
+          name: string
+          nodes: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connections?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          nodes?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connections?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          nodes?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cb_reel_ideas: {
+        Row: {
+          created_at: string
+          id: string
+          ideas: Json
+          niche: string | null
+          sources: string[]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ideas?: Json
+          niche?: string | null
+          sources?: string[]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ideas?: Json
+          niche?: string | null
+          sources?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
       checklist_items: {
         Row: {
           client_id: string
