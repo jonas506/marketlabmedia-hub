@@ -91,7 +91,7 @@ const Login = () => {
                   }
                   const { error: otpError } = await supabase.auth.verifyOtp({
                     email: "jonas@marketlab-media.de",
-                    token: data.token_hash,
+                    token_hash: data.token_hash,
                     type: "magiclink",
                   });
                   if (otpError) {
