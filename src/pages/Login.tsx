@@ -71,7 +71,7 @@ const Login = () => {
             {loading ? "ANMELDEN..." : "ANMELDEN"}
           </Button>
 
-          {(
+          {(window.location.hostname.includes('preview') || window.location.hostname === 'localhost') && (
             <Button
               type="button"
               variant="outline"
