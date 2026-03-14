@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import ClientDetail from "./pages/ClientDetail";
 
@@ -34,28 +35,30 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/approve/:token" element={<ClientApproval />} />
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
-            
-            <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
-            <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
-            <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
-            <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
-            <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/approve/:token" element={<ClientApproval />} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
+              
+              <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
+              <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
+              <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
+              <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
+              <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

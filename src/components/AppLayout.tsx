@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 
 // roles: which roles can see this nav item (undefined = all)
@@ -16,6 +17,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { profile, role, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
   const initials = profile?.name
@@ -55,8 +57,15 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           })}
         </nav>
 
-        {/* User avatar + logout */}
+        {/* Theme toggle + User avatar + logout */}
         <div className="flex flex-col items-center gap-2 pb-2">
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all"
+            title={theme === "dark" ? "Heller Modus" : "Dunkler Modus"}
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <div
             className="flex items-center justify-center h-9 w-9 rounded-full bg-gradient-to-br from-primary to-secondary text-[11px] font-bold text-white cursor-default"
             title={`${profile?.name} · ${role === "admin" ? "Admin" : role === "head_of_content" ? "HoC" : "Cutter"}`}
