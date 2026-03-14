@@ -17,6 +17,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { profile, role, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
   const initials = profile?.name
