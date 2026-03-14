@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 
 // roles: which roles can see this nav item (undefined = all)
@@ -10,6 +10,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
+  { to: "/content-base", label: "Content Base", icon: Database },
   { to: "/team", label: "Team", icon: Users, roles: ["admin"] },
 ];
 
