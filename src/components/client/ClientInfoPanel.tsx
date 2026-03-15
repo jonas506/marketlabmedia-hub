@@ -314,7 +314,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                     </div>
                   </div>
                 ) : (
-                  <div>
+                  <div className="space-y-4">
                     {(client.review_notify_emails || []).length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {client.review_notify_emails.map((email: string, i: number) => (
@@ -330,6 +330,37 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                         Keine Benachrichtigungs-Adressen konfiguriert.
                       </p>
                     )}
+
+                    {/* Freigabe-Link */}
+                    <div className="rounded-lg bg-muted/30 p-3.5 space-y-2">
+                      <span className="text-xs text-muted-foreground font-body uppercase tracking-wider flex items-center gap-1.5">
+                        <LinkIcon className="h-3 w-3" /> Freigabe-Link
+                      </span>
+                      {client.approval_token ? (
+                        <div className="flex items-center gap-2">
+                          <code className="text-xs text-muted-foreground bg-muted/50 px-2 py-1.5 rounded flex-1 truncate">
+                            {`${window.location.origin}/approve/${client.approval_token}`}
+                          </code>
+                          <Button size="sm" variant="outline" className="h-8 px-2.5 shrink-0" onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/approve/${client.approval_token}`);
+                          }}>
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={async () => {
+                          const token = crypto.randomUUID();
+                          await supabase.from("clients").update({ approval_token: token }).eq("id", client.id);
+                          qc.invalidateQueries({ queryKey: ["client", client.id] });
+                        }}>
+                          <LinkIcon className="h-3.5 w-3.5" />
+                          Freigabe-Link generieren
+                        </Button>
+                      )}
+                      <p className="text-[11px] text-muted-foreground font-body">
+                        Dieser Link wird in den Benachrichtigungs-E-Mails als Button eingebunden.
+                      </p>
+                    </div>
                   </div>
                 )}
               </Section>
