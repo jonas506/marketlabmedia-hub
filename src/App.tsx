@@ -16,6 +16,7 @@ import PromptLibrary from "./pages/PromptLibrary";
 import ContentBase from "./pages/ContentBase";
 
 import Login from "./pages/Login";
+import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/accept-invite" element={<AcceptInvite />} />
               <Route path="/approve/:token" element={<ClientApproval />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
