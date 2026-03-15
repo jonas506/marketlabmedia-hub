@@ -16,6 +16,7 @@ import PromptLibrary from "./pages/PromptLibrary";
 import ContentBase from "./pages/ContentBase";
 
 import Login from "./pages/Login";
+import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
