@@ -261,7 +261,80 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
               )}
             </Section>
 
-            {/* Status Toggle */}
+            {/* Freigabe-Benachrichtigungen */}
+            {canEdit && (
+              <Section title="Freigabe-Benachrichtigungen" editing={editing === "notify"} canEdit={canEdit}
+                onEdit={() => startEdit("notify", { review_notify_emails: client.review_notify_emails || [] })}
+                onSave={() => saveFields({ review_notify_emails: values.review_notify_emails || [] })}
+                onCancel={() => setEditing(null)}>
+                {editing === "notify" ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground font-body">
+                      Diese E-Mail-Adressen werden benachrichtigt, wenn Content zur Freigabe bereitsteht (alle 3 Stunden gesammelt).
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(values.review_notify_emails || []).map((email: string, i: number) => (
+                        <Badge key={i} variant="secondary" className="gap-1.5 cursor-pointer px-3 py-1.5 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          onClick={() => {
+                            const updated = [...(values.review_notify_emails || [])];
+                            updated.splice(i, 1);
+                            setValues({ ...values, review_notify_emails: updated });
+                          }}>
+                          <Mail className="h-3 w-3" />
+                          {email}
+                          <X className="h-3 w-3" />
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        type="email"
+                        value={notifyInput}
+                        onChange={(e) => setNotifyInput(e.target.value)}
+                        placeholder="E-Mail-Adresse hinzufügen"
+                        className="h-10 text-sm bg-muted/30 border-border flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (notifyInput.trim() && notifyInput.includes("@")) {
+                              setValues({ ...values, review_notify_emails: [...(values.review_notify_emails || []), notifyInput.trim()] });
+                              setNotifyInput("");
+                            }
+                          }
+                        }}
+                      />
+                      <Button size="sm" variant="outline" className="h-10 px-3" onClick={() => {
+                        if (notifyInput.trim() && notifyInput.includes("@")) {
+                          setValues({ ...values, review_notify_emails: [...(values.review_notify_emails || []), notifyInput.trim()] });
+                          setNotifyInput("");
+                        }
+                      }}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {(client.review_notify_emails || []).length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {client.review_notify_emails.map((email: string, i: number) => (
+                          <Badge key={i} variant="outline" className="gap-1.5 px-3 py-1.5 text-xs">
+                            <Mail className="h-3 w-3" />
+                            {email}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground font-body flex items-center gap-2">
+                        <Bell className="h-4 w-4" />
+                        Keine Benachrichtigungs-Adressen konfiguriert.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </Section>
+            )}
+
             {canEdit && (
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div>
