@@ -21,6 +21,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
   const [editing, setEditing] = useState<string | null>(null);
   const [values, setValues] = useState<Record<string, any>>({});
   const [tagInput, setTagInput] = useState("");
+  const [notifyInput, setNotifyInput] = useState("");
   const qc = useQueryClient();
   const { user } = useAuth();
 
