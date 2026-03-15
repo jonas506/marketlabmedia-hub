@@ -2,3 +2,6 @@ project_id = "winsekbpsgwtwfdehyms"
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.send-review-digest]
+verify_jwt = false
