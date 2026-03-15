@@ -339,6 +339,7 @@ export type Database = {
           monthly_stories: number
           monthly_youtube_longform: number
           name: string
+          review_notify_emails: string[]
           sector: string | null
           services: string[]
           status: string
@@ -372,6 +373,7 @@ export type Database = {
           monthly_stories?: number
           monthly_youtube_longform?: number
           name: string
+          review_notify_emails?: string[]
           sector?: string | null
           services?: string[]
           status?: string
@@ -405,6 +407,7 @@ export type Database = {
           monthly_stories?: number
           monthly_youtube_longform?: number
           name?: string
+          review_notify_emails?: string[]
           sector?: string | null
           services?: string[]
           status?: string
@@ -757,6 +760,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      review_notification_queue: {
+        Row: {
+          client_id: string
+          content_piece_id: string
+          created_at: string
+          id: string
+          piece_title: string | null
+          piece_type: string | null
+          sent_at: string | null
+        }
+        Insert: {
+          client_id: string
+          content_piece_id: string
+          created_at?: string
+          id?: string
+          piece_title?: string | null
+          piece_type?: string | null
+          sent_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          content_piece_id?: string
+          created_at?: string
+          id?: string
+          piece_title?: string | null
+          piece_type?: string | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_notification_queue_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_notification_queue_content_piece_id_fkey"
+            columns: ["content_piece_id"]
+            isOneToOne: false
+            referencedRelation: "content_pieces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_prompts: {
         Row: {
