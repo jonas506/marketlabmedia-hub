@@ -734,8 +734,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="flex items-center gap-3 pl-9"
+                      className="flex items-center gap-3 pl-9 flex-wrap"
                     >
+                      {/* Script button */}
+                      {piece.script_text && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs font-mono gap-1.5 text-muted-foreground hover:text-foreground"
+                          onClick={() => setScriptPiece(piece)}
+                        >
+                          <FileText className="h-3 w-3" />
+                          Skript ansehen
+                        </Button>
+                      )}
                       {/* Deadline */}
                       <Popover>
                         <PopoverTrigger asChild>
