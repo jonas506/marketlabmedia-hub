@@ -11,6 +11,7 @@ interface ScriptPiece {
   type: string;
   script_text?: string | null;
   has_script?: boolean;
+  tag?: string | null;
 }
 
 interface PrintScriptsDialogProps {
