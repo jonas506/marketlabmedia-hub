@@ -153,8 +153,6 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [scriptPiece, setScriptPiece] = useState<ContentPiece | null>(null);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
-  const [opusCount, setOpusCount] = useState(0);
-  const [overlayCount, setOverlayCount] = useState(0);
 
   const config = PIPELINE_CONFIG[activeType];
 
