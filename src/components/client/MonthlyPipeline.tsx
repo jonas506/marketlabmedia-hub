@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2 } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -532,6 +532,45 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             </motion.div>
           )}
         </AnimatePresence>
+
+        {activePhase === "review" && phasePieces.length > 0 && canEdit && (
+          <Button
+            variant="outline"
+            className="gap-2 text-sm border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+            onClick={async () => {
+              try {
+                toast.info("📧 Mail wird gesendet...");
+                // Check which pieces are already queued (unsent)
+                const { data: existing } = await supabase
+                  .from("review_notification_queue")
+                  .select("content_piece_id")
+                  .eq("client_id", clientId)
+                  .is("sent_at", null);
+                const existingIds = new Set((existing || []).map(e => e.content_piece_id));
+                const newPieces = phasePieces.filter(p => !existingIds.has(p.id));
+                if (newPieces.length > 0) {
+                  await supabase.from("review_notification_queue").insert(
+                    newPieces.map((p) => ({
+                      client_id: clientId,
+                      content_piece_id: p.id,
+                      piece_title: p.title,
+                      piece_type: p.type,
+                    }))
+                  );
+                }
+                // Trigger digest
+                const { error } = await supabase.functions.invoke("send-review-digest", { body: {} });
+                if (error) throw error;
+                toast.success("✅ Freigabe-Mail wurde versendet!");
+              } catch (e: any) {
+                toast.error("Fehler beim Mail-Versand", { description: e?.message });
+              }
+            }}
+          >
+            <Mail className="h-4 w-4" />
+            Freigabe-Mail senden
+          </Button>
+        )}
 
         {canEdit && (
           <div className="flex items-center gap-1.5">
