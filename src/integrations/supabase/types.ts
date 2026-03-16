@@ -1253,6 +1253,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_client_piece_comment: {
+        Args: {
+          _comment: string
+          _piece_id: string
+          _timestamp_seconds?: number
+          _token: string
+        }
+        Returns: Json
+      }
+      delete_client_piece_comment: {
+        Args: { _comment_id: string; _token: string }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1261,6 +1274,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_client_approval_data: { Args: { _token: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1288,6 +1302,16 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      submit_client_piece_review: {
+        Args: {
+          _action: string
+          _comment?: string
+          _comments?: Json
+          _piece_id: string
+          _token: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
