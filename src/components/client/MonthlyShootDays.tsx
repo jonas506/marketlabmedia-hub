@@ -322,7 +322,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-medium truncate block">{reel.title || "Ohne Titel"}</span>
                         {reel.script_text && (
-                          <span className="text-xs text-muted-foreground truncate block">{reel.script_text.slice(0, 60)}…</span>
+                          <span className="text-xs text-muted-foreground truncate block">{reel.script_text.slice(0, 60)}{"…"}</span>
                         )}
                       </div>
                     </label>
