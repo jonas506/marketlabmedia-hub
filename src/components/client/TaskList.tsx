@@ -210,31 +210,33 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
       {/* Add row */}
       {canEdit && (
-        <div className="grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0 border-b border-border/30 bg-card/50">
-          <div className="flex items-center gap-2 px-4 py-2">
-            <Plus className="h-3.5 w-3.5 text-muted-foreground/40" />
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/30 bg-card/50">
+          <Plus className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+          <Input
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            placeholder="Neue Aufgabe…"
+            className="h-8 flex-1 text-sm bg-background border-border/50 px-3 rounded-md"
+            onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
+          />
+          <div className="relative shrink-0">
+            <Tag className="absolute left-2 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground/40 pointer-events-none" />
             <Input
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="+ Aufgabe hinzufügen"
-              className="h-7 flex-1 text-sm bg-transparent border-0 px-0 focus-visible:ring-0 placeholder:text-muted-foreground/30"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="Tag"
+              className="h-8 w-20 text-[11px] bg-background border-border/50 pl-6 pr-2 rounded-md"
               onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
             />
-            <div className="relative">
-              <Tag className="absolute left-1.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground/30 pointer-events-none" />
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Tag"
-                className="h-7 w-16 text-[10px] bg-transparent border-0 pl-5 focus-visible:ring-0 placeholder:text-muted-foreground/30"
-                onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
-              />
-            </div>
           </div>
-          <span className="border-l border-border/30" />
-          <span className="border-l border-border/30" />
-          <span className="border-l border-border/30" />
-          <span className="border-l border-border/30" />
+          <Button
+            size="sm"
+            className="h-8 px-3 text-xs shrink-0"
+            disabled={!newTitle.trim() || addTask.isPending}
+            onClick={() => addTask.mutate()}
+          >
+            Hinzufügen
+          </Button>
         </div>
       )}
 

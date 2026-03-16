@@ -306,6 +306,7 @@ const MyTasks = () => {
                       )}
                       <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0 shrink-0", sc.css)}>{sc.label}</span>
                       <span className="flex-1 text-sm font-body truncate">{task.title}</span>
+                      <span className="text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-24 truncate">{clientMap[task.client_id] || ""}</span>
                       {task.deadline && (
                         <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
                           <CalendarIcon className="h-3 w-3" />
