@@ -96,21 +96,19 @@ const ClientApproval = () => {
       return;
     }
     try {
-      const response = await fetch(
-        `${projectUrl}/functions/v1/client-approval?token=${encodeURIComponent(token)}`,
-        { headers: { apikey: apiKey } }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Fehler beim Laden");
+      const { data, error } = await supabase.rpc("get_client_approval_data", {
+        _token: token,
+      });
+      if (error) throw error;
       setClient(data.client);
-      setPieces(data.pieces);
+      setPieces(data.pieces || []);
       setComments(data.comments || []);
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
       setLoading(false);
     }
-  }, [token, projectUrl, apiKey]);
+  }, [token]);
 
   useEffect(() => {
     fetchData();
