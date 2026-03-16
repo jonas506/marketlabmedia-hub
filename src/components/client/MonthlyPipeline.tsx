@@ -334,6 +334,18 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
   };
 
+  const saveTitleQuietly = useCallback(async (pieceId: string, title: string) => {
+    await supabase.from("content_pieces").update({ title }).eq("id", pieceId);
+  }, []);
+
+  const handleTitleChange = useCallback((pieceId: string, value: string) => {
+    setLocalTitles((prev) => ({ ...prev, [pieceId]: value }));
+    if (titleTimerRef.current[pieceId]) clearTimeout(titleTimerRef.current[pieceId]);
+    titleTimerRef.current[pieceId] = setTimeout(() => {
+      saveTitleQuietly(pieceId, value);
+    }, 600);
+  }, [saveTitleQuietly]);
+
   const deletePiece = async (pieceId: string) => {
     await supabase.from("content_pieces").delete().eq("id", pieceId);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
