@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, MessageSquare, GripVertical, User } from "lucide-react";
+import { ExternalLink, FileText, MessageSquare, GripVertical, User, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ContentPiece {
@@ -24,6 +24,7 @@ interface ContentPiece {
   caption?: string | null;
   video_path?: string | null;
   cta_label?: string | null;
+  tag?: string | null;
 }
 
 interface PhaseConfig {
@@ -179,6 +180,12 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
 
                         {/* Meta row */}
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          {piece.tag && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-accent-foreground bg-accent/15 rounded-md px-1.5 py-0.5">
+                              <Tag className="h-2.5 w-2.5" />
+                              {piece.tag}
+                            </span>
+                          )}
                           {piece.cta_label && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-mono text-secondary bg-secondary/15 rounded-md px-1.5 py-0.5">
                               📢 {piece.cta_label}

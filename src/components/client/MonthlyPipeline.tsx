@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail, LayoutList, Columns3, Printer } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail, LayoutList, Columns3, Printer, Tag } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,6 +43,7 @@ interface ContentPiece {
   caption?: string | null;
   video_path?: string | null;
   cta_label?: string | null;
+  tag?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
@@ -733,6 +734,36 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       onChange={(e) => handleTitleChange(piece.id, e.target.value)}
                       disabled={!canEdit}
                     />
+
+                    {/* Tag */}
+                    <Select
+                      value={piece.tag || ""}
+                      onValueChange={(v) => updatePiece(piece.id, { tag: v === "_clear" ? null : v })}
+                      disabled={!canEdit}
+                    >
+                      <SelectTrigger className={cn(
+                        "h-7 w-32 text-xs font-mono border-0 px-2.5 rounded-md gap-1",
+                        piece.tag
+                          ? "bg-accent/15 text-accent-foreground"
+                          : "bg-muted/60 text-muted-foreground"
+                      )}>
+                        <Tag className="h-3 w-3 shrink-0" />
+                        <SelectValue placeholder="Tag" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_clear">
+                          <span className="text-muted-foreground">— Kein Tag</span>
+                        </SelectItem>
+                        <SelectItem value="ManyChat">💬 ManyChat</SelectItem>
+                        <SelectItem value="Organic">🌱 Organic</SelectItem>
+                        <SelectItem value="Paid">💰 Paid</SelectItem>
+                        <SelectItem value="Collab">🤝 Collab</SelectItem>
+                        <SelectItem value="Trending">🔥 Trending</SelectItem>
+                        <SelectItem value="Evergreen">🌲 Evergreen</SelectItem>
+                        <SelectItem value="Launch">🚀 Launch</SelectItem>
+                        <SelectItem value="Behind the Scenes">🎥 Behind the Scenes</SelectItem>
+                      </SelectContent>
+                    </Select>
 
                     {/* CTA Label — Story Ads only */}
                     {activeType === "story" && (

@@ -11,6 +11,7 @@ interface ScriptPiece {
   type: string;
   script_text?: string | null;
   has_script?: boolean;
+  tag?: string | null;
 }
 
 interface PrintScriptsDialogProps {
@@ -67,7 +68,9 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       const typeLabel = TYPE_CONFIG.find((t) => t.key === piece.type)?.label ?? piece.type;
 
       let html = `<div class="script-block">`;
-      html += `<h2>${piece.title || "Ohne Titel"} <span class="type-badge">${typeLabel}</span></h2>`;
+      html += `<h2>${piece.title || "Ohne Titel"} <span class="type-badge">${typeLabel}</span>`;
+      if (piece.tag) html += ` <span class="tag-badge">${escapeHtml(piece.tag)}</span>`;
+      html += `</h2>`;
 
       if (hooks.length > 0) {
         html += `<div class="hooks-section">`;
@@ -126,6 +129,14 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       border-radius: 4px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+    }
+    .tag-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
     }
     .hooks-section {
       margin-bottom: 1rem;
