@@ -1,7 +1,9 @@
 project_id = "winsekbpsgwtwfdehyms"
 
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.send-review-digest]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.send-review-digest]
+    verify_jwt = false
