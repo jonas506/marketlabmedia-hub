@@ -862,6 +862,89 @@ export type Database = {
           },
         ]
       }
+      marketing_tracking: {
+        Row: {
+          ad_spend: number | null
+          appointments_attended: number | null
+          appointments_booked: number | null
+          appointments_total: number | null
+          client_id: string
+          closing_rate: number | null
+          closings: number | null
+          cost_per_appointment: number | null
+          cost_per_follower: number | null
+          created_at: string
+          dm_sent: number | null
+          id: string
+          new_conversations: number | null
+          new_followers: number | null
+          notes: string | null
+          offer_quote: number | null
+          offers_presented: number | null
+          revenue_net: number | null
+          sales_today: number | null
+          show_rate: number | null
+          tracking_date: string
+          updated_at: string
+        }
+        Insert: {
+          ad_spend?: number | null
+          appointments_attended?: number | null
+          appointments_booked?: number | null
+          appointments_total?: number | null
+          client_id: string
+          closing_rate?: number | null
+          closings?: number | null
+          cost_per_appointment?: number | null
+          cost_per_follower?: number | null
+          created_at?: string
+          dm_sent?: number | null
+          id?: string
+          new_conversations?: number | null
+          new_followers?: number | null
+          notes?: string | null
+          offer_quote?: number | null
+          offers_presented?: number | null
+          revenue_net?: number | null
+          sales_today?: number | null
+          show_rate?: number | null
+          tracking_date?: string
+          updated_at?: string
+        }
+        Update: {
+          ad_spend?: number | null
+          appointments_attended?: number | null
+          appointments_booked?: number | null
+          appointments_total?: number | null
+          client_id?: string
+          closing_rate?: number | null
+          closings?: number | null
+          cost_per_appointment?: number | null
+          cost_per_follower?: number | null
+          created_at?: string
+          dm_sent?: number | null
+          id?: string
+          new_conversations?: number | null
+          new_followers?: number | null
+          notes?: string | null
+          offer_quote?: number | null
+          offers_presented?: number | null
+          revenue_net?: number | null
+          sales_today?: number | null
+          show_rate?: number | null
+          tracking_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_tracking_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
