@@ -752,6 +752,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       </Button>
                     </motion.div>
                   )}
+
+                  {activePhase === "editing" && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
