@@ -540,21 +540,27 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             onClick={async () => {
               try {
                 toast.info("📧 Mail wird gesendet...");
-                // Ensure pieces are in the queue
-                const { error: qErr } = await supabase
+                // Check which pieces are already queued (unsent)
+                const { data: existing } = await supabase
                   .from("review_notification_queue")
-                  .upsert(
-                    phasePieces.map((p) => ({
+                  .select("content_piece_id")
+                  .eq("client_id", clientId)
+                  .is("sent_at", null);
+                const existingIds = new Set((existing || []).map(e => e.content_piece_id));
+                const newPieces = phasePieces.filter(p => !existingIds.has(p.id));
+                if (newPieces.length > 0) {
+                  await supabase.from("review_notification_queue").insert(
+                    newPieces.map((p) => ({
                       client_id: clientId,
                       content_piece_id: p.id,
                       piece_title: p.title,
                       piece_type: p.type,
-                    })),
-                    { onConflict: "content_piece_id", ignoreDuplicates: true }
+                    }))
                   );
+                }
                 // Trigger digest
                 const { error } = await supabase.functions.invoke("send-review-digest", { body: {} });
-                if (error || qErr) throw error || qErr;
+                if (error) throw error;
                 toast.success("✅ Freigabe-Mail wurde versendet!");
               } catch (e: any) {
                 toast.error("Fehler beim Mail-Versand", { description: e?.message });
