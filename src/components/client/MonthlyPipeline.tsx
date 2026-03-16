@@ -334,6 +334,29 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
   };
 
+  // Auto-fetch title from Google Drive file name when preview link is set
+  const handlePreviewLinkChange = useCallback(async (pieceId: string, url: string, currentTitle: string | null) => {
+    updatePiece(pieceId, { preview_link: url });
+    
+    // Only auto-title if piece has no title yet and URL looks like Google Drive
+    if (currentTitle || !url.includes("drive.google.com")) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
+        body: { action: "get_file_info", url },
+      });
+      if (error || !data?.name) return;
+      
+      // Set the title locally and in DB
+      setLocalTitles(prev => ({ ...prev, [pieceId]: data.name }));
+      await supabase.from("content_pieces").update({ title: data.name }).eq("id", pieceId);
+      qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+      toast.success("📎 Titel aus Dateiname übernommen", { description: data.name });
+    } catch {
+      // Silently fail — title can be set manually
+    }
+  }, [qc, clientId]);
+
   const saveTitleQuietly = useCallback(async (pieceId: string, title: string) => {
     await supabase.from("content_pieces").update({ title }).eq("id", pieceId);
   }, []);
