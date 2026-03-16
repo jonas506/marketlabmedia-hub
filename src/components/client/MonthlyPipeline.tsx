@@ -533,6 +533,39 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           )}
         </AnimatePresence>
 
+        {activePhase === "review" && phasePieces.length > 0 && canEdit && (
+          <Button
+            variant="outline"
+            className="gap-2 text-sm border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+            onClick={async () => {
+              try {
+                toast.info("📧 Mail wird gesendet...");
+                // Ensure pieces are in the queue
+                const { error: qErr } = await supabase
+                  .from("review_notification_queue")
+                  .upsert(
+                    phasePieces.map((p) => ({
+                      client_id: clientId,
+                      content_piece_id: p.id,
+                      piece_title: p.title,
+                      piece_type: p.type,
+                    })),
+                    { onConflict: "content_piece_id", ignoreDuplicates: true }
+                  );
+                // Trigger digest
+                const { error } = await supabase.functions.invoke("send-review-digest", { body: {} });
+                if (error || qErr) throw error || qErr;
+                toast.success("✅ Freigabe-Mail wurde versendet!");
+              } catch (e: any) {
+                toast.error("Fehler beim Mail-Versand", { description: e?.message });
+              }
+            }}
+          >
+            <Mail className="h-4 w-4" />
+            Freigabe-Mail senden
+          </Button>
+        )}
+
         {canEdit && (
           <div className="flex items-center gap-1.5">
             <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
