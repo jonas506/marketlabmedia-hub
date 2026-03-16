@@ -607,6 +607,47 @@ export type Database = {
           },
         ]
       }
+      contingent_extras: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          extra_count: number
+          id: string
+          target_month: number
+          target_year: number
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          extra_count?: number
+          id?: string
+          target_month: number
+          target_year: number
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          extra_count?: number
+          id?: string
+          target_month?: number
+          target_year?: number
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contingent_extras_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_changes: {
         Row: {
           changed_at: string | null
