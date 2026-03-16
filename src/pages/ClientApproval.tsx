@@ -215,11 +215,13 @@ const ClientApproval = () => {
     setBulkApproving(true);
     try {
       for (const piece of [...pieces]) {
-        await fetch(`${projectUrl}/functions/v1/client-approval`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: apiKey },
-          body: JSON.stringify({ token, piece_id: piece.id, action: "approve" }),
+        const { error } = await supabase.rpc("submit_client_piece_review", {
+          _token: token,
+          _piece_id: piece.id,
+          _action: "approve",
+          _comments: [],
         });
+        if (error) throw error;
       }
       setApprovedCount((c) => c + pieces.length);
       setPieces([]);
