@@ -123,6 +123,14 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
   }, [qc, clientId]);
 
+  const handleNotesChange = useCallback((taskId: string, value: string) => {
+    setLocalNotes(prev => ({ ...prev, [taskId]: value }));
+    if (notesTimerRef.current[taskId]) clearTimeout(notesTimerRef.current[taskId]);
+    notesTimerRef.current[taskId] = setTimeout(() => {
+      updateTask(taskId, { notes: value });
+    }, 600);
+  }, [updateTask]);
+
   const archiveTask = useCallback(async (taskId: string) => {
     await updateTask(taskId, { is_completed: true, status: "done" });
     toast.success("✓ Archiviert");
