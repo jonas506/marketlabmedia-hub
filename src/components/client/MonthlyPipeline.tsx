@@ -301,6 +301,53 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     },
   });
 
+  // Add reels by sub-type (Opus Pro + Overlay)
+  const addReelsByType = useMutation({
+    mutationFn: async ({ opus, overlay }: { opus: number; overlay: number }) => {
+      const rows: any[] = [];
+      for (let i = 0; i < opus; i++) {
+        rows.push({
+          client_id: clientId,
+          type: "reel",
+          phase: config.phases[0].key,
+          target_month: month,
+          target_year: year,
+          title: `Opus Pro Clip ${i + 1}`,
+        });
+      }
+      for (let i = 0; i < overlay; i++) {
+        rows.push({
+          client_id: clientId,
+          type: "reel",
+          phase: config.phases[0].key,
+          target_month: month,
+          target_year: year,
+          title: `Overlay Post ${i + 1}`,
+        });
+      }
+      if (rows.length === 0) return 0;
+      const { error } = await supabase.from("content_pieces").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (count) => {
+      if (count === 0) {
+        toast.error("Bitte mindestens 1 Clip oder Post angeben");
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+      setOpusCount(0);
+      setOverlayCount(0);
+      setActivePhase(config.phases[0].key);
+      toast.success(`🎬 ${count} Reels erstellt`, {
+        description: `${opusCount > 0 ? `${opusCount} Opus Pro` : ""}${opusCount > 0 && overlayCount > 0 ? " + " : ""}${overlayCount > 0 ? `${overlayCount} Overlay` : ""}`,
+      });
+    },
+    onError: (err: any) => {
+      toast.error("Fehler beim Erstellen", { description: err.message });
+    },
+  });
+
   // Bulk add pieces
   const bulkAddPieces = useMutation({
     mutationFn: async (titles: string[]) => {
