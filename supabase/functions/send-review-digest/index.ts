@@ -148,10 +148,12 @@ Deno.serve(async (req) => {
               await sendLovableEmail({
                 apiKey,
                 to: [email],
-                subject: `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`,
+                subject: emailSubject,
                 html: emailHtml,
                 from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
               })
+            } else {
+              console.error('LOVABLE_API_KEY not set, cannot send email directly')
             }
           }
         } catch (sendErr) {
