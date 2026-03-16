@@ -153,6 +153,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [detailPiece, setDetailPiece] = useState<ContentPiece | null>(null);
   const [scriptPiece, setScriptPiece] = useState<ContentPiece | null>(null);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const config = PIPELINE_CONFIG[activeType];
