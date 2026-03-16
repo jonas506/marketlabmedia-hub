@@ -228,10 +228,20 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
             <div>
               <Textarea
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
+                onChange={(e) => {
+                  setBody(e.target.value);
+                  e.target.style.height = "auto";
+                  e.target.style.height = e.target.scrollHeight + "px";
+                }}
+                ref={(el) => {
+                  if (el) {
+                    el.style.height = "auto";
+                    el.style.height = el.scrollHeight + "px";
+                  }
+                }}
                 placeholder="Hauptteil des Skripts hier schreiben…"
-                className="text-sm bg-background/50 resize-y min-h-[200px] max-h-[400px]"
-                rows={10}
+                className="text-sm bg-background/50 resize-none min-h-[120px] overflow-hidden"
+                rows={5}
                 disabled={!canEdit}
               />
             </div>
