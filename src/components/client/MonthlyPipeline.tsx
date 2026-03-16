@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
+import ScriptEditorDialog from "./ScriptEditorDialog";
 
 interface ContentPiece {
   id: string;
@@ -149,6 +150,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [bulkTitles, setBulkTitles] = useState("");
   const [captionStudioOpen, setCaptionStudioOpen] = useState(false);
   const [detailPiece, setDetailPiece] = useState<ContentPiece | null>(null);
+  const [scriptPiece, setScriptPiece] = useState<ContentPiece | null>(null);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
@@ -693,21 +695,38 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     )}
                   </div>
 
-                  {/* Script text — shown in script phase for carousels */}
-                  {activePhase === "script" && activeType === "carousel" && (
+                  {/* Script button — shown in script phase for types with script */}
+                  {activePhase === "script" && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       className="pl-9"
                     >
-                      <Textarea
-                        value={piece.script_text || ""}
-                        placeholder="Skript hier reinschreiben..."
-                        className="text-sm border-0 bg-muted/30 rounded-md resize-y min-h-[60px]"
-                        rows={3}
-                        onChange={(e) => updatePiece(piece.id, { script_text: e.target.value })}
-                        disabled={!canEdit}
-                      />
+                      {activeType === "carousel" ? (
+                        <Textarea
+                          value={piece.script_text || ""}
+                          placeholder="Skript hier reinschreiben..."
+                          className="text-sm border-0 bg-muted/30 rounded-md resize-y min-h-[60px]"
+                          rows={3}
+                          onChange={(e) => updatePiece(piece.id, { script_text: e.target.value })}
+                          disabled={!canEdit}
+                        />
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={cn(
+                            "h-7 text-xs font-mono gap-1.5",
+                            piece.script_text
+                              ? "text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/30 bg-[hsl(var(--runway-green))]/5"
+                              : "text-muted-foreground"
+                          )}
+                          onClick={() => setScriptPiece(piece)}
+                        >
+                          <FileText className="h-3 w-3" />
+                          {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
+                        </Button>
+                      )}
                     </motion.div>
                   )}
 
@@ -913,6 +932,15 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         onOpenChange={(open) => !open && setDetailPiece(null)}
         piece={detailPiece ? { ...detailPiece, client_id: clientId } : null}
         clientId={clientId}
+      />
+
+      {/* Script Editor Dialog */}
+      <ScriptEditorDialog
+        open={!!scriptPiece}
+        onOpenChange={(open) => !open && setScriptPiece(null)}
+        piece={scriptPiece}
+        clientId={clientId}
+        canEdit={canEdit}
       />
     </motion.div>
   );
