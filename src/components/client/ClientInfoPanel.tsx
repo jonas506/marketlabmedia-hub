@@ -196,7 +196,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                   <div className="grid grid-cols-3 gap-4">
                     <InputField label="Reels/Monat" type="number" value={values.monthly_reels} onChange={(v) => setValues({ ...values, monthly_reels: Number(v) })} />
                     <InputField label="Karussells/Monat" type="number" value={values.monthly_carousels} onChange={(v) => setValues({ ...values, monthly_carousels: Number(v) })} />
-                    <InputField label="Stories/Monat" type="number" value={values.monthly_stories} onChange={(v) => setValues({ ...values, monthly_stories: Number(v) })} />
+                    <InputField label="Story Ads/Monat" type="number" value={values.monthly_stories} onChange={(v) => setValues({ ...values, monthly_stories: Number(v) })} />
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <InputField label="Vertragsbeginn" type="date" value={values.contract_start} onChange={(v) => setValues({ ...values, contract_start: v })} />
@@ -222,7 +222,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                     {[
                       { label: "Reels", value: client.monthly_reels, suffix: "/Monat" },
                       { label: "Karussells", value: client.monthly_carousels, suffix: "/Monat" },
-                      { label: "Stories", value: client.monthly_stories, suffix: "/Monat" },
+                      { label: "Story Ads", value: client.monthly_stories, suffix: "/Monat" },
                     ].map((item) => (
                       <div key={item.label} className="rounded-lg bg-muted/30 p-3.5">
                         <span className="text-xs text-muted-foreground font-body block mb-1">{item.label}</span>

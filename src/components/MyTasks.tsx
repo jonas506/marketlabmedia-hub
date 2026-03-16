@@ -61,7 +61,7 @@ const TAG_COLORS: Record<string, string> = {
 };
 const getTagColor = (tag: string) => TAG_COLORS[tag.toLowerCase()] || "bg-primary/15 text-primary";
 
-const TYPE_LABELS: Record<string, string> = { reel: "Reel", story: "Story", carousel: "Karussell" };
+const TYPE_LABELS: Record<string, string> = { reel: "Reel", story: "Story Ad", carousel: "Karussell" };
 
 const STATUS_LABELS: Record<string, { label: string; css: string }> = {
   not_started: { label: "Offen", css: "monday-status-default" },

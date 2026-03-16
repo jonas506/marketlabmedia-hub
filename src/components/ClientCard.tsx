@@ -80,7 +80,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
           <div className="space-y-1.5 mb-4">
             <KontingentBar label="Reels" posted={client.handedOverThisMonth.reels} target={client.monthly_reels} color="bg-primary" />
             <KontingentBar label="Karussell" posted={client.handedOverThisMonth.carousels} target={client.monthly_carousels} color="bg-secondary" />
-            <KontingentBar label="Stories" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} color="bg-status-review" />
+            <KontingentBar label="Story Ads" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} color="bg-status-review" />
           </div>
 
           {/* Footer */}
