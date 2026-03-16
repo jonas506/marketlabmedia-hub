@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
+import ScriptEditorDialog from "./ScriptEditorDialog";
 
 interface ContentPiece {
   id: string;
