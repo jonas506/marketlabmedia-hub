@@ -246,11 +246,11 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
             <Button
               size="sm"
               className="gap-1.5 text-xs font-semibold ml-auto"
-              disabled={addReelsByType.isPending || (opusCount === 0 && overlayCount === 0)}
-              onClick={() => addReelsByType.mutate({ opus: opusCount, overlay: overlayCount })}
+              disabled={opusCount === 0 && overlayCount === 0}
+              onClick={addReelExtras}
             >
               <Plus className="h-3.5 w-3.5" />
-              {opusCount + overlayCount} Reels erstellen
+              {opusCount + overlayCount} Reels eintragen
             </Button>
           </div>
         </div>
