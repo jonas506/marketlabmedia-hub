@@ -80,7 +80,8 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const reelGenericExtra = getExtra("reel");
   const opusProCount = getExtra("opus_pro");
   const overlayCount = getExtra("overlay");
-  const reelTotalCurrent = reelPipelineDone + reelGenericExtra + opusProCount + overlayCount;
+  const bereitsGeplantCount = getExtra("bereits_geplant");
+  const reelTotalCurrent = reelPipelineDone + reelGenericExtra + opusProCount + overlayCount + bereitsGeplantCount;
 
   const types = [
     { label: "Reels", emoji: "🎬", type: "reel", target: client.monthly_reels, current: reelTotalCurrent },
@@ -96,11 +97,11 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const reelStoryPieces = monthPieces.filter((c) => c.type === "reel" || c.type === "story");
 
   const conservative = reelStoryPieces.filter((c) => c.phase === "approved" || c.phase === "handed_over").length
-    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount;
+    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount + bereitsGeplantCount;
   const conservativeDays = dailyRate > 0 ? Math.round(conservative / dailyRate) : 999;
 
   const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length
-    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount;
+    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount + bereitsGeplantCount;
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
   const totalTarget = client.monthly_reels + client.monthly_carousels + client.monthly_stories + (ytTarget > 0 ? ytTarget : 0);
@@ -216,6 +217,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   <div className="flex items-center gap-2 ml-9 pl-20">
                     <Stepper label="Opus Pro" value={opusProCount} onChange={(v) => updateExtra("opus_pro", v)} />
                     <Stepper label="Overlay" value={overlayCount} onChange={(v) => updateExtra("overlay", v)} />
+                    <Stepper label="Bereits geplant" value={bereitsGeplantCount} onChange={(v) => updateExtra("bereits_geplant", v)} />
                     {reelGenericExtra > 0 && (
                       <div className="flex items-center gap-1 ml-1" title="Sonstige Reel-Extras">
                         <Plus className="h-3 w-3 text-muted-foreground" />
