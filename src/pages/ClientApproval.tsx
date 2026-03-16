@@ -34,10 +34,25 @@ interface ClientInfo {
   logo_url: string | null;
 }
 
+interface MarketingSummary {
+  ad_spend: number;
+  new_followers: number;
+  dm_sent: number;
+  new_conversations: number;
+  appointments_booked: number;
+  appointments_attended: number;
+  closings: number;
+  revenue_net: number;
+  days_tracked: number;
+  month: number;
+  year: number;
+}
+
 interface ApprovalPayload {
   client: ClientInfo;
   pieces: Piece[];
   comments: TimestampComment[];
+  marketing: MarketingSummary | null;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -81,6 +96,7 @@ const ClientApproval = () => {
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [comments, setComments] = useState<TimestampComment[]>([]);
+  const [marketing, setMarketing] = useState<MarketingSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -109,6 +125,7 @@ const ClientApproval = () => {
       setClient(payload.client);
       setPieces(payload.pieces || []);
       setComments(payload.comments || []);
+      setMarketing(payload.marketing || null);
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
@@ -328,6 +345,11 @@ const ClientApproval = () => {
           </div>
         </div>
       </div>
+
+      {/* Marketing Summary */}
+      {marketing && marketing.days_tracked > 0 && (
+        <MarketingSummaryBar marketing={marketing} />
+      )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col" ref={scrollRef}>
@@ -645,5 +667,44 @@ const ClientApproval = () => {
     </div>
   );
 };
+
+const MONTH_NAMES = ["", "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+
+function MarketingSummaryBar({ marketing }: { marketing: MarketingSummary }) {
+  const cpf = marketing.new_followers > 0 ? (marketing.ad_spend / marketing.new_followers) : null;
+  const stats = [
+    { label: "Ad Spend", value: `${marketing.ad_spend.toFixed(0)} €`, color: "text-rose-400" },
+    { label: "Follower", value: `+${marketing.new_followers}`, color: "text-violet-400" },
+    { label: "€/Follower", value: cpf ? `${cpf.toFixed(2)} €` : "–", color: "text-violet-400" },
+    { label: "DMs", value: String(marketing.dm_sent), color: "text-sky-400" },
+    { label: "Termine", value: String(marketing.appointments_booked), color: "text-amber-400" },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="border-b border-white/[0.04]"
+    >
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span className="text-[10px] font-semibold text-white/25 uppercase tracking-widest">
+            Marketing {MONTH_NAMES[marketing.month]} {marketing.year}
+          </span>
+          <span className="text-[10px] text-white/15 font-mono">{marketing.days_tracked} Tage</span>
+        </div>
+        <div className="flex gap-4 overflow-x-auto">
+          {stats.map((s) => (
+            <div key={s.label} className="shrink-0">
+              <div className={`text-sm font-bold font-mono ${s.color}`}>{s.value}</div>
+              <div className="text-[9px] text-white/20 uppercase tracking-wider">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export default ClientApproval;
