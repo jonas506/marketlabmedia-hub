@@ -5,17 +5,17 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import ClientInfoPanel from "@/components/client/ClientInfoPanel";
-import BrandingSection from "@/components/client/BrandingSection";
 import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import LandingPagesList from "@/components/client/LandingPagesList";
 import ClientNotebook from "@/components/client/ClientNotebook";
 import MarketingTracking from "@/components/client/MarketingTracking";
-
 import TaskList from "@/components/client/TaskList";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -73,7 +73,7 @@ const ClientDetail = () => {
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
         </div>
       </AppLayout>
     );
@@ -91,18 +91,18 @@ const ClientDetail = () => {
 
   return (
     <AppLayout>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-        {/* Back link + Approval link */}
-        <div className="flex items-center justify-between mb-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-body transition-colors group">
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-[1200px] mx-auto">
+        {/* Top bar: Back + Approval link */}
+        <div className="flex items-center justify-between mb-4">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-body transition-colors group">
+            <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
             Dashboard
           </Link>
           {canEdit && (client as any).approval_token && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="gap-2 text-xs font-mono"
+              className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
                 navigator.clipboard.writeText(url);
@@ -110,36 +110,27 @@ const ClientDetail = () => {
                 setTimeout(() => setCopied(false), 2000);
               }}
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-[hsl(var(--runway-green))]" /> : <LinkIcon className="h-3.5 w-3.5" />}
-              {copied ? "Link kopiert!" : "Freigabe-Link kopieren"}
+              {copied ? <Check className="h-3 w-3 text-[hsl(var(--runway-green))]" /> : <LinkIcon className="h-3 w-3" />}
+              {copied ? "Kopiert" : "Freigabe-Link"}
             </Button>
           )}
         </div>
 
-        {/* Client info panel */}
-        <div className="mb-8">
-          <ClientInfoPanel client={client} canEdit={canEdit} />
-        </div>
+        {/* Client header (collapsible info) */}
+        <ClientInfoPanel client={client} canEdit={canEdit} />
 
-        {/* Branding & CI */}
-        <div className="mb-8">
-          <BrandingSection client={client} canEdit={canEdit} />
-        </div>
-
-        {/* Month selector */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10">
-              <CalendarDays className="h-4.5 w-4.5 text-primary" />
-            </div>
-            <h2 className="font-display text-lg font-semibold tracking-tight">Monatszyklus</h2>
+        {/* Month selector – compact inline */}
+        <div className="flex items-center justify-between mt-5 mb-4">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-primary" />
+            <h2 className="font-display text-sm font-semibold tracking-tight">Monatszyklus</h2>
           </div>
           <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
             const [m, y] = v.split("-").map(Number);
             setSelectedMonth(m);
             setSelectedYear(y);
           }}>
-            <SelectTrigger className="w-56 h-11 text-sm bg-card border-border">
+            <SelectTrigger className="w-48 h-9 text-xs bg-card border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -150,36 +141,47 @@ const ClientDetail = () => {
           </Select>
         </div>
 
-        {/* Sections */}
-        <div className="space-y-8">
+        {/* Core workflow: Kontingent → Shoot Days → Pipeline */}
+        <div className="space-y-4">
           <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
         </div>
 
-        {/* Aufgaben */}
-        <div className="mt-8">
-          <TaskList clientId={client.id} canEdit={canEdit} />
-        </div>
+        {/* Tabbed secondary sections */}
+        <Tabs defaultValue="tasks" className="mt-6">
+          <TabsList className="bg-card border border-border h-9 p-0.5 gap-0">
+            <TabsTrigger value="tasks" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <ClipboardList className="h-3.5 w-3.5" />
+              Aufgaben
+            </TabsTrigger>
+            <TabsTrigger value="marketing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <TrendingUp className="h-3.5 w-3.5" />
+              Marketing
+            </TabsTrigger>
+            <TabsTrigger value="landing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Globe className="h-3.5 w-3.5" />
+              Landing Pages
+            </TabsTrigger>
+            <TabsTrigger value="notebook" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <BookOpen className="h-3.5 w-3.5" />
+              Notebook
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Marketing Tracking */}
-        <div className="mt-8">
-          <MarketingTracking clientId={client.id} canEdit={canEdit} />
-        </div>
-
-        {/* Landing Pages */}
-        <div className="mt-8">
-          <LandingPagesList clientId={client.id} canEdit={canEdit} />
-        </div>
-
-        {/* Notebook (ganz unten) */}
-        <div className="mt-8">
-          <ClientNotebook
-            clientId={client.id}
-            canEdit={canEdit}
-            websiteUrl={client.website_url}
-          />
-        </div>
+          <TabsContent value="tasks" className="mt-4">
+            <TaskList clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="marketing" className="mt-4">
+            <MarketingTracking clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="landing" className="mt-4">
+            <LandingPagesList clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="notebook" className="mt-4">
+            <ClientNotebook clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+          </TabsContent>
+        </Tabs>
       </motion.div>
     </AppLayout>
   );
