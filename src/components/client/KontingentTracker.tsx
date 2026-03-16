@@ -1,7 +1,12 @@
+import { useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import RunwayBadge from "@/components/RunwayBadge";
 import { motion } from "framer-motion";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 interface ContentPiece {
   phase: string;
@@ -15,12 +20,43 @@ interface KontingentTrackerProps {
   contentPieces: ContentPiece[];
   month: number;
   year: number;
+  canEdit?: boolean;
 }
 
-const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces = [], month, year }) => {
+const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces = [], month, year, canEdit = false }) => {
+  const qc = useQueryClient();
   const monthPieces = (contentPieces ?? []).filter((c) => c.target_month === month && c.target_year === year);
 
-  // "Ist" = pieces with phase "approved" or "handed_over" (ab Freigegeben zählt es)
+  // Fetch extra counts
+  const { data: extras } = useQuery({
+    queryKey: ["contingent-extras", client.id, month, year],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("contingent_extras")
+        .select("type, extra_count")
+        .eq("client_id", client.id)
+        .eq("target_month", month)
+        .eq("target_year", year);
+      return data ?? [];
+    },
+  });
+
+  const getExtra = (type: string) => extras?.find((e) => e.type === type)?.extra_count ?? 0;
+
+  const updateExtra = useCallback(async (type: string, value: number) => {
+    const count = Math.max(0, value);
+    const { error } = await supabase
+      .from("contingent_extras")
+      .upsert(
+        { client_id: client.id, type, target_month: month, target_year: year, extra_count: count, updated_at: new Date().toISOString() },
+        { onConflict: "client_id,type,target_month,target_year" }
+      );
+    if (!error) {
+      qc.invalidateQueries({ queryKey: ["contingent-extras", client.id, month, year] });
+    }
+  }, [client.id, month, year, qc]);
+
+  // "Ist" = pieces with phase "approved" or "handed_over"
   const countByType = (type: string) =>
     monthPieces.filter((c) => c.type === type && (c.phase === "approved" || c.phase === "handed_over")).length;
 
@@ -42,14 +78,16 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
 
   const reelStoryPieces = monthPieces.filter((c) => c.type === "reel" || c.type === "story");
 
-  const conservative = reelStoryPieces.filter((c) => c.phase === "approved" || c.phase === "handed_over").length;
+  const conservative = reelStoryPieces.filter((c) => c.phase === "approved" || c.phase === "handed_over").length
+    + getExtra("reel") + getExtra("story");
   const conservativeDays = dailyRate > 0 ? Math.round(conservative / dailyRate) : 999;
 
-  const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length;
+  const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length
+    + getExtra("reel") + getExtra("story");
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
-  const totalTarget = client.monthly_reels + client.monthly_carousels + client.monthly_stories;
-  const totalDone = types.filter(t => t.type !== "ad").reduce((acc, t) => acc + t.current, 0);
+  const totalTarget = client.monthly_reels + client.monthly_carousels + client.monthly_stories + (ytTarget > 0 ? ytTarget : 0);
+  const totalDone = types.filter(t => t.type !== "ad").reduce((acc, t) => acc + t.current + getExtra(t.type), 0);
   const overallPct = totalTarget > 0 ? Math.round((totalDone / totalTarget) * 100) : 0;
 
   return (
@@ -75,9 +113,11 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
       <div className="flex gap-6">
         <div className="flex-1 space-y-4">
           {types.map((t) => {
+            const extra = getExtra(t.type);
+            const totalCurrent = t.current + extra;
             const isAd = t.type === "ad";
-            const pct = t.target > 0 ? Math.min((t.current / t.target) * 100, 100) : isAd ? 100 : 0;
-            const isComplete = t.target > 0 && t.current >= t.target;
+            const pct = t.target > 0 ? Math.min((totalCurrent / t.target) * 100, 100) : isAd ? 100 : 0;
+            const isComplete = t.target > 0 && totalCurrent >= t.target;
             return (
               <div key={t.type} className="flex items-center gap-3">
                 <span className="text-base w-6">{t.emoji}</span>
@@ -99,16 +139,30 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   </div>
                 </div>
                 <motion.span
-                  key={t.current}
+                  key={totalCurrent}
                   initial={{ scale: 1.3 }}
                   animate={{ scale: 1 }}
                   className={`font-mono text-sm font-bold w-14 text-right ${
                     isAd ? "text-violet-400" : isComplete ? "text-[hsl(var(--runway-green))]" : "text-foreground"
                   }`}
                 >
-                  {isAd ? t.current : `${t.current}/${t.target}`}
+                  {isAd ? totalCurrent : `${totalCurrent}/${t.target}`}
                 </motion.span>
                 {isComplete && <span className="text-sm">✅</span>}
+                {/* Extra count input */}
+                {canEdit && !isAd && (
+                  <div className="flex items-center gap-1 ml-1" title="Extras (nicht in Pipeline)">
+                    <Plus className="h-3 w-3 text-muted-foreground" />
+                    <Input
+                      type="number"
+                      min={0}
+                      value={extra}
+                      onChange={(e) => updateExtra(t.type, parseInt(e.target.value) || 0)}
+                      className="w-12 h-7 text-xs font-mono text-center px-1 bg-muted/50 border-border"
+                      title="Zusätzliche Pieces außerhalb der Pipeline"
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
