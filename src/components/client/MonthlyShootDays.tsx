@@ -389,7 +389,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
                 className="rounded-lg bg-primary/10 border border-primary/20 p-3 text-center"
               >
                 <span className="font-mono text-lg font-bold text-primary">{totalClips} Clips</span>
-                <span className="text-sm text-muted-foreground ml-2">werden in „Gedreht" angelegt</span>
+                <span className="text-sm text-muted-foreground ml-2">{"werden in \u201EGedreht\u201C angelegt"}</span>
                 {selectedScriptedIds.size > 0 && (
                   <p className="text-xs text-muted-foreground mt-1">
                     davon {selectedScriptedIds.size} geskriptet
