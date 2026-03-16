@@ -61,6 +61,7 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     label: "Reels",
     emoji: "🎬",
     phases: [
+      { key: "script", label: "Skript", emoji: "📝" },
       { key: "filmed", label: "Gedreht", emoji: "📹" },
       { key: "editing", label: "Im Schnitt", emoji: "✂️" },
       { key: "review", label: "Zur Freigabe", emoji: "👁️" },
