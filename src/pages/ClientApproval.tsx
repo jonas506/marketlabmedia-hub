@@ -346,6 +346,11 @@ const ClientApproval = () => {
         </div>
       </div>
 
+      {/* Marketing Summary */}
+      {marketing && marketing.days_tracked > 0 && (
+        <MarketingSummaryBar marketing={marketing} />
+      )}
+
       {/* Main content */}
       <div className="flex-1 flex flex-col" ref={scrollRef}>
         {pieces.length === 0 ? (
