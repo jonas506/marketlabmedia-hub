@@ -82,6 +82,17 @@ Deno.serve(async (req) => {
         })
         .join('')
 
+      // Plain text version
+      const pieceListText = pieces
+        .map((p) => {
+          const typeLabel = typeLabels[p.piece_type || ''] || p.piece_type || 'Content'
+          const title = p.piece_title || 'Ohne Titel'
+          return `- ${typeLabel}: ${title}`
+        })
+        .join('\n')
+
+      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketLab Media · Automatische Benachrichtigung`
+
       const emailHtml = `
 <!DOCTYPE html>
 <html>
