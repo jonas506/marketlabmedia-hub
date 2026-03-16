@@ -167,13 +167,23 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                       </span>
                       <Textarea
                         value={hook}
-                        onChange={(e) => updateHook(idx, e.target.value)}
+                        onChange={(e) => {
+                          updateHook(idx, e.target.value);
+                          e.target.style.height = "auto";
+                          e.target.style.height = e.target.scrollHeight + "px";
+                        }}
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = "auto";
+                            el.style.height = el.scrollHeight + "px";
+                          }
+                        }}
                         placeholder={`Hook-Variante ${idx + 1}…`}
                         className={cn(
-                          "flex-1 text-sm resize-none min-h-[44px] bg-muted/20 border-muted-foreground/10",
+                          "flex-1 text-sm resize-none min-h-[44px] bg-muted/20 border-muted-foreground/10 overflow-hidden",
                           "focus-visible:bg-background transition-colors"
                         )}
-                        rows={2}
+                        rows={1}
                         disabled={!canEdit}
                       />
                       <div className="flex flex-col gap-1 mt-1">
