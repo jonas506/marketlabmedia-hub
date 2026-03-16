@@ -25,6 +25,7 @@ interface ClientInfoPanelProps {
 }
 
 const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [values, setValues] = useState<Record<string, any>>({});
