@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
+import PipelineKanban from "./PipelineKanban";
 
 interface ContentPiece {
   id: string;
