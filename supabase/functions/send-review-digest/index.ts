@@ -127,14 +127,17 @@ Deno.serve(async (req) => {
       // Send to all configured emails
       for (const email of client.review_notify_emails) {
         try {
-          // Use the enqueue_email RPC if available (uses the email queue), otherwise log
+          const emailSubject = `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`
           const { error: rpcError } = await supabase.rpc('enqueue_email', {
-            p_queue_name: 'transactional_emails',
-            p_to_email: email,
-            p_subject: `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`,
-            p_html: emailHtml,
-            p_template_name: 'review_digest',
-            p_message_id: `review-digest-${clientId}-${Date.now()}`,
+            queue_name: 'transactional_emails',
+            payload: {
+              to: email,
+              subject: emailSubject,
+              html: emailHtml,
+              from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
+              template_name: 'review_digest',
+              message_id: `review-digest-${clientId}-${Date.now()}`,
+            },
           })
 
           if (rpcError) {
