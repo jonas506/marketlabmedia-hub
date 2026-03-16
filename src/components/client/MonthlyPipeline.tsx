@@ -276,17 +276,22 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   // Add piece
   const addPiece = useMutation({
     mutationFn: async () => {
-      await supabase.from("content_pieces").insert({
+      const { error } = await supabase.from("content_pieces").insert({
         client_id: clientId,
         type: activeType,
         phase: activePhase,
         target_month: month,
         target_year: year,
       });
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
       toast.success(`${config.emoji} Neues Piece erstellt`, { description: `In "${getPhaseLabel(activePhase)}"` });
+    },
+    onError: (err: any) => {
+      console.error("Add piece error:", err);
+      toast.error("Fehler beim Erstellen", { description: err.message });
     },
   });
 
