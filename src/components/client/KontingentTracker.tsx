@@ -60,48 +60,17 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
     }
   }, [client.id, month, year, qc]);
 
-  // Add reels by sub-type
-  const addReelsByType = useMutation({
-    mutationFn: async ({ opus, overlay }: { opus: number; overlay: number }) => {
-      const rows: any[] = [];
-      for (let i = 0; i < opus; i++) {
-        rows.push({
-          client_id: client.id,
-          type: "reel",
-          phase: "script",
-          target_month: month,
-          target_year: year,
-          title: `Opus Pro Clip ${i + 1}`,
-        });
-      }
-      for (let i = 0; i < overlay; i++) {
-        rows.push({
-          client_id: client.id,
-          type: "reel",
-          phase: "script",
-          target_month: month,
-          target_year: year,
-          title: `Overlay Post ${i + 1}`,
-        });
-      }
-      if (rows.length === 0) return 0;
-      const { error } = await supabase.from("content_pieces").insert(rows);
-      if (error) throw error;
-      return rows.length;
-    },
-    onSuccess: (count) => {
-      if (count === 0) return;
-      qc.invalidateQueries({ queryKey: ["content-pieces", client.id] });
-      setOpusCount(0);
-      setOverlayCount(0);
-      toast.success(`🎬 ${count} Reels erstellt`, {
-        description: `${opusCount > 0 ? `${opusCount} Opus Pro` : ""}${opusCount > 0 && overlayCount > 0 ? " + " : ""}${overlayCount > 0 ? `${overlayCount} Overlay` : ""}`,
-      });
-    },
-    onError: (err: any) => {
-      toast.error("Fehler beim Erstellen", { description: err.message });
-    },
-  });
+  // Add opus/overlay counts to reel extras
+  const addReelExtras = useCallback(async () => {
+    const total = opusCount + overlayCount;
+    if (total === 0) return;
+    const currentExtra = getExtra("reel");
+    await updateExtra("reel", currentExtra + total);
+    const desc = `${opusCount > 0 ? `${opusCount} Opus Pro` : ""}${opusCount > 0 && overlayCount > 0 ? " + " : ""}${overlayCount > 0 ? `${overlayCount} Overlay` : ""}`;
+    toast.success(`🎬 ${total} Reels eingetragen`, { description: desc });
+    setOpusCount(0);
+    setOverlayCount(0);
+  }, [opusCount, overlayCount, getExtra, updateExtra]);
 
   // "Ist" = pieces with phase "approved" or "handed_over"
   const countByType = (type: string) =>
