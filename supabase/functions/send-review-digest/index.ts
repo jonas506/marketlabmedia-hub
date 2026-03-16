@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketLab Media · Automatische Benachrichtigung`
+      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketlab Media · Automatische Benachrichtigung`
 
       // Send via Resend API
       let sendSuccess = true
