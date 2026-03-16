@@ -34,10 +34,25 @@ interface ClientInfo {
   logo_url: string | null;
 }
 
+interface MarketingSummary {
+  ad_spend: number;
+  new_followers: number;
+  dm_sent: number;
+  new_conversations: number;
+  appointments_booked: number;
+  appointments_attended: number;
+  closings: number;
+  revenue_net: number;
+  days_tracked: number;
+  month: number;
+  year: number;
+}
+
 interface ApprovalPayload {
   client: ClientInfo;
   pieces: Piece[];
   comments: TimestampComment[];
+  marketing: MarketingSummary | null;
 }
 
 const TYPE_LABELS: Record<string, string> = {
