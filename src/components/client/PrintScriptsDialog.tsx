@@ -68,7 +68,9 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       const typeLabel = TYPE_CONFIG.find((t) => t.key === piece.type)?.label ?? piece.type;
 
       let html = `<div class="script-block">`;
-      html += `<h2>${piece.title || "Ohne Titel"} <span class="type-badge">${typeLabel}</span></h2>`;
+      html += `<h2>${piece.title || "Ohne Titel"} <span class="type-badge">${typeLabel}</span>`;
+      if (piece.tag) html += ` <span class="tag-badge">${escapeHtml(piece.tag)}</span>`;
+      html += `</h2>`;
 
       if (hooks.length > 0) {
         html += `<div class="hooks-section">`;
