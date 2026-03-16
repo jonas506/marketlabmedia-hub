@@ -139,7 +139,7 @@ const ClientApproval = () => {
         _timestamp_seconds: commentTimestamp,
       });
       if (error) throw error;
-      setComments((prev) => [...prev, data]);
+      setComments((prev) => [...prev, data as unknown as TimestampComment]);
       setCommentText("");
       setCommentTimestamp(null);
       toast.success(
@@ -188,7 +188,7 @@ const ClientApproval = () => {
         _token: token,
         _piece_id: pieceId,
         _action: action,
-        _comments: action === "reject" ? pc : [],
+        _comments: (action === "reject" ? pc : []) as unknown as Json,
       });
       if (error) throw error;
 
@@ -225,7 +225,7 @@ const ClientApproval = () => {
           _token: token,
           _piece_id: piece.id,
           _action: "approve",
-          _comments: [],
+          _comments: [] as unknown as Json,
         });
         if (error) throw error;
       }
