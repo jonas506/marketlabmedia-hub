@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Scissors, ChevronRight, ClipboardCheck, Eye } from "lucide-react";
+import { CalendarIcon, Scissors, ChevronRight, ClipboardCheck, Eye, Pen, Camera } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,7 +24,7 @@ interface Task {
   created_at: string;
 }
 
-interface EditingPiece {
+interface ContentPieceItem {
   id: string;
   client_id: string;
   title: string | null;
@@ -47,8 +47,8 @@ interface Client { id: string; name: string; }
 
 type UnifiedItem =
   | { kind: "task"; data: Task }
-  | { kind: "editing"; data: EditingPiece }
-  | { kind: "review"; data: EditingPiece }
+  | { kind: "piece"; data: ContentPieceItem }
+  | { kind: "review"; data: ContentPieceItem }
   | { kind: "sop"; data: ChecklistStepItem };
 
 const TAG_COLORS: Record<string, string> = {
@@ -61,7 +61,24 @@ const TAG_COLORS: Record<string, string> = {
 };
 const getTagColor = (tag: string) => TAG_COLORS[tag.toLowerCase()] || "bg-primary/15 text-primary";
 
-const TYPE_LABELS: Record<string, string> = { reel: "Reel", story: "Story Ad", carousel: "Karussell" };
+const TYPE_LABELS: Record<string, string> = { reel: "Reel", story: "Story Ad", carousel: "Karussell", ad: "Ad", youtube_longform: "YouTube" };
+
+const PHASE_META: Record<string, { label: string; css: string }> = {
+  script: { label: "Skript", css: "monday-status-default" },
+  filmed: { label: "Gedreht", css: "monday-status-default" },
+  editing: { label: "Schnitt", css: "monday-status-working" },
+  review: { label: "Freigabe", css: "monday-status-review" },
+};
+
+const PhaseIcon = ({ phase }: { phase: string }) => {
+  switch (phase) {
+    case "script": return <Pen className="h-3 w-3 text-muted-foreground shrink-0" />;
+    case "filmed": return <Camera className="h-3 w-3 text-muted-foreground shrink-0" />;
+    case "editing": return <Scissors className="h-3 w-3 text-status-working shrink-0" />;
+    case "review": return <Eye className="h-3 w-3 text-status-review shrink-0" />;
+    default: return <Scissors className="h-3 w-3 text-muted-foreground shrink-0" />;
+  }
+};
 
 const STATUS_LABELS: Record<string, { label: string; css: string }> = {
   not_started: { label: "Offen", css: "monday-status-default" },
@@ -84,12 +101,17 @@ const MyTasks = () => {
     enabled: !!user?.id,
   });
 
-  const { data: editingPieces = [] } = useQuery({
-    queryKey: ["my-editing-pieces", user?.id],
+  // All content pieces assigned to current user (excluding completed phases)
+  const { data: assignedPieces = [] } = useQuery({
+    queryKey: ["my-assigned-pieces", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("content_pieces").select("id, client_id, title, type, phase, deadline").eq("assigned_to", user!.id).eq("phase", "editing");
+      const { data, error } = await supabase
+        .from("content_pieces")
+        .select("id, client_id, title, type, phase, deadline")
+        .eq("assigned_to", user!.id)
+        .not("phase", "in", "(approved,handed_over)");
       if (error) throw error;
-      return (data ?? []) as EditingPiece[];
+      return (data ?? []) as ContentPieceItem[];
     },
     enabled: !!user?.id,
   });
@@ -100,7 +122,7 @@ const MyTasks = () => {
     queryFn: async () => {
       const { data, error } = await supabase.from("content_pieces").select("id, client_id, title, type, phase, deadline").eq("phase", "review");
       if (error) throw error;
-      return (data ?? []) as EditingPiece[];
+      return (data ?? []) as ContentPieceItem[];
     },
     enabled: isHoC,
   });
@@ -151,8 +173,10 @@ const MyTasks = () => {
 
   const grouped = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
-    const editingItems: UnifiedItem[] = editingPieces.map((p) => ({ kind: "editing", data: p }));
-    const reviewItems: UnifiedItem[] = reviewPieces.map((p) => ({ kind: "review", data: p }));
+    const assignedIds = new Set(assignedPieces.map(p => p.id));
+    const pieceItems: UnifiedItem[] = assignedPieces.map((p) => ({ kind: "piece", data: p }));
+    // HoC/Admin review pieces excluding already-assigned ones (avoid duplicates)
+    const reviewItems: UnifiedItem[] = reviewPieces.filter(p => !assignedIds.has(p.id)).map((p) => ({ kind: "review", data: p }));
     const sopItems: UnifiedItem[] = checklistSteps.map((s) => ({ kind: "sop", data: s }));
     const taskItems: UnifiedItem[] = tasks.map((t) => ({ kind: "task", data: t }));
     taskItems.sort((a, b) => {
@@ -165,7 +189,7 @@ const MyTasks = () => {
       if (bT.deadline) return 1;
       return 0;
     });
-    const allItems = [...reviewItems, ...editingItems, ...sopItems, ...taskItems];
+    const allItems = [...reviewItems, ...pieceItems, ...sopItems, ...taskItems];
     const groups: Record<string, UnifiedItem[]> = {};
     allItems.forEach((item) => {
       const cid = item.kind === "sop" ? (item.data as ChecklistStepItem).client_id : item.data.client_id;
@@ -174,7 +198,7 @@ const MyTasks = () => {
       groups[cid].push(item);
     });
     return groups;
-  }, [tasks, editingPieces, reviewPieces, checklistSteps]);
+  }, [tasks, assignedPieces, reviewPieces, checklistSteps]);
 
   const completeTask = async (taskId: string, clientId: string) => {
     await supabase.from("tasks" as any).update({ is_completed: true, status: "done" } as any).eq("id", taskId);
@@ -187,7 +211,8 @@ const MyTasks = () => {
     qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
   };
 
-  const totalCount = tasks.length + editingPieces.length + reviewPieces.length + checklistSteps.length;
+  const dedupedReviewCount = reviewPieces.filter(p => !assignedPieces.some(a => a.id === p.id)).length;
+  const totalCount = tasks.length + assignedPieces.length + dedupedReviewCount + checklistSteps.length;
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -197,9 +222,9 @@ const MyTasks = () => {
         <div className="w-1 h-5 rounded-full bg-secondary" />
         <h3 className="font-display text-sm font-semibold">Meine Aufgaben</h3>
         <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{totalCount}</span>
-        {reviewPieces.length > 0 && (
+        {dedupedReviewCount > 0 && (
           <span className="text-[10px] font-mono text-status-review bg-status-review/15 px-2 py-0.5 rounded-full">
-            {reviewPieces.length} zur Freigabe
+            {dedupedReviewCount} zur Freigabe
           </span>
         )}
       </div>
@@ -223,16 +248,17 @@ const MyTasks = () => {
 
                 {/* Items */}
                 {items.map((item) => {
-                  if (item.kind === "review") {
-                    const piece = item.data as EditingPiece;
+                  if (item.kind === "review" || item.kind === "piece") {
+                    const piece = item.data as ContentPieceItem;
+                    const meta = PHASE_META[piece.phase] || PHASE_META.editing;
                     return (
                       <Link
-                        key={`r-${piece.id}`}
+                        key={`${item.kind}-${piece.id}`}
                         to={`/client/${piece.client_id}`}
                         className="monday-row flex items-center gap-3 px-4 py-2 pl-10 hover:bg-surface-hover transition-colors"
                       >
-                        <Eye className="h-3 w-3 text-status-review shrink-0" />
-                        <span className="monday-status monday-status-review text-[9px] py-0.5 px-2 min-w-0">Freigabe</span>
+                        <PhaseIcon phase={piece.phase} />
+                        <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0", meta.css)}>{meta.label}</span>
                         <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-muted/50 text-muted-foreground">
                           {TYPE_LABELS[piece.type] || piece.type}
                         </Badge>
@@ -244,26 +270,6 @@ const MyTasks = () => {
                           </span>
                         )}
                       </Link>
-                    );
-                  }
-
-                  if (item.kind === "editing") {
-                    const piece = item.data as EditingPiece;
-                    return (
-                      <div key={`p-${piece.id}`} className="monday-row flex items-center gap-3 px-4 py-2 pl-10">
-                        <Scissors className="h-3 w-3 text-status-working shrink-0" />
-                        <span className="monday-status monday-status-working text-[9px] py-0.5 px-2 min-w-0">Schnitt</span>
-                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-muted/50 text-muted-foreground">
-                          {TYPE_LABELS[piece.type] || piece.type}
-                        </Badge>
-                        <span className="flex-1 text-sm font-body truncate">{piece.title || "Ohne Titel"}</span>
-                        {piece.deadline && (
-                          <span className={cn("flex items-center gap-1 text-[11px] font-mono", piece.deadline < today ? "text-destructive font-semibold" : "text-muted-foreground")}>
-                            <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(piece.deadline), "dd MMM", { locale: de })}
-                          </span>
-                        )}
-                      </div>
                     );
                   }
 
