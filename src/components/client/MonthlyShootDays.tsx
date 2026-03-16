@@ -354,7 +354,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
                 </div>
                 <div className="rounded-lg border border-border p-4 text-center">
                   <span className="text-2xl block mb-2">📱</span>
-                  <label className="text-sm text-muted-foreground font-body mb-2 block">Stories</label>
+                  <label className="text-sm text-muted-foreground font-body mb-2 block">Story Ads</label>
                   <Input
                     type="number"
                     min={0}
