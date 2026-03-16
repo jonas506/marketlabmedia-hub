@@ -542,6 +542,7 @@ export type Database = {
           priority: string | null
           script_text: string | null
           shoot_day_id: string | null
+          tag: string | null
           target_month: number
           target_year: number
           title: string | null
@@ -565,6 +566,7 @@ export type Database = {
           priority?: string | null
           script_text?: string | null
           shoot_day_id?: string | null
+          tag?: string | null
           target_month: number
           target_year: number
           title?: string | null
@@ -588,6 +590,7 @@ export type Database = {
           priority?: string | null
           script_text?: string | null
           shoot_day_id?: string | null
+          tag?: string | null
           target_month?: number
           target_year?: number
           title?: string | null
