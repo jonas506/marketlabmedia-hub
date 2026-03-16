@@ -342,6 +342,7 @@ export type Database = {
           review_notify_emails: string[]
           sector: string | null
           services: string[]
+          show_marketing_approval: boolean
           status: string
           strategy_text: string | null
           summary: string | null
@@ -376,6 +377,7 @@ export type Database = {
           review_notify_emails?: string[]
           sector?: string | null
           services?: string[]
+          show_marketing_approval?: boolean
           status?: string
           strategy_text?: string | null
           summary?: string | null
@@ -410,6 +412,7 @@ export type Database = {
           review_notify_emails?: string[]
           sector?: string | null
           services?: string[]
+          show_marketing_approval?: boolean
           status?: string
           strategy_text?: string | null
           summary?: string | null
