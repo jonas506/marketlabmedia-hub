@@ -127,13 +127,13 @@ Deno.serve(async (req) => {
     </div>
 
     <p style="color:#555;font-size:12px;text-align:center;margin:0;">
-      MarketLab Media · Automatische Benachrichtigung
+      Marketlab Media · Automatische Benachrichtigung
     </p>
   </div>
 </body>
 </html>`
 
-      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketLab Media · Automatische Benachrichtigung`
+      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketlab Media · Automatische Benachrichtigung`
 
       // Send via Resend API
       let sendSuccess = true
@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'MarketLab Media <noreply@resend.dev>',
+              from: 'Marketlab Media <noreply@resend.dev>',
               to: [email],
               subject: emailSubject,
               html: emailHtml,
