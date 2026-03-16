@@ -43,15 +43,28 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
 
   const updateExtra = useCallback(async (type: string, value: number) => {
     const count = Math.max(0, value);
-    const { error } = await supabase
+    const queryKey = ["contingent-extras", client.id, month, year];
+
+    // Optimistic update – instant UI
+    qc.setQueryData(queryKey, (old: any[] | undefined) => {
+      const arr = old ?? [];
+      const existing = arr.find((e: any) => e.type === type);
+      if (existing) {
+        return arr.map((e: any) => e.type === type ? { ...e, extra_count: count } : e);
+      }
+      return [...arr, { type, extra_count: count }];
+    });
+
+    // Fire-and-forget DB save
+    supabase
       .from("contingent_extras")
       .upsert(
         { client_id: client.id, type, target_month: month, target_year: year, extra_count: count, updated_at: new Date().toISOString() },
         { onConflict: "client_id,type,target_month,target_year" }
-      );
-    if (!error) {
-      qc.invalidateQueries({ queryKey: ["contingent-extras", client.id, month, year] });
-    }
+      )
+      .then(({ error }) => {
+        if (error) qc.invalidateQueries({ queryKey });
+      });
   }, [client.id, month, year, qc]);
 
   // "Ist" = pieces with phase "approved" or "handed_over"
