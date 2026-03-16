@@ -84,6 +84,11 @@ serve(async (req) => {
     if (pdfTexts && pdfTexts.length > 0) allInputs.push(...pdfTexts.map((t: string) => `[PDF-Inhalt]\n${t}`));
     allInputs.push(...scrapedContents);
 
+    // If URLs were provided but scraping returned nothing, use the URLs as hints
+    if (allInputs.length === 0 && urls && urls.length > 0) {
+      allInputs.push(`[Website-URLs zur Analyse]\n${urls.join("\n")}\n\nBitte analysiere diese Unternehmen anhand der Domain-Namen und erstelle ein Profil basierend auf deinem Wissen.`);
+    }
+
     if (allInputs.length === 0) {
       return new Response(JSON.stringify({ error: "Keine Inhalte zum Analysieren" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
