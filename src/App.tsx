@@ -14,6 +14,7 @@ import Checklists from "./pages/Checklists";
 import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
 import ContentBase from "./pages/ContentBase";
+import MarketingDashboard from "./pages/MarketingDashboard";
 
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
