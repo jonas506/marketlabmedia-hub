@@ -495,6 +495,18 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </TabsList>
       </Tabs>
 
+      {viewMode === "kanban" ? (
+        <PipelineKanban
+          pieces={monthPieces}
+          phases={config.phases}
+          team={team}
+          canEdit={canEdit}
+          onMovePiece={(pieceId, targetPhase) => movePiece(pieceId, targetPhase)}
+          onOpenDetail={(piece) => setDetailPiece(piece)}
+          onOpenScript={(piece) => setScriptPiece(piece)}
+        />
+      ) : (
+      <>
       {/* Phase pills */}
       <div className="flex gap-1.5 mb-5">
         {config.phases.map((p) => {
