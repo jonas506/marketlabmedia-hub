@@ -130,6 +130,14 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+    .tag-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
     .hooks-section {
       margin-bottom: 1rem;
       padding: 0.75rem 1rem;
