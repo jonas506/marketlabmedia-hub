@@ -222,7 +222,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                     {[
                       { label: "Reels", value: client.monthly_reels, suffix: "/Monat" },
                       { label: "Karussells", value: client.monthly_carousels, suffix: "/Monat" },
-                      { label: "Stories", value: client.monthly_stories, suffix: "/Monat" },
+                      { label: "Story Ads", value: client.monthly_stories, suffix: "/Monat" },
                     ].map((item) => (
                       <div key={item.label} className="rounded-lg bg-muted/30 p-3.5">
                         <span className="text-xs text-muted-foreground font-body block mb-1">{item.label}</span>

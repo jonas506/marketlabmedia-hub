@@ -121,7 +121,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
           phase: "filmed",
           target_month: targetMonth,
           target_year: targetYear,
-          title: `Story ${i + 1}`,
+          title: `Story Ad ${i + 1}`,
         });
       }
       if (pieces.length > 0) {

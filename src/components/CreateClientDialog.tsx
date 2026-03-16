@@ -435,7 +435,7 @@ const CreateClientDialog = () => {
                   )}
                   {services.includes("stories") && (
                     <div className="rounded-xl bg-gradient-to-br from-purple-500/15 to-purple-600/5 border border-border/30 p-3 space-y-2">
-                      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Stories / Monat</Label>
+                      <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Story Ads / Monat</Label>
                       <Input type="number" min={0} value={stories} onChange={(e) => setStories(Number(e.target.value))} className="bg-background/50 text-center text-lg font-bold h-10" />
                     </div>
                   )}
