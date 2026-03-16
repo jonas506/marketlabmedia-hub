@@ -123,13 +123,17 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
   }, [qc, clientId]);
 
+  const saveNotesQuietly = useCallback(async (taskId: string, value: string) => {
+    await supabase.from("tasks" as any).update({ notes: value } as any).eq("id", taskId);
+  }, []);
+
   const handleNotesChange = useCallback((taskId: string, value: string) => {
     setLocalNotes(prev => ({ ...prev, [taskId]: value }));
     if (notesTimerRef.current[taskId]) clearTimeout(notesTimerRef.current[taskId]);
     notesTimerRef.current[taskId] = setTimeout(() => {
-      updateTask(taskId, { notes: value });
+      saveNotesQuietly(taskId, value);
     }, 600);
-  }, [updateTask]);
+  }, [saveNotesQuietly]);
 
   const archiveTask = useCallback(async (taskId: string) => {
     await updateTask(taskId, { is_completed: true, status: "done" });
