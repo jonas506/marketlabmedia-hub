@@ -208,7 +208,7 @@ const MaterialPipeline: React.FC<MaterialPipelineProps> = ({ clientId, clips, ca
                     <SelectContent>
                       <SelectItem value="reel">Reel</SelectItem>
                       <SelectItem value="carousel">Karussell</SelectItem>
-                      <SelectItem value="story">Story</SelectItem>
+                      <SelectItem value="story">Story Ad</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (

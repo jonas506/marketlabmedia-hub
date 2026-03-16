@@ -34,7 +34,7 @@ interface ClientInfo {
 
 const TYPE_LABELS: Record<string, string> = {
   reel: "Reel",
-  story: "Story",
+  story: "Story Ad",
   carousel: "Karussell",
   ad: "Ad",
 };
