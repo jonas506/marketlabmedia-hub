@@ -82,6 +82,17 @@ Deno.serve(async (req) => {
         })
         .join('')
 
+      // Plain text version
+      const pieceListText = pieces
+        .map((p) => {
+          const typeLabel = typeLabels[p.piece_type || ''] || p.piece_type || 'Content'
+          const title = p.piece_title || 'Ohne Titel'
+          return `- ${typeLabel}: ${title}`
+        })
+        .join('\n')
+
+      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketLab Media · Automatische Benachrichtigung`
+
       const emailHtml = `
 <!DOCTYPE html>
 <html>
@@ -124,35 +135,33 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-      // Send to all configured emails
-      for (const email of client.review_notify_emails) {
-        try {
-          // Use the enqueue_email RPC if available (uses the email queue), otherwise log
-          const { error: rpcError } = await supabase.rpc('enqueue_email', {
-            p_queue_name: 'transactional_emails',
-            p_to_email: email,
-            p_subject: `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`,
-            p_html: emailHtml,
-            p_template_name: 'review_digest',
-            p_message_id: `review-digest-${clientId}-${Date.now()}`,
-          })
-
-          if (rpcError) {
-            console.error('Enqueue error, trying direct send:', rpcError.message)
-            // Fallback: direct send if queue not available
-            if (apiKey) {
-              const { sendLovableEmail } = await import('npm:@lovable.dev/email-js')
-              await sendLovableEmail({
-                apiKey,
-                to: [email],
-                subject: `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`,
+      // Send to all configured emails directly
+      if (!apiKey) {
+        console.error('LOVABLE_API_KEY not set, cannot send emails')
+        results.push({ client: client.name, sent: false, error: 'LOVABLE_API_KEY not set' })
+      } else {
+        const { sendLovableEmail } = await import('npm:@lovable.dev/email-js')
+        for (const email of client.review_notify_emails) {
+          try {
+            const emailSubject = `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`
+            await sendLovableEmail(
+              {
+                to: email,
+                subject: emailSubject,
                 html: emailHtml,
+                text: emailText,
                 from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
-              })
-            }
+                sender_domain: 'notify.marketlabmedia.de',
+                purpose: 'transactional',
+                label: 'review_digest',
+                message_id: `review-digest-${clientId}-${Date.now()}`,
+              },
+              { apiKey }
+            )
+            console.log(`Sent review digest to ${email}`)
+          } catch (sendErr) {
+            console.error(`Failed to send to ${email}:`, sendErr)
           }
-        } catch (sendErr) {
-          console.error(`Failed to send to ${email}:`, sendErr)
         }
       }
 
