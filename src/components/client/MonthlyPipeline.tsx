@@ -627,7 +627,62 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </AnimatePresence>
 
 
-        {canEdit && (
+        {canEdit && activeType === "reel" && (
+          <div className="flex items-center gap-3">
+            {/* Opus Pro Counter */}
+            <div className="flex items-center gap-0 rounded-xl border border-border bg-muted/30 overflow-hidden">
+              <button
+                onClick={() => setOpusCount(Math.max(0, opusCount - 1))}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <div className="flex items-center gap-2 px-3 min-w-[100px] justify-center">
+                <span className="text-lg font-bold font-mono tabular-nums text-foreground">{opusCount}</span>
+                <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">Opus Pro</span>
+              </div>
+              <button
+                onClick={() => setOpusCount(opusCount + 1)}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Overlay Counter */}
+            <div className="flex items-center gap-0 rounded-xl border border-border bg-muted/30 overflow-hidden">
+              <button
+                onClick={() => setOverlayCount(Math.max(0, overlayCount - 1))}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <div className="flex items-center gap-2 px-3 min-w-[100px] justify-center">
+                <span className="text-lg font-bold font-mono tabular-nums text-foreground">{overlayCount}</span>
+                <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">Overlay</span>
+              </div>
+              <button
+                onClick={() => setOverlayCount(overlayCount + 1)}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Create button */}
+            <Button
+              variant="default"
+              className="gap-2 text-sm font-semibold"
+              disabled={addReelsByType.isPending || (opusCount === 0 && overlayCount === 0)}
+              onClick={() => addReelsByType.mutate({ opus: opusCount, overlay: overlayCount })}
+            >
+              <Plus className="h-4 w-4" />
+              {opusCount + overlayCount} Reels erstellen
+            </Button>
+          </div>
+        )}
+
+        {canEdit && activeType !== "reel" && (
           <div className="flex items-center gap-1.5">
             <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
               <Plus className="h-4 w-4" /> {config.addLabel}
