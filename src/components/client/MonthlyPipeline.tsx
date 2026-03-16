@@ -43,6 +43,7 @@ interface ContentPiece {
   caption?: string | null;
   video_path?: string | null;
   cta_label?: string | null;
+  tag?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
