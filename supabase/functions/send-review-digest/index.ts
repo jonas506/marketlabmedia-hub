@@ -146,6 +146,7 @@ Deno.serve(async (req) => {
               to: email,
               subject: emailSubject,
               html: emailHtml,
+              text: emailText,
               from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
               sender_domain: 'notify.marketlabmedia.de',
               purpose: 'transactional',
