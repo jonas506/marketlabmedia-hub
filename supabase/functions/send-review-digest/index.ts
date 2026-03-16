@@ -2,7 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 Deno.serve(async (req) => {
@@ -13,7 +13,6 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const apiKey = Deno.env.get('LOVABLE_API_KEY')
 
     const supabase = createClient(supabaseUrl, serviceKey)
 
@@ -60,9 +59,8 @@ Deno.serve(async (req) => {
       }
 
       // Build approval link
-      const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/+$/, '') || supabaseUrl.replace('.supabase.co', '.lovable.app')
       const approvalLink = client.approval_token
-        ? `https://id-preview--9c3f52d5-0a88-418f-bf2b-c46d9af591f5.lovable.app/approve/${client.approval_token}`
+        ? `https://marketlabmedia-hub.lovable.app/approve/${client.approval_token}`
         : null
 
       // Build piece list HTML
@@ -82,7 +80,6 @@ Deno.serve(async (req) => {
         })
         .join('')
 
-      // Plain text version
       const pieceListText = pieces
         .map((p) => {
           const typeLabel = typeLabels[p.piece_type || ''] || p.piece_type || 'Content'
@@ -90,6 +87,8 @@ Deno.serve(async (req) => {
           return `- ${typeLabel}: ${title}`
         })
         .join('\n')
+
+      const emailSubject = `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`
 
       const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketLab Media · Automatische Benachrichtigung`
 
@@ -135,44 +134,42 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-      // Send to all configured emails directly
-      if (!apiKey) {
-        console.error('LOVABLE_API_KEY not set, cannot send emails')
-        results.push({ client: client.name, sent: false, error: 'LOVABLE_API_KEY not set' })
-      } else {
-        const { sendLovableEmail } = await import('npm:@lovable.dev/email-js')
-        for (const email of client.review_notify_emails) {
-          try {
-            const emailSubject = `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`
-            await sendLovableEmail(
-              {
-                to: email,
-                subject: emailSubject,
-                html: emailHtml,
-                text: emailText,
-                from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
-                sender_domain: 'notify.marketlabmedia.de',
-                purpose: 'transactional',
-                label: 'review_digest',
-                message_id: `review-digest-${clientId}-${Date.now()}`,
-              },
-              { apiKey }
-            )
-            console.log(`Sent review digest to ${email}`)
-          } catch (sendErr) {
-            console.error(`Failed to send to ${email}:`, sendErr)
-          }
+      // Enqueue emails into transactional_emails queue (processed by process-email-queue cron)
+      let enqueueSuccess = true
+      for (const email of client.review_notify_emails) {
+        const messageId = `review-digest-${clientId}-${email}-${Date.now()}`
+        const { error: rpcError } = await supabase.rpc('enqueue_email', {
+          queue_name: 'transactional_emails',
+          payload: {
+            to: email,
+            from: `MarketLab Media <notify@notify.marketlabmedia.de>`,
+            sender_domain: 'notify.marketlabmedia.de',
+            subject: emailSubject,
+            html: emailHtml,
+            text: emailText,
+            purpose: 'transactional',
+            label: 'review_digest',
+            message_id: messageId,
+            queued_at: new Date().toISOString(),
+          },
+        })
+
+        if (rpcError) {
+          console.error(`Failed to enqueue email for ${email}:`, rpcError)
+          enqueueSuccess = false
+        } else {
+          console.log(`Enqueued review digest for ${email}`)
         }
       }
 
-      // Mark as sent
+      // Mark notification queue items as sent
       const ids = pieces.map((p) => p.id)
       await supabase
         .from('review_notification_queue')
         .update({ sent_at: new Date().toISOString() })
         .in('id', ids)
 
-      results.push({ client: client.name, sent: true })
+      results.push({ client: client.name, sent: enqueueSuccess })
     }
 
     return new Response(JSON.stringify({ results }), {
