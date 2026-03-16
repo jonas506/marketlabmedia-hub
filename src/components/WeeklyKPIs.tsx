@@ -111,23 +111,20 @@ const WeeklyKPIs = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+    <div className="grid grid-cols-5 gap-2 mb-5">
       {cards.map((card, i) => (
         <motion.div
           key={card.label}
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05 }}
-          className={cn(
-            "rounded-xl border p-4 flex flex-col gap-2",
-            card.bg
-          )}
+          transition={{ delay: i * 0.04 }}
+          className={cn("rounded-lg border px-3 py-2.5 flex items-center gap-3", card.bg)}
         >
-          <div className="flex items-center gap-2">
-            <card.icon className={cn("h-4 w-4", card.color)} />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{card.label}</span>
+          <card.icon className={cn("h-4 w-4 shrink-0", card.color)} />
+          <div>
+            <span className={cn("font-mono text-lg font-bold block leading-tight", card.color)}>{card.value}</span>
+            <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{card.label}</span>
           </div>
-          <span className={cn("font-mono text-2xl font-bold", card.color)}>{card.value}</span>
         </motion.div>
       ))}
     </div>
