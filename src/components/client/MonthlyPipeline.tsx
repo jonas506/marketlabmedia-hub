@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail, LayoutList, Columns3 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
+import PipelineKanban from "./PipelineKanban";
 
 interface ContentPiece {
   id: string;
@@ -152,6 +153,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [detailPiece, setDetailPiece] = useState<ContentPiece | null>(null);
   const [scriptPiece, setScriptPiece] = useState<ContentPiece | null>(null);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const config = PIPELINE_CONFIG[activeType];
@@ -437,6 +439,33 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             Caption Studio
           </Button>
         )}
+        {/* View mode toggle */}
+        <div className="flex items-center bg-muted/50 rounded-lg p-0.5 mr-2">
+          <button
+            onClick={() => setViewMode("list")}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+              viewMode === "list"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <LayoutList className="h-3 w-3" />
+            Liste
+          </button>
+          <button
+            onClick={() => setViewMode("kanban")}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+              viewMode === "kanban"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Columns3 className="h-3 w-3" />
+            Kanban
+          </button>
+        </div>
         <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
           {phaseSummary.map((p, i) => (
             <span key={p.key} className="flex items-center gap-1">
@@ -466,6 +495,18 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </TabsList>
       </Tabs>
 
+      {viewMode === "kanban" ? (
+        <PipelineKanban
+          pieces={monthPieces}
+          phases={config.phases}
+          team={team}
+          canEdit={canEdit}
+          onMovePiece={(pieceId, targetPhase) => movePiece(pieceId, targetPhase)}
+          onOpenDetail={(piece) => setDetailPiece(piece)}
+          onOpenScript={(piece) => setScriptPiece(piece)}
+        />
+      ) : (
+      <>
       {/* Phase pills */}
       <div className="flex gap-1.5 mb-5">
         {config.phases.map((p) => {
@@ -1014,6 +1055,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </div>
       )}
       </div>
+      </>
+      )}
       </div>
 
       {/* Caption Studio Dialog */}
