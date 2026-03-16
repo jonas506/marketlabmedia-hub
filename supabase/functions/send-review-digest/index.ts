@@ -13,6 +13,11 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY is not configured')
+    }
 
     const supabase = createClient(supabaseUrl, serviceKey)
 
@@ -40,7 +45,6 @@ Deno.serve(async (req) => {
     const results: { client: string; sent: boolean; error?: string }[] = []
 
     for (const [clientId, pieces] of Object.entries(grouped)) {
-      // Fetch client with notify emails
       const { data: client } = await supabase
         .from('clients')
         .select('name, review_notify_emails, approval_token')
@@ -48,7 +52,6 @@ Deno.serve(async (req) => {
         .single()
 
       if (!client || !client.review_notify_emails || client.review_notify_emails.length === 0) {
-        // Mark as sent even if no emails configured (don't re-queue forever)
         const ids = pieces.map((p) => p.id)
         await supabase
           .from('review_notification_queue')
@@ -58,12 +61,10 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Build approval link
       const approvalLink = client.approval_token
         ? `https://marketlabmedia-hub.lovable.app/approve/${client.approval_token}`
         : null
 
-      // Build piece list HTML
       const typeLabels: Record<string, string> = {
         reel: '🎬 Reel',
         carousel: '📸 Karussell',
@@ -89,8 +90,6 @@ Deno.serve(async (req) => {
         .join('\n')
 
       const emailSubject = `${pieces.length} ${pieces.length === 1 ? 'Content Piece' : 'Content Pieces'} zur Freigabe – ${client.name}`
-
-      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketLab Media · Automatische Benachrichtigung`
 
       const emailHtml = `
 <!DOCTYPE html>
@@ -134,31 +133,38 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-      // Enqueue emails into transactional_emails queue (processed by process-email-queue cron)
-      let enqueueSuccess = true
-      for (const email of client.review_notify_emails) {
-        const messageId = `review-digest-${clientId}-${email}-${Date.now()}`
-        const { error: rpcError } = await supabase.rpc('enqueue_email', {
-          queue_name: 'transactional_emails',
-          payload: {
-            to: email,
-            from: `MarketLab Media <notify@notify.marketlabmedia.de>`,
-            sender_domain: 'notify.marketlabmedia.de',
-            subject: emailSubject,
-            html: emailHtml,
-            text: emailText,
-            purpose: 'transactional',
-            label: 'review_digest',
-            message_id: messageId,
-            queued_at: new Date().toISOString(),
-          },
-        })
+      const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketLab Media · Automatische Benachrichtigung`
 
-        if (rpcError) {
-          console.error(`Failed to enqueue email for ${email}:`, rpcError)
-          enqueueSuccess = false
-        } else {
-          console.log(`Enqueued review digest for ${email}`)
+      // Send via Resend API
+      let sendSuccess = true
+      for (const email of client.review_notify_emails) {
+        try {
+          const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
+              to: [email],
+              subject: emailSubject,
+              html: emailHtml,
+              text: emailText,
+            }),
+          })
+
+          const resBody = await res.text()
+
+          if (!res.ok) {
+            console.error(`Resend error for ${email}: [${res.status}] ${resBody}`)
+            sendSuccess = false
+          } else {
+            console.log(`Sent review digest to ${email}`)
+          }
+        } catch (sendErr) {
+          console.error(`Failed to send to ${email}:`, sendErr)
+          sendSuccess = false
         }
       }
 
@@ -169,7 +175,7 @@ Deno.serve(async (req) => {
         .update({ sent_at: new Date().toISOString() })
         .in('id', ids)
 
-      results.push({ client: client.name, sent: enqueueSuccess })
+      results.push({ client: client.name, sent: sendSuccess })
     }
 
     return new Response(JSON.stringify({ results }), {
