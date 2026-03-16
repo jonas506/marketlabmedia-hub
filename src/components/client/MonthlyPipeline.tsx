@@ -149,6 +149,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [bulkTitles, setBulkTitles] = useState("");
   const [captionStudioOpen, setCaptionStudioOpen] = useState(false);
   const [detailPiece, setDetailPiece] = useState<ContentPiece | null>(null);
+  const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
+  const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const config = PIPELINE_CONFIG[activeType];
 
@@ -331,6 +333,18 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     await supabase.from("content_pieces").update(updates).eq("id", pieceId);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
   };
+
+  const saveTitleQuietly = useCallback(async (pieceId: string, title: string) => {
+    await supabase.from("content_pieces").update({ title }).eq("id", pieceId);
+  }, []);
+
+  const handleTitleChange = useCallback((pieceId: string, value: string) => {
+    setLocalTitles((prev) => ({ ...prev, [pieceId]: value }));
+    if (titleTimerRef.current[pieceId]) clearTimeout(titleTimerRef.current[pieceId]);
+    titleTimerRef.current[pieceId] = setTimeout(() => {
+      saveTitleQuietly(pieceId, value);
+    }, 600);
+  }, [saveTitleQuietly]);
 
   const deletePiece = async (pieceId: string) => {
     await supabase.from("content_pieces").delete().eq("id", pieceId);
@@ -588,10 +602,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
                     {/* Title */}
                     <Input
-                      value={piece.title || ""}
+                      value={localTitles[piece.id] ?? piece.title ?? ""}
                       placeholder="Titel eingeben..."
                       className="h-7 flex-1 border-0 bg-transparent text-sm px-1.5 placeholder:text-muted-foreground/40 focus-visible:bg-muted/30 rounded"
-                      onChange={(e) => updatePiece(piece.id, { title: e.target.value })}
+                      onChange={(e) => handleTitleChange(piece.id, e.target.value)}
                       disabled={!canEdit}
                     />
 
