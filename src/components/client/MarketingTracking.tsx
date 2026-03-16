@@ -37,25 +37,64 @@ interface Props {
   canEdit: boolean;
 }
 
-const COLUMNS: { key: keyof TrackingRow; label: string; computed?: boolean; type?: "currency" | "number" | "percent" | "text"; width?: string }[] = [
-  { key: "tracking_date", label: "Datum", type: "text", width: "w-24" },
-  { key: "ad_spend", label: "Ausgegeben", type: "currency", width: "w-24" },
-  { key: "new_followers", label: "Neue Follower", type: "number", width: "w-20" },
-  { key: "cost_per_follower", label: "€/Follower", computed: true, type: "currency", width: "w-20" },
-  { key: "dm_sent", label: "DMs geschr.", type: "number", width: "w-20" },
-  { key: "new_conversations", label: "Neue Konv.", type: "number", width: "w-20" },
-  { key: "appointments_booked", label: "Termine gebcht.", type: "number", width: "w-20" },
-  { key: "cost_per_appointment", label: "€/Termin", computed: true, type: "currency", width: "w-20" },
-  { key: "sales_today", label: "Sales Heute", type: "number", width: "w-20" },
-  { key: "appointments_total", label: "Termine", type: "number", width: "w-20" },
-  { key: "show_rate", label: "Show %", computed: true, type: "percent", width: "w-16" },
-  { key: "appointments_attended", label: "Wahrgen.", type: "number", width: "w-20" },
-  { key: "offer_quote", label: "Ang. Quote", type: "percent", width: "w-20" },
-  { key: "offers_presented", label: "Ang. vorgest.", type: "number", width: "w-20" },
-  { key: "closing_rate", label: "Close %", computed: true, type: "percent", width: "w-16" },
-  { key: "closings", label: "Closings", type: "number", width: "w-20" },
-  { key: "revenue_net", label: "Umsatz netto", type: "currency", width: "w-24" },
-  { key: "notes", label: "Notizen", type: "text", width: "w-32" },
+const COLUMNS: {
+  key: keyof TrackingRow;
+  label: string;
+  computed?: boolean;
+  type?: "currency" | "number" | "percent" | "text";
+  colorClass: string;
+  headerBg: string;
+}[] = [
+  {
+    key: "tracking_date",
+    label: "Datum",
+    type: "text",
+    colorClass: "bg-slate-500/[0.04]",
+    headerBg: "bg-slate-500/10 text-slate-300",
+  },
+  {
+    key: "ad_spend",
+    label: "Ausgegeben",
+    type: "currency",
+    colorClass: "bg-rose-500/[0.04]",
+    headerBg: "bg-rose-500/10 text-rose-300",
+  },
+  {
+    key: "new_followers",
+    label: "Neue Follower",
+    type: "number",
+    colorClass: "bg-violet-500/[0.04]",
+    headerBg: "bg-violet-500/10 text-violet-300",
+  },
+  {
+    key: "cost_per_follower",
+    label: "Kosten/Follower",
+    computed: true,
+    type: "currency",
+    colorClass: "bg-violet-500/[0.04]",
+    headerBg: "bg-violet-500/10 text-violet-300",
+  },
+  {
+    key: "dm_sent",
+    label: "Nachrichten geschrieben",
+    type: "number",
+    colorClass: "bg-sky-500/[0.04]",
+    headerBg: "bg-sky-500/10 text-sky-300",
+  },
+  {
+    key: "new_conversations",
+    label: "Neue Konversationen",
+    type: "number",
+    colorClass: "bg-emerald-500/[0.04]",
+    headerBg: "bg-emerald-500/10 text-emerald-300",
+  },
+  {
+    key: "appointments_booked",
+    label: "Termine gebucht",
+    type: "number",
+    colorClass: "bg-amber-500/[0.04]",
+    headerBg: "bg-amber-500/10 text-amber-300",
+  },
 ];
 
 const formatVal = (val: number | string | null, type?: string) => {
@@ -149,10 +188,11 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
     (acc, r) => ({
       ad_spend: acc.ad_spend + Number(r.ad_spend || 0),
       new_followers: acc.new_followers + Number(r.new_followers || 0),
-      closings: acc.closings + Number(r.closings || 0),
-      revenue_net: acc.revenue_net + Number(r.revenue_net || 0),
+      dm_sent: acc.dm_sent + Number(r.dm_sent || 0),
+      new_conversations: acc.new_conversations + Number(r.new_conversations || 0),
+      appointments_booked: acc.appointments_booked + Number(r.appointments_booked || 0),
     }),
-    { ad_spend: 0, new_followers: 0, closings: 0, revenue_net: 0 }
+    { ad_spend: 0, new_followers: 0, dm_sent: 0, new_conversations: 0, appointments_booked: 0 }
   );
   const avgCPF = totals.new_followers > 0 ? totals.ad_spend / totals.new_followers : null;
 
@@ -189,25 +229,25 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
       {/* Summary cards */}
       {rows.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-4 border-b border-border">
-          <div className="rounded-lg bg-muted/40 p-3">
-            <div className="text-[10px] font-mono uppercase text-muted-foreground">Ausgaben</div>
-            <div className="text-base font-bold font-mono">{totals.ad_spend.toFixed(2)} €</div>
+          <div className="rounded-lg bg-rose-500/10 p-3">
+            <div className="text-[10px] font-mono uppercase text-rose-400/80">Ausgaben</div>
+            <div className="text-base font-bold font-mono text-rose-300">{totals.ad_spend.toFixed(2)} €</div>
           </div>
-          <div className="rounded-lg bg-muted/40 p-3">
-            <div className="text-[10px] font-mono uppercase text-muted-foreground">Neue Follower</div>
-            <div className="text-base font-bold font-mono">{totals.new_followers}</div>
+          <div className="rounded-lg bg-violet-500/10 p-3">
+            <div className="text-[10px] font-mono uppercase text-violet-400/80">Neue Follower</div>
+            <div className="text-base font-bold font-mono text-violet-300">{totals.new_followers}</div>
           </div>
-          <div className="rounded-lg bg-muted/40 p-3">
-            <div className="text-[10px] font-mono uppercase text-muted-foreground">Ø €/Follower</div>
-            <div className="text-base font-bold font-mono">{avgCPF !== null ? `${avgCPF.toFixed(2)} €` : "–"}</div>
+          <div className="rounded-lg bg-violet-500/10 p-3">
+            <div className="text-[10px] font-mono uppercase text-violet-400/80">Ø €/Follower</div>
+            <div className="text-base font-bold font-mono text-violet-300">{avgCPF !== null ? `${avgCPF.toFixed(2)} €` : "–"}</div>
           </div>
-          <div className="rounded-lg bg-muted/40 p-3">
-            <div className="text-[10px] font-mono uppercase text-muted-foreground">Closings</div>
-            <div className="text-base font-bold font-mono">{totals.closings}</div>
+          <div className="rounded-lg bg-sky-500/10 p-3">
+            <div className="text-[10px] font-mono uppercase text-sky-400/80">Nachrichten</div>
+            <div className="text-base font-bold font-mono text-sky-300">{totals.dm_sent}</div>
           </div>
-          <div className="rounded-lg bg-muted/40 p-3">
-            <div className="text-[10px] font-mono uppercase text-muted-foreground">Umsatz netto</div>
-            <div className="text-base font-bold font-mono">{totals.revenue_net.toFixed(2)} €</div>
+          <div className="rounded-lg bg-amber-500/10 p-3">
+            <div className="text-[10px] font-mono uppercase text-amber-400/80">Termine</div>
+            <div className="text-base font-bold font-mono text-amber-300">{totals.appointments_booked}</div>
           </div>
         </div>
       )}
@@ -223,32 +263,53 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
             Noch keine Tracking-Einträge für {monthLabel}
           </div>
         ) : (
-          <table className="w-full text-xs font-mono">
+          <table className="w-full text-xs font-mono border-collapse">
             <thead>
-              <tr className="border-b border-border bg-muted/30">
+              <tr>
                 {COLUMNS.map((col) => (
-                  <th key={col.key} className={cn("px-2 py-2 text-left font-medium text-muted-foreground whitespace-nowrap", col.width)}>
+                  <th
+                    key={col.key}
+                    className={cn(
+                      "px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap border-b border-border",
+                      col.headerBg
+                    )}
+                  >
                     {col.label}
                   </th>
                 ))}
-                {canEdit && <th className="w-8" />}
+                {canEdit && <th className="w-8 border-b border-border bg-muted/20" />}
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+              {rows.map((row, rowIdx) => (
+                <tr
+                  key={row.id}
+                  className={cn(
+                    "transition-colors hover:brightness-125",
+                    rowIdx % 2 === 1 && "bg-muted/[0.02]"
+                  )}
+                >
                   {COLUMNS.map((col) => {
                     const val = row[col.key];
                     if (col.computed) {
                       return (
-                        <td key={col.key} className={cn("px-2 py-1.5 text-muted-foreground", col.width)}>
+                        <td
+                          key={col.key}
+                          className={cn(
+                            "px-3 py-2 text-muted-foreground border-b border-border/30",
+                            col.colorClass
+                          )}
+                        >
                           {formatVal(val as any, col.type)}
                         </td>
                       );
                     }
                     if (col.key === "tracking_date") {
                       return (
-                        <td key={col.key} className={cn("px-2 py-1.5", col.width)}>
+                        <td
+                          key={col.key}
+                          className={cn("px-3 py-2 border-b border-border/30", col.colorClass)}
+                        >
                           {canEdit ? (
                             <Input
                               type="date"
@@ -263,11 +324,14 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
                       );
                     }
                     return (
-                      <td key={col.key} className={cn("px-2 py-1.5", col.width)}>
+                      <td
+                        key={col.key}
+                        className={cn("px-3 py-2 border-b border-border/30", col.colorClass)}
+                      >
                         {canEdit ? (
                           <Input
                             defaultValue={val !== null && val !== undefined ? String(val) : ""}
-                            placeholder={col.type === "text" ? "..." : "0"}
+                            placeholder="0"
                             className="h-7 text-xs font-mono bg-transparent border-none px-0 focus-visible:ring-1 w-full"
                             onBlur={(e) => handleBlur(row.id, col.key, e.target.value, col.type)}
                           />
@@ -278,7 +342,7 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
                     );
                   })}
                   {canEdit && (
-                    <td className="px-1 py-1.5">
+                    <td className="px-1 py-2 border-b border-border/30 bg-muted/[0.02]">
                       <Button
                         variant="ghost"
                         size="icon"
