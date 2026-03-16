@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,8 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const [filterPerson, setFilterPerson] = useState("all");
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const [localNotes, setLocalNotes] = useState<Record<string, string>>({});
+  const notesTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const { data: team } = useQuery({
     queryKey: ["team-members"],
@@ -120,6 +122,14 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     qc.invalidateQueries({ queryKey: ["tasks", clientId] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
   }, [qc, clientId]);
+
+  const handleNotesChange = useCallback((taskId: string, value: string) => {
+    setLocalNotes(prev => ({ ...prev, [taskId]: value }));
+    if (notesTimerRef.current[taskId]) clearTimeout(notesTimerRef.current[taskId]);
+    notesTimerRef.current[taskId] = setTimeout(() => {
+      updateTask(taskId, { notes: value });
+    }, 600);
+  }, [updateTask]);
 
   const archiveTask = useCallback(async (taskId: string) => {
     await updateTask(taskId, { is_completed: true, status: "done" });
@@ -380,10 +390,10 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                       >
                         <div className="px-4 pb-3 pt-0 ml-6">
                           <Textarea
-                            value={task.notes || ""}
+                            value={localNotes[task.id] ?? task.notes ?? ""}
                             placeholder="Notizen, Links, Kontext…"
                             className="min-h-[50px] text-xs font-body bg-background/50 border-border/50 resize-none rounded"
-                            onChange={(e) => updateTask(task.id, { notes: e.target.value })}
+                            onChange={(e) => handleNotesChange(task.id, e.target.value)}
                             disabled={!canEdit}
                           />
                         </div>
