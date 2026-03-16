@@ -730,7 +730,28 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     </motion.div>
                   )}
 
-                  {activePhase === "editing" && (
+                  {activePhase === "filmed" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="pl-9"
+                    >
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={cn(
+                          "h-7 text-xs font-mono gap-1.5",
+                          piece.script_text
+                            ? "text-[hsl(var(--runway-green))] hover:text-[hsl(var(--runway-green))]"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        onClick={() => setScriptPiece(piece)}
+                      >
+                        <FileText className="h-3 w-3" />
+                        {piece.script_text ? "Skript ansehen" : "Skript hinzufügen"}
+                      </Button>
+                    </motion.div>
+                  )}
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
