@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2, TrendingUp, ChevronLeft, ChevronRight, MessageSquare, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface TrackingRow {
   id: string;
@@ -177,6 +179,13 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
     [updateCell]
   );
 
+  const saveNote = useCallback(
+    (id: string, note: string) => {
+      updateCell.mutate({ id, field: "notes", value: note || null });
+    },
+    [updateCell]
+  );
+
   const shiftMonth = (dir: number) =>
     setViewMonth((v) => {
       const d = new Date(v.year, v.month + dir);
@@ -266,6 +275,9 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
           <table className="w-full text-xs font-mono border-collapse">
             <thead>
               <tr>
+                <th className="w-8 px-1 py-2.5 text-[11px] font-semibold border-b border-border bg-muted/20">
+                  <MessageSquare className="h-3 w-3 mx-auto text-muted-foreground" />
+                </th>
                 {COLUMNS.map((col) => (
                   <th
                     key={col.key}
@@ -289,6 +301,14 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
                     rowIdx % 2 === 1 && "bg-muted/[0.02]"
                   )}
                 >
+                  {/* Notes popover */}
+                  <td className="px-1 py-2 border-b border-border/30 bg-muted/[0.02]">
+                    <NotePopover
+                      note={row.notes}
+                      canEdit={canEdit}
+                      onSave={(note) => saveNote(row.id, note)}
+                    />
+                  </td>
                   {COLUMNS.map((col) => {
                     const val = row[col.key];
                     if (col.computed) {
@@ -360,5 +380,55 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
         )}
       </div>
     </div>
+  );
+}
+
+function NotePopover({ note, canEdit, onSave }: { note: string | null; canEdit: boolean; onSave: (note: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState(note || "");
+  const hasNote = !!note && note.trim().length > 0;
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) setText(note || ""); }}>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "h-6 w-6 rounded flex items-center justify-center transition-all mx-auto",
+            hasNote
+              ? "bg-amber-500/15 text-amber-400 hover:bg-amber-500/25"
+              : "text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted/50"
+          )}
+        >
+          <MessageSquare className="h-3 w-3" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-3" side="right" align="start">
+        {canEdit ? (
+          <div className="space-y-2">
+            <Textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Notiz hinzufügen..."
+              rows={3}
+              className="text-xs min-h-[60px] resize-none"
+            />
+            <div className="flex justify-end gap-1">
+              {hasNote && (
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive"
+                  onClick={() => { onSave(""); setOpen(false); }}>
+                  Löschen
+                </Button>
+              )}
+              <Button size="sm" className="h-7 text-xs"
+                onClick={() => { onSave(text); setOpen(false); }}>
+                Speichern
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground whitespace-pre-wrap">{note || "Keine Notiz"}</p>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
