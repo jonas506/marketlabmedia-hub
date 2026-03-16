@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send } from "lucide-react";
@@ -31,6 +32,12 @@ interface ClientInfo {
   id: string;
   name: string;
   logo_url: string | null;
+}
+
+interface ApprovalPayload {
+  client: ClientInfo;
+  pieces: Piece[];
+  comments: TimestampComment[];
 }
 
 const TYPE_LABELS: Record<string, string> = {
