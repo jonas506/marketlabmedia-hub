@@ -1130,6 +1130,13 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         clientId={clientId}
         canEdit={canEdit}
       />
+
+      {/* Print Scripts Dialog */}
+      <PrintScriptsDialog
+        open={printScriptsOpen}
+        onOpenChange={setPrintScriptsOpen}
+        pieces={monthPieces}
+      />
     </motion.div>
   );
 };
