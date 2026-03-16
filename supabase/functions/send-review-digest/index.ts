@@ -148,13 +148,19 @@ Deno.serve(async (req) => {
             // Fallback: direct send if queue not available
             if (apiKey) {
               const { sendLovableEmail } = await import('npm:@lovable.dev/email-js')
-              await sendLovableEmail({
-                apiKey,
-                to: [email],
-                subject: emailSubject,
-                html: emailHtml,
-                from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
-              })
+              await sendLovableEmail(
+                {
+                  to: email,
+                  subject: emailSubject,
+                  html: emailHtml,
+                  from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
+                  sender_domain: 'notify.marketlabmedia.de',
+                  purpose: 'transactional',
+                  label: 'review_digest',
+                  message_id: `review-digest-${clientId}-${Date.now()}`,
+                },
+                { apiKey }
+              )
             } else {
               console.error('LOVABLE_API_KEY not set, cannot send email directly')
             }
