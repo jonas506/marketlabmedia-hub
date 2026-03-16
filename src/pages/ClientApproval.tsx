@@ -94,9 +94,6 @@ const ClientApproval = () => {
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const projectUrl = import.meta.env.VITE_SUPABASE_URL;
-  const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
   const fetchData = useCallback(async () => {
     if (!token || token === ":token") {
       setError("Kein gültiger Token");
@@ -108,9 +105,10 @@ const ClientApproval = () => {
         _token: token,
       });
       if (error) throw error;
-      setClient(data.client);
-      setPieces(data.pieces || []);
-      setComments(data.comments || []);
+      const payload = data as unknown as ApprovalPayload;
+      setClient(payload.client);
+      setPieces(payload.pieces || []);
+      setComments(payload.comments || []);
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
