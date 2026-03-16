@@ -96,6 +96,7 @@ const ClientApproval = () => {
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [comments, setComments] = useState<TimestampComment[]>([]);
+  const [marketing, setMarketing] = useState<MarketingSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
