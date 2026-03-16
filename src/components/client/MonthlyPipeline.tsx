@@ -21,6 +21,7 @@ import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
+import PrintScriptsDialog from "./PrintScriptsDialog";
 
 interface ContentPiece {
   id: string;
