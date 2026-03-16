@@ -125,6 +125,7 @@ const ClientApproval = () => {
       setClient(payload.client);
       setPieces(payload.pieces || []);
       setComments(payload.comments || []);
+      setMarketing(payload.marketing || null);
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
