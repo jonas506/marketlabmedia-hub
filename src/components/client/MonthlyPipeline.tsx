@@ -737,17 +737,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       className="flex items-center gap-3 pl-9 flex-wrap"
                     >
                       {/* Script button */}
-                      {piece.script_text && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs font-mono gap-1.5 text-muted-foreground hover:text-foreground"
-                          onClick={() => setScriptPiece(piece)}
-                        >
-                          <FileText className="h-3 w-3" />
-                          Skript ansehen
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={cn(
+                          "h-7 text-xs font-mono gap-1.5",
+                          piece.script_text
+                            ? "text-[hsl(var(--runway-green))] hover:text-[hsl(var(--runway-green))]"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        onClick={() => setScriptPiece(piece)}
+                      >
+                        <FileText className="h-3 w-3" />
+                        {piece.script_text ? "Skript ansehen" : "Skript hinzufügen"}
+                      </Button>
                       {/* Deadline */}
                       <Popover>
                         <PopoverTrigger asChild>
