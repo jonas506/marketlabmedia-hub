@@ -141,7 +141,7 @@ const fireSmallCelebration = () => {
 const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit }) => {
   const qc = useQueryClient();
   const [activeType, setActiveType] = useState<string>("reel");
-  const [activePhase, setActivePhase] = useState<string>("filmed");
+  const [activePhase, setActivePhase] = useState<string>(PIPELINE_CONFIG["reel"].phases[0].key);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filterPerson, setFilterPerson] = useState<string>("all");
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
@@ -276,17 +276,22 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   // Add piece
   const addPiece = useMutation({
     mutationFn: async () => {
-      await supabase.from("content_pieces").insert({
+      const { error } = await supabase.from("content_pieces").insert({
         client_id: clientId,
         type: activeType,
         phase: activePhase,
         target_month: month,
         target_year: year,
       });
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
       toast.success(`${config.emoji} Neues Piece erstellt`, { description: `In "${getPhaseLabel(activePhase)}"` });
+    },
+    onError: (err: any) => {
+      console.error("Add piece error:", err);
+      toast.error("Fehler beim Erstellen", { description: err.message });
     },
   });
 
