@@ -11,6 +11,7 @@ import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import LandingPagesList from "@/components/client/LandingPagesList";
 import ClientNotebook from "@/components/client/ClientNotebook";
+import MarketingTracking from "@/components/client/MarketingTracking";
 
 import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
