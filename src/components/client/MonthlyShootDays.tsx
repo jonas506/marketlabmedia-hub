@@ -336,7 +336,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
               <p className="text-sm text-muted-foreground mb-3">
                 {scriptedReels.length > 0
                   ? "Zusätzliche neue Clips ohne Skript erstellen:"
-                  : "Wie viele Clips sind beim Dreh entstanden? Die Clips werden direkt als „Gedreht" in die Pipeline gelegt."}
+                  : 'Wie viele Clips sind beim Dreh entstanden? Die Clips werden direkt als \u201EGedreht\u201C in die Pipeline gelegt.'}
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg border border-border p-4 text-center">
