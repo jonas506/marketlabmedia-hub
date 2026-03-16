@@ -431,6 +431,17 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </div>
         )}
         <div className="flex-1" />
+        {monthPieces.length > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs font-mono gap-1.5 mr-2"
+            onClick={() => setPrintScriptsOpen(true)}
+          >
+            <Printer className="h-3 w-3" />
+            Drucken
+          </Button>
+        )}
         {canEdit && monthPieces.length > 0 && (
           <Button
             size="sm"
