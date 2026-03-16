@@ -162,6 +162,11 @@ const ClientDetail = () => {
           <TaskList clientId={client.id} canEdit={canEdit} />
         </div>
 
+        {/* Marketing Tracking */}
+        <div className="mt-8">
+          <MarketingTracking clientId={client.id} canEdit={canEdit} />
+        </div>
+
         {/* Landing Pages */}
         <div className="mt-8">
           <LandingPagesList clientId={client.id} canEdit={canEdit} />
