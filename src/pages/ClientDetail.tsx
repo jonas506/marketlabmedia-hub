@@ -11,6 +11,7 @@ import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import LandingPagesList from "@/components/client/LandingPagesList";
 import ClientNotebook from "@/components/client/ClientNotebook";
+import MarketingTracking from "@/components/client/MarketingTracking";
 
 import TaskList from "@/components/client/TaskList";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -159,6 +160,11 @@ const ClientDetail = () => {
         {/* Aufgaben */}
         <div className="mt-8">
           <TaskList clientId={client.id} canEdit={canEdit} />
+        </div>
+
+        {/* Marketing Tracking */}
+        <div className="mt-8">
+          <MarketingTracking clientId={client.id} canEdit={canEdit} />
         </div>
 
         {/* Landing Pages */}
