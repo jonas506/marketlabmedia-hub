@@ -178,17 +178,13 @@ const ClientApproval = () => {
     setActionLoading(pieceId);
     try {
       const pc = pieceComments(pieceId);
-      const res = await fetch(`${projectUrl}/functions/v1/client-approval`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: apiKey },
-        body: JSON.stringify({
-          token,
-          piece_id: pieceId,
-          action,
-          comments: action === "reject" ? pc : undefined,
-        }),
+      const { error } = await supabase.rpc("submit_client_piece_review", {
+        _token: token,
+        _piece_id: pieceId,
+        _action: action,
+        _comments: action === "reject" ? pc : [],
       });
-      if (!res.ok) throw new Error("Aktion fehlgeschlagen");
+      if (error) throw error;
 
       const newPieces = pieces.filter((p) => p.id !== pieceId);
       setPieces(newPieces);
@@ -205,7 +201,6 @@ const ClientApproval = () => {
         toast("Feedback gesendet 📝", { description: `${pc.length} Kommentar(e) übermittelt` });
       }
 
-      // Adjust index if needed
       if (currentIndex >= newPieces.length && newPieces.length > 0) {
         setCurrentIndex(newPieces.length - 1);
       }
