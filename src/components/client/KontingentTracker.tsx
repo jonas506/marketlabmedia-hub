@@ -217,6 +217,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   <div className="flex items-center gap-2 ml-9 pl-20">
                     <Stepper label="Opus Pro" value={opusProCount} onChange={(v) => updateExtra("opus_pro", v)} />
                     <Stepper label="Overlay" value={overlayCount} onChange={(v) => updateExtra("overlay", v)} />
+                    <Stepper label="Bereits geplant" value={bereitsGeplantCount} onChange={(v) => updateExtra("bereits_geplant", v)} />
                     {reelGenericExtra > 0 && (
                       <div className="flex items-center gap-1 ml-1" title="Sonstige Reel-Extras">
                         <Plus className="h-3 w-3 text-muted-foreground" />
