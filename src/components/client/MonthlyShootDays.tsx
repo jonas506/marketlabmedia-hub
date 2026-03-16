@@ -303,7 +303,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Bereits geskriptete Reels werden beim Abschließen automatisch auf „Gedreht" verschoben.
+                  Bereits geskriptete Reels werden beim Abschließen automatisch auf {"\u201EGedreht\u201C"} verschoben.
                 </p>
                 <div className="space-y-1.5 max-h-40 overflow-y-auto">
                   {scriptedReels.map((reel: any) => (
