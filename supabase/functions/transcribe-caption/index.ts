@@ -243,6 +243,49 @@ Deno.serve(async (req) => {
 
     const supabase = getClient();
 
+    // ── Get file info (title from Google Drive) ──
+    if (action === "get_file_info") {
+      const { url } = body;
+      if (!url) {
+        return new Response(JSON.stringify({ error: "url required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const fileId = getGoogleDriveFileId(url);
+      if (!fileId) {
+        return new Response(JSON.stringify({ name: null }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
+      if (!GOOGLE_API_KEY) {
+        return new Response(JSON.stringify({ name: null }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const metaUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?fields=name&key=${GOOGLE_API_KEY}`;
+      const metaRes = await fetch(metaUrl);
+      if (!metaRes.ok) {
+        return new Response(JSON.stringify({ name: null }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const meta = await metaRes.json();
+      // Strip file extension from name
+      let name = meta.name || null;
+      if (name) {
+        name = name.replace(/\.[^.]+$/, "");
+      }
+
+      return new Response(JSON.stringify({ name }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ── Transcribe video via ElevenLabs ──
     if (action === "transcribe") {
       const { piece_id } = body;
