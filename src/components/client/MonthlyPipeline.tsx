@@ -141,7 +141,7 @@ const fireSmallCelebration = () => {
 const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit }) => {
   const qc = useQueryClient();
   const [activeType, setActiveType] = useState<string>("reel");
-  const [activePhase, setActivePhase] = useState<string>("filmed");
+  const [activePhase, setActivePhase] = useState<string>(PIPELINE_CONFIG["reel"].phases[0].key);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filterPerson, setFilterPerson] = useState<string>("all");
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
