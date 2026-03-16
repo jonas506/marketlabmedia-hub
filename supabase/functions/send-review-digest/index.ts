@@ -135,8 +135,11 @@ Deno.serve(async (req) => {
               subject: emailSubject,
               html: emailHtml,
               from: 'MarketLab Media <notify@notify.marketlabmedia.de>',
-              template_name: 'review_digest',
+              sender_domain: 'notify.marketlabmedia.de',
+              purpose: 'transactional',
+              label: 'review_digest',
               message_id: `review-digest-${clientId}-${Date.now()}`,
+              queued_at: new Date().toISOString(),
             },
           })
 
