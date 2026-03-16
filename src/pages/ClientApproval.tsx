@@ -150,11 +150,11 @@ const ClientApproval = () => {
 
   const handleDeleteComment = async (commentId: string) => {
     try {
-      await fetch(`${projectUrl}/functions/v1/client-approval`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: apiKey },
-        body: JSON.stringify({ token, action: "delete_comment", comment_id: commentId }),
+      const { error } = await supabase.rpc("delete_client_piece_comment", {
+        _token: token,
+        _comment_id: commentId,
       });
+      if (error) throw error;
       setComments((prev) => prev.filter((c) => c.id !== commentId));
     } catch {
       toast.error("Fehler beim Löschen");
