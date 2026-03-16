@@ -439,6 +439,33 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             Caption Studio
           </Button>
         )}
+        {/* View mode toggle */}
+        <div className="flex items-center bg-muted/50 rounded-lg p-0.5 mr-2">
+          <button
+            onClick={() => setViewMode("list")}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+              viewMode === "list"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <LayoutList className="h-3 w-3" />
+            Liste
+          </button>
+          <button
+            onClick={() => setViewMode("kanban")}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+              viewMode === "kanban"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Columns3 className="h-3 w-3" />
+            Kanban
+          </button>
+        </div>
         <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
           {phaseSummary.map((p, i) => (
             <span key={p.key} className="flex items-center gap-1">
