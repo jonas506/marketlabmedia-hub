@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN show_marketing_approval boolean NOT NULL DEFAULT false;

@@ -25,6 +25,7 @@ interface ClientInfoPanelProps {
 }
 
 const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [values, setValues] = useState<Record<string, any>>({});
@@ -425,6 +426,18 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                         }}><Copy className="h-3 w-3" /></Button>
                       </div>
                     )}
+
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[11px] text-muted-foreground">Marketing-Tracking im Freigabelink</span>
+                      <Switch
+                        checked={!!client.show_marketing_approval}
+                        onCheckedChange={async (checked) => {
+                          await supabase.from("clients").update({ show_marketing_approval: checked } as any).eq("id", client.id);
+                          queryClient.invalidateQueries({ queryKey: ["client", client.id] });
+                          toast.success(checked ? "Marketing-Tracking aktiviert" : "Marketing-Tracking deaktiviert");
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
               </Section>
