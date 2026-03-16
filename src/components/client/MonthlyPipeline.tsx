@@ -1055,6 +1055,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </div>
       )}
       </div>
+      </>
+      )}
       </div>
 
       {/* Caption Studio Dialog */}
