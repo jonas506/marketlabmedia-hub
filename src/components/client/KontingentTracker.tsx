@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import RunwayBadge from "@/components/RunwayBadge";
 import { motion } from "framer-motion";
-import { TrendingUp, Plus } from "lucide-react";
+import { TrendingUp, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 
 interface ContentPiece {
@@ -26,6 +27,9 @@ interface KontingentTrackerProps {
 const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPieces = [], month, year, canEdit = false }) => {
   const qc = useQueryClient();
   const monthPieces = (contentPieces ?? []).filter((c) => c.target_month === month && c.target_year === year);
+
+  const [opusCount, setOpusCount] = useState(0);
+  const [overlayCount, setOverlayCount] = useState(0);
 
   // Fetch extra counts
   const { data: extras } = useQuery({
@@ -55,6 +59,49 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
       qc.invalidateQueries({ queryKey: ["contingent-extras", client.id, month, year] });
     }
   }, [client.id, month, year, qc]);
+
+  // Add reels by sub-type
+  const addReelsByType = useMutation({
+    mutationFn: async ({ opus, overlay }: { opus: number; overlay: number }) => {
+      const rows: any[] = [];
+      for (let i = 0; i < opus; i++) {
+        rows.push({
+          client_id: client.id,
+          type: "reel",
+          phase: "script",
+          target_month: month,
+          target_year: year,
+          title: `Opus Pro Clip ${i + 1}`,
+        });
+      }
+      for (let i = 0; i < overlay; i++) {
+        rows.push({
+          client_id: client.id,
+          type: "reel",
+          phase: "script",
+          target_month: month,
+          target_year: year,
+          title: `Overlay Post ${i + 1}`,
+        });
+      }
+      if (rows.length === 0) return 0;
+      const { error } = await supabase.from("content_pieces").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (count) => {
+      if (count === 0) return;
+      qc.invalidateQueries({ queryKey: ["content-pieces", client.id] });
+      setOpusCount(0);
+      setOverlayCount(0);
+      toast.success(`🎬 ${count} Reels erstellt`, {
+        description: `${opusCount > 0 ? `${opusCount} Opus Pro` : ""}${opusCount > 0 && overlayCount > 0 ? " + " : ""}${overlayCount > 0 ? `${overlayCount} Overlay` : ""}`,
+      });
+    },
+    onError: (err: any) => {
+      toast.error("Fehler beim Erstellen", { description: err.message });
+    },
+  });
 
   // "Ist" = pieces with phase "approved" or "handed_over"
   const countByType = (type: string) =>
@@ -179,6 +226,66 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
           </div>
         </div>
       </div>
+
+      {/* Opus Pro + Overlay Reel Creator */}
+      {canEdit && (
+        <div className="mt-5 pt-4 border-t border-border">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="font-mono text-[10px] text-muted-foreground tracking-wider uppercase">Reels erstellen</span>
+
+            {/* Opus Pro Counter */}
+            <div className="flex items-center rounded-lg border border-border bg-muted/20 overflow-hidden">
+              <button
+                onClick={() => setOpusCount(Math.max(0, opusCount - 1))}
+                className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Minus className="h-3 w-3" />
+              </button>
+              <div className="flex items-center gap-1.5 px-2.5">
+                <span className="text-sm font-bold font-mono tabular-nums text-foreground w-4 text-center">{opusCount}</span>
+                <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">Opus Pro</span>
+              </div>
+              <button
+                onClick={() => setOpusCount(opusCount + 1)}
+                className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+
+            {/* Overlay Counter */}
+            <div className="flex items-center rounded-lg border border-border bg-muted/20 overflow-hidden">
+              <button
+                onClick={() => setOverlayCount(Math.max(0, overlayCount - 1))}
+                className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Minus className="h-3 w-3" />
+              </button>
+              <div className="flex items-center gap-1.5 px-2.5">
+                <span className="text-sm font-bold font-mono tabular-nums text-foreground w-4 text-center">{overlayCount}</span>
+                <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">Overlay</span>
+              </div>
+              <button
+                onClick={() => setOverlayCount(overlayCount + 1)}
+                className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+
+            {/* Create button */}
+            <Button
+              size="sm"
+              className="gap-1.5 text-xs font-semibold ml-auto"
+              disabled={addReelsByType.isPending || (opusCount === 0 && overlayCount === 0)}
+              onClick={() => addReelsByType.mutate({ opus: opusCount, overlay: overlayCount })}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {opusCount + overlayCount} Reels erstellen
+            </Button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
