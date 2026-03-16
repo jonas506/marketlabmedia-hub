@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail, Minus } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -153,6 +153,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [scriptPiece, setScriptPiece] = useState<ContentPiece | null>(null);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const [opusCount, setOpusCount] = useState(0);
+  const [overlayCount, setOverlayCount] = useState(0);
 
   const config = PIPELINE_CONFIG[activeType];
 
@@ -295,6 +297,53 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     },
     onError: (err: any) => {
       console.error("Add piece error:", err);
+      toast.error("Fehler beim Erstellen", { description: err.message });
+    },
+  });
+
+  // Add reels by sub-type (Opus Pro + Overlay)
+  const addReelsByType = useMutation({
+    mutationFn: async ({ opus, overlay }: { opus: number; overlay: number }) => {
+      const rows: any[] = [];
+      for (let i = 0; i < opus; i++) {
+        rows.push({
+          client_id: clientId,
+          type: "reel",
+          phase: config.phases[0].key,
+          target_month: month,
+          target_year: year,
+          title: `Opus Pro Clip ${i + 1}`,
+        });
+      }
+      for (let i = 0; i < overlay; i++) {
+        rows.push({
+          client_id: clientId,
+          type: "reel",
+          phase: config.phases[0].key,
+          target_month: month,
+          target_year: year,
+          title: `Overlay Post ${i + 1}`,
+        });
+      }
+      if (rows.length === 0) return 0;
+      const { error } = await supabase.from("content_pieces").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (count) => {
+      if (count === 0) {
+        toast.error("Bitte mindestens 1 Clip oder Post angeben");
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+      setOpusCount(0);
+      setOverlayCount(0);
+      setActivePhase(config.phases[0].key);
+      toast.success(`🎬 ${count} Reels erstellt`, {
+        description: `${opusCount > 0 ? `${opusCount} Opus Pro` : ""}${opusCount > 0 && overlayCount > 0 ? " + " : ""}${overlayCount > 0 ? `${overlayCount} Overlay` : ""}`,
+      });
+    },
+    onError: (err: any) => {
       toast.error("Fehler beim Erstellen", { description: err.message });
     },
   });
@@ -578,7 +627,62 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         </AnimatePresence>
 
 
-        {canEdit && (
+        {canEdit && activeType === "reel" && (
+          <div className="flex items-center gap-3">
+            {/* Opus Pro Counter */}
+            <div className="flex items-center gap-0 rounded-xl border border-border bg-muted/30 overflow-hidden">
+              <button
+                onClick={() => setOpusCount(Math.max(0, opusCount - 1))}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <div className="flex items-center gap-2 px-3 min-w-[100px] justify-center">
+                <span className="text-lg font-bold font-mono tabular-nums text-foreground">{opusCount}</span>
+                <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">Opus Pro</span>
+              </div>
+              <button
+                onClick={() => setOpusCount(opusCount + 1)}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Overlay Counter */}
+            <div className="flex items-center gap-0 rounded-xl border border-border bg-muted/30 overflow-hidden">
+              <button
+                onClick={() => setOverlayCount(Math.max(0, overlayCount - 1))}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+              <div className="flex items-center gap-2 px-3 min-w-[100px] justify-center">
+                <span className="text-lg font-bold font-mono tabular-nums text-foreground">{overlayCount}</span>
+                <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">Overlay</span>
+              </div>
+              <button
+                onClick={() => setOverlayCount(overlayCount + 1)}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Create button */}
+            <Button
+              variant="default"
+              className="gap-2 text-sm font-semibold"
+              disabled={addReelsByType.isPending || (opusCount === 0 && overlayCount === 0)}
+              onClick={() => addReelsByType.mutate({ opus: opusCount, overlay: overlayCount })}
+            >
+              <Plus className="h-4 w-4" />
+              {opusCount + overlayCount} Reels erstellen
+            </Button>
+          </div>
+        )}
+
+        {canEdit && activeType !== "reel" && (
           <div className="flex items-center gap-1.5">
             <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
               <Plus className="h-4 w-4" /> {config.addLabel}
