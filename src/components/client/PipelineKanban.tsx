@@ -23,6 +23,7 @@ interface ContentPiece {
   transcript?: string | null;
   caption?: string | null;
   video_path?: string | null;
+  cta_label?: string | null;
 }
 
 interface PhaseConfig {
@@ -178,6 +179,11 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
 
                         {/* Meta row */}
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          {piece.cta_label && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-secondary bg-secondary/15 rounded-md px-1.5 py-0.5">
+                              📢 {piece.cta_label}
+                            </span>
+                          )}
                           {assigneeName && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground bg-muted/60 rounded-md px-1.5 py-0.5">
                               <User className="h-2.5 w-2.5" />

@@ -41,6 +41,7 @@ interface ContentPiece {
   transcript?: string | null;
   caption?: string | null;
   video_path?: string | null;
+  cta_label?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
@@ -719,6 +720,39 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       onChange={(e) => handleTitleChange(piece.id, e.target.value)}
                       disabled={!canEdit}
                     />
+
+                    {/* CTA Label — Story Ads only */}
+                    {activeType === "story" && (
+                      <Select
+                        value={piece.cta_label || ""}
+                        onValueChange={(v) => updatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
+                        disabled={!canEdit}
+                      >
+                        <SelectTrigger className={cn(
+                          "h-7 w-36 text-xs font-mono border-0 px-2.5 rounded-md",
+                          piece.cta_label
+                            ? "bg-secondary/15 text-secondary"
+                            : "bg-muted/60 text-muted-foreground"
+                        )}>
+                          <SelectValue placeholder="📢 CTA wählen" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="_clear">
+                            <span className="text-muted-foreground">— Kein CTA</span>
+                          </SelectItem>
+                          <SelectItem value="Community">🏠 Community</SelectItem>
+                          <SelectItem value="Kurs">📚 Kurs</SelectItem>
+                          <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
+                          <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
+                          <SelectItem value="Freebie">🎁 Freebie</SelectItem>
+                          <SelectItem value="Produkt">🛒 Produkt</SelectItem>
+                          <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
+                          <SelectItem value="Coaching">🎯 Coaching</SelectItem>
+                          <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
+                          <SelectItem value="App">📱 App</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
 
                     {/* Assigned */}
                     <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>

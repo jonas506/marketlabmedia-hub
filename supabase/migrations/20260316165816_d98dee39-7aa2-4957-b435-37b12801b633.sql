@@ -1,0 +1,1 @@
+ALTER TABLE public.content_pieces ADD COLUMN cta_label text DEFAULT NULL;

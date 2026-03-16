@@ -533,6 +533,7 @@ export type Database = {
           client_comment: string | null
           client_id: string
           created_at: string | null
+          cta_label: string | null
           deadline: string | null
           has_script: boolean | null
           id: string
@@ -555,6 +556,7 @@ export type Database = {
           client_comment?: string | null
           client_id: string
           created_at?: string | null
+          cta_label?: string | null
           deadline?: string | null
           has_script?: boolean | null
           id?: string
@@ -577,6 +579,7 @@ export type Database = {
           client_comment?: string | null
           client_id?: string
           created_at?: string | null
+          cta_label?: string | null
           deadline?: string | null
           has_script?: boolean | null
           id?: string
