@@ -736,34 +736,34 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     />
 
                     {/* Tag */}
-                    <Select
-                      value={piece.tag || ""}
-                      onValueChange={(v) => updatePiece(piece.id, { tag: v === "_clear" ? null : v })}
-                      disabled={!canEdit}
-                    >
-                      <SelectTrigger className={cn(
-                        "h-7 w-32 text-xs font-mono border-0 px-2.5 rounded-md gap-1",
-                        piece.tag
-                          ? "bg-accent/15 text-accent-foreground"
-                          : "bg-muted/60 text-muted-foreground"
-                      )}>
+                    {piece.tag ? (
+                      <span
+                        className="inline-flex items-center gap-1 h-7 text-xs font-mono bg-accent/15 text-accent-foreground px-2.5 rounded-md cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        onClick={() => canEdit && updatePiece(piece.id, { tag: null })}
+                        title="Klicken zum Entfernen"
+                      >
                         <Tag className="h-3 w-3 shrink-0" />
-                        <SelectValue placeholder="Tag" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_clear">
-                          <span className="text-muted-foreground">— Kein Tag</span>
-                        </SelectItem>
-                        <SelectItem value="ManyChat">💬 ManyChat</SelectItem>
-                        <SelectItem value="Organic">🌱 Organic</SelectItem>
-                        <SelectItem value="Paid">💰 Paid</SelectItem>
-                        <SelectItem value="Collab">🤝 Collab</SelectItem>
-                        <SelectItem value="Trending">🔥 Trending</SelectItem>
-                        <SelectItem value="Evergreen">🌲 Evergreen</SelectItem>
-                        <SelectItem value="Launch">🚀 Launch</SelectItem>
-                        <SelectItem value="Behind the Scenes">🎥 Behind the Scenes</SelectItem>
-                      </SelectContent>
-                    </Select>
+                        {piece.tag}
+                        {canEdit && <span className="text-[10px] ml-0.5">✕</span>}
+                      </span>
+                    ) : canEdit ? (
+                      <Input
+                        placeholder="+ Tag"
+                        className="h-7 w-28 text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md placeholder:text-muted-foreground/50"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
+                            updatePiece(piece.id, { tag: (e.target as HTMLInputElement).value.trim() });
+                            (e.target as HTMLInputElement).value = "";
+                          }
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value.trim()) {
+                            updatePiece(piece.id, { tag: e.target.value.trim() });
+                            e.target.value = "";
+                          }
+                        }}
+                      />
+                    ) : null}
 
                     {/* CTA Label — Story Ads only */}
                     {activeType === "story" && (
