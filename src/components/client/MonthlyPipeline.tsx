@@ -150,6 +150,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [bulkTitles, setBulkTitles] = useState("");
   const [captionStudioOpen, setCaptionStudioOpen] = useState(false);
   const [detailPiece, setDetailPiece] = useState<ContentPiece | null>(null);
+  const [scriptPiece, setScriptPiece] = useState<ContentPiece | null>(null);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
