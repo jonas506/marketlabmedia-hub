@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail, LayoutList, Columns3 } from "lucide-react";
+import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail, LayoutList, Columns3, Printer } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,7 @@ import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
+import PrintScriptsDialog from "./PrintScriptsDialog";
 
 interface ContentPiece {
   id: string;
@@ -155,6 +156,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [scriptPiece, setScriptPiece] = useState<ContentPiece | null>(null);
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+  const [printScriptsOpen, setPrintScriptsOpen] = useState(false);
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const config = PIPELINE_CONFIG[activeType];
@@ -429,6 +431,17 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </div>
         )}
         <div className="flex-1" />
+        {monthPieces.length > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs font-mono gap-1.5 mr-2"
+            onClick={() => setPrintScriptsOpen(true)}
+          >
+            <Printer className="h-3 w-3" />
+            Drucken
+          </Button>
+        )}
         {canEdit && monthPieces.length > 0 && (
           <Button
             size="sm"
@@ -1116,6 +1129,13 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         piece={scriptPiece}
         clientId={clientId}
         canEdit={canEdit}
+      />
+
+      {/* Print Scripts Dialog */}
+      <PrintScriptsDialog
+        open={printScriptsOpen}
+        onOpenChange={setPrintScriptsOpen}
+        pieces={monthPieces}
       />
     </motion.div>
   );
