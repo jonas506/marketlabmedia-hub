@@ -73,14 +73,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const [localNotes, setLocalNotes] = useState<Record<string, string>>({});
   const notesTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
-  const handleNotesChange = useCallback((taskId: string, value: string) => {
-    setLocalNotes(prev => ({ ...prev, [taskId]: value }));
-    if (notesTimerRef.current[taskId]) clearTimeout(notesTimerRef.current[taskId]);
-    notesTimerRef.current[taskId] = setTimeout(() => {
-      updateTask(taskId, { notes: value });
-    }, 600);
-  }, []);
-
   const { data: team } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
