@@ -390,10 +390,10 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                       >
                         <div className="px-4 pb-3 pt-0 ml-6">
                           <Textarea
-                            value={task.notes || ""}
+                            value={localNotes[task.id] ?? task.notes ?? ""}
                             placeholder="Notizen, Links, Kontext…"
                             className="min-h-[50px] text-xs font-body bg-background/50 border-border/50 resize-none rounded"
-                            onChange={(e) => updateTask(task.id, { notes: e.target.value })}
+                            onChange={(e) => handleNotesChange(task.id, e.target.value)}
                             disabled={!canEdit}
                           />
                         </div>
