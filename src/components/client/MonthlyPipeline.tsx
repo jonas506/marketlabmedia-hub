@@ -747,7 +747,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                           <FileText className="h-3 w-3" />
                           Skript ansehen
                         </Button>
-                      )
+                      )}
                       {/* Deadline */}
                       <Popover>
                         <PopoverTrigger asChild>
