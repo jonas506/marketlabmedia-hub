@@ -126,20 +126,14 @@ const ClientApproval = () => {
     if (!commentText.trim()) return;
     setAddingComment(true);
     try {
-      const res = await fetch(`${projectUrl}/functions/v1/client-approval`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: apiKey },
-        body: JSON.stringify({
-          token,
-          piece_id: pieceId,
-          action: "add_comment",
-          comment: commentText.trim(),
-          timestamp_seconds: commentTimestamp,
-        }),
+      const { data, error } = await supabase.rpc("add_client_piece_comment", {
+        _token: token,
+        _piece_id: pieceId,
+        _comment: commentText.trim(),
+        _timestamp_seconds: commentTimestamp,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setComments((prev) => [...prev, data.comment]);
+      if (error) throw error;
+      setComments((prev) => [...prev, data]);
       setCommentText("");
       setCommentTimestamp(null);
       toast.success(
