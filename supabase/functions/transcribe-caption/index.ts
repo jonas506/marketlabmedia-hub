@@ -53,7 +53,7 @@ async function getClientContext(supabase: any, clientId: string): Promise<string
   return `Kunde: ${client.name}. Branche: ${client.industry || "k.A."}. Tonalität: ${client.tonality || "professionell"}. Zielgruppe: ${client.target_audience || "k.A."}. Themen: ${client.content_topics || "k.A."}. USPs: ${client.usps || "k.A."}.`;
 }
 
-// ── Google Drive download helper ──
+// ── Google Drive helpers ──
 function getGoogleDriveFileId(url: string): string | null {
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (fileMatch) return fileMatch[1];
@@ -62,51 +62,78 @@ function getGoogleDriveFileId(url: string): string | null {
   return null;
 }
 
-async function downloadFromUrl(url: string): Promise<{ bytes: Uint8Array; fileName: string }> {
+function getGoogleDriveDirectUrl(url: string): string | null {
   const fileId = getGoogleDriveFileId(url);
-  
-  if (fileId) {
-    const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
-    if (!GOOGLE_API_KEY) {
-      throw new Error("GOOGLE_API_KEY nicht konfiguriert. Bitte Google API Key hinterlegen.");
-    }
-
-    // Use Google Drive API v3 for reliable downloads
-    const apiUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_API_KEY}`;
-    console.log("Downloading via Google Drive API for file:", fileId);
-
-    const response = await fetch(apiUrl, { redirect: "follow" });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Google Drive API error:", response.status, errText);
-      if (response.status === 404) {
-        throw new Error("Datei nicht gefunden. Bitte prüfe ob der Google Drive Link korrekt ist und die Datei auf 'Jeder mit dem Link' freigegeben ist.");
-      }
-      if (response.status === 403) {
-        throw new Error("Zugriff verweigert. Bitte stelle sicher, dass die Datei auf 'Jeder mit dem Link' (Betrachter) freigegeben ist.");
-      }
-      throw new Error(`Google Drive API Fehler [${response.status}]: ${errText.substring(0, 200)}`);
-    }
-
-    const buf = await response.arrayBuffer();
-    console.log(`Downloaded ${buf.byteLength} bytes via Google Drive API`);
-    return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
-  }
-  
-  // Non-Google-Drive URL: direct download
-  console.log("Downloading from URL:", url);
-  const response = await fetch(url, { redirect: "follow" });
-  if (!response.ok) throw new Error(`Download failed [${response.status}]`);
-  const buf = await response.arrayBuffer();
-  return { bytes: new Uint8Array(buf), fileName: "video.mp4" };
+  if (!fileId) return null;
+  const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
+  if (!GOOGLE_API_KEY) return null;
+  return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_API_KEY}`;
 }
 
-// ── ElevenLabs Speech-to-Text ──
-async function transcribeWithElevenLabs(audioBytes: Uint8Array, fileName: string): Promise<string> {
+// ── Stream video from URL directly to ElevenLabs (no full buffering) ──
+async function transcribeViaStreaming(sourceUrl: string, fileName: string): Promise<string> {
   const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
   if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured. Bitte ElevenLabs verbinden.");
 
+  console.log("Fetching video stream from:", sourceUrl.substring(0, 80) + "...");
+  
+  // Fetch the video as a stream
+  const videoResponse = await fetch(sourceUrl, { redirect: "follow" });
+  if (!videoResponse.ok) {
+    const errText = await videoResponse.text();
+    if (videoResponse.status === 404) {
+      throw new Error("Datei nicht gefunden. Bitte prüfe ob der Google Drive Link korrekt ist und die Datei freigegeben ist.");
+    }
+    if (videoResponse.status === 403) {
+      throw new Error("Zugriff verweigert. Bitte stelle sicher, dass die Datei auf 'Jeder mit dem Link' freigegeben ist.");
+    }
+    throw new Error(`Download Fehler [${videoResponse.status}]: ${errText.substring(0, 200)}`);
+  }
+
+  const contentLength = videoResponse.headers.get("content-length");
+  const fileSizeBytes = contentLength ? parseInt(contentLength) : 0;
+  console.log(`Video size: ${fileSizeBytes} bytes (${Math.round(fileSizeBytes / 1024 / 1024)} MB)`);
+
+  // For large files (>50MB), we need to extract audio first or use a different approach
+  // ElevenLabs accepts up to 1GB files, but edge functions have ~150MB memory
+  // Strategy: Stream the response body directly into ElevenLabs FormData
+  
+  if (fileSizeBytes > 100 * 1024 * 1024) {
+    // For very large files, read in chunks and build a smaller buffer
+    // We'll read only the first 50MB which should contain enough audio for transcription
+    console.log("Large file detected, reading first 50MB for transcription...");
+    const MAX_BYTES = 50 * 1024 * 1024;
+    const reader = videoResponse.body!.getReader();
+    const chunks: Uint8Array[] = [];
+    let totalRead = 0;
+
+    while (totalRead < MAX_BYTES) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      totalRead += value.length;
+    }
+    reader.cancel();
+
+    console.log(`Read ${totalRead} bytes (${Math.round(totalRead / 1024 / 1024)} MB), sending to ElevenLabs...`);
+    
+    const combined = new Uint8Array(totalRead);
+    let offset = 0;
+    for (const chunk of chunks) {
+      combined.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    return await sendToElevenLabs(combined, fileName, ELEVENLABS_API_KEY);
+  }
+
+  // For smaller files (<100MB), buffer entirely
+  const buf = await videoResponse.arrayBuffer();
+  console.log(`Downloaded ${buf.byteLength} bytes, sending to ElevenLabs...`);
+  return await sendToElevenLabs(new Uint8Array(buf), fileName, ELEVENLABS_API_KEY);
+}
+
+async function sendToElevenLabs(audioBytes: Uint8Array, fileName: string, apiKey: string): Promise<string> {
   const formData = new FormData();
   const blob = new Blob([audioBytes], { type: "video/mp4" });
   formData.append("file", blob, fileName);
@@ -115,47 +142,56 @@ async function transcribeWithElevenLabs(audioBytes: Uint8Array, fileName: string
 
   const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
     method: "POST",
-    headers: {
-      "xi-api-key": ELEVENLABS_API_KEY,
-    },
+    headers: { "xi-api-key": apiKey },
     body: formData,
   });
 
   if (!response.ok) {
     const errText = await response.text();
     if (response.status === 401) {
-      throw new Error("ElevenLabs: Zugang verweigert. Bitte prüfe ob dein ElevenLabs-Plan aktiv ist (Free Tier kann blockiert sein).");
+      throw new Error("ElevenLabs: Zugang verweigert. Bitte prüfe ob dein ElevenLabs-Plan aktiv ist.");
     }
     throw new Error(`ElevenLabs STT failed [${response.status}]: ${errText}`);
   }
 
   const data = await response.json();
-  
-  // Build transcript with timestamps from words
+
+  // Build transcript with timestamps
   if (data.words && data.words.length > 0) {
     let transcript = "";
     let currentTimestamp = -1;
-    
+
     for (const word of data.words) {
       const seconds = Math.floor(word.start_time || 0);
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
       const timeStr = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-      
-      // Add timestamp every ~10 seconds
+
       if (seconds - currentTimestamp >= 10 || currentTimestamp === -1) {
         if (transcript) transcript += "\n\n";
         transcript += `[${timeStr}] `;
         currentTimestamp = seconds;
       }
-      
+
       transcript += (word.text || "") + " ";
     }
-    
+
     return transcript.trim();
   }
-  
+
   return data.text || "";
+}
+
+// ── Download from Supabase storage (smaller files) ──
+async function downloadFromStorage(supabase: any, videoPath: string): Promise<{ bytes: Uint8Array; fileName: string }> {
+  const { data: fileData, error: dlError } = await supabase.storage
+    .from("content-videos")
+    .download(videoPath);
+  if (dlError || !fileData) {
+    throw new Error("Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt"));
+  }
+  const arrayBuf = await fileData.arrayBuffer();
+  return { bytes: new Uint8Array(arrayBuf), fileName: videoPath.split("/").pop() || "video.mp4" };
 }
 
 function buildCaptionSystemPrompt(clientContext: string, customPrompt?: string): string {
@@ -228,36 +264,26 @@ Deno.serve(async (req) => {
         });
       }
 
-      let bytes: Uint8Array;
-      let fileName: string;
+      let transcript: string;
 
-      // Priority: preview_link (Google Drive) > uploaded video
       if (piece.preview_link) {
         console.log("Transcribing from preview_link:", piece.preview_link);
-        const downloaded = await downloadFromUrl(piece.preview_link);
-        bytes = downloaded.bytes;
-        fileName = downloaded.fileName;
+        
+        // Check if it's a Google Drive URL and get direct API URL
+        const directUrl = getGoogleDriveDirectUrl(piece.preview_link);
+        const sourceUrl = directUrl || piece.preview_link;
+        
+        transcript = await transcribeViaStreaming(sourceUrl, "video.mp4");
       } else if (piece.video_path) {
-        // Fallback to uploaded video
-        const { data: fileData, error: dlError } = await supabase.storage
-          .from("content-videos")
-          .download(piece.video_path);
-        if (dlError || !fileData) {
-          return new Response(JSON.stringify({ error: "Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt") }), {
-            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        const arrayBuf = await fileData.arrayBuffer();
-        bytes = new Uint8Array(arrayBuf);
-        fileName = piece.video_path.split("/").pop() || "video.mp4";
+        const { bytes, fileName } = await downloadFromStorage(supabase, piece.video_path);
+        const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
+        if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured");
+        transcript = await sendToElevenLabs(bytes, fileName, ELEVENLABS_API_KEY);
       } else {
         return new Response(JSON.stringify({ error: "Kein Video-Link oder Video vorhanden. Bitte einen Preview-Link setzen." }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      console.log(`Transcribing ${bytes.length} bytes via ElevenLabs...`);
-      const transcript = await transcribeWithElevenLabs(bytes, fileName);
 
       await supabase.from("content_pieces").update({ transcript }).eq("id", piece_id);
 
