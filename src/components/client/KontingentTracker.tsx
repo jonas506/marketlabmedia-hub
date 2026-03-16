@@ -80,7 +80,8 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const reelGenericExtra = getExtra("reel");
   const opusProCount = getExtra("opus_pro");
   const overlayCount = getExtra("overlay");
-  const reelTotalCurrent = reelPipelineDone + reelGenericExtra + opusProCount + overlayCount;
+  const bereitsGeplantCount = getExtra("bereits_geplant");
+  const reelTotalCurrent = reelPipelineDone + reelGenericExtra + opusProCount + overlayCount + bereitsGeplantCount;
 
   const types = [
     { label: "Reels", emoji: "🎬", type: "reel", target: client.monthly_reels, current: reelTotalCurrent },
