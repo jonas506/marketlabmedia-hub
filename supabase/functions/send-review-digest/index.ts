@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
     </div>
 
     <p style="color:#555;font-size:12px;text-align:center;margin:0;">
-      MarketLab Media · Automatische Benachrichtigung
+      Marketlab Media · Automatische Benachrichtigung
     </p>
   </div>
 </body>
