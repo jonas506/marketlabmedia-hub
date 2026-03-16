@@ -14,6 +14,7 @@ import Checklists from "./pages/Checklists";
 import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
 import ContentBase from "./pages/ContentBase";
+import MarketingDashboard from "./pages/MarketingDashboard";
 
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
               <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
               <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
+              <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
