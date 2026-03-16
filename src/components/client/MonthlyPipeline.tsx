@@ -602,10 +602,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
                     {/* Title */}
                     <Input
-                      value={piece.title || ""}
+                      value={localTitles[piece.id] ?? piece.title ?? ""}
                       placeholder="Titel eingeben..."
                       className="h-7 flex-1 border-0 bg-transparent text-sm px-1.5 placeholder:text-muted-foreground/40 focus-visible:bg-muted/30 rounded"
-                      onChange={(e) => updatePiece(piece.id, { title: e.target.value })}
+                      onChange={(e) => handleTitleChange(piece.id, e.target.value)}
                       disabled={!canEdit}
                     />
 
