@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send } from "lucide-react";
@@ -30,6 +32,12 @@ interface ClientInfo {
   id: string;
   name: string;
   logo_url: string | null;
+}
+
+interface ApprovalPayload {
+  client: ClientInfo;
+  pieces: Piece[];
+  comments: TimestampComment[];
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -86,9 +94,6 @@ const ClientApproval = () => {
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const projectUrl = import.meta.env.VITE_SUPABASE_URL;
-  const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
   const fetchData = useCallback(async () => {
     if (!token || token === ":token") {
       setError("Kein gültiger Token");
@@ -96,21 +101,20 @@ const ClientApproval = () => {
       return;
     }
     try {
-      const response = await fetch(
-        `${projectUrl}/functions/v1/client-approval?token=${encodeURIComponent(token)}`,
-        { headers: { apikey: apiKey } }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Fehler beim Laden");
-      setClient(data.client);
-      setPieces(data.pieces);
-      setComments(data.comments || []);
+      const { data, error } = await supabase.rpc("get_client_approval_data", {
+        _token: token,
+      });
+      if (error) throw error;
+      const payload = data as unknown as ApprovalPayload;
+      setClient(payload.client);
+      setPieces(payload.pieces || []);
+      setComments(payload.comments || []);
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
       setLoading(false);
     }
-  }, [token, projectUrl, apiKey]);
+  }, [token]);
 
   useEffect(() => {
     fetchData();
@@ -128,20 +132,14 @@ const ClientApproval = () => {
     if (!commentText.trim()) return;
     setAddingComment(true);
     try {
-      const res = await fetch(`${projectUrl}/functions/v1/client-approval`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: apiKey },
-        body: JSON.stringify({
-          token,
-          piece_id: pieceId,
-          action: "add_comment",
-          comment: commentText.trim(),
-          timestamp_seconds: commentTimestamp,
-        }),
+      const { data, error } = await supabase.rpc("add_client_piece_comment", {
+        _token: token,
+        _piece_id: pieceId,
+        _comment: commentText.trim(),
+        _timestamp_seconds: commentTimestamp,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setComments((prev) => [...prev, data.comment]);
+      if (error) throw error;
+      setComments((prev) => [...prev, data as unknown as TimestampComment]);
       setCommentText("");
       setCommentTimestamp(null);
       toast.success(
@@ -158,11 +156,11 @@ const ClientApproval = () => {
 
   const handleDeleteComment = async (commentId: string) => {
     try {
-      await fetch(`${projectUrl}/functions/v1/client-approval`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: apiKey },
-        body: JSON.stringify({ token, action: "delete_comment", comment_id: commentId }),
+      const { error } = await supabase.rpc("delete_client_piece_comment", {
+        _token: token,
+        _comment_id: commentId,
       });
+      if (error) throw error;
       setComments((prev) => prev.filter((c) => c.id !== commentId));
     } catch {
       toast.error("Fehler beim Löschen");
@@ -186,17 +184,13 @@ const ClientApproval = () => {
     setActionLoading(pieceId);
     try {
       const pc = pieceComments(pieceId);
-      const res = await fetch(`${projectUrl}/functions/v1/client-approval`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", apikey: apiKey },
-        body: JSON.stringify({
-          token,
-          piece_id: pieceId,
-          action,
-          comments: action === "reject" ? pc : undefined,
-        }),
+      const { error } = await supabase.rpc("submit_client_piece_review", {
+        _token: token,
+        _piece_id: pieceId,
+        _action: action,
+        _comments: (action === "reject" ? pc : []) as unknown as Json,
       });
-      if (!res.ok) throw new Error("Aktion fehlgeschlagen");
+      if (error) throw error;
 
       const newPieces = pieces.filter((p) => p.id !== pieceId);
       setPieces(newPieces);
@@ -213,7 +207,6 @@ const ClientApproval = () => {
         toast("Feedback gesendet 📝", { description: `${pc.length} Kommentar(e) übermittelt` });
       }
 
-      // Adjust index if needed
       if (currentIndex >= newPieces.length && newPieces.length > 0) {
         setCurrentIndex(newPieces.length - 1);
       }
@@ -228,11 +221,13 @@ const ClientApproval = () => {
     setBulkApproving(true);
     try {
       for (const piece of [...pieces]) {
-        await fetch(`${projectUrl}/functions/v1/client-approval`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: apiKey },
-          body: JSON.stringify({ token, piece_id: piece.id, action: "approve" }),
+        const { error } = await supabase.rpc("submit_client_piece_review", {
+          _token: token,
+          _piece_id: piece.id,
+          _action: "approve",
+          _comments: [] as unknown as Json,
         });
+        if (error) throw error;
       }
       setApprovedCount((c) => c + pieces.length);
       setPieces([]);
