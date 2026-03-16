@@ -819,6 +819,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                               value={piece.preview_link || ""}
                               placeholder="https://drive.google.com/..."
                               className="h-8 text-xs font-mono"
+                              onBlur={(e) => {
+                                const url = e.target.value.trim();
+                                if (url && url !== piece.preview_link) {
+                                  handlePreviewLinkChange(piece.id, url, localTitles[piece.id] ?? piece.title);
+                                }
+                              }}
                               onChange={(e) => updatePiece(piece.id, { preview_link: e.target.value })}
                               disabled={!canEdit}
                             />
