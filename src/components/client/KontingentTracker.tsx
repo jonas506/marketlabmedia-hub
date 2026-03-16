@@ -97,11 +97,11 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const reelStoryPieces = monthPieces.filter((c) => c.type === "reel" || c.type === "story");
 
   const conservative = reelStoryPieces.filter((c) => c.phase === "approved" || c.phase === "handed_over").length
-    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount;
+    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount + bereitsGeplantCount;
   const conservativeDays = dailyRate > 0 ? Math.round(conservative / dailyRate) : 999;
 
   const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length
-    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount;
+    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount + bereitsGeplantCount;
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
   const totalTarget = client.monthly_reels + client.monthly_carousels + client.monthly_stories + (ytTarget > 0 ? ytTarget : 0);
