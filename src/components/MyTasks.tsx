@@ -84,10 +84,14 @@ const MyTasks = () => {
     enabled: !!user?.id,
   });
 
-  const { data: editingPieces = [] } = useQuery({
-    queryKey: ["my-editing-pieces", user?.id],
+  const { data: assignedPieces = [] } = useQuery({
+    queryKey: ["my-assigned-pieces", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("content_pieces").select("id, client_id, title, type, phase, deadline").eq("assigned_to", user!.id).eq("phase", "editing");
+      const { data, error } = await supabase
+        .from("content_pieces")
+        .select("id, client_id, title, type, phase, deadline")
+        .eq("assigned_to", user!.id)
+        .not("phase", "in", "(approved,handed_over)");
       if (error) throw error;
       return (data ?? []) as EditingPiece[];
     },
