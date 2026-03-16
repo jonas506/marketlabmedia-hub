@@ -933,6 +933,15 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         piece={detailPiece ? { ...detailPiece, client_id: clientId } : null}
         clientId={clientId}
       />
+
+      {/* Script Editor Dialog */}
+      <ScriptEditorDialog
+        open={!!scriptPiece}
+        onOpenChange={(open) => !open && setScriptPiece(null)}
+        piece={scriptPiece}
+        clientId={clientId}
+        canEdit={canEdit}
+      />
     </motion.div>
   );
 };
