@@ -392,7 +392,7 @@ const CreateClientDialog = () => {
                 {[
                   { key: "shortform", label: "Shortform / Reels", emoji: "🎬" },
                   { key: "carousels", label: "Karussells", emoji: "🖼️" },
-                  { key: "stories", label: "Stories", emoji: "📱" },
+                  { key: "stories", label: "Story Ads", emoji: "📱" },
                   { key: "youtube_longform", label: "YouTube Longform", emoji: "🎥" },
                   { key: "website", label: "Website", emoji: "🌐" },
                 ].map(({ key, label, emoji }) => {
