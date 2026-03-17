@@ -94,29 +94,30 @@ async function transcribeViaStreaming(sourceUrl: string, fileName: string): Prom
   const fileSizeBytes = contentLength ? parseInt(contentLength) : 0;
   console.log(`Video size: ${fileSizeBytes} bytes (${Math.round(fileSizeBytes / 1024 / 1024)} MB)`);
 
-  // Edge functions have ~150MB memory. Buffering the file + creating a Blob doubles memory.
-  // Safe limit: ~30MB file → ~60MB memory + overhead = well under 150MB.
-  const MAX_FILE_SIZE = 30 * 1024 * 1024;
+  // Edge functions have ~150MB memory.
+  // Using response.blob() directly avoids double-buffering (Uint8Array + Blob copy).
+  // This lets us handle files up to ~50MB safely (~50MB blob + FormData overhead ≈ ~70MB).
+  const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
   if (fileSizeBytes > MAX_FILE_SIZE) {
-    // Cancel the stream to free resources
     await videoResponse.body?.cancel();
     throw new Error(
       `Die Datei ist zu groß (${Math.round(fileSizeBytes / 1024 / 1024)} MB). ` +
-      `Bitte lade eine komprimierte Version hoch (max. 30 MB) oder verwende eine kürzere Videodatei.`
+      `Maximal 50 MB. Tipp: Exportiere nur die Audiospur als MP3 (z.B. via VLC oder ffmpeg) und lade diese in Google Drive hoch.`
     );
   }
 
-  // Buffer the entire file (up to 30MB) — no truncation, keeps MP4 container intact
-  const buf = new Uint8Array(await videoResponse.arrayBuffer());
-  console.log(`Downloaded ${buf.byteLength} bytes (${Math.round(buf.byteLength / 1024 / 1024)} MB), sending to ElevenLabs...`);
-  return await sendToElevenLabs(buf, fileName, ELEVENLABS_API_KEY);
+  // Use blob() directly — single allocation, no intermediate Uint8Array copy
+  console.log("Downloading file...");
+  const videoBlob = await videoResponse.blob();
+  console.log(`Downloaded ${videoBlob.size} bytes (${Math.round(videoBlob.size / 1024 / 1024)} MB), sending to ElevenLabs...`);
+
+  return await sendToElevenLabs(videoBlob, fileName, ELEVENLABS_API_KEY);
 }
 
-async function sendToElevenLabs(audioBytes: Uint8Array, fileName: string, apiKey: string): Promise<string> {
+async function sendToElevenLabs(audioBlob: Blob, fileName: string, apiKey: string): Promise<string> {
   const formData = new FormData();
-  const blob = new Blob([audioBytes], { type: "video/mp4" });
-  formData.append("file", blob, fileName);
+  formData.append("file", audioBlob, fileName);
   formData.append("model_id", "scribe_v2");
   formData.append("language_code", "deu");
 
