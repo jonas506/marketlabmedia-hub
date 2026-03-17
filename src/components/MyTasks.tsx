@@ -116,16 +116,8 @@ const MyTasks = () => {
     enabled: !!user?.id,
   });
 
-  // HoC/Admin: show all pieces awaiting review
-  const { data: reviewPieces = [] } = useQuery({
-    queryKey: ["review-pieces"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("content_pieces").select("id, client_id, title, type, phase, deadline").eq("phase", "review");
-      if (error) throw error;
-      return (data ?? []) as ContentPieceItem[];
-    },
-    enabled: isHoC,
-  });
+  // No separate review query — assignedPieces already covers pieces assigned to the user
+  const reviewPieces: ContentPieceItem[] = [];
 
   const { data: checklistSteps = [] } = useQuery({
     queryKey: ["my-checklist-steps", user?.id],
