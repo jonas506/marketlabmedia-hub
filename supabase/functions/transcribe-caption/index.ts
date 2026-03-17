@@ -298,10 +298,10 @@ Deno.serve(async (req) => {
         
         transcript = await transcribeViaStreaming(sourceUrl, "video.mp4");
       } else if (piece.video_path) {
-        const { bytes, fileName } = await downloadFromStorage(supabase, piece.video_path);
+        const { blob, fileName } = await downloadFromStorage(supabase, piece.video_path);
         const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
         if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured");
-        transcript = await sendToElevenLabs(bytes, fileName, ELEVENLABS_API_KEY);
+        transcript = await sendToElevenLabs(blob, fileName, ELEVENLABS_API_KEY);
       } else {
         return new Response(JSON.stringify({ error: "Kein Video-Link oder Video vorhanden. Bitte einen Preview-Link setzen." }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
