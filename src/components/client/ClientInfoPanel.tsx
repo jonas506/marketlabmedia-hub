@@ -105,6 +105,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     }
     await supabase.from("clients").update(fields).eq("id", client.id);
     qc.invalidateQueries({ queryKey: ["client", client.id] });
+    qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
     setEditing(null);
   };
 
@@ -112,6 +113,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     const newStatus = client.status === "active" ? "paused" : "active";
     await supabase.from("clients").update({ status: newStatus }).eq("id", client.id);
     qc.invalidateQueries({ queryKey: ["client", client.id] });
+    qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
   };
 
   const addTag = () => {

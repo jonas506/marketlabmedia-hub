@@ -41,6 +41,7 @@ const KontingentSection: React.FC<KontingentSectionProps> = ({ client, clips, ca
   const save = async () => {
     await supabase.from("clients").update(values).eq("id", client.id);
     qc.invalidateQueries({ queryKey: ["client", client.id] });
+    qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
     setEditing(false);
   };
 
