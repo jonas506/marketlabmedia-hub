@@ -275,8 +275,6 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
     { label: "Neue Follower", value: String(summary.new_followers), sub: summary.cpf !== null ? `Ø ${summary.cpf.toFixed(2)} €/F` : undefined, color: "bg-violet-500/10 text-violet-300" },
     { label: "Nachrichten", value: String(summary.dm_sent), sub: `${summary.new_conversations} Konv.`, color: "bg-sky-500/10 text-sky-300" },
     { label: "Termine", value: String(summary.appointments_booked), sub: summary.show_rate !== null ? `Show-Rate ${summary.show_rate.toFixed(0)}%` : undefined, color: "bg-amber-500/10 text-amber-300" },
-    { label: "Abschlüsse", value: String(summary.closings), sub: summary.closing_rate !== null ? `Close-Rate ${summary.closing_rate.toFixed(0)}%` : undefined, color: "bg-emerald-500/10 text-emerald-300" },
-    { label: "Umsatz (netto)", value: `${summary.revenue_net.toFixed(2)} €`, color: "bg-teal-500/10 text-teal-300" },
   ];
 
   return (
