@@ -98,39 +98,35 @@ async function transcribeViaStreaming(sourceUrl: string, fileName: string): Prom
   // ElevenLabs accepts up to 1GB files, but edge functions have ~150MB memory
   // Strategy: Stream the response body directly into ElevenLabs FormData
   
-  if (fileSizeBytes > 100 * 1024 * 1024) {
-    // For very large files, read in chunks and build a smaller buffer
-    // We'll read only the first 50MB which should contain enough audio for transcription
-    console.log("Large file detected, reading first 50MB for transcription...");
-    const MAX_BYTES = 50 * 1024 * 1024;
+  // Edge functions have ~150MB memory. We must keep total allocations low.
+  // 10MB of video is enough for speech-to-text (covers several minutes of audio).
+  const MAX_BYTES = 10 * 1024 * 1024;
+
+  if (fileSizeBytes > MAX_BYTES) {
+    console.log(`Large file detected (${Math.round(fileSizeBytes / 1024 / 1024)} MB), reading first 10MB for transcription...`);
     const reader = videoResponse.body!.getReader();
-    const chunks: Uint8Array[] = [];
+    const combined = new Uint8Array(MAX_BYTES);
     let totalRead = 0;
 
     while (totalRead < MAX_BYTES) {
       const { done, value } = await reader.read();
       if (done) break;
-      chunks.push(value);
-      totalRead += value.length;
+      const remaining = MAX_BYTES - totalRead;
+      const slice = value.length > remaining ? value.subarray(0, remaining) : value;
+      combined.set(slice, totalRead);
+      totalRead += slice.length;
     }
     reader.cancel();
 
     console.log(`Read ${totalRead} bytes (${Math.round(totalRead / 1024 / 1024)} MB), sending to ElevenLabs...`);
-    
-    const combined = new Uint8Array(totalRead);
-    let offset = 0;
-    for (const chunk of chunks) {
-      combined.set(chunk, offset);
-      offset += chunk.length;
-    }
-
-    return await sendToElevenLabs(combined, fileName, ELEVENLABS_API_KEY);
+    const trimmed = totalRead < MAX_BYTES ? combined.subarray(0, totalRead) : combined;
+    return await sendToElevenLabs(trimmed, fileName, ELEVENLABS_API_KEY);
   }
 
-  // For smaller files (<100MB), buffer entirely
-  const buf = await videoResponse.arrayBuffer();
+  // For smaller files (<=10MB), buffer entirely
+  const buf = new Uint8Array(await videoResponse.arrayBuffer());
   console.log(`Downloaded ${buf.byteLength} bytes, sending to ElevenLabs...`);
-  return await sendToElevenLabs(new Uint8Array(buf), fileName, ELEVENLABS_API_KEY);
+  return await sendToElevenLabs(buf, fileName, ELEVENLABS_API_KEY);
 }
 
 async function sendToElevenLabs(audioBytes: Uint8Array, fileName: string, apiKey: string): Promise<string> {
