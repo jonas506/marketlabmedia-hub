@@ -164,15 +164,14 @@ async function sendToElevenLabs(audioBlob: Blob, fileName: string, apiKey: strin
 }
 
 // ── Download from Supabase storage (smaller files) ──
-async function downloadFromStorage(supabase: any, videoPath: string): Promise<{ bytes: Uint8Array; fileName: string }> {
+async function downloadFromStorage(supabase: any, videoPath: string): Promise<{ blob: Blob; fileName: string }> {
   const { data: fileData, error: dlError } = await supabase.storage
     .from("content-videos")
     .download(videoPath);
   if (dlError || !fileData) {
     throw new Error("Video konnte nicht heruntergeladen werden: " + (dlError?.message || "Unbekannt"));
   }
-  const arrayBuf = await fileData.arrayBuffer();
-  return { bytes: new Uint8Array(arrayBuf), fileName: videoPath.split("/").pop() || "video.mp4" };
+  return { blob: fileData as Blob, fileName: videoPath.split("/").pop() || "video.mp4" };
 }
 
 function buildCaptionSystemPrompt(clientContext: string, customPrompt?: string): string {
