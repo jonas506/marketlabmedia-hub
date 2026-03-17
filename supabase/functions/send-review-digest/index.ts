@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'Marketlab Media <noreply@notify.marketlabmedia.de>',
+              from: 'Marketlab Media <noreply@resend.dev>',
               to: [email],
               subject: emailSubject,
               html: emailHtml,
