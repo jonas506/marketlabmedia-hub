@@ -94,38 +94,22 @@ async function transcribeViaStreaming(sourceUrl: string, fileName: string): Prom
   const fileSizeBytes = contentLength ? parseInt(contentLength) : 0;
   console.log(`Video size: ${fileSizeBytes} bytes (${Math.round(fileSizeBytes / 1024 / 1024)} MB)`);
 
-  // For large files (>50MB), we need to extract audio first or use a different approach
-  // ElevenLabs accepts up to 1GB files, but edge functions have ~150MB memory
-  // Strategy: Stream the response body directly into ElevenLabs FormData
-  
-  // Edge functions have ~150MB memory. We must keep total allocations low.
-  // 10MB of video is enough for speech-to-text (covers several minutes of audio).
-  const MAX_BYTES = 10 * 1024 * 1024;
+  // Edge functions have ~150MB memory. Buffering the file + creating a Blob doubles memory.
+  // Safe limit: ~30MB file → ~60MB memory + overhead = well under 150MB.
+  const MAX_FILE_SIZE = 30 * 1024 * 1024;
 
-  if (fileSizeBytes > MAX_BYTES) {
-    console.log(`Large file detected (${Math.round(fileSizeBytes / 1024 / 1024)} MB), reading first 10MB for transcription...`);
-    const reader = videoResponse.body!.getReader();
-    const combined = new Uint8Array(MAX_BYTES);
-    let totalRead = 0;
-
-    while (totalRead < MAX_BYTES) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const remaining = MAX_BYTES - totalRead;
-      const slice = value.length > remaining ? value.subarray(0, remaining) : value;
-      combined.set(slice, totalRead);
-      totalRead += slice.length;
-    }
-    reader.cancel();
-
-    console.log(`Read ${totalRead} bytes (${Math.round(totalRead / 1024 / 1024)} MB), sending to ElevenLabs...`);
-    const trimmed = totalRead < MAX_BYTES ? combined.subarray(0, totalRead) : combined;
-    return await sendToElevenLabs(trimmed, fileName, ELEVENLABS_API_KEY);
+  if (fileSizeBytes > MAX_FILE_SIZE) {
+    // Cancel the stream to free resources
+    await videoResponse.body?.cancel();
+    throw new Error(
+      `Die Datei ist zu groß (${Math.round(fileSizeBytes / 1024 / 1024)} MB). ` +
+      `Bitte lade eine komprimierte Version hoch (max. 30 MB) oder verwende eine kürzere Videodatei.`
+    );
   }
 
-  // For smaller files (<=10MB), buffer entirely
+  // Buffer the entire file (up to 30MB) — no truncation, keeps MP4 container intact
   const buf = new Uint8Array(await videoResponse.arrayBuffer());
-  console.log(`Downloaded ${buf.byteLength} bytes, sending to ElevenLabs...`);
+  console.log(`Downloaded ${buf.byteLength} bytes (${Math.round(buf.byteLength / 1024 / 1024)} MB), sending to ElevenLabs...`);
   return await sendToElevenLabs(buf, fileName, ELEVENLABS_API_KEY);
 }
 
