@@ -71,62 +71,77 @@ function getGoogleDriveDirectUrl(url: string): string | null {
 }
 
 // ── Stream video from URL directly to ElevenLabs (no full buffering) ──
-async function transcribeViaStreaming(sourceUrl: string, fileName: string): Promise<string> {
-  const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
-  if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured. Bitte ElevenLabs verbinden.");
-
-  console.log("Fetching video stream from:", sourceUrl.substring(0, 80) + "...");
-  
-  // Fetch the video as a stream
-  const videoResponse = await fetch(sourceUrl, { redirect: "follow" });
-  if (!videoResponse.ok) {
-    const errText = await videoResponse.text();
-    if (videoResponse.status === 404) {
-      throw new Error("Datei nicht gefunden. Bitte prüfe ob der Google Drive Link korrekt ist und die Datei freigegeben ist.");
-    }
-    if (videoResponse.status === 403) {
-      throw new Error("Zugriff verweigert. Bitte stelle sicher, dass die Datei auf 'Jeder mit dem Link' freigegeben ist.");
-    }
-    throw new Error(`Download Fehler [${videoResponse.status}]: ${errText.substring(0, 200)}`);
-  }
-
-  const contentLength = videoResponse.headers.get("content-length");
-  const fileSizeBytes = contentLength ? parseInt(contentLength) : 0;
-  console.log(`Video size: ${fileSizeBytes} bytes (${Math.round(fileSizeBytes / 1024 / 1024)} MB)`);
-
-  // Edge functions have ~150MB memory.
-  // Using response.blob() directly avoids double-buffering (Uint8Array + Blob copy).
-  // This lets us handle files up to ~50MB safely (~50MB blob + FormData overhead ≈ ~70MB).
-  const MAX_FILE_SIZE = 50 * 1024 * 1024;
-
-  if (fileSizeBytes > MAX_FILE_SIZE) {
-    await videoResponse.body?.cancel();
-    throw new Error(
-      `Die Datei ist zu groß (${Math.round(fileSizeBytes / 1024 / 1024)} MB). ` +
-      `Maximal 50 MB. Tipp: Exportiere nur die Audiospur als MP3 (z.B. via VLC oder ffmpeg) und lade diese in Google Drive hoch.`
-    );
-  }
-
-  // Use blob() directly — single allocation, no intermediate Uint8Array copy
-  console.log("Downloading file...");
-  const videoBlob = await videoResponse.blob();
-  console.log(`Downloaded ${videoBlob.size} bytes (${Math.round(videoBlob.size / 1024 / 1024)} MB), sending to ElevenLabs...`);
-
-  return await sendToElevenLabs(videoBlob, fileName, ELEVENLABS_API_KEY);
+function sanitizeMultipartFilename(fileName: string): string {
+  return fileName.replace(/[\r\n"]/g, "_");
 }
 
-async function sendToElevenLabs(audioBlob: Blob, fileName: string, apiKey: string): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", audioBlob, fileName);
-  formData.append("model_id", "scribe_v2");
-  formData.append("language_code", "deu");
+function createMultipartFormStream(
+  fileStream: ReadableStream<Uint8Array>,
+  fileName: string,
+  fileContentType: string,
+  fields: Record<string, string>,
+): { boundary: string; body: ReadableStream<Uint8Array> } {
+  const boundary = `----LovableBoundary${crypto.randomUUID()}`;
+  const encoder = new TextEncoder();
+  const safeFileName = sanitizeMultipartFilename(fileName);
 
-  const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
-    method: "POST",
-    headers: { "xi-api-key": apiKey },
-    body: formData,
-  });
+  async function* iterator(): AsyncGenerator<Uint8Array> {
+    for (const [key, value] of Object.entries(fields)) {
+      yield encoder.encode(
+        `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="${key}"\r\n\r\n` +
+          `${value}\r\n`,
+      );
+    }
 
+    yield encoder.encode(
+      `--${boundary}\r\n` +
+        `Content-Disposition: form-data; name="file"; filename="${safeFileName}"\r\n` +
+        `Content-Type: ${fileContentType}\r\n\r\n`,
+    );
+
+    const reader = fileStream.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          yield value;
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    yield encoder.encode(`\r\n--${boundary}--\r\n`);
+  }
+
+  const streamIterator = iterator();
+
+  return {
+    boundary,
+    body: new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        const { value, done } = await streamIterator.next();
+        if (done) {
+          controller.close();
+          return;
+        }
+        controller.enqueue(value);
+      },
+      async cancel(reason) {
+        await streamIterator.return?.(reason);
+        try {
+          await fileStream.cancel(reason);
+        } catch {
+          // Stream may already be locked or consumed
+        }
+      },
+    }),
+  };
+}
+
+async function parseElevenLabsResponse(response: Response): Promise<string> {
   if (!response.ok) {
     const errText = await response.text();
     if (response.status === 401) {
@@ -161,6 +176,71 @@ async function sendToElevenLabs(audioBlob: Blob, fileName: string, apiKey: strin
   }
 
   return data.text || "";
+}
+
+async function transcribeViaStreaming(sourceUrl: string, fileName: string): Promise<string> {
+  const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
+  if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured. Bitte ElevenLabs verbinden.");
+
+  console.log("Fetching video stream from:", sourceUrl.substring(0, 80) + "...");
+
+  const videoResponse = await fetch(sourceUrl, { redirect: "follow" });
+  if (!videoResponse.ok) {
+    const errText = await videoResponse.text();
+    if (videoResponse.status === 404) {
+      throw new Error("Datei nicht gefunden. Bitte prüfe ob der Google Drive Link korrekt ist und die Datei freigegeben ist.");
+    }
+    if (videoResponse.status === 403) {
+      throw new Error("Zugriff verweigert. Bitte stelle sicher, dass die Datei auf 'Jeder mit dem Link' freigegeben ist.");
+    }
+    throw new Error(`Download Fehler [${videoResponse.status}]: ${errText.substring(0, 200)}`);
+  }
+
+  if (!videoResponse.body) {
+    throw new Error("Die Videodatei konnte nicht als Stream gelesen werden.");
+  }
+
+  const contentLength = videoResponse.headers.get("content-length");
+  const fileSizeBytes = contentLength ? parseInt(contentLength, 10) : 0;
+  const sizeLabel = fileSizeBytes ? `${Math.round(fileSizeBytes / 1024 / 1024)} MB` : "unbekannt";
+  const contentType = (videoResponse.headers.get("content-type") || "video/mp4").split(";")[0].trim();
+  console.log(`Streaming upload to ElevenLabs. Größe: ${sizeLabel}. Content-Type: ${contentType}`);
+
+  const { boundary, body } = createMultipartFormStream(
+    videoResponse.body as ReadableStream<Uint8Array>,
+    fileName,
+    contentType || "application/octet-stream",
+    {
+      model_id: "scribe_v2",
+      language_code: "deu",
+    },
+  );
+
+  const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    method: "POST",
+    headers: {
+      "xi-api-key": ELEVENLABS_API_KEY,
+      "Content-Type": `multipart/form-data; boundary=${boundary}`,
+    },
+    body,
+  });
+
+  return await parseElevenLabsResponse(response);
+}
+
+async function sendToElevenLabs(audioBlob: Blob, fileName: string, apiKey: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", audioBlob, fileName);
+  formData.append("model_id", "scribe_v2");
+  formData.append("language_code", "deu");
+
+  const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    method: "POST",
+    headers: { "xi-api-key": apiKey },
+    body: formData,
+  });
+
+  return await parseElevenLabsResponse(response);
 }
 
 // ── Download from Supabase storage (smaller files) ──
