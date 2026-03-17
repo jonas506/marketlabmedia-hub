@@ -1,0 +1,1 @@
+UPDATE public.review_notification_queue SET sent_at = NULL WHERE client_id = '4b963d7a-dc69-47c0-865c-93ef28795cd1' AND sent_at IS NOT NULL
