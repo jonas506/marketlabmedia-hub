@@ -7,3 +7,5 @@ project_id = "winsekbpsgwtwfdehyms"
     verify_jwt = true
   [functions.send-review-digest]
     verify_jwt = false
+  [functions.generate-sop-flow]
+    verify_jwt = false

@@ -1137,6 +1137,7 @@ export type Database = {
       }
       sop_templates: {
         Row: {
+          board_data: Json | null
           category: string | null
           created_at: string
           created_by: string | null
@@ -1146,6 +1147,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          board_data?: Json | null
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -1155,6 +1157,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          board_data?: Json | null
           category?: string | null
           created_at?: string
           created_by?: string | null

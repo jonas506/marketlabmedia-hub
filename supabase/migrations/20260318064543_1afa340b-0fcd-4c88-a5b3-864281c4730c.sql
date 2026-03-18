@@ -1,0 +1,1 @@
+ALTER TABLE public.sop_templates ADD COLUMN IF NOT EXISTS board_data jsonb DEFAULT '{"nodes":[],"connections":[]}'::jsonb;
