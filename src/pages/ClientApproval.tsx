@@ -378,24 +378,24 @@ const ClientApproval = () => {
         ) : (
           <>
             {/* Card-based swipe view */}
-            <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-5 pb-3 flex-1 flex flex-col">
+            <div className="max-w-3xl mx-auto w-full px-3 sm:px-6 pt-3 sm:pt-5 pb-3 flex-1 flex flex-col">
               {/* Title bar with navigation */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-2 h-2 rounded-full ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
-                  <span className={`text-xs font-semibold uppercase tracking-wider ${
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
+                  <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider shrink-0 ${
                     currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : currentPiece.type === "ad" ? "text-violet-400" : "text-amber-400"
                   }`}>
                     {TYPE_LABELS[currentPiece.type] || currentPiece.type}
                   </span>
                   <span className="text-white/15 text-xs">•</span>
-                  <span className="text-white/40 text-xs font-mono">
+                  <span className="text-white/40 text-[10px] sm:text-xs font-mono">
                     {currentIndex + 1} von {pieces.length}
                   </span>
                 </div>
 
                 {/* Nav arrows */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   <button
                     onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
                     disabled={currentIndex === 0}
