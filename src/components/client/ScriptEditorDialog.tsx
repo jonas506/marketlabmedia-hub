@@ -12,6 +12,11 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+interface ScriptLink {
+  url: string;
+  tag: string;
+}
+
 interface ScriptEditorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -21,6 +26,7 @@ interface ScriptEditorDialogProps {
     type: string;
     script_text?: string | null;
     has_script?: boolean;
+    script_links?: ScriptLink[] | null;
   } | null;
   clientId: string;
   canEdit: boolean;
