@@ -420,7 +420,7 @@ const ClientApproval = () => {
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-lg sm:text-xl font-bold mb-4 truncate"
+                  className="text-base sm:text-xl font-bold mb-3 sm:mb-4 truncate"
                 >
                   {currentPiece.title || "Ohne Titel"}
                 </motion.h2>
