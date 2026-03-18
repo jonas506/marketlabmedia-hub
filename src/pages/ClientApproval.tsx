@@ -451,7 +451,7 @@ const ClientApproval = () => {
                       href={currentPiece.preview_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center gap-4 py-20 sm:py-24 hover:bg-white/[0.02] transition-colors"
+                      className="flex flex-col items-center justify-center gap-4 py-16 sm:py-24 hover:bg-white/[0.02] transition-colors"
                     >
                       <div className="w-14 h-14 rounded-2xl bg-[#0083F7]/10 border border-[#0083F7]/20 flex items-center justify-center">
                         <Play className="h-6 w-6 text-[#0083F7] ml-0.5" />
