@@ -175,6 +175,112 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
         <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-5 space-y-6">
+            {/* Links section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold font-display">🔗 Referenz-Links</span>
+                  <span className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                    {links.length}
+                  </span>
+                </div>
+                {canEdit && (
+                  <Button size="sm" variant="outline" className="h-7 text-xs font-mono gap-1" onClick={addLink}>
+                    <Plus className="h-3 w-3" /> Link hinzufügen
+                  </Button>
+                )}
+              </div>
+
+              <AnimatePresence mode="popLayout">
+                <div className="space-y-2">
+                  {links.map((link, idx) => (
+                    <motion.div
+                      key={idx}
+                      layout
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center gap-2 group"
+                    >
+                      <LinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <Input
+                        value={link.url}
+                        onChange={(e) => updateLink(idx, "url", e.target.value)}
+                        placeholder="https://..."
+                        className="flex-1 text-xs h-8 bg-muted/20 border-muted-foreground/10"
+                        disabled={!canEdit}
+                      />
+                      <Input
+                        value={link.tag}
+                        onChange={(e) => updateLink(idx, "tag", e.target.value)}
+                        placeholder="Tag…"
+                        className="w-28 text-xs h-8 bg-muted/20 border-muted-foreground/10"
+                        disabled={!canEdit}
+                        list={`tag-suggestions-${idx}`}
+                      />
+                      <datalist id={`tag-suggestions-${idx}`}>
+                        {tagSuggestions.map((t) => <option key={t} value={t} />)}
+                      </datalist>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                        onClick={() => copyLink(idx, link.url)}
+                        disabled={!link.url.trim()}
+                      >
+                        {copiedLinkIdx === idx ? (
+                          <Check className="h-3 w-3 text-[hsl(var(--runway-green))]" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </Button>
+                      {link.url.trim() && (
+                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-primary transition-colors" />
+                        </a>
+                      )}
+                      {canEdit && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                          onClick={() => removeLink(idx)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </AnimatePresence>
+
+              {canEdit && tagSuggestions.length > 0 && (
+                <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                  <span className="text-[10px] text-muted-foreground">Tags:</span>
+                  {tagSuggestions.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="text-[10px] px-2 py-0 h-5 cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                      onClick={() => {
+                        if (links.length === 0) {
+                          setLinks([{ url: "", tag }]);
+                        } else {
+                          const lastEmpty = [...links].reverse().findIndex((l) => !l.tag.trim());
+                          const actualIdx = lastEmpty >= 0 ? links.length - 1 - lastEmpty : -1;
+                          if (actualIdx >= 0) {
+                            updateLink(actualIdx, "tag", tag);
+                          }
+                        }
+                      }}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Hooks section */}
             <div>
               <div className="flex items-center justify-between mb-3">
@@ -289,120 +395,6 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 rows={5}
                 disabled={!canEdit}
               />
-            </div>
-
-            {/* Links section */}
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Links</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold font-display">🔗 Referenz-Links</span>
-                  <span className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
-                    {links.length}
-                  </span>
-                </div>
-                {canEdit && (
-                  <Button size="sm" variant="outline" className="h-7 text-xs font-mono gap-1" onClick={addLink}>
-                    <Plus className="h-3 w-3" /> Link hinzufügen
-                  </Button>
-                )}
-              </div>
-
-              <AnimatePresence mode="popLayout">
-                <div className="space-y-2">
-                  {links.map((link, idx) => (
-                    <motion.div
-                      key={idx}
-                      layout
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="flex items-center gap-2 group"
-                    >
-                      <LinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <Input
-                        value={link.url}
-                        onChange={(e) => updateLink(idx, "url", e.target.value)}
-                        placeholder="https://..."
-                        className="flex-1 text-xs h-8 bg-muted/20 border-muted-foreground/10"
-                        disabled={!canEdit}
-                      />
-                      <Input
-                        value={link.tag}
-                        onChange={(e) => updateLink(idx, "tag", e.target.value)}
-                        placeholder="Tag…"
-                        className="w-28 text-xs h-8 bg-muted/20 border-muted-foreground/10"
-                        disabled={!canEdit}
-                        list={`tag-suggestions-${idx}`}
-                      />
-                      <datalist id={`tag-suggestions-${idx}`}>
-                        {tagSuggestions.map((t) => <option key={t} value={t} />)}
-                      </datalist>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground shrink-0"
-                        onClick={() => copyLink(idx, link.url)}
-                        disabled={!link.url.trim()}
-                      >
-                        {copiedLinkIdx === idx ? (
-                          <Check className="h-3 w-3 text-[hsl(var(--runway-green))]" />
-                        ) : (
-                          <Copy className="h-3 w-3" />
-                        )}
-                      </Button>
-                      {link.url.trim() && (
-                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-primary transition-colors" />
-                        </a>
-                      )}
-                      {canEdit && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0"
-                          onClick={() => removeLink(idx)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
-              </AnimatePresence>
-
-              {/* Tag suggestions as clickable chips */}
-              {canEdit && tagSuggestions.length > 0 && (
-                <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-                  <span className="text-[10px] text-muted-foreground">Tags:</span>
-                  {tagSuggestions.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="text-[10px] px-2 py-0 h-5 cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
-                      onClick={() => {
-                        if (links.length === 0) {
-                          setLinks([{ url: "", tag }]);
-                        } else {
-                          // Apply tag to the last link without a tag
-                          const lastEmpty = [...links].reverse().findIndex((l) => !l.tag.trim());
-                          const actualIdx = lastEmpty >= 0 ? links.length - 1 - lastEmpty : -1;
-                          if (actualIdx >= 0) {
-                            updateLink(actualIdx, "tag", tag);
-                          }
-                        }
-                      }}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </ScrollArea>
