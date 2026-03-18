@@ -721,28 +721,40 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     transition: { delay: index * 0.03 },
                   }}
                   exit={{ opacity: 0, x: 30, scale: 0.9, transition: { duration: 0.2 } }}
-                  className={`flex flex-col gap-2 rounded-lg border p-3.5 transition-all ${
+                  className={`flex flex-col gap-2 rounded-lg border p-2.5 sm:p-3.5 transition-all ${
                     isSelected
                       ? "border-primary/40 bg-primary/5 shadow-sm shadow-primary/10"
                       : "border-border hover:border-primary/20 hover:bg-card/80"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  {/* Row 1: Checkbox + Title + Delete */}
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <Checkbox checked={isSelected} onCheckedChange={() => toggleSelect(piece.id)} />
 
                     {/* Title */}
                     <Input
                       value={localTitles[piece.id] ?? piece.title ?? ""}
                       placeholder="Titel eingeben..."
-                      className="h-7 flex-1 border-0 bg-transparent text-sm px-1.5 placeholder:text-muted-foreground/40 focus-visible:bg-muted/30 rounded"
+                      className="h-7 flex-1 min-w-0 border-0 bg-transparent text-sm px-1.5 placeholder:text-muted-foreground/40 focus-visible:bg-muted/30 rounded"
                       onChange={(e) => handleTitleChange(piece.id, e.target.value)}
                       disabled={!canEdit}
                     />
 
+                    {/* Delete — always visible */}
+                    {canEdit && (
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => deletePiece(piece.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Row 2: Tag, CTA, Assign, Target month, Move button */}
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap pl-7 sm:pl-9">
                     {/* Tag */}
                     {piece.tag ? (
                       <span
-                        className="inline-flex items-center gap-1 h-7 text-xs font-mono bg-accent/15 text-accent-foreground px-2.5 rounded-md cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        className="inline-flex items-center gap-1 h-6 sm:h-7 text-[10px] sm:text-xs font-mono bg-accent/15 text-accent-foreground px-2 sm:px-2.5 rounded-md cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
                         onClick={() => canEdit && updatePiece(piece.id, { tag: null })}
                         title="Klicken zum Entfernen"
                       >
@@ -753,7 +765,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     ) : canEdit ? (
                       <Input
                         placeholder="+ Tag"
-                        className="h-7 w-28 text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md placeholder:text-muted-foreground/50"
+                        className="h-6 sm:h-7 w-20 sm:w-28 text-[10px] sm:text-xs font-mono border-0 bg-muted/60 px-2 rounded-md placeholder:text-muted-foreground/50"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
                             updatePiece(piece.id, { tag: (e.target as HTMLInputElement).value.trim() });
@@ -777,12 +789,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         disabled={!canEdit}
                       >
                         <SelectTrigger className={cn(
-                          "h-7 w-36 text-xs font-mono border-0 px-2.5 rounded-md",
+                          "h-6 sm:h-7 w-24 sm:w-36 text-[10px] sm:text-xs font-mono border-0 px-2 rounded-md",
                           piece.cta_label
                             ? "bg-secondary/15 text-secondary"
                             : "bg-muted/60 text-muted-foreground"
                         )}>
-                          <SelectValue placeholder="📢 CTA wählen" />
+                          <SelectValue placeholder="📢 CTA" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="_clear">
@@ -804,7 +816,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
                     {/* Assigned */}
                     <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
-                      <SelectTrigger className="h-7 w-32 text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md">
+                      <SelectTrigger className="h-6 sm:h-7 w-24 sm:w-32 text-[10px] sm:text-xs font-mono border-0 bg-muted/60 px-2 rounded-md">
                         <SelectValue placeholder="Zuweisen" />
                       </SelectTrigger>
                       <SelectContent>
@@ -824,7 +836,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         }}
                         disabled={!canEdit}
                       >
-                        <SelectTrigger className="h-7 w-24 text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md">
+                        <SelectTrigger className="h-6 sm:h-7 w-20 sm:w-24 text-[10px] sm:text-xs font-mono border-0 bg-muted/60 px-2 rounded-md">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -835,31 +847,25 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       </Select>
                     )}
 
+                    <div className="flex-1" />
+
                     {/* Move to next phase */}
                     {nextPhaseMap[activePhase] && (
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Button
                           size="sm"
                           variant={nextPhaseMap[activePhase] === "handed_over" ? "default" : "outline"}
-                          className={`h-7 px-3 text-xs gap-1 font-mono ${
+                          className={`h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs gap-1 font-mono ${
                             nextPhaseMap[activePhase] === "handed_over"
                               ? "bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] shadow-sm shadow-primary/20 border-0"
                               : ""
                           }`}
                           onClick={() => movePiece(piece.id, nextPhaseMap[activePhase])}
                         >
-                          → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}{" "}
-                          {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}
+                          → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}
+                          <span className="hidden sm:inline"> {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}</span>
                         </Button>
                       </motion.div>
-                    )}
-
-                    {/* Delete */}
-                    {canEdit && (
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => deletePiece(piece.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
                     )}
                   </div>
 
