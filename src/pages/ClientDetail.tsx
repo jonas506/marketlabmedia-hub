@@ -150,22 +150,22 @@ const ClientDetail = () => {
 
         {/* Tabbed secondary sections */}
         <Tabs defaultValue="tasks" className="mt-6">
-          <TabsList className="bg-card border border-border h-9 p-0.5 gap-0">
+          <TabsList className="bg-card border border-border h-auto p-0.5 gap-0 flex flex-wrap">
             <TabsTrigger value="tasks" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <ClipboardList className="h-3.5 w-3.5" />
-              Aufgaben
+              <span className="hidden sm:inline">Aufgaben</span>
             </TabsTrigger>
             <TabsTrigger value="marketing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <TrendingUp className="h-3.5 w-3.5" />
-              Marketing
+              <span className="hidden sm:inline">Marketing</span>
             </TabsTrigger>
             <TabsTrigger value="landing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <Globe className="h-3.5 w-3.5" />
-              Landing Pages
+              <span className="hidden sm:inline">Landing Pages</span>
             </TabsTrigger>
             <TabsTrigger value="notebook" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <BookOpen className="h-3.5 w-3.5" />
-              Notebook
+              <span className="hidden sm:inline">Notebook</span>
             </TabsTrigger>
           </TabsList>
 
