@@ -162,7 +162,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0"
+        className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0"
         aria-describedby={undefined}
       >
         <DialogHeader className="px-6 pt-5 pb-3 border-b border-border shrink-0">
