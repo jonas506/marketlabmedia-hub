@@ -728,11 +728,16 @@ export default function SopBoard({ templateId, templateName, initialBoard, onBac
 
               <div className="p-3 border-t border-border">
                 <div className="flex gap-2">
-                  <Input
+                  <Textarea
                     value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
+                    onChange={e => {
+                      setChatInput(e.target.value);
+                      e.target.style.height = "auto";
+                      e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px";
+                    }}
                     placeholder="Beschreibe den Prozess..."
-                    className="text-xs h-8"
+                    className="text-xs min-h-[32px] max-h-[160px] resize-none py-1.5"
+                    rows={1}
                     onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
                     disabled={chatLoading}
                   />
