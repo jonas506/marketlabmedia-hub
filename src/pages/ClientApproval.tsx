@@ -312,18 +312,18 @@ const ClientApproval = () => {
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
 
   return (
-    <div className="min-h-screen bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
+    <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
       <Sonner />
 
       {/* Header - slim & clean */}
       <div className="sticky top-0 z-50 bg-[#111115]/90 backdrop-blur-2xl border-b border-white/[0.04]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 h-12 sm:h-14 flex items-center gap-2 sm:gap-3">
           <img src={logoDark} alt="Marketlab Media" className="h-5 opacity-60 hidden sm:block" />
           <div className="w-px h-5 bg-white/10 hidden sm:block" />
           {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-7 w-7 rounded-lg object-cover ring-1 ring-white/10" />
+            <img src={client.logo_url} alt={client.name} className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg object-cover ring-1 ring-white/10" />
           ) : (
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0083F7] to-[#21089B] text-[11px] font-bold">
+            <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0083F7] to-[#21089B] text-[10px] sm:text-[11px] font-bold">
               {client.name.charAt(0)}
             </div>
           )}
@@ -331,8 +331,8 @@ const ClientApproval = () => {
           <div className="flex-1" />
 
           {/* Progress pill */}
-          <div className="flex items-center gap-2.5 bg-white/[0.04] rounded-full px-3 py-1.5">
-            <div className="h-1.5 w-16 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
+          <div className="flex items-center gap-2 bg-white/[0.04] rounded-full px-2.5 py-1">
+            <div className="h-1.5 w-14 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-[#0083F7] to-emerald-400 rounded-full"
                 animate={{ width: totalPieces > 0 ? `${(approvedCount / totalPieces) * 100}%` : "0%" }}
@@ -378,24 +378,24 @@ const ClientApproval = () => {
         ) : (
           <>
             {/* Card-based swipe view */}
-            <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-5 pb-3 flex-1 flex flex-col">
+            <div className="max-w-3xl mx-auto w-full px-3 sm:px-6 pt-3 sm:pt-5 pb-3 flex-1 flex flex-col">
               {/* Title bar with navigation */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-2 h-2 rounded-full ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
-                  <span className={`text-xs font-semibold uppercase tracking-wider ${
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
+                  <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider shrink-0 ${
                     currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : currentPiece.type === "ad" ? "text-violet-400" : "text-amber-400"
                   }`}>
                     {TYPE_LABELS[currentPiece.type] || currentPiece.type}
                   </span>
                   <span className="text-white/15 text-xs">•</span>
-                  <span className="text-white/40 text-xs font-mono">
+                  <span className="text-white/40 text-[10px] sm:text-xs font-mono">
                     {currentIndex + 1} von {pieces.length}
                   </span>
                 </div>
 
                 {/* Nav arrows */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   <button
                     onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
                     disabled={currentIndex === 0}
@@ -420,7 +420,7 @@ const ClientApproval = () => {
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-lg sm:text-xl font-bold mb-4 truncate"
+                  className="text-base sm:text-xl font-bold mb-3 sm:mb-4 truncate"
                 >
                   {currentPiece.title || "Ohne Titel"}
                 </motion.h2>
@@ -434,10 +434,10 @@ const ClientApproval = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.25 }}
-                  className="rounded-2xl sm:rounded-3xl overflow-hidden bg-[#1A1A20] border border-white/[0.04] shadow-2xl shadow-black/40"
+                  className="rounded-2xl overflow-hidden bg-[#1A1A20] border border-white/[0.04] shadow-2xl shadow-black/40"
                 >
                   {currentEmbed ? (
-                    <div className="aspect-[9/16] max-h-[55vh] sm:max-h-[60vh] bg-black">
+                    <div className="aspect-[9/16] max-h-[50vh] sm:max-h-[60vh] bg-black">
                       <iframe
                         src={currentEmbed}
                         className="w-full h-full"
@@ -451,7 +451,7 @@ const ClientApproval = () => {
                       href={currentPiece.preview_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center gap-4 py-20 sm:py-24 hover:bg-white/[0.02] transition-colors"
+                      className="flex flex-col items-center justify-center gap-4 py-16 sm:py-24 hover:bg-white/[0.02] transition-colors"
                     >
                       <div className="w-14 h-14 rounded-2xl bg-[#0083F7]/10 border border-[#0083F7]/20 flex items-center justify-center">
                         <Play className="h-6 w-6 text-[#0083F7] ml-0.5" />
@@ -462,7 +462,7 @@ const ClientApproval = () => {
                       </div>
                     </a>
                   ) : (
-                    <div className="flex items-center justify-center py-20 sm:py-24">
+                    <div className="flex items-center justify-center py-16 sm:py-24">
                       <span className="text-sm text-white/20">Kein Preview verfügbar</span>
                     </div>
                   )}
@@ -513,9 +513,9 @@ const ClientApproval = () => {
                           <span className="text-sm text-white/60 flex-1 leading-snug">{c.comment_text}</span>
                           <button
                             onClick={() => handleDeleteComment(c.id)}
-                            className="opacity-0 group-hover/c:opacity-100 p-1 -mr-1 rounded-lg hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-all shrink-0"
+                            className="opacity-60 sm:opacity-0 group-hover/c:opacity-100 p-1.5 -mr-0.5 rounded-lg hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-all shrink-0"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </motion.div>
                       ))}
@@ -608,14 +608,14 @@ const ClientApproval = () => {
             </div>
 
             {/* Bottom action bar - fixed on mobile */}
-            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-6 pb-5 sm:pb-6">
-              <div className="max-w-3xl mx-auto px-4 sm:px-6">
-                <div className="flex gap-2.5">
+            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
+              <div className="max-w-3xl mx-auto px-3 sm:px-6">
+                <div className="flex gap-2">
                   {/* Reject button - only if there are comments */}
                   {currentComments.length > 0 && (
                     <Button
                       variant="outline"
-                      className="gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-[52px] rounded-2xl px-5 font-medium"
+                      className="gap-1.5 sm:gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-12 sm:h-[52px] rounded-2xl px-3 sm:px-5 font-medium text-sm"
                       onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
                       disabled={isCurrentLoading}
                     >
@@ -628,7 +628,7 @@ const ClientApproval = () => {
 
                   {/* Approve button */}
                   <Button
-                    className="flex-1 gap-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-[52px] rounded-2xl shadow-xl shadow-emerald-500/20 text-base active:scale-[0.98] transition-transform"
+                    className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-12 sm:h-[52px] rounded-2xl shadow-xl shadow-emerald-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
                     onClick={() => currentPiece && handleAction(currentPiece.id, "approve")}
                     disabled={isCurrentLoading}
                   >
