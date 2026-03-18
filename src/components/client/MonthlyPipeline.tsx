@@ -604,10 +604,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       )}
 
       {/* Filter bar + actions */}
-      <div className="flex items-center gap-3 mb-4">
-        <Filter className="h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
+        <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
         <Select value={filterPerson} onValueChange={setFilterPerson}>
-          <SelectTrigger className="h-9 w-40 text-sm"><SelectValue placeholder="Person" /></SelectTrigger>
+          <SelectTrigger className="h-8 sm:h-9 w-28 sm:w-40 text-xs sm:text-sm"><SelectValue placeholder="Person" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle</SelectItem>
             {team?.map((t) => (
@@ -623,27 +623,29 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
               <Button
                 variant="default"
-                className="gap-2 text-sm font-semibold shadow-lg shadow-primary/20"
+                size="sm"
+                className="gap-1.5 text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20"
                 onClick={() => bulkMove.mutate()}
                 disabled={bulkMove.isPending}
               >
-                <Sparkles className="h-4 w-4" />
-                {selected.size} → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}{" "}
-                {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{selected.size} →</span>
+                <span className="sm:hidden">{selected.size}→</span>
+                {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}{" "}
+                <span className="hidden sm:inline">{config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}</span>
               </Button>
             </motion.div>
           )}
         </AnimatePresence>
 
-
         {canEdit && (
           <div className="flex items-center gap-1.5">
-            <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-              <Plus className="h-4 w-4" /> {config.addLabel}
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm h-8 sm:h-9" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
+              <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{config.addLabel}</span><span className="sm:hidden">Neu</span>
             </Button>
             <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className="h-9 w-9" title="Mehrere auf einmal erstellen">
+                <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" title="Mehrere auf einmal erstellen">
                   <ListPlus className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
