@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-const SENDER_DOMAIN = 'notify.marketlabmedia.de'
 const FROM_ADDRESS = 'Marketlab Media <noreply@notify.marketlabmedia.de>'
 
 Deno.serve(async (req) => {
@@ -16,6 +15,12 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY is not configured')
+    }
+
     const supabase = createClient(supabaseUrl, serviceKey)
 
     // Fetch unsent queue items
@@ -39,7 +44,7 @@ Deno.serve(async (req) => {
       grouped[item.client_id].push(item)
     }
 
-    const results: { client: string; queued: number; error?: string }[] = []
+    const results: { client: string; sent: boolean; error?: string }[] = []
 
     for (const [clientId, pieces] of Object.entries(grouped)) {
       const { data: client } = await supabase
@@ -54,7 +59,7 @@ Deno.serve(async (req) => {
           .from('review_notification_queue')
           .update({ sent_at: new Date().toISOString() })
           .in('id', ids)
-        results.push({ client: clientId, queued: 0, error: 'No notify emails configured' })
+        results.push({ client: clientId, sent: false, error: 'No notify emails configured' })
         continue
       }
 
@@ -64,47 +69,49 @@ Deno.serve(async (req) => {
 
       const { subject, html, text } = buildEmail(client.name, pieces, approvalLink)
 
-      let queuedCount = 0
+      let sendSuccess = true
       for (const email of client.review_notify_emails) {
         const messageId = crypto.randomUUID()
+        try {
+          const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: FROM_ADDRESS,
+              to: [email],
+              subject,
+              html,
+              text,
+            }),
+          })
 
-        // Log as pending
-        await supabase.from('email_send_log').insert({
-          message_id: messageId,
-          template_name: 'review_digest',
-          recipient_email: email,
-          status: 'pending',
-        })
+          if (!res.ok) {
+            const body = await res.text()
+            throw new Error(`[${res.status}] ${body}`)
+          }
 
-        // Enqueue into transactional_emails pgmq queue
-        const { error: enqueueErr } = await supabase.rpc('enqueue_email', {
-          queue_name: 'transactional_emails',
-          payload: {
-            to: email,
-            from: FROM_ADDRESS,
-            sender_domain: SENDER_DOMAIN,
-            subject,
-            html,
-            text,
-            purpose: 'transactional',
-            label: 'review_digest',
+          console.log(`Sent review digest to ${email}`)
+
+          await supabase.from('email_send_log').insert({
             message_id: messageId,
-            queued_at: new Date().toISOString(),
-          },
-        })
+            template_name: 'review_digest',
+            recipient_email: email,
+            status: 'sent',
+          })
+        } catch (sendErr) {
+          console.error(`Failed to send to ${email}:`, sendErr)
+          sendSuccess = false
 
-        if (enqueueErr) {
-          console.error(`Failed to enqueue for ${email}:`, enqueueErr)
           await supabase.from('email_send_log').insert({
             message_id: messageId,
             template_name: 'review_digest',
             recipient_email: email,
             status: 'failed',
-            error_message: enqueueErr.message,
+            error_message: sendErr instanceof Error ? sendErr.message : String(sendErr),
           })
-        } else {
-          console.log(`Enqueued review digest for ${email}`)
-          queuedCount++
         }
       }
 
@@ -115,7 +122,7 @@ Deno.serve(async (req) => {
         .update({ sent_at: new Date().toISOString() })
         .in('id', ids)
 
-      results.push({ client: client.name, queued: queuedCount })
+      results.push({ client: client.name, sent: sendSuccess })
     }
 
     return new Response(JSON.stringify({ results }), {
