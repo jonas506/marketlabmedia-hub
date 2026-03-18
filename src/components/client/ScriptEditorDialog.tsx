@@ -75,8 +75,33 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   const qc = useQueryClient();
   const [hooks, setHooks] = useState<string[]>([""]);
   const [body, setBody] = useState("");
+  const [links, setLinks] = useState<ScriptLink[]>([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [copiedLinkIdx, setCopiedLinkIdx] = useState<number | null>(null);
   const [lastPieceId, setLastPieceId] = useState<string | null>(null);
+
+  // Fetch all existing tags from other pieces for suggestions
+  const { data: allPiecesLinks } = useQuery({
+    queryKey: ["script-link-tags", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("content_pieces")
+        .select("script_links")
+        .eq("client_id", clientId)
+        .not("script_links", "is", null);
+      return data ?? [];
+    },
+    enabled: open,
+  });
+
+  const tagSuggestions = useMemo(() => {
+    const tags = new Set<string>();
+    allPiecesLinks?.forEach((p: any) => {
+      const pLinks = p.script_links as ScriptLink[] | null;
+      pLinks?.forEach((l) => { if (l.tag?.trim()) tags.add(l.tag.trim()); });
+    });
+    return Array.from(tags).sort();
+  }, [allPiecesLinks]);
 
   // Sync state when piece changes
   if (piece && piece.id !== lastPieceId) {
@@ -84,6 +109,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     const parsed = parseScript(piece.script_text);
     setHooks(parsed.hooks);
     setBody(parsed.body);
+    setLinks(Array.isArray(piece.script_links) ? piece.script_links : []);
   }
 
   const addHook = () => setHooks((prev) => [...prev, ""]);
@@ -105,19 +131,31 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setTimeout(() => setCopiedIdx(null), 1500);
   };
 
+  const addLink = () => setLinks((prev) => [...prev, { url: "", tag: "Inspiration" }]);
+  const removeLink = (idx: number) => setLinks((prev) => prev.filter((_, i) => i !== idx));
+  const updateLink = (idx: number, field: keyof ScriptLink, value: string) =>
+    setLinks((prev) => prev.map((l, i) => (i === idx ? { ...l, [field]: value } : l)));
+  const copyLink = (idx: number, url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedLinkIdx(idx);
+    setTimeout(() => setCopiedLinkIdx(null), 1500);
+  };
+
   const save = useCallback(async () => {
     if (!piece) return;
     const scriptText = serializeScript(hooks, body);
     const hasScript = !!(hooks.some((h) => h.trim()) || body.trim());
+    const cleanLinks = links.filter((l) => l.url.trim());
 
     await supabase
       .from("content_pieces")
-      .update({ script_text: scriptText, has_script: hasScript })
+      .update({ script_text: scriptText, has_script: hasScript, script_links: cleanLinks } as any)
       .eq("id", piece.id);
 
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+    qc.invalidateQueries({ queryKey: ["script-link-tags", clientId] });
     toast.success("Skript gespeichert!");
-  }, [piece, hooks, body, clientId, qc]);
+  }, [piece, hooks, body, links, clientId, qc]);
 
   if (!piece) return null;
 
