@@ -513,9 +513,9 @@ const ClientApproval = () => {
                           <span className="text-sm text-white/60 flex-1 leading-snug">{c.comment_text}</span>
                           <button
                             onClick={() => handleDeleteComment(c.id)}
-                            className="opacity-0 group-hover/c:opacity-100 p-1 -mr-1 rounded-lg hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-all shrink-0"
+                            className="opacity-60 sm:opacity-0 group-hover/c:opacity-100 p-1.5 -mr-0.5 rounded-lg hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-all shrink-0"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </motion.div>
                       ))}
