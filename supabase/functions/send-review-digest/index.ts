@@ -1,9 +1,13 @@
+import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
+
+const SENDER_DOMAIN = 'notify.marketlabmedia.de'
+const FROM_ADDRESS = 'Marketlab Media <noreply@marketlabmedia.de>'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,10 +17,10 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const apiKey = Deno.env.get('LOVABLE_API_KEY')
 
-    if (!resendApiKey) {
-      throw new Error('RESEND_API_KEY is not configured')
+    if (!apiKey) {
+      throw new Error('LOVABLE_API_KEY is not configured')
     }
 
     const supabase = createClient(supabaseUrl, serviceKey)
@@ -135,36 +139,44 @@ Deno.serve(async (req) => {
 
       const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketlab Media · Automatische Benachrichtigung`
 
-      // Send via Resend API
       let sendSuccess = true
       for (const email of client.review_notify_emails) {
+        const messageId = crypto.randomUUID()
         try {
-          const res = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${resendApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: 'Marketlab Media <noreply@marketlab-media.de>',
-              to: [email],
+          await sendLovableEmail(
+            {
+              to: email,
+              from: FROM_ADDRESS,
+              sender_domain: SENDER_DOMAIN,
               subject: emailSubject,
               html: emailHtml,
               text: emailText,
-            }),
+              purpose: 'transactional',
+              label: 'review_digest',
+              message_id: messageId,
+            },
+            { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
+          )
+          console.log(`Sent review digest to ${email}`)
+
+          // Log success
+          await supabase.from('email_send_log').insert({
+            message_id: messageId,
+            template_name: 'review_digest',
+            recipient_email: email,
+            status: 'sent',
           })
-
-          const resBody = await res.text()
-
-          if (!res.ok) {
-            console.error(`Resend error for ${email}: [${res.status}] ${resBody}`)
-            sendSuccess = false
-          } else {
-            console.log(`Sent review digest to ${email}`)
-          }
         } catch (sendErr) {
           console.error(`Failed to send to ${email}:`, sendErr)
           sendSuccess = false
+
+          await supabase.from('email_send_log').insert({
+            message_id: messageId,
+            template_name: 'review_digest',
+            recipient_email: email,
+            status: 'failed',
+            error_message: sendErr instanceof Error ? sendErr.message : String(sendErr),
+          })
         }
       }
 
