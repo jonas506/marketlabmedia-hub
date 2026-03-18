@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import confetti from "canvas-confetti";
 import logoDark from "@/assets/logo-dark.png";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TimestampComment {
   id: string;
