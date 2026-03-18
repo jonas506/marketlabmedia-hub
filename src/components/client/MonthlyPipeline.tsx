@@ -415,7 +415,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       className="rounded-lg border border-border bg-card overflow-hidden"
     >
       {/* Header - Monday group style */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-surface-elevated border-b border-border">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
         <div className="w-1 h-5 rounded-full bg-primary" />
         <h3 className="font-display text-sm font-semibold">Material-Pipeline</h3>
         {totalPieces > 0 && (
@@ -432,56 +432,58 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </div>
         )}
         <div className="flex-1" />
-        {monthPieces.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-xs font-mono gap-1.5 mr-2"
-            onClick={() => setPrintScriptsOpen(true)}
-          >
-            <Printer className="h-3 w-3" />
-            Drucken
-          </Button>
-        )}
-        {canEdit && monthPieces.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-xs font-mono gap-1.5 mr-2"
-            onClick={() => setCaptionStudioOpen(true)}
-          >
-            <FileText className="h-3 w-3" />
-            Caption Studio
-          </Button>
-        )}
-        {/* View mode toggle */}
-        <div className="flex items-center bg-muted/50 rounded-lg p-0.5 mr-2">
-          <button
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
-              viewMode === "list"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <LayoutList className="h-3 w-3" />
-            Liste
-          </button>
-          <button
-            onClick={() => setViewMode("kanban")}
-            className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
-              viewMode === "kanban"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Columns3 className="h-3 w-3" />
-            Kanban
-          </button>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {monthPieces.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs font-mono gap-1.5"
+              onClick={() => setPrintScriptsOpen(true)}
+            >
+              <Printer className="h-3 w-3" />
+              <span className="hidden sm:inline">Drucken</span>
+            </Button>
+          )}
+          {canEdit && monthPieces.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs font-mono gap-1.5"
+              onClick={() => setCaptionStudioOpen(true)}
+            >
+              <FileText className="h-3 w-3" />
+              <span className="hidden sm:inline">Caption Studio</span>
+            </Button>
+          )}
+          {/* View mode toggle */}
+          <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+                viewMode === "list"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutList className="h-3 w-3" />
+              <span className="hidden sm:inline">Liste</span>
+            </button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+                viewMode === "kanban"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Columns3 className="h-3 w-3" />
+              <span className="hidden sm:inline">Kanban</span>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
+        <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground w-full sm:w-auto mt-1 sm:mt-0">
           {phaseSummary.map((p, i) => (
             <span key={p.key} className="flex items-center gap-1">
               {i > 0 && <span className="text-border mx-0.5">·</span>}
@@ -496,14 +498,14 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
       {/* Type tabs */}
       <Tabs value={activeType} onValueChange={handleTypeChange} className="mb-4">
-        <TabsList className="h-10 bg-muted/50">
+        <TabsList className="h-auto flex-wrap bg-muted/50 gap-0.5 p-1">
           {Object.entries(PIPELINE_CONFIG).map(([key, cfg]) => {
             const typeCount = contentPieces.filter((c) => c.type === key && c.target_month === month && c.target_year === year).length;
             return (
-              <TabsTrigger key={key} value={key} className="text-sm gap-2 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger key={key} value={key} className="text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <span>{cfg.emoji}</span>
-                {cfg.label}
-                <span className="rounded-full bg-background/50 px-2 py-0.5 text-[11px] font-mono">{typeCount}</span>
+                <span className="hidden sm:inline">{cfg.label}</span>
+                <span className="rounded-full bg-background/50 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-mono">{typeCount}</span>
               </TabsTrigger>
             );
           })}
@@ -523,7 +525,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       ) : (
       <>
       {/* Phase pills */}
-      <div className="flex gap-1.5 mb-5">
+      <div className="flex flex-wrap gap-1.5 mb-5 overflow-x-auto scrollbar-none">
         {config.phases.map((p) => {
           const count = monthPieces.filter((c) => c.phase === p.key).length;
           const isActive = activePhase === p.key;
@@ -534,20 +536,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
               onClick={() => { setActivePhase(p.key); setSelected(new Set()); }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-mono transition-all ${
+              className={`flex items-center gap-1 sm:gap-2 rounded-lg px-2.5 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-mono transition-all whitespace-nowrap ${
                 isActive
                   ? isHandedOver
                     ? "bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] text-primary-foreground shadow-md shadow-primary/20"
                     : "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                   : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}>
-              <span className="text-base">{p.emoji}</span>
-              {p.label}
+              <span className="text-sm sm:text-base">{p.emoji}</span>
+              <span className="hidden sm:inline">{p.label}</span>
               <motion.span
                 key={count}
                 initial={{ scale: 1.3 }}
                 animate={{ scale: 1 }}
-                className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                className={`rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold ${
                   isActive ? "bg-primary-foreground/20" : "bg-background/80"
                 }`}>
                 {count}
@@ -602,10 +604,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       )}
 
       {/* Filter bar + actions */}
-      <div className="flex items-center gap-3 mb-4">
-        <Filter className="h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
+        <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
         <Select value={filterPerson} onValueChange={setFilterPerson}>
-          <SelectTrigger className="h-9 w-40 text-sm"><SelectValue placeholder="Person" /></SelectTrigger>
+          <SelectTrigger className="h-8 sm:h-9 w-28 sm:w-40 text-xs sm:text-sm"><SelectValue placeholder="Person" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle</SelectItem>
             {team?.map((t) => (
@@ -621,27 +623,29 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
               <Button
                 variant="default"
-                className="gap-2 text-sm font-semibold shadow-lg shadow-primary/20"
+                size="sm"
+                className="gap-1.5 text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20"
                 onClick={() => bulkMove.mutate()}
                 disabled={bulkMove.isPending}
               >
-                <Sparkles className="h-4 w-4" />
-                {selected.size} → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}{" "}
-                {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{selected.size} →</span>
+                <span className="sm:hidden">{selected.size}→</span>
+                {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}{" "}
+                <span className="hidden sm:inline">{config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}</span>
               </Button>
             </motion.div>
           )}
         </AnimatePresence>
 
-
         {canEdit && (
           <div className="flex items-center gap-1.5">
-            <Button variant="outline" className="gap-2 text-sm" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-              <Plus className="h-4 w-4" /> {config.addLabel}
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm h-8 sm:h-9" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
+              <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{config.addLabel}</span><span className="sm:hidden">Neu</span>
             </Button>
             <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className="h-9 w-9" title="Mehrere auf einmal erstellen">
+                <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" title="Mehrere auf einmal erstellen">
                   <ListPlus className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
