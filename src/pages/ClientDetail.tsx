@@ -29,7 +29,7 @@ const ClientDetail = () => {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [copied, setCopied] = useState(false);
 
-  const canEdit = role === "admin" || role === "head_of_content";
+  const canEdit = role === "admin" || role === "head_of_content" || role === "cutter";
 
   const { data: client, isLoading } = useQuery({
     queryKey: ["client", id],
