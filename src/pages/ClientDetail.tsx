@@ -12,10 +12,11 @@ import LandingPagesList from "@/components/client/LandingPagesList";
 import ClientNotebook from "@/components/client/ClientNotebook";
 import MarketingTracking from "@/components/client/MarketingTracking";
 import TaskList from "@/components/client/TaskList";
+import InspirationBoard from "@/components/client/InspirationBoard";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -155,6 +156,10 @@ const ClientDetail = () => {
               <ClipboardList className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Aufgaben</span>
             </TabsTrigger>
+            <TabsTrigger value="inspo" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Inspirationen</span>
+            </TabsTrigger>
             <TabsTrigger value="marketing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <TrendingUp className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Marketing</span>
@@ -171,6 +176,9 @@ const ClientDetail = () => {
 
           <TabsContent value="tasks" className="mt-4">
             <TaskList clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="inspo" className="mt-4">
+            <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
           </TabsContent>
           <TabsContent value="marketing" className="mt-4">
             <MarketingTracking clientId={client.id} canEdit={canEdit} />

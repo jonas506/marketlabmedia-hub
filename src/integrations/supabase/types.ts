@@ -275,6 +275,65 @@ export type Database = {
           },
         ]
       }
+      client_inspirations: {
+        Row: {
+          ai_analysis: string | null
+          category: string
+          client_id: string
+          created_at: string
+          id: string
+          month: number | null
+          notes: string
+          screenshot_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          url: string | null
+          week_number: number | null
+          year: number | null
+        }
+        Insert: {
+          ai_analysis?: string | null
+          category?: string
+          client_id: string
+          created_at?: string
+          id?: string
+          month?: number | null
+          notes?: string
+          screenshot_url?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          url?: string | null
+          week_number?: number | null
+          year?: number | null
+        }
+        Update: {
+          ai_analysis?: string | null
+          category?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          month?: number | null
+          notes?: string
+          screenshot_url?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          url?: string | null
+          week_number?: number | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_inspirations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_knowledge: {
         Row: {
           category: string
