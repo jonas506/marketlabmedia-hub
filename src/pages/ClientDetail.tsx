@@ -120,7 +120,7 @@ const ClientDetail = () => {
         <ClientInfoPanel client={client} canEdit={canEdit} />
 
         {/* Month selector – compact inline */}
-        <div className="flex items-center justify-between mt-5 mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 mb-4 gap-2">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-primary" />
             <h2 className="font-display text-sm font-semibold tracking-tight">Monatszyklus</h2>
@@ -130,7 +130,7 @@ const ClientDetail = () => {
             setSelectedMonth(m);
             setSelectedYear(y);
           }}>
-            <SelectTrigger className="w-48 h-9 text-xs bg-card border-border">
+            <SelectTrigger className="w-full sm:w-48 h-9 text-xs bg-card border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -150,22 +150,22 @@ const ClientDetail = () => {
 
         {/* Tabbed secondary sections */}
         <Tabs defaultValue="tasks" className="mt-6">
-          <TabsList className="bg-card border border-border h-9 p-0.5 gap-0">
+          <TabsList className="bg-card border border-border h-auto p-0.5 gap-0 flex flex-wrap">
             <TabsTrigger value="tasks" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <ClipboardList className="h-3.5 w-3.5" />
-              Aufgaben
+              <span className="hidden sm:inline">Aufgaben</span>
             </TabsTrigger>
             <TabsTrigger value="marketing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <TrendingUp className="h-3.5 w-3.5" />
-              Marketing
+              <span className="hidden sm:inline">Marketing</span>
             </TabsTrigger>
             <TabsTrigger value="landing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <Globe className="h-3.5 w-3.5" />
-              Landing Pages
+              <span className="hidden sm:inline">Landing Pages</span>
             </TabsTrigger>
             <TabsTrigger value="notebook" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <BookOpen className="h-3.5 w-3.5" />
-              Notebook
+              <span className="hidden sm:inline">Notebook</span>
             </TabsTrigger>
           </TabsList>
 

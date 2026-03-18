@@ -247,18 +247,19 @@ const MyTasks = () => {
                       <Link
                         key={`${item.kind}-${piece.id}`}
                         to={`/client/${piece.client_id}`}
-                        className="monday-row flex items-center gap-3 px-4 py-2 pl-10 hover:bg-surface-hover transition-colors"
+                        className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors"
                       >
                         <PhaseIcon phase={piece.phase} />
-                        <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0", meta.css)}>{meta.label}</span>
-                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-muted/50 text-muted-foreground">
+                        <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0 hidden sm:inline-block", meta.css)}>{meta.label}</span>
+                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-muted/50 text-muted-foreground shrink-0">
                           {TYPE_LABELS[piece.type] || piece.type}
                         </Badge>
                         <span className="flex-1 text-sm font-body truncate">{piece.title || "Ohne Titel"}</span>
                         {piece.deadline && (
-                          <span className={cn("flex items-center gap-1 text-[11px] font-mono", piece.deadline < today ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                          <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", piece.deadline < today ? "text-destructive font-semibold" : "text-muted-foreground")}>
                             <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(piece.deadline), "dd MMM", { locale: de })}
+                            <span className="hidden sm:inline">{format(new Date(piece.deadline), "dd MMM", { locale: de })}</span>
+                            <span className="sm:hidden">{format(new Date(piece.deadline), "dd.MM", { locale: de })}</span>
                           </span>
                         )}
                       </Link>
@@ -271,7 +272,7 @@ const MyTasks = () => {
                       <Link
                         key={`sop-${step.id}`}
                         to={`/client/${step.client_id}`}
-                        className="monday-row flex items-center gap-3 px-4 py-2 pl-10 hover:bg-surface-hover transition-colors"
+                        className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors"
                       >
                         <Checkbox
                           checked={false}
@@ -285,7 +286,7 @@ const MyTasks = () => {
                           SOP
                         </Badge>
                         <span className="flex-1 text-sm font-body truncate">{step.title}</span>
-                        <span className="text-[10px] text-muted-foreground font-mono truncate max-w-32">{step.checklist_name}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono truncate max-w-20 sm:max-w-32 hidden sm:inline">{step.checklist_name}</span>
                       </Link>
                     );
                   }
@@ -295,20 +296,21 @@ const MyTasks = () => {
                   const sc = STATUS_LABELS[task.status || "not_started"] || STATUS_LABELS.not_started;
 
                   return (
-                    <div key={`t-${task.id}`} className="monday-row flex items-center gap-3 px-4 py-2 pl-10">
+                    <div key={`t-${task.id}`} className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10">
                       <Checkbox checked={false} onCheckedChange={() => completeTask(task.id, task.client_id)} className="shrink-0" />
                       {task.tag && (
-                        <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0", getTagColor(task.tag))}>
+                        <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0 hidden sm:inline-flex", getTagColor(task.tag))}>
                           {task.tag}
                         </Badge>
                       )}
-                      <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0 shrink-0", sc.css)}>{sc.label}</span>
+                      <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0 shrink-0 hidden sm:inline-block", sc.css)}>{sc.label}</span>
                       <span className="flex-1 text-sm font-body truncate">{task.title}</span>
-                      <span className="text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-24 truncate">{clientMap[task.client_id] || ""}</span>
+                      <span className="text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-20 sm:max-w-24 truncate hidden sm:inline">{clientMap[task.client_id] || ""}</span>
                       {task.deadline && (
                         <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
                           <CalendarIcon className="h-3 w-3" />
-                          {format(new Date(task.deadline), "dd MMM", { locale: de })}
+                          <span className="hidden sm:inline">{format(new Date(task.deadline), "dd MMM", { locale: de })}</span>
+                          <span className="sm:hidden">{format(new Date(task.deadline), "dd.MM", { locale: de })}</span>
                         </span>
                       )}
                     </div>

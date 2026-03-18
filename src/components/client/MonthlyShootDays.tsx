@@ -223,7 +223,7 @@ const MonthlyShootDays: React.FC<MonthlyShootDaysProps> = ({ clientId, shootDays
                 key={day.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0, transition: { delay: i * 0.05 } }}
-                className={`flex items-center gap-4 rounded-lg border p-4 transition-all ${
+                className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4 transition-all ${
                   day.status === "completed"
                     ? "border-[hsl(var(--runway-green))]/20 bg-[hsl(var(--runway-green))]/5"
                     : "border-border hover:border-primary/20"

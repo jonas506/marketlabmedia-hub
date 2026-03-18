@@ -157,7 +157,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
         </motion.span>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         <div className="flex-1 space-y-4">
           {types.map((t) => {
             const isAd = t.type === "ad";
@@ -166,9 +166,9 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
             const isComplete = t.target > 0 && t.current >= t.target;
             return (
               <div key={t.type} className="space-y-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <span className="text-base w-6">{t.emoji}</span>
-                  <span className="w-20 font-mono text-xs text-muted-foreground">{t.label}</span>
+                  <span className="w-16 sm:w-20 font-mono text-xs text-muted-foreground">{t.label}</span>
                   <div className="flex-1 relative">
                     <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                       <motion.div
@@ -195,10 +195,9 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   >
                     {isAd ? t.current : `${t.current}/${t.target}`}
                   </motion.span>
-                  {isComplete && <span className="text-sm">✅</span>}
-                  {/* Generic extra count input (non-reel, non-ad types) */}
+                  {isComplete && <span className="text-sm hidden sm:inline">✅</span>}
                   {canEdit && !isAd && !isReel && (
-                    <div className="flex items-center gap-1 ml-1" title="Extras (nicht in Pipeline)">
+                    <div className="hidden sm:flex items-center gap-1 ml-1" title="Extras (nicht in Pipeline)">
                       <Plus className="h-3 w-3 text-muted-foreground" />
                       <Input
                         type="number"
@@ -212,9 +211,8 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   )}
                 </div>
 
-                {/* Opus Pro + Overlay steppers for Reels */}
                 {isReel && canEdit && (
-                  <div className="flex items-center gap-2 ml-9 pl-20">
+                  <div className="flex flex-wrap items-center gap-2 ml-0 sm:ml-9 sm:pl-16 lg:pl-20">
                     <Stepper label="Opus Pro" value={opusProCount} onChange={(v) => updateExtra("opus_pro", v)} />
                     <Stepper label="Overlay" value={overlayCount} onChange={(v) => updateExtra("overlay", v)} />
                     <Stepper label="Bereits geplant" value={bereitsGeplantCount} onChange={(v) => updateExtra("bereits_geplant", v)} />
@@ -238,12 +236,12 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
           })}
         </div>
 
-        <div className="flex gap-5 border-l border-border pl-5">
-          <div className="text-center">
+        <div className="flex gap-5 border-t lg:border-t-0 lg:border-l border-border pt-4 lg:pt-0 lg:pl-5">
+          <div className="text-center flex-1 lg:flex-initial">
             <span className="font-mono text-[10px] text-muted-foreground block mb-1.5 tracking-wider">GESICHERT</span>
             <RunwayBadge days={conservativeDays} />
           </div>
-          <div className="text-center">
+          <div className="text-center flex-1 lg:flex-initial">
             <span className="font-mono text-[10px] text-muted-foreground block mb-1.5 tracking-wider">PROGNOSE</span>
             <RunwayBadge days={prognoseDays} />
           </div>
