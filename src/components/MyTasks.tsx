@@ -272,7 +272,7 @@ const MyTasks = () => {
                       <Link
                         key={`sop-${step.id}`}
                         to={`/client/${step.client_id}`}
-                        className="monday-row flex items-center gap-3 px-4 py-2 pl-10 hover:bg-surface-hover transition-colors"
+                        className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors"
                       >
                         <Checkbox
                           checked={false}
@@ -286,7 +286,7 @@ const MyTasks = () => {
                           SOP
                         </Badge>
                         <span className="flex-1 text-sm font-body truncate">{step.title}</span>
-                        <span className="text-[10px] text-muted-foreground font-mono truncate max-w-32">{step.checklist_name}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono truncate max-w-20 sm:max-w-32 hidden sm:inline">{step.checklist_name}</span>
                       </Link>
                     );
                   }
