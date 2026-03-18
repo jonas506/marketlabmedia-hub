@@ -434,7 +434,7 @@ const ClientApproval = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.25 }}
-                  className="rounded-2xl sm:rounded-3xl overflow-hidden bg-[#1A1A20] border border-white/[0.04] shadow-2xl shadow-black/40"
+                  className="rounded-2xl overflow-hidden bg-[#1A1A20] border border-white/[0.04] shadow-2xl shadow-black/40"
                 >
                   {currentEmbed ? (
                     <div className="aspect-[9/16] max-h-[55vh] sm:max-h-[60vh] bg-black">
