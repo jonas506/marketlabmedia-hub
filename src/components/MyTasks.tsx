@@ -247,18 +247,19 @@ const MyTasks = () => {
                       <Link
                         key={`${item.kind}-${piece.id}`}
                         to={`/client/${piece.client_id}`}
-                        className="monday-row flex items-center gap-3 px-4 py-2 pl-10 hover:bg-surface-hover transition-colors"
+                        className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors"
                       >
                         <PhaseIcon phase={piece.phase} />
-                        <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0", meta.css)}>{meta.label}</span>
-                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-muted/50 text-muted-foreground">
+                        <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0 hidden sm:inline-block", meta.css)}>{meta.label}</span>
+                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-muted/50 text-muted-foreground shrink-0">
                           {TYPE_LABELS[piece.type] || piece.type}
                         </Badge>
                         <span className="flex-1 text-sm font-body truncate">{piece.title || "Ohne Titel"}</span>
                         {piece.deadline && (
-                          <span className={cn("flex items-center gap-1 text-[11px] font-mono", piece.deadline < today ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                          <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", piece.deadline < today ? "text-destructive font-semibold" : "text-muted-foreground")}>
                             <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(piece.deadline), "dd MMM", { locale: de })}
+                            <span className="hidden sm:inline">{format(new Date(piece.deadline), "dd MMM", { locale: de })}</span>
+                            <span className="sm:hidden">{format(new Date(piece.deadline), "dd.MM", { locale: de })}</span>
                           </span>
                         )}
                       </Link>
