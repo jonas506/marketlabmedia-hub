@@ -312,18 +312,18 @@ const ClientApproval = () => {
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
 
   return (
-    <div className="min-h-screen bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
+    <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
       <Sonner />
 
       {/* Header - slim & clean */}
       <div className="sticky top-0 z-50 bg-[#111115]/90 backdrop-blur-2xl border-b border-white/[0.04]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 h-12 sm:h-14 flex items-center gap-2 sm:gap-3">
           <img src={logoDark} alt="Marketlab Media" className="h-5 opacity-60 hidden sm:block" />
           <div className="w-px h-5 bg-white/10 hidden sm:block" />
           {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-7 w-7 rounded-lg object-cover ring-1 ring-white/10" />
+            <img src={client.logo_url} alt={client.name} className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg object-cover ring-1 ring-white/10" />
           ) : (
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0083F7] to-[#21089B] text-[11px] font-bold">
+            <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0083F7] to-[#21089B] text-[10px] sm:text-[11px] font-bold">
               {client.name.charAt(0)}
             </div>
           )}
@@ -331,8 +331,8 @@ const ClientApproval = () => {
           <div className="flex-1" />
 
           {/* Progress pill */}
-          <div className="flex items-center gap-2.5 bg-white/[0.04] rounded-full px-3 py-1.5">
-            <div className="h-1.5 w-16 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
+          <div className="flex items-center gap-2 bg-white/[0.04] rounded-full px-2.5 py-1">
+            <div className="h-1.5 w-14 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-[#0083F7] to-emerald-400 rounded-full"
                 animate={{ width: totalPieces > 0 ? `${(approvedCount / totalPieces) * 100}%` : "0%" }}
