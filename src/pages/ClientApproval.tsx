@@ -437,7 +437,7 @@ const ClientApproval = () => {
                   className="rounded-2xl overflow-hidden bg-[#1A1A20] border border-white/[0.04] shadow-2xl shadow-black/40"
                 >
                   {currentEmbed ? (
-                    <div className="aspect-[9/16] max-h-[55vh] sm:max-h-[60vh] bg-black">
+                    <div className="aspect-[9/16] max-h-[50vh] sm:max-h-[60vh] bg-black">
                       <iframe
                         src={currentEmbed}
                         className="w-full h-full"
