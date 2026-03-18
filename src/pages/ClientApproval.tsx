@@ -83,17 +83,23 @@ const formatTimestamp = (seconds: number): string => {
   return `${mins}:${String(secs).padStart(2, "0")}`;
 };
 
-const getGoogleDriveEmbedUrl = (url: string): string | null => {
+const getGoogleDriveFileId = (url: string): string | null => {
   if (!url) return null;
   const match1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (match1) return `https://drive.google.com/file/d/${match1[1]}/preview`;
+  if (match1) return match1[1];
   const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (match2) return `https://drive.google.com/file/d/${match2[1]}/preview`;
+  if (match2) return match2[1];
   return null;
+};
+
+const getGoogleDriveEmbedUrl = (url: string): string | null => {
+  const fileId = getGoogleDriveFileId(url);
+  return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
 };
 
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
+  const isMobile = useIsMobile();
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [comments, setComments] = useState<TimestampComment[]>([]);
