@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-const FROM_ADDRESS = 'Marketlab Media <noreply@notify.marketlabmedia.de>'
+const FROM_ADDRESS = 'Marketlab Media <noreply@mail.marketlabmedia.de>'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
