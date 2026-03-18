@@ -462,7 +462,7 @@ const ClientApproval = () => {
                       </div>
                     </a>
                   ) : (
-                    <div className="flex items-center justify-center py-20 sm:py-24">
+                    <div className="flex items-center justify-center py-16 sm:py-24">
                       <span className="text-sm text-white/20">Kein Preview verfügbar</span>
                     </div>
                   )}
