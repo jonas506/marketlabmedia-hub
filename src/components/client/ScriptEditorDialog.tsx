@@ -1,15 +1,21 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Save, Plus, Trash2, GripVertical, Copy, Check, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Save, Plus, Trash2, Copy, Check, FileText, Link as LinkIcon, X, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+interface ScriptLink {
+  url: string;
+  tag: string;
+}
 
 interface ScriptEditorDialogProps {
   open: boolean;
@@ -20,6 +26,7 @@ interface ScriptEditorDialogProps {
     type: string;
     script_text?: string | null;
     has_script?: boolean;
+    script_links?: ScriptLink[] | null;
   } | null;
   clientId: string;
   canEdit: boolean;
@@ -68,8 +75,33 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   const qc = useQueryClient();
   const [hooks, setHooks] = useState<string[]>([""]);
   const [body, setBody] = useState("");
+  const [links, setLinks] = useState<ScriptLink[]>([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [copiedLinkIdx, setCopiedLinkIdx] = useState<number | null>(null);
   const [lastPieceId, setLastPieceId] = useState<string | null>(null);
+
+  // Fetch all existing tags from other pieces for suggestions
+  const { data: allPiecesLinks } = useQuery({
+    queryKey: ["script-link-tags", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("content_pieces")
+        .select("script_links")
+        .eq("client_id", clientId)
+        .not("script_links", "is", null);
+      return data ?? [];
+    },
+    enabled: open,
+  });
+
+  const tagSuggestions = useMemo(() => {
+    const tags = new Set<string>();
+    allPiecesLinks?.forEach((p: any) => {
+      const pLinks = p.script_links as ScriptLink[] | null;
+      pLinks?.forEach((l) => { if (l.tag?.trim()) tags.add(l.tag.trim()); });
+    });
+    return Array.from(tags).sort();
+  }, [allPiecesLinks]);
 
   // Sync state when piece changes
   if (piece && piece.id !== lastPieceId) {
@@ -77,6 +109,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     const parsed = parseScript(piece.script_text);
     setHooks(parsed.hooks);
     setBody(parsed.body);
+    setLinks(Array.isArray(piece.script_links) ? piece.script_links : []);
   }
 
   const addHook = () => setHooks((prev) => [...prev, ""]);
@@ -98,19 +131,31 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setTimeout(() => setCopiedIdx(null), 1500);
   };
 
+  const addLink = () => setLinks((prev) => [...prev, { url: "", tag: "Inspiration" }]);
+  const removeLink = (idx: number) => setLinks((prev) => prev.filter((_, i) => i !== idx));
+  const updateLink = (idx: number, field: keyof ScriptLink, value: string) =>
+    setLinks((prev) => prev.map((l, i) => (i === idx ? { ...l, [field]: value } : l)));
+  const copyLink = (idx: number, url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedLinkIdx(idx);
+    setTimeout(() => setCopiedLinkIdx(null), 1500);
+  };
+
   const save = useCallback(async () => {
     if (!piece) return;
     const scriptText = serializeScript(hooks, body);
     const hasScript = !!(hooks.some((h) => h.trim()) || body.trim());
+    const cleanLinks = links.filter((l) => l.url.trim());
 
     await supabase
       .from("content_pieces")
-      .update({ script_text: scriptText, has_script: hasScript })
+      .update({ script_text: scriptText, has_script: hasScript, script_links: cleanLinks } as any)
       .eq("id", piece.id);
 
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+    qc.invalidateQueries({ queryKey: ["script-link-tags", clientId] });
     toast.success("Skript gespeichert!");
-  }, [piece, hooks, body, clientId, qc]);
+  }, [piece, hooks, body, links, clientId, qc]);
 
   if (!piece) return null;
 
@@ -244,6 +289,120 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                 rows={5}
                 disabled={!canEdit}
               />
+            </div>
+
+            {/* Links section */}
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Links</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold font-display">🔗 Referenz-Links</span>
+                  <span className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                    {links.length}
+                  </span>
+                </div>
+                {canEdit && (
+                  <Button size="sm" variant="outline" className="h-7 text-xs font-mono gap-1" onClick={addLink}>
+                    <Plus className="h-3 w-3" /> Link hinzufügen
+                  </Button>
+                )}
+              </div>
+
+              <AnimatePresence mode="popLayout">
+                <div className="space-y-2">
+                  {links.map((link, idx) => (
+                    <motion.div
+                      key={idx}
+                      layout
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center gap-2 group"
+                    >
+                      <LinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <Input
+                        value={link.url}
+                        onChange={(e) => updateLink(idx, "url", e.target.value)}
+                        placeholder="https://..."
+                        className="flex-1 text-xs h-8 bg-muted/20 border-muted-foreground/10"
+                        disabled={!canEdit}
+                      />
+                      <Input
+                        value={link.tag}
+                        onChange={(e) => updateLink(idx, "tag", e.target.value)}
+                        placeholder="Tag…"
+                        className="w-28 text-xs h-8 bg-muted/20 border-muted-foreground/10"
+                        disabled={!canEdit}
+                        list={`tag-suggestions-${idx}`}
+                      />
+                      <datalist id={`tag-suggestions-${idx}`}>
+                        {tagSuggestions.map((t) => <option key={t} value={t} />)}
+                      </datalist>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground shrink-0"
+                        onClick={() => copyLink(idx, link.url)}
+                        disabled={!link.url.trim()}
+                      >
+                        {copiedLinkIdx === idx ? (
+                          <Check className="h-3 w-3 text-[hsl(var(--runway-green))]" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </Button>
+                      {link.url.trim() && (
+                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-primary transition-colors" />
+                        </a>
+                      )}
+                      {canEdit && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                          onClick={() => removeLink(idx)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </AnimatePresence>
+
+              {/* Tag suggestions as clickable chips */}
+              {canEdit && tagSuggestions.length > 0 && (
+                <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                  <span className="text-[10px] text-muted-foreground">Tags:</span>
+                  {tagSuggestions.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="text-[10px] px-2 py-0 h-5 cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                      onClick={() => {
+                        if (links.length === 0) {
+                          setLinks([{ url: "", tag }]);
+                        } else {
+                          // Apply tag to the last link without a tag
+                          const lastEmpty = [...links].reverse().findIndex((l) => !l.tag.trim());
+                          const actualIdx = lastEmpty >= 0 ? links.length - 1 - lastEmpty : -1;
+                          if (actualIdx >= 0) {
+                            updateLink(actualIdx, "tag", tag);
+                          }
+                        }
+                      }}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </ScrollArea>
