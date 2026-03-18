@@ -12,60 +12,85 @@ WICHTIG: Antworte IMMER mit einem JSON-Block im Format:
 \`\`\`json
 {
   "nodes": [...],
-  "connections": [...]
+  "connections": [...],
+  "swimlanes": [...]
 }
 \`\`\`
 
 Und danach eine kurze Erklärung in Markdown.
 
 ## Node-Typen und ihre Verwendung:
-- "rectangle": Standard-Aktionsschritt (blau)
-- "diamond": Entscheidung / Ja-Nein-Frage (gelb/orange)
-- "oval": Start / Ende (grün/rot)
-- "circle": Meilenstein oder Checkpoint
-- "triangle": Warnung oder Achtung
-- "hexagon": Prozess mit Untergruppen
-- "trapezoid": Eingabe / Ausgabe
-- "parallelogram": Daten oder Dokument
-- "sticky": Notiz / Kommentar
-- "text": Beschriftung
+- "start": Start-Punkt (abgerundete Pill-Form, grün #10b981)
+- "end": End-Punkt (abgerundete Pill-Form, rot #ef4444)
+- "process": Standard-Aktionsschritt (Rechteck, blau #3b82f6)
+- "decision": Entscheidung / Ja-Nein-Frage (Raute, orange #f59e0b)
+- "parallel": Parallele Aktionen (Rechteck mit Doppellinie, lila #8b5cf6)
+- "checklist": Checklisten-Schritt (Rechteck mit Checkbox, cyan #06b6d4)
+- "note": Hinweis / Bonus Info (Post-it-Style, gelb #eab308)
+- "text": Beschriftung / Label
 
 ## Node-Format:
 {
-  "id": "sn_1", // eindeutige ID
-  "type": "rectangle",
-  "x": 300, "y": 100, // Position
-  "w": 180, "h": 80,  // Größe
+  "id": "sn_1",
+  "type": "process",
+  "x": 300, "y": 100,
+  "w": 180, "h": 80,
   "label": "Schritt-Text",
-  "color": "#3b82f6", // Hex-Farbe
-  "fontSize": 12
+  "color": "#3b82f6",
+  "fontSize": 12,
+  "responsible": "Head of Content",
+  "timeframe": "innerhalb 24h",
+  "description": "Detaillierte Beschreibung des Schritts",
+  "checklistItems": [
+    { "id": "ci_1", "text": "Unteraufgabe 1", "done": false },
+    { "id": "ci_2", "text": "Unteraufgabe 2", "done": false }
+  ]
 }
 
 ## Connection-Format:
 {
   "id": "sc_1",
-  "from": "sn_1", // ID des Start-Nodes
-  "to": "sn_2",   // ID des Ziel-Nodes
-  "label": "Ja"   // Optional: Beschriftung auf dem Pfeil
+  "from": "sn_1",
+  "to": "sn_2",
+  "label": "Ja"
 }
 
+## Swimlane-Format (optional):
+{
+  "id": "sl_1",
+  "label": "Head of Content",
+  "color": "#3b82f620",
+  "y": 0,
+  "height": 250
+}
+
+## Verantwortliche (responsible):
+Typische Rollen: "Geschäftsführer", "Head of Content", "Cutter", "Jonas", "Katha", "Alle"
+
+## Befehle die du verstehen musst:
+- "Erstelle Prozess: [Beschreibung]" → Generiere vollständigen Flow mit Start, Prozessschritten, Entscheidungen und Ende
+- "Füge Checkliste hinzu für: [Node-Name]" → Finde den Node und ergänze checklistItems
+- "Wer ist verantwortlich für [Schritt]?" → Zeige den Verantwortlichen des Nodes
+- "Erstelle Swimlanes für [Personen]" → Erstelle horizontale Lanes und ordne Nodes zu
+
 ## Layout-Regeln:
-- Starte bei x:300, y:50
-- Vertikaler Abstand zwischen Nodes: ~120px
-- Bei Verzweigungen (Diamond): Platziere "Ja" rechts und "Nein" links, mit ~250px horizontalem Abstand
-- Start-Node immer als "oval" mit grüner Farbe (#10b981)
-- End-Node immer als "oval" mit roter Farbe (#ef4444)
-- Entscheidungen als "diamond" mit gelber/oranger Farbe (#f59e0b)
-- Aktionen als "rectangle" mit blauer Farbe (#3b82f6)
-- Verwende verschiedene Farben zur Visualisierung unterschiedlicher Phasen
+- Starte bei x:300, y:80
+- Vertikaler Abstand zwischen Nodes: ~130px
+- Bei Verzweigungen (decision): "Ja" rechts (+250px), "Nein" links (-250px)
+- Start-Node immer als "start" mit grüner Farbe (#10b981)
+- End-Node immer als "end" mit roter Farbe (#ef4444)
+- Setze sinnvolle responsible und timeframe Werte
+- Füge bei komplexen Schritten checklistItems hinzu
+- Nutze "parallel" für gleichzeitige Aktionen
+- Nutze "note" für wichtige Hinweise
 
 ## Kontext:
 Die Agentur erstellt Social-Media-Content (Reels, Carousels, Stories) für Kunden. Typische Prozesse:
-- Kunden-Onboarding
+- Kunden-Onboarding (Vertrag → Setup → Kick-off → Strategie)
 - Content-Produktion (Skript → Dreh → Schnitt → Review → Freigabe)
-- Monatsplanung
-- Shoot-Day Vorbereitung
-- Marketing-Kampagnen Setup`;
+- Monatsplanung (Ideen → Skripte → Planung → Produktion)
+- Shoot-Day (Vorbereitung → Location → Dreh → Nachbereitung)
+- Marketing-Kampagnen (Briefing → Creative → Launch → Optimierung)`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -79,7 +104,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const contextMsg = currentBoard?.nodes?.length > 0
-      ? `\n\nAktuelles Board "${templateName}" hat ${currentBoard.nodes.length} Nodes und ${currentBoard.connections.length} Verbindungen. Hier ist der aktuelle Stand:\n\`\`\`json\n${JSON.stringify(currentBoard, null, 2)}\n\`\`\`\nBearbeite dieses Board basierend auf der Anfrage des Nutzers.`
+      ? `\n\nAktuelles Board "${templateName}" hat ${currentBoard.nodes.length} Nodes, ${currentBoard.connections.length} Verbindungen und ${currentBoard.swimlanes?.length || 0} Swimlanes. Hier ist der aktuelle Stand:\n\`\`\`json\n${JSON.stringify(currentBoard, null, 2)}\n\`\`\`\nBearbeite dieses Board basierend auf der Anfrage des Nutzers.`
       : `\n\nDas Board "${templateName}" ist noch leer. Erstelle ein neues Flowchart basierend auf der Anfrage.`;
 
     const aiMessages = [
@@ -121,7 +146,6 @@ serve(async (req) => {
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
 
-    // Extract JSON from response
     let board = null;
     const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
     if (jsonMatch) {
@@ -132,7 +156,6 @@ serve(async (req) => {
       }
     }
 
-    // Remove JSON block from message
     const message = content.replace(/```json[\s\S]*?```/g, "").trim();
 
     return new Response(JSON.stringify({ board, message }), {
