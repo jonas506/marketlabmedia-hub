@@ -120,7 +120,7 @@ const ClientDetail = () => {
         <ClientInfoPanel client={client} canEdit={canEdit} />
 
         {/* Month selector – compact inline */}
-        <div className="flex items-center justify-between mt-5 mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 mb-4 gap-2">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-primary" />
             <h2 className="font-display text-sm font-semibold tracking-tight">Monatszyklus</h2>
@@ -130,7 +130,7 @@ const ClientDetail = () => {
             setSelectedMonth(m);
             setSelectedYear(y);
           }}>
-            <SelectTrigger className="w-48 h-9 text-xs bg-card border-border">
+            <SelectTrigger className="w-full sm:w-48 h-9 text-xs bg-card border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
