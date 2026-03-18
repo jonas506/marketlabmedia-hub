@@ -415,7 +415,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       className="rounded-lg border border-border bg-card overflow-hidden"
     >
       {/* Header - Monday group style */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-surface-elevated border-b border-border">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
         <div className="w-1 h-5 rounded-full bg-primary" />
         <h3 className="font-display text-sm font-semibold">Material-Pipeline</h3>
         {totalPieces > 0 && (
@@ -432,56 +432,58 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           </div>
         )}
         <div className="flex-1" />
-        {monthPieces.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-xs font-mono gap-1.5 mr-2"
-            onClick={() => setPrintScriptsOpen(true)}
-          >
-            <Printer className="h-3 w-3" />
-            Drucken
-          </Button>
-        )}
-        {canEdit && monthPieces.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-xs font-mono gap-1.5 mr-2"
-            onClick={() => setCaptionStudioOpen(true)}
-          >
-            <FileText className="h-3 w-3" />
-            Caption Studio
-          </Button>
-        )}
-        {/* View mode toggle */}
-        <div className="flex items-center bg-muted/50 rounded-lg p-0.5 mr-2">
-          <button
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
-              viewMode === "list"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <LayoutList className="h-3 w-3" />
-            Liste
-          </button>
-          <button
-            onClick={() => setViewMode("kanban")}
-            className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
-              viewMode === "kanban"
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Columns3 className="h-3 w-3" />
-            Kanban
-          </button>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {monthPieces.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs font-mono gap-1.5"
+              onClick={() => setPrintScriptsOpen(true)}
+            >
+              <Printer className="h-3 w-3" />
+              <span className="hidden sm:inline">Drucken</span>
+            </Button>
+          )}
+          {canEdit && monthPieces.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs font-mono gap-1.5"
+              onClick={() => setCaptionStudioOpen(true)}
+            >
+              <FileText className="h-3 w-3" />
+              <span className="hidden sm:inline">Caption Studio</span>
+            </Button>
+          )}
+          {/* View mode toggle */}
+          <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+                viewMode === "list"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutList className="h-3 w-3" />
+              <span className="hidden sm:inline">Liste</span>
+            </button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+                viewMode === "kanban"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Columns3 className="h-3 w-3" />
+              <span className="hidden sm:inline">Kanban</span>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
+        <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground w-full sm:w-auto mt-1 sm:mt-0">
           {phaseSummary.map((p, i) => (
             <span key={p.key} className="flex items-center gap-1">
               {i > 0 && <span className="text-border mx-0.5">·</span>}
