@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import confetti from "canvas-confetti";
 import logoDark from "@/assets/logo-dark.png";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TimestampComment {
   id: string;
@@ -82,17 +83,23 @@ const formatTimestamp = (seconds: number): string => {
   return `${mins}:${String(secs).padStart(2, "0")}`;
 };
 
-const getGoogleDriveEmbedUrl = (url: string): string | null => {
+const getGoogleDriveFileId = (url: string): string | null => {
   if (!url) return null;
   const match1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (match1) return `https://drive.google.com/file/d/${match1[1]}/preview`;
+  if (match1) return match1[1];
   const match2 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (match2) return `https://drive.google.com/file/d/${match2[1]}/preview`;
+  if (match2) return match2[1];
   return null;
+};
+
+const getGoogleDriveEmbedUrl = (url: string): string | null => {
+  const fileId = getGoogleDriveFileId(url);
+  return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
 };
 
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
+  const isMobile = useIsMobile();
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [comments, setComments] = useState<TimestampComment[]>([]);
@@ -309,6 +316,7 @@ const ClientApproval = () => {
   const currentPiece = pieces[currentIndex];
   const currentComments = currentPiece ? pieceComments(currentPiece.id) : [];
   const currentEmbed = currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
+  const currentPreviewLink = currentPiece?.preview_link ?? null;
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
 
   return (
@@ -317,22 +325,21 @@ const ClientApproval = () => {
 
       {/* Header - slim & clean */}
       <div className="sticky top-0 z-50 bg-[#111115]/90 backdrop-blur-2xl border-b border-white/[0.04]">
-        <div className="max-w-3xl mx-auto px-3 sm:px-6 h-12 sm:h-14 flex items-center gap-2 sm:gap-3">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 sm:h-14 flex items-center gap-2 sm:gap-3">
           <img src={logoDark} alt="Marketlab Media" className="h-5 opacity-60 hidden sm:block" />
           <div className="w-px h-5 bg-white/10 hidden sm:block" />
           {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg object-cover ring-1 ring-white/10" />
+            <img src={client.logo_url} alt={client.name} className="h-7 w-7 rounded-lg object-cover ring-1 ring-white/10" />
           ) : (
-            <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0083F7] to-[#21089B] text-[10px] sm:text-[11px] font-bold">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0083F7] to-[#21089B] text-[11px] font-bold">
               {client.name.charAt(0)}
             </div>
           )}
           <span className="font-medium text-sm truncate">{client.name}</span>
           <div className="flex-1" />
 
-          {/* Progress pill */}
-          <div className="flex items-center gap-2 bg-white/[0.04] rounded-full px-2.5 py-1">
-            <div className="h-1.5 w-14 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
+          <div className="flex items-center gap-2 rounded-full bg-white/[0.04] px-2.5 py-1">
+            <div className="h-1.5 w-12 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-[#0083F7] to-emerald-400 rounded-full"
                 animate={{ width: totalPieces > 0 ? `${(approvedCount / totalPieces) * 100}%` : "0%" }}
@@ -346,15 +353,12 @@ const ClientApproval = () => {
         </div>
       </div>
 
-      {/* Marketing Summary */}
       {marketing && marketing.days_tracked > 0 && (
         <MarketingSummaryBar marketing={marketing} />
       )}
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col" ref={scrollRef}>
         {pieces.length === 0 ? (
-          /* All done state */
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -377,13 +381,11 @@ const ClientApproval = () => {
           </motion.div>
         ) : (
           <>
-            {/* Card-based swipe view */}
-            <div className="max-w-3xl mx-auto w-full px-3 sm:px-6 pt-3 sm:pt-5 pb-3 flex-1 flex flex-col">
-              {/* Title bar with navigation */}
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-5 pb-4 flex-1 flex flex-col">
+              <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className={`w-2 h-2 rounded-full shrink-0 ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
-                  <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wider shrink-0 ${
+                  <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] shrink-0 ${
                     currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : currentPiece.type === "ad" ? "text-violet-400" : "text-amber-400"
                   }`}>
                     {TYPE_LABELS[currentPiece.type] || currentPiece.type}
@@ -394,39 +396,36 @@ const ClientApproval = () => {
                   </span>
                 </div>
 
-                {/* Nav arrows */}
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1">
                   <button
                     onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
                     disabled={currentIndex === 0}
-                    className="p-2 rounded-xl hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
+                    className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => { setCurrentIndex(Math.min(pieces.length - 1, currentIndex + 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
                     disabled={currentIndex === pieces.length - 1}
-                    className="p-2 rounded-xl hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
+                    className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Piece title */}
               <AnimatePresence mode="wait">
                 <motion.h2
                   key={currentPiece.id + "-title"}
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-base sm:text-xl font-bold mb-3 sm:mb-4 truncate"
+                  className="mb-4 sm:mb-5 text-[clamp(1.8rem,7vw,2.4rem)] sm:text-xl font-bold tracking-tight leading-[0.95] break-words"
                 >
                   {currentPiece.title || "Ohne Titel"}
                 </motion.h2>
               </AnimatePresence>
 
-              {/* Video / Preview card */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentPiece.id}
@@ -434,21 +433,41 @@ const ClientApproval = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.25 }}
-                  className="rounded-2xl overflow-hidden bg-[#1A1A20] border border-white/[0.04] shadow-2xl shadow-black/40"
+                  className="rounded-[28px] overflow-hidden border border-white/[0.05] bg-[#17181d] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]"
                 >
                   {currentEmbed ? (
-                    <div className="aspect-[9/16] max-h-[50vh] sm:max-h-[60vh] bg-black">
-                      <iframe
-                        src={currentEmbed}
-                        className="w-full h-full"
-                        allow="autoplay; encrypted-media"
-                        allowFullScreen
-                        title={currentPiece.title || "Preview"}
-                      />
-                    </div>
-                  ) : currentPiece.preview_link ? (
+                    <>
+                      <div className={isMobile ? "p-2.5" : ""}>
+                        <div className={isMobile ? "mx-auto w-full max-w-[22rem]" : ""}>
+                          <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[60vh]"}`}>
+                            <iframe
+                              src={currentEmbed}
+                              className={isMobile ? "absolute left-1/2 top-1/2 h-[118%] w-[168%] -translate-x-1/2 -translate-y-1/2" : "w-full h-full"}
+                              allow="autoplay; encrypted-media; picture-in-picture"
+                              allowFullScreen
+                              title={currentPiece.title || "Preview"}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {currentPreviewLink && (
+                        <div className="border-t border-white/[0.05] px-3 py-3 sm:px-4">
+                          <a
+                            href={currentPreviewLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3 py-3 text-sm font-medium text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white/80"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            {isMobile ? "Preview groß öffnen" : "Preview in neuem Tab öffnen"}
+                          </a>
+                        </div>
+                      )}
+                    </>
+                  ) : currentPreviewLink ? (
                     <a
-                      href={currentPiece.preview_link}
+                      href={currentPreviewLink}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex flex-col items-center justify-center gap-4 py-16 sm:py-24 hover:bg-white/[0.02] transition-colors"
@@ -469,7 +488,6 @@ const ClientApproval = () => {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Dot navigation for pieces */}
               {pieces.length > 1 && (
                 <div className="flex justify-center gap-1.5 mt-4">
                   {pieces.map((_, i) => (
@@ -477,22 +495,20 @@ const ClientApproval = () => {
                       key={i}
                       onClick={() => { setCurrentIndex(i); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === currentIndex ? "w-6 bg-[#0083F7]" : "w-1.5 bg-white/10 hover:bg-white/20"
+                        i === currentIndex ? "w-7 bg-[#0083F7]" : "w-1.5 bg-white/10 hover:bg-white/20"
                       }`}
                     />
                   ))}
                 </div>
               )}
 
-              {/* Comments section - expandable */}
               {currentPiece && (
-                <div className="mt-4">
-                  {/* Existing comments */}
+                <div className="mt-4 sm:mt-5">
                   {currentComments.length > 0 && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="mb-3 space-y-1.5"
+                      className="mb-3 space-y-2"
                     >
                       <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest px-1">
                         Dein Feedback
@@ -503,7 +519,7 @@ const ClientApproval = () => {
                           layout
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="flex items-start gap-2 py-2 px-3 rounded-xl bg-white/[0.03] border border-white/[0.04] group/c"
+                          className="flex items-start gap-2.5 py-2.5 px-3 rounded-2xl bg-white/[0.03] border border-white/[0.04] group/c"
                         >
                           {c.timestamp_seconds != null && (
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#0083F7]/10 text-[#0083F7] text-[11px] font-mono font-bold shrink-0 mt-px">
@@ -522,7 +538,6 @@ const ClientApproval = () => {
                     </motion.div>
                   )}
 
-                  {/* Feedback toggle / input */}
                   <AnimatePresence mode="wait">
                     {showFeedback ? (
                       <motion.div
@@ -532,8 +547,7 @@ const ClientApproval = () => {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 space-y-2.5">
-                          {/* Timestamp badge */}
+                        <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-3 space-y-2.5">
                           <div className="flex items-center gap-2">
                             {commentTimestamp != null ? (
                               <button
@@ -562,7 +576,6 @@ const ClientApproval = () => {
                             </button>
                           </div>
 
-                          {/* Text input */}
                           <div className="flex gap-2">
                             <Textarea
                               value={commentText}
@@ -582,7 +595,7 @@ const ClientApproval = () => {
                               size="sm"
                               onClick={() => handleAddComment(currentPiece.id)}
                               disabled={addingComment || !commentText.trim()}
-                              className="self-end shrink-0 bg-[#0083F7] hover:bg-[#0083F7]/80 text-white rounded-lg h-9 w-9 p-0"
+                              className="self-end shrink-0 bg-[#0083F7] hover:bg-[#0083F7]/80 text-white rounded-xl h-10 w-10 p-0"
                             >
                               {addingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                             </Button>
@@ -596,7 +609,7 @@ const ClientApproval = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setShowFeedback(true)}
-                        className="w-full py-2.5 rounded-xl border border-dashed border-white/[0.06] text-white/25 text-sm hover:border-white/10 hover:text-white/40 hover:bg-white/[0.02] transition-all flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-2xl border border-dashed border-white/[0.06] text-white/25 text-sm hover:border-white/10 hover:text-white/40 hover:bg-white/[0.02] transition-all flex items-center justify-center gap-2"
                       >
                         <MessageSquare className="h-3.5 w-3.5" />
                         Feedback hinzufügen
@@ -607,51 +620,49 @@ const ClientApproval = () => {
               )}
             </div>
 
-            {/* Bottom action bar - fixed on mobile */}
-            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
-              <div className="max-w-3xl mx-auto px-3 sm:px-6">
-                <div className="flex gap-2">
-                  {/* Reject button - only if there are comments */}
-                  {currentComments.length > 0 && (
+            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
+              <div className="max-w-3xl mx-auto px-4 sm:px-6">
+                <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
+                  <div className="flex gap-2">
+                    {currentComments.length > 0 && (
+                      <Button
+                        variant="outline"
+                        className="min-w-[7.5rem] gap-1.5 sm:gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-12 sm:h-[52px] rounded-[20px] px-3 sm:px-5 font-medium text-sm"
+                        onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                        disabled={isCurrentLoading}
+                      >
+                        {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                        <span className="hidden sm:inline">Überarbeiten</span>
+                        <span className="sm:hidden">Zurück</span>
+                        <span className="text-xs opacity-50">({currentComments.length})</span>
+                      </Button>
+                    )}
+
                     <Button
-                      variant="outline"
-                      className="gap-1.5 sm:gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-12 sm:h-[52px] rounded-2xl px-3 sm:px-5 font-medium text-sm"
-                      onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                      className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-12 sm:h-[52px] rounded-[20px] shadow-xl shadow-emerald-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
+                      onClick={() => currentPiece && handleAction(currentPiece.id, "approve")}
                       disabled={isCurrentLoading}
                     >
-                      {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
-                      <span className="hidden sm:inline">Überarbeiten</span>
-                      <span className="sm:hidden">Zurück</span>
-                      <span className="text-xs opacity-50">({currentComments.length})</span>
+                      {isCurrentLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
+                      Freigeben
                     </Button>
+                  </div>
+
+                  {pieces.length > 1 && (
+                    <button
+                      onClick={handleBulkApprove}
+                      disabled={bulkApproving}
+                      className="w-full mt-1.5 py-2.5 text-center text-xs text-white/25 hover:text-white/45 transition-colors flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                    >
+                      {bulkApproving ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <CheckCheck className="h-3.5 w-3.5" />
+                      )}
+                      Alle {pieces.length} freigeben
+                    </button>
                   )}
-
-                  {/* Approve button */}
-                  <Button
-                    className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-12 sm:h-[52px] rounded-2xl shadow-xl shadow-emerald-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
-                    onClick={() => currentPiece && handleAction(currentPiece.id, "approve")}
-                    disabled={isCurrentLoading}
-                  >
-                    {isCurrentLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
-                    Freigeben
-                  </Button>
                 </div>
-
-                {/* Bulk approve */}
-                {pieces.length > 1 && (
-                  <button
-                    onClick={handleBulkApprove}
-                    disabled={bulkApproving}
-                    className="w-full mt-2.5 py-2.5 text-center text-xs text-white/20 hover:text-white/40 transition-colors flex items-center justify-center gap-1.5 active:scale-[0.98]"
-                  >
-                    {bulkApproving ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <CheckCheck className="h-3.5 w-3.5" />
-                    )}
-                    Alle {pieces.length} freigeben
-                  </button>
-                )}
               </div>
             </div>
           </>
