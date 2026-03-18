@@ -390,9 +390,10 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                           setLinks([{ url: "", tag }]);
                         } else {
                           // Apply tag to the last link without a tag
-                          const lastEmpty = links.findLastIndex((l) => !l.tag.trim());
-                          if (lastEmpty >= 0) {
-                            updateLink(lastEmpty, "tag", tag);
+                          const lastEmpty = [...links].reverse().findIndex((l) => !l.tag.trim());
+                          const actualIdx = lastEmpty >= 0 ? links.length - 1 - lastEmpty : -1;
+                          if (actualIdx >= 0) {
+                            updateLink(actualIdx, "tag", tag);
                           }
                         }
                       }}
