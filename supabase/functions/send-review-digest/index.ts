@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
+const SENDER_DOMAIN = 'notify.hpyand.immo'
+const FROM_ADDRESS = 'Marketlab Media <noreply@hpyand.immo>'
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -13,11 +16,6 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
-
-    if (!resendApiKey) {
-      throw new Error('RESEND_API_KEY is not configured')
-    }
 
     const supabase = createClient(supabaseUrl, serviceKey)
 
@@ -135,36 +133,47 @@ Deno.serve(async (req) => {
 
       const emailText = `Neue Inhalte zur Freigabe\n\nFür ${client.name} ${pieces.length === 1 ? 'ist 1 neues Content Piece' : `sind ${pieces.length} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketlab Media · Automatische Benachrichtigung`
 
-      // Send via Resend API
-      let sendSuccess = true
+      // Enqueue emails via Lovable's transactional email queue
+      let enqueueSuccess = true
       for (const email of client.review_notify_emails) {
-        try {
-          const res = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${resendApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: 'Marketlab Media <noreply@notify.marketlabmedia.de>',
-              to: [email],
-              subject: emailSubject,
-              html: emailHtml,
-              text: emailText,
-            }),
+        const messageId = crypto.randomUUID()
+
+        // Log pending
+        await supabase.from('email_send_log').insert({
+          message_id: messageId,
+          template_name: 'review_digest',
+          recipient_email: email,
+          status: 'pending',
+        })
+
+        const { error: enqueueError } = await supabase.rpc('enqueue_email', {
+          queue_name: 'transactional_emails',
+          payload: {
+            message_id: messageId,
+            to: email,
+            from: FROM_ADDRESS,
+            sender_domain: SENDER_DOMAIN,
+            subject: emailSubject,
+            html: emailHtml,
+            text: emailText,
+            purpose: 'transactional',
+            label: 'review_digest',
+            queued_at: new Date().toISOString(),
+          },
+        })
+
+        if (enqueueError) {
+          console.error(`Failed to enqueue for ${email}:`, enqueueError)
+          await supabase.from('email_send_log').insert({
+            message_id: messageId,
+            template_name: 'review_digest',
+            recipient_email: email,
+            status: 'failed',
+            error_message: 'Failed to enqueue email',
           })
-
-          const resBody = await res.text()
-
-          if (!res.ok) {
-            console.error(`Resend error for ${email}: [${res.status}] ${resBody}`)
-            sendSuccess = false
-          } else {
-            console.log(`Sent review digest to ${email}`)
-          }
-        } catch (sendErr) {
-          console.error(`Failed to send to ${email}:`, sendErr)
-          sendSuccess = false
+          enqueueSuccess = false
+        } else {
+          console.log(`Review digest enqueued for ${email}`)
         }
       }
 
@@ -175,7 +184,7 @@ Deno.serve(async (req) => {
         .update({ sent_at: new Date().toISOString() })
         .in('id', ids)
 
-      results.push({ client: client.name, sent: sendSuccess })
+      results.push({ client: client.name, sent: enqueueSuccess })
     }
 
     return new Response(JSON.stringify({ results }), {
