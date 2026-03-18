@@ -608,8 +608,8 @@ const ClientApproval = () => {
             </div>
 
             {/* Bottom action bar - fixed on mobile */}
-            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-6 pb-5 sm:pb-6">
-              <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
+              <div className="max-w-3xl mx-auto px-3 sm:px-6">
                 <div className="flex gap-2.5">
                   {/* Reject button - only if there are comments */}
                   {currentComments.length > 0 && (
