@@ -610,12 +610,12 @@ const ClientApproval = () => {
             {/* Bottom action bar - fixed on mobile */}
             <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
               <div className="max-w-3xl mx-auto px-3 sm:px-6">
-                <div className="flex gap-2.5">
+                <div className="flex gap-2">
                   {/* Reject button - only if there are comments */}
                   {currentComments.length > 0 && (
                     <Button
                       variant="outline"
-                      className="gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-[52px] rounded-2xl px-5 font-medium"
+                      className="gap-1.5 sm:gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-12 sm:h-[52px] rounded-2xl px-3 sm:px-5 font-medium text-sm"
                       onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
                       disabled={isCurrentLoading}
                     >
@@ -628,7 +628,7 @@ const ClientApproval = () => {
 
                   {/* Approve button */}
                   <Button
-                    className="flex-1 gap-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-[52px] rounded-2xl shadow-xl shadow-emerald-500/20 text-base active:scale-[0.98] transition-transform"
+                    className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-12 sm:h-[52px] rounded-2xl shadow-xl shadow-emerald-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
                     onClick={() => currentPiece && handleAction(currentPiece.id, "approve")}
                     disabled={isCurrentLoading}
                   >
