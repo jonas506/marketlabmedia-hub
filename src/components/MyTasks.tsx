@@ -43,13 +43,25 @@ interface ChecklistStepItem {
   client_id: string;
 }
 
+interface CrmTaskItem {
+  id: string;
+  title: string;
+  due_date: string | null;
+  due_time: string | null;
+  is_completed: boolean;
+  lead_id: string | null;
+  assigned_to: string;
+  lead_name?: string;
+}
+
 interface Client { id: string; name: string; }
 
 type UnifiedItem =
   | { kind: "task"; data: Task }
   | { kind: "piece"; data: ContentPieceItem }
   | { kind: "review"; data: ContentPieceItem }
-  | { kind: "sop"; data: ChecklistStepItem };
+  | { kind: "sop"; data: ChecklistStepItem }
+  | { kind: "crm_task"; data: CrmTaskItem };
 
 const TAG_COLORS: Record<string, string> = {
   skripte: "bg-blue-500/15 text-blue-500",
@@ -148,6 +160,28 @@ const MyTasks = () => {
     enabled: !!user?.id,
   });
 
+  // CRM tasks assigned to current user
+  const { data: crmTasks = [] } = useQuery({
+    queryKey: ["my-crm-tasks", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("crm_tasks")
+        .select("id, title, due_date, due_time, is_completed, lead_id, assigned_to")
+        .eq("assigned_to", user!.id)
+        .eq("is_completed", false);
+      if (error) throw error;
+      if (!data || data.length === 0) return [];
+      const leadIds = [...new Set((data as any[]).map((t: any) => t.lead_id).filter(Boolean))];
+      let leadMap: Record<string, string> = {};
+      if (leadIds.length > 0) {
+        const { data: leads } = await supabase.from("crm_leads").select("id, name").in("id", leadIds);
+        (leads || []).forEach((l: any) => { leadMap[l.id] = l.name; });
+      }
+      return (data as any[]).map((t: any) => ({ ...t, lead_name: leadMap[t.lead_id] || "" })) as CrmTaskItem[];
+    },
+    enabled: !!user?.id,
+  });
+
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-names"],
     queryFn: async () => {
@@ -167,7 +201,6 @@ const MyTasks = () => {
     const today = new Date().toISOString().split("T")[0];
     const assignedIds = new Set(assignedPieces.map(p => p.id));
     const pieceItems: UnifiedItem[] = assignedPieces.map((p) => ({ kind: "piece", data: p }));
-    // HoC/Admin review pieces excluding already-assigned ones (avoid duplicates)
     const reviewItems: UnifiedItem[] = reviewPieces.filter(p => !assignedIds.has(p.id)).map((p) => ({ kind: "review", data: p }));
     const sopItems: UnifiedItem[] = checklistSteps.map((s) => ({ kind: "sop", data: s }));
     const taskItems: UnifiedItem[] = tasks.map((t) => ({ kind: "task", data: t }));
@@ -184,7 +217,7 @@ const MyTasks = () => {
     const allItems = [...reviewItems, ...pieceItems, ...sopItems, ...taskItems];
     const groups: Record<string, UnifiedItem[]> = {};
     allItems.forEach((item) => {
-      const cid = item.kind === "sop" ? (item.data as ChecklistStepItem).client_id : item.data.client_id;
+      const cid = item.kind === "sop" ? (item.data as ChecklistStepItem).client_id : (item.data as any).client_id;
       if (!cid) return;
       if (!groups[cid]) groups[cid] = [];
       groups[cid].push(item);
@@ -203,8 +236,13 @@ const MyTasks = () => {
     qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
   };
 
+  const completeCrmTask = async (taskId: string) => {
+    await supabase.from("crm_tasks").update({ is_completed: true, completed_at: new Date().toISOString() }).eq("id", taskId);
+    qc.invalidateQueries({ queryKey: ["my-crm-tasks"] });
+  };
+
   const dedupedReviewCount = reviewPieces.filter(p => !assignedPieces.some(a => a.id === p.id)).length;
-  const totalCount = tasks.length + assignedPieces.length + dedupedReviewCount + checklistSteps.length;
+  const totalCount = tasks.length + assignedPieces.length + dedupedReviewCount + checklistSteps.length + crmTasks.length;
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -318,6 +356,44 @@ const MyTasks = () => {
                 })}
               </motion.div>
             ))}
+
+            {/* CRM Tasks */}
+            {crmTasks.length > 0 && (
+              <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="monday-group-header border-b border-border/30">
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs font-display font-semibold">CRM To-Dos</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{crmTasks.length}</span>
+                </div>
+                {crmTasks.map(ct => {
+                  const isOverdue = ct.due_date && ct.due_date < today;
+                  return (
+                    <div key={`crm-${ct.id}`} className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10">
+                      <Checkbox checked={false} onCheckedChange={() => completeCrmTask(ct.id)} className="shrink-0" />
+                      <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-violet-500/15 text-violet-400 shrink-0">
+                        CRM
+                      </Badge>
+                      <span className="flex-1 text-sm font-body truncate">{ct.title}</span>
+                      {ct.lead_name && (
+                        <Link to={`/crm/lead/${ct.lead_id}`} className="text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-20 sm:max-w-24 truncate hidden sm:inline hover:text-primary transition-colors">
+                          {ct.lead_name}
+                        </Link>
+                      )}
+                      {ct.due_date && (
+                        <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                          <CalendarIcon className="h-3 w-3" />
+                          <span className="hidden sm:inline">
+                            {format(new Date(ct.due_date), "dd MMM", { locale: de })}
+                            {ct.due_time && ` ${ct.due_time.slice(0, 5)}`}
+                          </span>
+                          <span className="sm:hidden">{format(new Date(ct.due_date), "dd.MM", { locale: de })}</span>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       )}

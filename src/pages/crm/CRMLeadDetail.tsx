@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 import {
   ArrowLeft, StickyNote, Phone, Mail, Users2, Globe, Save,
   ChevronDown, ChevronRight, Plus, ExternalLink, Lightbulb,
-  Search, Filter, MoreHorizontal, CheckSquare,
+  Search, Filter, MoreHorizontal, CheckSquare, CalendarIcon, Clock,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -89,6 +95,17 @@ interface Opportunity {
   win_probability: number;
 }
 
+interface CrmTask {
+  id: string;
+  title: string;
+  due_date: string | null;
+  due_time: string | null;
+  is_completed: boolean;
+  completed_at: string | null;
+  lead_id: string | null;
+  assigned_to: string;
+}
+
 export default function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -109,14 +126,22 @@ export default function CRMLeadDetail() {
   const [aboutOpen, setAboutOpen] = useState(true);
   const [oppsOpen, setOppsOpen] = useState(true);
   const [contactOpen, setContactOpen] = useState(true);
+  const [tasksOpen, setTasksOpen] = useState(true);
+
+  // Tasks state
+  const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDate, setNewTaskDate] = useState<Date | undefined>();
+  const [newTaskTime, setNewTaskTime] = useState("");
 
   const fetchLead = async () => {
     if (!id) return;
-    const [{ data: leadData }, { data: actData }, { data: statusData }, { data: oppData }] = await Promise.all([
+    const [{ data: leadData }, { data: actData }, { data: statusData }, { data: oppData }, { data: taskData }] = await Promise.all([
       supabase.from("crm_leads").select("*").eq("id", id).single(),
       supabase.from("crm_activities").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
       supabase.from("crm_lead_statuses").select("*").order("sort_order"),
       supabase.from("crm_opportunities").select("*, crm_pipelines(name), crm_pipeline_stages(name, color, win_probability)").eq("lead_id", id),
+      supabase.from("crm_tasks").select("*").eq("lead_id", id).order("is_completed").order("due_date", { ascending: true, nullsFirst: false }),
     ]);
     if (leadData) setLead(leadData as any);
     setActivities((actData || []) as any[]);
@@ -130,6 +155,7 @@ export default function CRMLeadDetail() {
       stage_color: o.crm_pipeline_stages?.color || "#6B7280",
       win_probability: o.crm_pipeline_stages?.win_probability || 0,
     })));
+    setCrmTasks((taskData || []) as any[]);
   };
 
   useEffect(() => { fetchLead(); }, [id]);
@@ -172,6 +198,32 @@ export default function CRMLeadDetail() {
     setShowActivity(false);
     setActivityTitle("");
     setActivityBody("");
+    fetchLead();
+  };
+
+  const addCrmTask = async () => {
+    if (!newTaskTitle.trim() || !id || !user) return;
+    const { error } = await supabase.from("crm_tasks").insert({
+      lead_id: id,
+      title: newTaskTitle,
+      due_date: newTaskDate ? format(newTaskDate, "yyyy-MM-dd") : null,
+      due_time: newTaskTime || null,
+      assigned_to: user.id,
+    } as any);
+    if (error) { toast.error(error.message); return; }
+    toast.success("To-Do erstellt");
+    setNewTaskTitle("");
+    setNewTaskDate(undefined);
+    setNewTaskTime("");
+    fetchLead();
+  };
+
+  const toggleCrmTask = async (task: CrmTask) => {
+    const completed = !task.is_completed;
+    await supabase.from("crm_tasks").update({
+      is_completed: completed,
+      completed_at: completed ? new Date().toISOString() : null,
+    }).eq("id", task.id);
     fetchLead();
   };
 
@@ -437,6 +489,88 @@ export default function CRMLeadDetail() {
                       </button>
                     )}
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* TASKS section */}
+            <div className="border-b border-[#3A3A44]">
+              <button
+                onClick={() => setTasksOpen(!tasksOpen)}
+                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
+              >
+                {tasksOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                <CheckSquare className="h-3 w-3" />
+                To-Dos
+                <span className="ml-1 text-[10px] text-muted-foreground">{crmTasks.filter(t => !t.is_completed).length}</span>
+              </button>
+              {tasksOpen && (
+                <div className="px-4 pb-4 space-y-2">
+                  {/* Add task row */}
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Follow up, Anrufen..."
+                        value={newTaskTitle}
+                        onChange={e => setNewTaskTitle(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && addCrmTask()}
+                        className="h-7 text-xs bg-[#1E1E24] border-[#3A3A44] flex-1"
+                      />
+                      <Button size="sm" className="h-7 px-2 text-xs" onClick={addCrmTask} disabled={!newTaskTitle.trim()}>
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className={cn("h-7 gap-1.5 text-xs border-[#3A3A44] bg-transparent", !newTaskDate && "text-muted-foreground")}>
+                            <CalendarIcon className="h-3 w-3" />
+                            {newTaskDate ? format(newTaskDate, "dd.MM.yyyy") : "Datum"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={newTaskDate} onSelect={setNewTaskDate} initialFocus className="p-3 pointer-events-auto" />
+                        </PopoverContent>
+                      </Popover>
+                      <div className="relative">
+                        <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          type="time"
+                          value={newTaskTime}
+                          onChange={e => setNewTaskTime(e.target.value)}
+                          className="h-7 w-24 pl-7 text-xs bg-[#1E1E24] border-[#3A3A44]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Task list */}
+                  {crmTasks.map(task => {
+                    const today = new Date().toISOString().split("T")[0];
+                    const isOverdue = task.due_date && !task.is_completed && task.due_date < today;
+                    return (
+                      <div key={task.id} className={cn("flex items-center gap-2 py-1.5 group", task.is_completed && "opacity-40")}>
+                        <Checkbox
+                          checked={task.is_completed}
+                          onCheckedChange={() => toggleCrmTask(task)}
+                          className="shrink-0"
+                        />
+                        <span className={cn("flex-1 text-xs truncate", task.is_completed && "line-through text-muted-foreground")}>
+                          {task.title}
+                        </span>
+                        {task.due_date && (
+                          <span className={cn("text-[10px] font-mono shrink-0 flex items-center gap-1", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                            <CalendarIcon className="h-2.5 w-2.5" />
+                            {format(new Date(task.due_date), "dd.MM")}
+                            {(task as any).due_time && ` ${(task as any).due_time.slice(0, 5)}`}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {crmTasks.length === 0 && (
+                    <p className="text-xs text-muted-foreground">Keine To-Dos</p>
+                  )}
                 </div>
               )}
             </div>

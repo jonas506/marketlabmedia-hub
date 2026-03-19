@@ -1,0 +1,1 @@
+ALTER TABLE public.crm_tasks ADD COLUMN due_time text DEFAULT NULL;
