@@ -77,18 +77,6 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        crm: {
-          bg: "#1E1E24",
-          surface: "#2A2A32",
-          border: "#3A3A44",
-          text: "#FAFBFF",
-          muted: "#9CA3AF",
-          primary: "#0083F7",
-          "primary-hover": "#0070D4",
-          won: "#22C55E",
-          lost: "#EF4444",
-          warning: "#F59E0B",
-        },
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",
