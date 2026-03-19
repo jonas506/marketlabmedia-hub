@@ -66,7 +66,21 @@ const App = () => (
               <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
               <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
-              
+
+              {/* CRM Routes */}
+              <Route path="/crm" element={<ProtectedRoute><CrmLayout /></ProtectedRoute>}>
+                <Route index element={<CrmInbox />} />
+                <Route path="leads" element={<CrmLeads />} />
+                <Route path="leads/:id" element={<CrmLeadDetail />} />
+                <Route path="opportunities" element={<CrmOpportunities />} />
+                <Route path="contacts" element={<CrmContacts />} />
+                <Route path="activities" element={<CrmActivities />} />
+                <Route path="conversations" element={<CrmPlaceholder title="Conversations" />} />
+                <Route path="workflows" element={<CrmPlaceholder title="Workflows" />} />
+                <Route path="reports" element={<CrmPlaceholder title="Reports" />} />
+                <Route path="smart-views" element={<CrmPlaceholder title="Smart Views" />} />
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
