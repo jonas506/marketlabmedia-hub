@@ -169,8 +169,10 @@ export default function CRMLeads() {
           <div className="space-y-3">
             <Input placeholder="Firmenname *" value={newLead.name} onChange={e => setNewLead(p => ({ ...p, name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <Input placeholder="Ansprechpartner" value={newLead.contact_name} onChange={e => setNewLead(p => ({ ...p, contact_name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
-            <Input placeholder="Email" value={newLead.contact_email} onChange={e => setNewLead(p => ({ ...p, contact_email: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
-            <Input placeholder="Telefon" value={newLead.contact_phone} onChange={e => setNewLead(p => ({ ...p, contact_phone: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
+            <div className="grid gap-3 md:grid-cols-2">
+              <Input type="email" placeholder="Email" value={newLead.contact_email} onChange={e => setNewLead(p => ({ ...p, contact_email: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
+              <Input type="tel" placeholder="Telefonnummer" value={newLead.contact_phone} onChange={e => setNewLead(p => ({ ...p, contact_phone: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
+            </div>
             <Select value={newLead.source} onValueChange={v => setNewLead(p => ({ ...p, source: v }))}>
               <SelectTrigger className="bg-[#1E1E24] border-[#3A3A44]"><SelectValue placeholder="Quelle" /></SelectTrigger>
               <SelectContent>
