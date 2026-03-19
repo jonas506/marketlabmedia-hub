@@ -43,13 +43,25 @@ interface ChecklistStepItem {
   client_id: string;
 }
 
+interface CrmTaskItem {
+  id: string;
+  title: string;
+  due_date: string | null;
+  due_time: string | null;
+  is_completed: boolean;
+  lead_id: string | null;
+  assigned_to: string;
+  lead_name?: string;
+}
+
 interface Client { id: string; name: string; }
 
 type UnifiedItem =
   | { kind: "task"; data: Task }
   | { kind: "piece"; data: ContentPieceItem }
   | { kind: "review"; data: ContentPieceItem }
-  | { kind: "sop"; data: ChecklistStepItem };
+  | { kind: "sop"; data: ChecklistStepItem }
+  | { kind: "crm_task"; data: CrmTaskItem };
 
 const TAG_COLORS: Record<string, string> = {
   skripte: "bg-blue-500/15 text-blue-500",
