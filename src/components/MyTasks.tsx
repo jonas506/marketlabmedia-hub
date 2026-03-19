@@ -160,6 +160,28 @@ const MyTasks = () => {
     enabled: !!user?.id,
   });
 
+  // CRM tasks assigned to current user
+  const { data: crmTasks = [] } = useQuery({
+    queryKey: ["my-crm-tasks", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("crm_tasks")
+        .select("id, title, due_date, due_time, is_completed, lead_id, assigned_to")
+        .eq("assigned_to", user!.id)
+        .eq("is_completed", false);
+      if (error) throw error;
+      if (!data || data.length === 0) return [];
+      const leadIds = [...new Set((data as any[]).map((t: any) => t.lead_id).filter(Boolean))];
+      let leadMap: Record<string, string> = {};
+      if (leadIds.length > 0) {
+        const { data: leads } = await supabase.from("crm_leads").select("id, name").in("id", leadIds);
+        (leads || []).forEach((l: any) => { leadMap[l.id] = l.name; });
+      }
+      return (data as any[]).map((t: any) => ({ ...t, lead_name: leadMap[t.lead_id] || "" })) as CrmTaskItem[];
+    },
+    enabled: !!user?.id,
+  });
+
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-names"],
     queryFn: async () => {
@@ -179,7 +201,6 @@ const MyTasks = () => {
     const today = new Date().toISOString().split("T")[0];
     const assignedIds = new Set(assignedPieces.map(p => p.id));
     const pieceItems: UnifiedItem[] = assignedPieces.map((p) => ({ kind: "piece", data: p }));
-    // HoC/Admin review pieces excluding already-assigned ones (avoid duplicates)
     const reviewItems: UnifiedItem[] = reviewPieces.filter(p => !assignedIds.has(p.id)).map((p) => ({ kind: "review", data: p }));
     const sopItems: UnifiedItem[] = checklistSteps.map((s) => ({ kind: "sop", data: s }));
     const taskItems: UnifiedItem[] = tasks.map((t) => ({ kind: "task", data: t }));
@@ -196,7 +217,7 @@ const MyTasks = () => {
     const allItems = [...reviewItems, ...pieceItems, ...sopItems, ...taskItems];
     const groups: Record<string, UnifiedItem[]> = {};
     allItems.forEach((item) => {
-      const cid = item.kind === "sop" ? (item.data as ChecklistStepItem).client_id : item.data.client_id;
+      const cid = item.kind === "sop" ? (item.data as ChecklistStepItem).client_id : (item.data as any).client_id;
       if (!cid) return;
       if (!groups[cid]) groups[cid] = [];
       groups[cid].push(item);
