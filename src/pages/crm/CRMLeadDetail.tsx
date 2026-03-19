@@ -95,6 +95,17 @@ interface Opportunity {
   win_probability: number;
 }
 
+interface CrmTask {
+  id: string;
+  title: string;
+  due_date: string | null;
+  due_time: string | null;
+  is_completed: boolean;
+  completed_at: string | null;
+  lead_id: string | null;
+  assigned_to: string;
+}
+
 export default function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -115,14 +126,22 @@ export default function CRMLeadDetail() {
   const [aboutOpen, setAboutOpen] = useState(true);
   const [oppsOpen, setOppsOpen] = useState(true);
   const [contactOpen, setContactOpen] = useState(true);
+  const [tasksOpen, setTasksOpen] = useState(true);
+
+  // Tasks state
+  const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDate, setNewTaskDate] = useState<Date | undefined>();
+  const [newTaskTime, setNewTaskTime] = useState("");
 
   const fetchLead = async () => {
     if (!id) return;
-    const [{ data: leadData }, { data: actData }, { data: statusData }, { data: oppData }] = await Promise.all([
+    const [{ data: leadData }, { data: actData }, { data: statusData }, { data: oppData }, { data: taskData }] = await Promise.all([
       supabase.from("crm_leads").select("*").eq("id", id).single(),
       supabase.from("crm_activities").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
       supabase.from("crm_lead_statuses").select("*").order("sort_order"),
       supabase.from("crm_opportunities").select("*, crm_pipelines(name), crm_pipeline_stages(name, color, win_probability)").eq("lead_id", id),
+      supabase.from("crm_tasks").select("*").eq("lead_id", id).order("is_completed").order("due_date", { ascending: true, nullsFirst: false }),
     ]);
     if (leadData) setLead(leadData as any);
     setActivities((actData || []) as any[]);
