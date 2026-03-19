@@ -343,8 +343,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   };
 
   // Auto-fetch title from Google Drive file name when preview link is set
-  const handlePreviewLinkChange = useCallback(async (pieceId: string, url: string, currentTitle: string | null) => {
-    updatePiece(pieceId, { preview_link: url });
+  const handlePreviewLinkChange = useCallback(async (pieceId: string, allLinks: string, currentTitle: string | null) => {
+    updatePiece(pieceId, { preview_link: allLinks });
+    const url = allLinks.split("\n").filter(l => l.trim())[0] || "";
     
     // Only auto-title if piece has no title yet and URL looks like Google Drive
     if (currentTitle || !url.includes("drive.google.com")) return;
