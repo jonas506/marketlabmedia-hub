@@ -20,6 +20,16 @@ import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 
+// CRM
+import CrmLayout from "./crm/CrmLayout";
+import CrmInbox from "./crm/pages/CrmInbox";
+import CrmLeads from "./crm/pages/CrmLeads";
+import CrmLeadDetail from "./crm/pages/CrmLeadDetail";
+import CrmOpportunities from "./crm/pages/CrmOpportunities";
+import CrmContacts from "./crm/pages/CrmContacts";
+import CrmActivities from "./crm/pages/CrmActivities";
+import CrmPlaceholder from "./crm/pages/CrmPlaceholder";
+
 const queryClient = new QueryClient();
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
