@@ -985,31 +985,46 @@ export type Database = {
       }
       crm_leads: {
         Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string
           created_by: string
           description: string | null
           id: string
           name: string
+          notes: string | null
+          source: string | null
           status_id: string | null
           updated_at: string
           website: string | null
         }
         Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by: string
           description?: string | null
           id?: string
           name: string
+          notes?: string | null
+          source?: string | null
           status_id?: string | null
           updated_at?: string
           website?: string | null
         }
         Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
           id?: string
           name?: string
+          notes?: string | null
+          source?: string | null
           status_id?: string | null
           updated_at?: string
           website?: string | null
