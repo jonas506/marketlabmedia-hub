@@ -60,6 +60,10 @@ const App = () => (
               <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
               <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
+              <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
+              <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
+              <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
+              <Route path="/crm/settings" element={<ProtectedRoute><CRMSettings /></ProtectedRoute>} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
