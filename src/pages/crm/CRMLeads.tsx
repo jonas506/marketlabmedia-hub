@@ -76,6 +76,7 @@ export default function CRMLeads() {
       name: newLead.name,
       contact_name: newLead.contact_name || null,
       contact_email: newLead.contact_email || null,
+      contact_phone: newLead.contact_phone || null,
       source: newLead.source || null,
       status_id: newLead.status_id || defaultStatus?.id || null,
       created_by: user.id,
