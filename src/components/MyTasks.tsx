@@ -368,32 +368,37 @@ const MyTasks = () => {
                 </div>
                 {crmTasks.map(ct => {
                   const isOverdue = ct.due_date && ct.due_date < today;
-                  return (
-                    <div key={`crm-${ct.id}`} className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10">
-                      <Checkbox checked={false} onCheckedChange={() => completeCrmTask(ct.id)} className="shrink-0" />
-                      <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-violet-500/15 text-violet-400 shrink-0">
-                        CRM
-                      </Badge>
-                      <span className="flex-1 text-sm font-body truncate">{ct.title}</span>
-                      {(ct.lead_name || ct.contact_name) && (
-                        <Link to={`/crm/lead/${ct.lead_id}`} className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-40 hidden sm:inline-flex hover:text-primary transition-colors truncate">
-                          {ct.lead_name && <span className="truncate">{ct.lead_name}</span>}
-                          {ct.lead_name && ct.contact_name && <span className="text-muted-foreground/30">·</span>}
-                          {ct.contact_name && <span className="truncate">{ct.contact_name}</span>}
-                        </Link>
-                      )}
-                      {ct.due_date && (
-                        <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
-                          <CalendarIcon className="h-3 w-3" />
-                          <span className="hidden sm:inline">
-                            {format(new Date(ct.due_date), "dd MMM", { locale: de })}
-                            {ct.due_time && ` ${ct.due_time.slice(0, 5)}`}
+                    return (
+                      <Link key={`crm-${ct.id}`} to={`/crm/lead/${ct.lead_id}`} className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors">
+                        <Checkbox
+                          checked={false}
+                          onCheckedChange={() => completeCrmTask(ct.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="shrink-0"
+                        />
+                        <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-violet-500/15 text-violet-400 shrink-0">
+                          CRM
+                        </Badge>
+                        <span className="flex-1 text-sm font-body truncate">{ct.title}</span>
+                        {(ct.lead_name || ct.contact_name) && (
+                          <span className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-40 hidden sm:inline-flex truncate">
+                            {ct.lead_name && <span className="truncate">{ct.lead_name}</span>}
+                            {ct.lead_name && ct.contact_name && <span className="text-muted-foreground/30">·</span>}
+                            {ct.contact_name && <span className="truncate">{ct.contact_name}</span>}
                           </span>
-                          <span className="sm:hidden">{format(new Date(ct.due_date), "dd.MM", { locale: de })}</span>
-                        </span>
-                      )}
-                    </div>
-                  );
+                        )}
+                        {ct.due_date && (
+                          <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                            <CalendarIcon className="h-3 w-3" />
+                            <span className="hidden sm:inline">
+                              {format(new Date(ct.due_date), "dd MMM", { locale: de })}
+                              {ct.due_time && ` ${ct.due_time.slice(0, 5)}`}
+                            </span>
+                            <span className="sm:hidden">{format(new Date(ct.due_date), "dd.MM", { locale: de })}</span>
+                          </span>
+                        )}
+                      </Link>
+                    );
                 })}
               </motion.div>
             )}
