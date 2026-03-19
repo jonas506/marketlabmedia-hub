@@ -155,6 +155,7 @@ export default function CRMLeadDetail() {
       stage_color: o.crm_pipeline_stages?.color || "#6B7280",
       win_probability: o.crm_pipeline_stages?.win_probability || 0,
     })));
+    setCrmTasks((taskData || []) as any[]);
   };
 
   useEffect(() => { fetchLead(); }, [id]);
