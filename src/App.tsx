@@ -15,6 +15,10 @@ import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
 import ContentBase from "./pages/ContentBase";
 import MarketingDashboard from "./pages/MarketingDashboard";
+import CRMLeads from "./pages/crm/CRMLeads";
+import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
+import CRMPipelines from "./pages/crm/CRMPipelines";
+import CRMSettings from "./pages/crm/CRMSettings";
 
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
