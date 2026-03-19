@@ -52,6 +52,7 @@ interface CrmTaskItem {
   lead_id: string | null;
   assigned_to: string;
   lead_name?: string;
+  contact_name?: string;
 }
 
 interface Client { id: string; name: string; }
