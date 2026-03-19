@@ -20,6 +20,16 @@ import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 
+// CRM
+import CrmLayout from "./crm/CrmLayout";
+import CrmInbox from "./crm/pages/CrmInbox";
+import CrmLeads from "./crm/pages/CrmLeads";
+import CrmLeadDetail from "./crm/pages/CrmLeadDetail";
+import CrmOpportunities from "./crm/pages/CrmOpportunities";
+import CrmContacts from "./crm/pages/CrmContacts";
+import CrmActivities from "./crm/pages/CrmActivities";
+import CrmPlaceholder from "./crm/pages/CrmPlaceholder";
+
 const queryClient = new QueryClient();
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -56,7 +66,21 @@ const App = () => (
               <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
               <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
-              
+
+              {/* CRM Routes */}
+              <Route path="/crm" element={<ProtectedRoute><CrmLayout /></ProtectedRoute>}>
+                <Route index element={<CrmInbox />} />
+                <Route path="leads" element={<CrmLeads />} />
+                <Route path="leads/:id" element={<CrmLeadDetail />} />
+                <Route path="opportunities" element={<CrmOpportunities />} />
+                <Route path="contacts" element={<CrmContacts />} />
+                <Route path="activities" element={<CrmActivities />} />
+                <Route path="conversations" element={<CrmPlaceholder title="Conversations" />} />
+                <Route path="workflows" element={<CrmPlaceholder title="Workflows" />} />
+                <Route path="reports" element={<CrmPlaceholder title="Reports" />} />
+                <Route path="smart-views" element={<CrmPlaceholder title="Smart Views" />} />
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
