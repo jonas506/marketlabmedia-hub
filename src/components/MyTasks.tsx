@@ -375,9 +375,11 @@ const MyTasks = () => {
                         CRM
                       </Badge>
                       <span className="flex-1 text-sm font-body truncate">{ct.title}</span>
-                      {ct.lead_name && (
-                        <Link to={`/crm/lead/${ct.lead_id}`} className="text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-20 sm:max-w-24 truncate hidden sm:inline hover:text-primary transition-colors">
-                          {ct.lead_name}
+                      {(ct.lead_name || ct.contact_name) && (
+                        <Link to={`/crm/lead/${ct.lead_id}`} className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-40 hidden sm:inline-flex hover:text-primary transition-colors truncate">
+                          {ct.lead_name && <span className="truncate">{ct.lead_name}</span>}
+                          {ct.lead_name && ct.contact_name && <span className="text-muted-foreground/30">·</span>}
+                          {ct.contact_name && <span className="truncate">{ct.contact_name}</span>}
                         </Link>
                       )}
                       {ct.due_date && (
