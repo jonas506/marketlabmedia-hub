@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 import {
   ArrowLeft, StickyNote, Phone, Mail, Users2, Globe, Save,
   ChevronDown, ChevronRight, Plus, ExternalLink, Lightbulb,
-  Search, Filter, MoreHorizontal, CheckSquare,
+  Search, Filter, MoreHorizontal, CheckSquare, CalendarIcon, Clock,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
