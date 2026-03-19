@@ -16,6 +16,7 @@ const SOURCE_OPTIONS = [
   { value: "ads", label: "Ads" },
   { value: "kaltakquise_telefon", label: "Kaltakquise Telefon" },
   { value: "linkedin", label: "LinkedIn" },
+  { value: "erstgespraech_terminiert", label: "Erstgespräch terminiert" },
 ];
 
 const SOURCE_COLORS: Record<string, string> = {
