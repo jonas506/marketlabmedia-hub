@@ -52,6 +52,7 @@ interface CrmTaskItem {
   lead_id: string | null;
   assigned_to: string;
   lead_name?: string;
+  contact_name?: string;
 }
 
 interface Client { id: string; name: string; }
@@ -172,12 +173,12 @@ const MyTasks = () => {
       if (error) throw error;
       if (!data || data.length === 0) return [];
       const leadIds = [...new Set((data as any[]).map((t: any) => t.lead_id).filter(Boolean))];
-      let leadMap: Record<string, string> = {};
+      let leadMap: Record<string, { name: string; contact_name: string | null }> = {};
       if (leadIds.length > 0) {
-        const { data: leads } = await supabase.from("crm_leads").select("id, name").in("id", leadIds);
-        (leads || []).forEach((l: any) => { leadMap[l.id] = l.name; });
+        const { data: leads } = await supabase.from("crm_leads").select("id, name, contact_name").in("id", leadIds);
+        (leads || []).forEach((l: any) => { leadMap[l.id] = { name: l.name, contact_name: l.contact_name }; });
       }
-      return (data as any[]).map((t: any) => ({ ...t, lead_name: leadMap[t.lead_id] || "" })) as CrmTaskItem[];
+      return (data as any[]).map((t: any) => ({ ...t, lead_name: leadMap[t.lead_id]?.name || "", contact_name: leadMap[t.lead_id]?.contact_name || "" })) as CrmTaskItem[];
     },
     enabled: !!user?.id,
   });
@@ -374,9 +375,11 @@ const MyTasks = () => {
                         CRM
                       </Badge>
                       <span className="flex-1 text-sm font-body truncate">{ct.title}</span>
-                      {ct.lead_name && (
-                        <Link to={`/crm/lead/${ct.lead_id}`} className="text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-20 sm:max-w-24 truncate hidden sm:inline hover:text-primary transition-colors">
-                          {ct.lead_name}
+                      {(ct.lead_name || ct.contact_name) && (
+                        <Link to={`/crm/lead/${ct.lead_id}`} className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-40 hidden sm:inline-flex hover:text-primary transition-colors truncate">
+                          {ct.lead_name && <span className="truncate">{ct.lead_name}</span>}
+                          {ct.lead_name && ct.contact_name && <span className="text-muted-foreground/30">·</span>}
+                          {ct.contact_name && <span className="truncate">{ct.contact_name}</span>}
                         </Link>
                       )}
                       {ct.due_date && (
