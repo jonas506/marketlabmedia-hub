@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
@@ -17,6 +17,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
   { to: "/content-base", label: "Content Base", icon: Database },
   { to: "/marketing", label: "Marketing", icon: BarChart3, roles: ["admin", "head_of_content"] },
+  { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
   { to: "/team", label: "Team", icon: Users, roles: ["admin"] },
 ];
 

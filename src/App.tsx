@@ -15,6 +15,10 @@ import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
 import ContentBase from "./pages/ContentBase";
 import MarketingDashboard from "./pages/MarketingDashboard";
+import CRMLeads from "./pages/crm/CRMLeads";
+import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
+import CRMPipelines from "./pages/crm/CRMPipelines";
+import CRMSettings from "./pages/crm/CRMSettings";
 
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
@@ -56,6 +60,10 @@ const App = () => (
               <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
               <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
+              <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
+              <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
+              <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
+              <Route path="/crm/settings" element={<ProtectedRoute><CRMSettings /></ProtectedRoute>} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>

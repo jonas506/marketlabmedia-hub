@@ -1,0 +1,190 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, ExternalLink } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import CRMLayout from "../CRM";
+
+const SOURCE_OPTIONS = [
+  { value: "empfehlung", label: "Empfehlung" },
+  { value: "ads", label: "Ads" },
+  { value: "kaltakquise_telefon", label: "Kaltakquise Telefon" },
+  { value: "linkedin", label: "LinkedIn" },
+];
+
+const SOURCE_COLORS: Record<string, string> = {
+  empfehlung: "bg-emerald-500/20 text-emerald-400",
+  ads: "bg-blue-500/20 text-blue-400",
+  kaltakquise_telefon: "bg-orange-500/20 text-orange-400",
+  linkedin: "bg-sky-500/20 text-sky-400",
+};
+
+interface LeadStatus {
+  id: string;
+  name: string;
+  color: string;
+}
+
+interface Lead {
+  id: string;
+  name: string;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  website: string | null;
+  source: string | null;
+  status_id: string | null;
+  created_at: string;
+  status?: LeadStatus;
+}
+
+export default function CRMLeads() {
+  const { user } = useAuth();
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [statuses, setStatuses] = useState<LeadStatus[]>([]);
+  const [search, setSearch] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", source: "", status_id: "" });
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    const [{ data: leadsData }, { data: statusData }] = await Promise.all([
+      supabase.from("crm_leads").select("*").order("created_at", { ascending: false }),
+      supabase.from("crm_lead_statuses").select("*").order("sort_order"),
+    ]);
+    setStatuses(statusData || []);
+    const mapped = (leadsData || []).map((l: any) => ({
+      ...l,
+      status: (statusData || []).find((s: any) => s.id === l.status_id),
+    }));
+    setLeads(mapped);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const createLead = async () => {
+    if (!newLead.name.trim() || !user) return;
+    const defaultStatus = statuses.find(s => s.name === "Neu");
+    const { error } = await supabase.from("crm_leads").insert({
+      name: newLead.name,
+      contact_name: newLead.contact_name || null,
+      contact_email: newLead.contact_email || null,
+      source: newLead.source || null,
+      status_id: newLead.status_id || defaultStatus?.id || null,
+      created_by: user.id,
+    });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Lead erstellt");
+    setShowCreate(false);
+    setNewLead({ name: "", contact_name: "", contact_email: "", source: "", status_id: "" });
+    fetchData();
+  };
+
+  const filtered = leads.filter(l =>
+    l.name.toLowerCase().includes(search.toLowerCase()) ||
+    (l.contact_name || "").toLowerCase().includes(search.toLowerCase()) ||
+    (l.contact_email || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <CRMLayout>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-[#FAFBFF] font-[Manrope]">Kunden</h1>
+          <Button onClick={() => setShowCreate(true)} size="sm" className="gap-1.5">
+            <Plus className="h-4 w-4" /> Neuer Lead
+          </Button>
+        </div>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Suchen..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9 bg-[#2A2A32] border-[#3A3A44] text-[#FAFBFF]"
+          />
+        </div>
+
+        <div className="rounded-lg border border-[#3A3A44] overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[#2A2A32] text-[#FAFBFF]/60 text-xs uppercase tracking-wider">
+                <th className="text-left px-4 py-3 font-medium">Firma</th>
+                <th className="text-left px-4 py-3 font-medium">Ansprechpartner</th>
+                <th className="text-left px-4 py-3 font-medium">Quelle</th>
+                <th className="text-left px-4 py-3 font-medium">Status</th>
+                <th className="text-left px-4 py-3 font-medium">Erstellt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Laden...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Keine Leads gefunden</td></tr>
+              ) : filtered.map(lead => (
+                <tr key={lead.id} className="border-t border-[#3A3A44] hover:bg-[#2A2A32]/50 transition-colors">
+                  <td className="px-4 py-3">
+                    <Link to={`/crm/lead/${lead.id}`} className="font-medium text-[#FAFBFF] hover:text-primary transition-colors">
+                      {lead.name}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-[#FAFBFF]/70">{lead.contact_name || "–"}</td>
+                  <td className="px-4 py-3">
+                    {lead.source ? (
+                      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${SOURCE_COLORS[lead.source] || "bg-muted text-muted-foreground"}`}>
+                        {SOURCE_OPTIONS.find(s => s.value === lead.source)?.label || lead.source}
+                      </span>
+                    ) : "–"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {lead.status ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: lead.status.color }} />
+                        {lead.status.name}
+                      </span>
+                    ) : "–"}
+                  </td>
+                  <td className="px-4 py-3 text-[#FAFBFF]/50 text-xs">
+                    {new Date(lead.created_at).toLocaleDateString("de-DE")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="bg-[#2A2A32] border-[#3A3A44] text-[#FAFBFF]">
+          <DialogHeader><DialogTitle>Neuer Lead</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Firmenname *" value={newLead.name} onChange={e => setNewLead(p => ({ ...p, name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
+            <Input placeholder="Ansprechpartner" value={newLead.contact_name} onChange={e => setNewLead(p => ({ ...p, contact_name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
+            <Input placeholder="Email" value={newLead.contact_email} onChange={e => setNewLead(p => ({ ...p, contact_email: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
+            <Select value={newLead.source} onValueChange={v => setNewLead(p => ({ ...p, source: v }))}>
+              <SelectTrigger className="bg-[#1E1E24] border-[#3A3A44]"><SelectValue placeholder="Quelle" /></SelectTrigger>
+              <SelectContent>
+                {SOURCE_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={newLead.status_id} onValueChange={v => setNewLead(p => ({ ...p, status_id: v }))}>
+              <SelectTrigger className="bg-[#1E1E24] border-[#3A3A44]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                {statuses.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button onClick={createLead} className="w-full">Erstellen</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </CRMLayout>
+  );
+}
