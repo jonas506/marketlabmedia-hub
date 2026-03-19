@@ -50,7 +50,7 @@ export default function CRMLeads() {
   const [statuses, setStatuses] = useState<LeadStatus[]>([]);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", source: "", status_id: "" });
+  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
