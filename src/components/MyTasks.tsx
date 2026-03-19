@@ -173,12 +173,12 @@ const MyTasks = () => {
       if (error) throw error;
       if (!data || data.length === 0) return [];
       const leadIds = [...new Set((data as any[]).map((t: any) => t.lead_id).filter(Boolean))];
-      let leadMap: Record<string, string> = {};
+      let leadMap: Record<string, { name: string; contact_name: string | null }> = {};
       if (leadIds.length > 0) {
-        const { data: leads } = await supabase.from("crm_leads").select("id, name").in("id", leadIds);
-        (leads || []).forEach((l: any) => { leadMap[l.id] = l.name; });
+        const { data: leads } = await supabase.from("crm_leads").select("id, name, contact_name").in("id", leadIds);
+        (leads || []).forEach((l: any) => { leadMap[l.id] = { name: l.name, contact_name: l.contact_name }; });
       }
-      return (data as any[]).map((t: any) => ({ ...t, lead_name: leadMap[t.lead_id] || "" })) as CrmTaskItem[];
+      return (data as any[]).map((t: any) => ({ ...t, lead_name: leadMap[t.lead_id]?.name || "", contact_name: leadMap[t.lead_id]?.contact_name || "" })) as CrmTaskItem[];
     },
     enabled: !!user?.id,
   });
