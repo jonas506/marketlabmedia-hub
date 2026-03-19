@@ -24,6 +24,7 @@ const SOURCE_COLORS: Record<string, string> = {
   ads: "bg-blue-500/20 text-blue-400",
   kaltakquise_telefon: "bg-orange-500/20 text-orange-400",
   linkedin: "bg-sky-500/20 text-sky-400",
+  erstgespraech_terminiert: "bg-violet-500/20 text-violet-400",
 };
 
 interface LeadStatus {
