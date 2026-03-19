@@ -18,6 +18,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
   { to: "/content-base", label: "Content Base", icon: Database },
   { to: "/marketing", label: "Marketing", icon: BarChart3, roles: ["admin", "head_of_content"] },
   { to: "/team", label: "Team", icon: Users, roles: ["admin"] },
+  { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
 ];
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
