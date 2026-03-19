@@ -356,6 +356,44 @@ const MyTasks = () => {
                 })}
               </motion.div>
             ))}
+
+            {/* CRM Tasks */}
+            {crmTasks.length > 0 && (
+              <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="monday-group-header border-b border-border/30">
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs font-display font-semibold">CRM To-Dos</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{crmTasks.length}</span>
+                </div>
+                {crmTasks.map(ct => {
+                  const isOverdue = ct.due_date && ct.due_date < today;
+                  return (
+                    <div key={`crm-${ct.id}`} className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10">
+                      <Checkbox checked={false} onCheckedChange={() => completeCrmTask(ct.id)} className="shrink-0" />
+                      <Badge variant="secondary" className="text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 bg-violet-500/15 text-violet-400 shrink-0">
+                        CRM
+                      </Badge>
+                      <span className="flex-1 text-sm font-body truncate">{ct.title}</span>
+                      {ct.lead_name && (
+                        <Link to={`/crm/lead/${ct.lead_id}`} className="text-[10px] font-mono text-muted-foreground/60 shrink-0 max-w-20 sm:max-w-24 truncate hidden sm:inline hover:text-primary transition-colors">
+                          {ct.lead_name}
+                        </Link>
+                      )}
+                      {ct.due_date && (
+                        <span className={cn("flex items-center gap-1 text-[11px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                          <CalendarIcon className="h-3 w-3" />
+                          <span className="hidden sm:inline">
+                            {format(new Date(ct.due_date), "dd MMM", { locale: de })}
+                            {ct.due_time && ` ${ct.due_time.slice(0, 5)}`}
+                          </span>
+                          <span className="sm:hidden">{format(new Date(ct.due_date), "dd.MM", { locale: de })}</span>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       )}
