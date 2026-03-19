@@ -83,7 +83,7 @@ export default function CRMLeads() {
     if (error) { toast.error(error.message); return; }
     toast.success("Lead erstellt");
     setShowCreate(false);
-    setNewLead({ name: "", contact_name: "", contact_email: "", source: "", status_id: "" });
+    setNewLead({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
     fetchData();
   };
 
