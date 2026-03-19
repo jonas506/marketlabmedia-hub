@@ -236,8 +236,13 @@ const MyTasks = () => {
     qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
   };
 
+  const completeCrmTask = async (taskId: string) => {
+    await supabase.from("crm_tasks").update({ is_completed: true, completed_at: new Date().toISOString() }).eq("id", taskId);
+    qc.invalidateQueries({ queryKey: ["my-crm-tasks"] });
+  };
+
   const dedupedReviewCount = reviewPieces.filter(p => !assignedPieces.some(a => a.id === p.id)).length;
-  const totalCount = tasks.length + assignedPieces.length + dedupedReviewCount + checklistSteps.length;
+  const totalCount = tasks.length + assignedPieces.length + dedupedReviewCount + checklistSteps.length + crmTasks.length;
   const today = new Date().toISOString().split("T")[0];
 
   return (
