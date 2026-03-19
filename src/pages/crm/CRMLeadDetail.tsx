@@ -201,6 +201,32 @@ export default function CRMLeadDetail() {
     fetchLead();
   };
 
+  const addCrmTask = async () => {
+    if (!newTaskTitle.trim() || !id || !user) return;
+    const { error } = await supabase.from("crm_tasks").insert({
+      lead_id: id,
+      title: newTaskTitle,
+      due_date: newTaskDate ? format(newTaskDate, "yyyy-MM-dd") : null,
+      due_time: newTaskTime || null,
+      assigned_to: user.id,
+    } as any);
+    if (error) { toast.error(error.message); return; }
+    toast.success("To-Do erstellt");
+    setNewTaskTitle("");
+    setNewTaskDate(undefined);
+    setNewTaskTime("");
+    fetchLead();
+  };
+
+  const toggleCrmTask = async (task: CrmTask) => {
+    const completed = !task.is_completed;
+    await supabase.from("crm_tasks").update({
+      is_completed: completed,
+      completed_at: completed ? new Date().toISOString() : null,
+    }).eq("id", task.id);
+    fetchLead();
+  };
+
   const filteredActivities = activities.filter(act => {
     const typeFilter = FILTER_MAP[timelineFilter];
     if (typeFilter && act.type !== typeFilter) return false;
