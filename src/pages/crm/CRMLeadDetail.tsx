@@ -492,6 +492,88 @@ export default function CRMLeadDetail() {
                 </div>
               )}
             </div>
+
+            {/* TASKS section */}
+            <div className="border-b border-[#3A3A44]">
+              <button
+                onClick={() => setTasksOpen(!tasksOpen)}
+                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
+              >
+                {tasksOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                <CheckSquare className="h-3 w-3" />
+                To-Dos
+                <span className="ml-1 text-[10px] text-muted-foreground">{crmTasks.filter(t => !t.is_completed).length}</span>
+              </button>
+              {tasksOpen && (
+                <div className="px-4 pb-4 space-y-2">
+                  {/* Add task row */}
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Follow up, Anrufen..."
+                        value={newTaskTitle}
+                        onChange={e => setNewTaskTitle(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && addCrmTask()}
+                        className="h-7 text-xs bg-[#1E1E24] border-[#3A3A44] flex-1"
+                      />
+                      <Button size="sm" className="h-7 px-2 text-xs" onClick={addCrmTask} disabled={!newTaskTitle.trim()}>
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className={cn("h-7 gap-1.5 text-xs border-[#3A3A44] bg-transparent", !newTaskDate && "text-muted-foreground")}>
+                            <CalendarIcon className="h-3 w-3" />
+                            {newTaskDate ? format(newTaskDate, "dd.MM.yyyy") : "Datum"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={newTaskDate} onSelect={setNewTaskDate} initialFocus className="p-3 pointer-events-auto" />
+                        </PopoverContent>
+                      </Popover>
+                      <div className="relative">
+                        <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          type="time"
+                          value={newTaskTime}
+                          onChange={e => setNewTaskTime(e.target.value)}
+                          className="h-7 w-24 pl-7 text-xs bg-[#1E1E24] border-[#3A3A44]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Task list */}
+                  {crmTasks.map(task => {
+                    const today = new Date().toISOString().split("T")[0];
+                    const isOverdue = task.due_date && !task.is_completed && task.due_date < today;
+                    return (
+                      <div key={task.id} className={cn("flex items-center gap-2 py-1.5 group", task.is_completed && "opacity-40")}>
+                        <Checkbox
+                          checked={task.is_completed}
+                          onCheckedChange={() => toggleCrmTask(task)}
+                          className="shrink-0"
+                        />
+                        <span className={cn("flex-1 text-xs truncate", task.is_completed && "line-through text-muted-foreground")}>
+                          {task.title}
+                        </span>
+                        {task.due_date && (
+                          <span className={cn("text-[10px] font-mono shrink-0 flex items-center gap-1", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                            <CalendarIcon className="h-2.5 w-2.5" />
+                            {format(new Date(task.due_date), "dd.MM")}
+                            {(task as any).due_time && ` ${(task as any).due_time.slice(0, 5)}`}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {crmTasks.length === 0 && (
+                    <p className="text-xs text-muted-foreground">Keine To-Dos</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* RIGHT PANEL – Activity Timeline */}
