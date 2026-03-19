@@ -50,7 +50,7 @@ export default function CRMLeads() {
   const [statuses, setStatuses] = useState<LeadStatus[]>([]);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", source: "", status_id: "" });
+  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -76,6 +76,7 @@ export default function CRMLeads() {
       name: newLead.name,
       contact_name: newLead.contact_name || null,
       contact_email: newLead.contact_email || null,
+      contact_phone: newLead.contact_phone || null,
       source: newLead.source || null,
       status_id: newLead.status_id || defaultStatus?.id || null,
       created_by: user.id,
@@ -83,7 +84,7 @@ export default function CRMLeads() {
     if (error) { toast.error(error.message); return; }
     toast.success("Lead erstellt");
     setShowCreate(false);
-    setNewLead({ name: "", contact_name: "", contact_email: "", source: "", status_id: "" });
+    setNewLead({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
     fetchData();
   };
 
@@ -169,6 +170,7 @@ export default function CRMLeads() {
             <Input placeholder="Firmenname *" value={newLead.name} onChange={e => setNewLead(p => ({ ...p, name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <Input placeholder="Ansprechpartner" value={newLead.contact_name} onChange={e => setNewLead(p => ({ ...p, contact_name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <Input placeholder="Email" value={newLead.contact_email} onChange={e => setNewLead(p => ({ ...p, contact_email: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
+            <Input placeholder="Telefon" value={newLead.contact_phone} onChange={e => setNewLead(p => ({ ...p, contact_phone: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <Select value={newLead.source} onValueChange={v => setNewLead(p => ({ ...p, source: v }))}>
               <SelectTrigger className="bg-[#1E1E24] border-[#3A3A44]"><SelectValue placeholder="Quelle" /></SelectTrigger>
               <SelectContent>
