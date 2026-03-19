@@ -208,17 +208,17 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                             </button>
                           )}
 
-                          {piece.preview_link && (
-                            <a
-                              href={piece.preview_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:text-primary/80 transition-colors"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          )}
+                          {piece.preview_link && (() => {
+                            const links = piece.preview_link.split("\n").filter(l => l.trim());
+                            return links.length > 0 ? (
+                              <span className="flex items-center gap-0.5">
+                                <a href={links[0]} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors" onClick={(e) => e.stopPropagation()}>
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                                {links.length > 1 && <span className="text-[9px] text-primary font-mono">+{links.length - 1}</span>}
+                              </span>
+                            ) : null;
+                          })()}
 
                           {piece.client_comment && (
                             <span className="text-[10px] text-[hsl(var(--runway-yellow))] flex items-center gap-0.5">
