@@ -1026,70 +1026,89 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         <FileText className="h-3 w-3" />
                         {piece.script_text ? "Skript" : "Skript"}
                       </Button>
-                      {/* Preview link — compact chip with popover edit */}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className={cn(
-                              "h-6 px-2 text-[10px] font-mono gap-1.5",
-                              piece.preview_link
-                                ? "text-primary hover:bg-primary/10"
-                                : "text-muted-foreground hover:bg-muted/60"
-                            )}
-                          >
-                            <LinkIcon className="h-3 w-3 shrink-0" />
-                            {piece.preview_link ? (
-                              <span className="max-w-[160px] truncate">
-                                {(() => {
-                                  try {
-                                    const u = new URL(piece.preview_link);
-                                    const host = u.hostname.replace("www.", "");
-                                    const path = u.pathname.length > 15 ? u.pathname.slice(0, 13) + "…" : u.pathname;
-                                    return host + (path !== "/" ? path : "");
-                                  } catch {
-                                    return piece.preview_link!.slice(0, 25) + (piece.preview_link!.length > 25 ? "…" : "");
-                                  }
-                                })()}
-                              </span>
-                            ) : (
-                              <span>Link</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80 p-3" align="start">
-                          <div className="space-y-2">
-                            <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Preview-Link</label>
-                            <Input
-                              value={piece.preview_link || ""}
-                              placeholder="https://drive.google.com/..."
-                              className="h-8 text-xs font-mono"
-                              onBlur={(e) => {
-                                const url = e.target.value.trim();
-                                if (url && url !== piece.preview_link) {
-                                  handlePreviewLinkChange(piece.id, url, localTitles[piece.id] ?? piece.title);
-                                }
-                              }}
-                              onChange={(e) => updatePiece(piece.id, { preview_link: e.target.value })}
-                              disabled={!canEdit}
-                            />
-                            {piece.preview_link && (
-                              <a href={piece.preview_link} target="_blank" rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                                <ExternalLink className="h-3 w-3" /> Öffnen
+                      {/* Preview links — multiple links in one popover */}
+                      {(() => {
+                        const links = (piece.preview_link || "").split("\n").filter((l: string) => l.trim());
+                        const linkCount = links.length;
+                        return (
+                          <>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className={cn(
+                                    "h-6 px-2 text-[10px] font-mono gap-1.5",
+                                    linkCount > 0
+                                      ? "text-primary hover:bg-primary/10"
+                                      : "text-muted-foreground hover:bg-muted/60"
+                                  )}
+                                >
+                                  <LinkIcon className="h-3 w-3 shrink-0" />
+                                  {linkCount > 0 ? (
+                                    <span>{linkCount} Link{linkCount > 1 ? "s" : ""}</span>
+                                  ) : (
+                                    <span>Links</span>
+                                  )}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-80 p-3" align="start">
+                                <div className="space-y-3">
+                                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Preview-Links (z.B. pro Hook ein Video)</label>
+                                  {[...links, ""].map((link, idx) => (
+                                    <div key={idx} className="flex items-center gap-1.5">
+                                      <span className="text-[10px] text-muted-foreground font-mono w-4 shrink-0">{idx + 1}.</span>
+                                      <Input
+                                        value={link}
+                                        placeholder="https://drive.google.com/..."
+                                        className="h-7 text-xs font-mono flex-1"
+                                        disabled={!canEdit}
+                                        onBlur={(e) => {
+                                          const val = e.target.value.trim();
+                                          const updated = [...links];
+                                          if (idx < links.length) {
+                                            if (val) updated[idx] = val;
+                                            else updated.splice(idx, 1);
+                                          } else if (val) {
+                                            updated.push(val);
+                                          }
+                                          const joined = updated.filter(Boolean).join("\n");
+                                          if (joined !== piece.preview_link) {
+                                            updatePiece(piece.id, { preview_link: joined || null });
+                                            // Auto-title from first link
+                                            if (idx === 0 && val && val.includes("drive.google.com") && !piece.title) {
+                                              handlePreviewLinkChange(piece.id, joined, localTitles[piece.id] ?? piece.title);
+                                            }
+                                          }
+                                        }}
+                                        onChange={(e) => {
+                                          // Optimistic local update
+                                          const updated = [...links];
+                                          if (idx < links.length) updated[idx] = e.target.value;
+                                          else updated.push(e.target.value);
+                                          updatePiece(piece.id, { preview_link: updated.filter(Boolean).join("\n") });
+                                        }}
+                                      />
+                                      {link && (
+                                        <a href={link} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80" onClick={(e) => e.stopPropagation()}>
+                                          <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+
+                            {linkCount > 0 && (
+                              <a href={links[0]} target="_blank" rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-primary transition-colors">
+                                <ExternalLink className="h-3.5 w-3.5" />
                               </a>
                             )}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-
-                      {piece.preview_link && (
-                        <a href={piece.preview_link} target="_blank" rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-primary transition-colors">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      )}
+                          </>
+                        );
+                      })()}
 
                       {/* Caption/Transcript — same row */}
                       {(activePhase === "approved" || activePhase === "handed_over") && (
