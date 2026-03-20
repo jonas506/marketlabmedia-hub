@@ -19,11 +19,14 @@ export interface PipelineCounts {
   handedOver: number;
 }
 
+export type LifecyclePhase = "onboarding" | "active" | "contract_ending";
+
 export interface ClientDashboardData extends Client {
   pipelineCounts: PipelineCounts;
   handedOverThisMonth: { reels: number; carousels: number; stories: number };
   nextShootDay: string | null;
   runway: number;
+  lifecyclePhase: LifecyclePhase;
 }
 
 const getCurrentMonth = () => {
