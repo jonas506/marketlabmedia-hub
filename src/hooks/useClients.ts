@@ -12,6 +12,8 @@ export interface Client {
   drive_branding_link: string | null;
   drive_logo_link: string | null;
   drive_styleguide_link: string | null;
+  contract_start: string | null;
+  contract_duration: string | null;
 }
 
 export interface PipelineCounts {
@@ -19,11 +21,14 @@ export interface PipelineCounts {
   handedOver: number;
 }
 
+export type LifecyclePhase = "onboarding" | "active" | "contract_ending";
+
 export interface ClientDashboardData extends Client {
   pipelineCounts: PipelineCounts;
   handedOverThisMonth: { reels: number; carousels: number; stories: number };
   nextShootDay: string | null;
   runway: number;
+  lifecyclePhase: LifecyclePhase;
 }
 
 const getCurrentMonth = () => {
@@ -55,6 +60,13 @@ export const useClients = () => {
         .gte("date", today)
         .order("date", { ascending: true });
 
+      // Fetch onboarding checklists to determine lifecycle phase
+      const { data: onboardingChecklists } = await supabase
+        .from("checklists")
+        .select("client_id, status, category")
+        .in("client_id", clientIds)
+        .eq("category", "onboarding");
+
       const { month, year } = getCurrentMonth();
 
       return clients.map((client) => {
@@ -78,6 +90,29 @@ export const useClients = () => {
 
         const nextShoot = shootDays?.find((s) => s.client_id === client.id);
 
+        // Compute lifecycle phase
+        const clientOnboarding = onboardingChecklists?.filter(
+          (c) => c.client_id === client.id && c.status !== "done"
+        ) ?? [];
+        const hasOpenOnboarding = clientOnboarding.length > 0;
+
+        let lifecyclePhase: LifecyclePhase = "active";
+        if (hasOpenOnboarding) {
+          lifecyclePhase = "onboarding";
+        } else if (client.contract_start && client.contract_duration) {
+          const durationMonths = parseInt(client.contract_duration) || 0;
+          if (durationMonths > 0) {
+            const start = new Date(client.contract_start);
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + durationMonths);
+            const now = new Date();
+            const fourWeeksFromNow = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
+            if (end <= fourWeeksFromNow) {
+              lifecyclePhase = "contract_ending";
+            }
+          }
+        }
+
         return {
           ...client,
           pipelineCounts: { inPipeline, handedOver },
@@ -88,6 +123,7 @@ export const useClients = () => {
           },
           nextShootDay: nextShoot?.date ?? null,
           runway,
+          lifecyclePhase,
         };
       }).sort((a, b) => a.runway - b.runway);
     },

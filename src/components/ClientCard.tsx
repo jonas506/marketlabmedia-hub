@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
-import { ClientDashboardData } from "@/hooks/useClients";
+import { ClientDashboardData, LifecyclePhase } from "@/hooks/useClients";
 import RunwayBadge from "./RunwayBadge";
-import { Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight, Rocket, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import DeleteClientDialog from "./DeleteClientDialog";
+
+const lifecycleConfig: Record<LifecyclePhase, { label: string; className: string; icon?: React.ReactNode }> = {
+  onboarding: { label: "Onboarding", className: "bg-amber-500/15 text-amber-400 border-amber-500/30", icon: <Rocket className="h-3 w-3" /> },
+  active: { label: "Aktiv", className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+  contract_ending: { label: "Vertrag endet", className: "bg-red-500/15 text-red-400 border-red-500/30", icon: <AlertTriangle className="h-3 w-3" /> },
+};
 
 interface ClientCardProps {
   client: ClientDashboardData;
@@ -67,11 +73,15 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
                 <h3 className="font-display text-sm font-semibold truncate">{client.name}</h3>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary transition-all shrink-0" />
               </div>
-              <span className={`monday-status text-[9px] py-0.5 px-2 min-w-0 mt-1 ${
-                client.status === "active" ? "monday-status-done" : "monday-status-default"
-              }`}>
-                {client.status === "active" ? "Aktiv" : "Pausiert"}
-              </span>
+              {(() => {
+                const lc = lifecycleConfig[client.lifecyclePhase];
+                return (
+                  <span className={`inline-flex items-center gap-1 text-[9px] py-0.5 px-2 rounded-full border font-semibold ${lc.className}`}>
+                    {lc.icon}
+                    {lc.label}
+                  </span>
+                );
+              })()}
             </div>
             <RunwayBadge days={client.runway} />
           </div>
