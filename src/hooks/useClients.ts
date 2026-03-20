@@ -60,6 +60,13 @@ export const useClients = () => {
         .gte("date", today)
         .order("date", { ascending: true });
 
+      // Fetch onboarding checklists to determine lifecycle phase
+      const { data: onboardingChecklists } = await supabase
+        .from("checklists")
+        .select("client_id, status, category")
+        .in("client_id", clientIds)
+        .eq("category", "onboarding");
+
       const { month, year } = getCurrentMonth();
 
       return clients.map((client) => {
