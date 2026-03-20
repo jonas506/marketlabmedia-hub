@@ -90,6 +90,29 @@ export const useClients = () => {
 
         const nextShoot = shootDays?.find((s) => s.client_id === client.id);
 
+        // Compute lifecycle phase
+        const clientOnboarding = onboardingChecklists?.filter(
+          (c) => c.client_id === client.id && c.status !== "done"
+        ) ?? [];
+        const hasOpenOnboarding = clientOnboarding.length > 0;
+
+        let lifecyclePhase: LifecyclePhase = "active";
+        if (hasOpenOnboarding) {
+          lifecyclePhase = "onboarding";
+        } else if (client.contract_start && client.contract_duration) {
+          const durationMonths = parseInt(client.contract_duration) || 0;
+          if (durationMonths > 0) {
+            const start = new Date(client.contract_start);
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + durationMonths);
+            const now = new Date();
+            const fourWeeksFromNow = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
+            if (end <= fourWeeksFromNow) {
+              lifecyclePhase = "contract_ending";
+            }
+          }
+        }
+
         return {
           ...client,
           pipelineCounts: { inPipeline, handedOver },
@@ -100,6 +123,7 @@ export const useClients = () => {
           },
           nextShootDay: nextShoot?.date ?? null,
           runway,
+          lifecyclePhase,
         };
       }).sort((a, b) => a.runway - b.runway);
     },

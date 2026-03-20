@@ -73,11 +73,15 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
                 <h3 className="font-display text-sm font-semibold truncate">{client.name}</h3>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary transition-all shrink-0" />
               </div>
-              <span className={`monday-status text-[9px] py-0.5 px-2 min-w-0 mt-1 ${
-                client.status === "active" ? "monday-status-done" : "monday-status-default"
-              }`}>
-                {client.status === "active" ? "Aktiv" : "Pausiert"}
-              </span>
+              {(() => {
+                const lc = lifecycleConfig[client.lifecyclePhase];
+                return (
+                  <span className={`inline-flex items-center gap-1 text-[9px] py-0.5 px-2 rounded-full border font-semibold ${lc.className}`}>
+                    {lc.icon}
+                    {lc.label}
+                  </span>
+                );
+              })()}
             </div>
             <RunwayBadge days={client.runway} />
           </div>
