@@ -173,7 +173,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="flex-1 min-h-0 overflow-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
           <div className="px-6 py-5 space-y-6">
             {/* Links section */}
             <div>
