@@ -331,7 +331,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                         }}
                         placeholder={`Hook-Variante ${idx + 1}…`}
                         className={cn(
-                          "flex-1 text-sm resize-none min-h-[44px] bg-muted/20 border-muted-foreground/10 overflow-hidden",
+                          "flex-1 text-sm resize-none min-h-[44px] bg-muted/20 border-muted-foreground/10",
                           "focus-visible:bg-background transition-colors"
                         )}
                         rows={1}
