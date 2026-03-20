@@ -173,7 +173,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="flex-1 min-h-0 overflow-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
           <div className="px-6 py-5 space-y-6">
             {/* Links section */}
             <div>
@@ -331,7 +331,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                         }}
                         placeholder={`Hook-Variante ${idx + 1}…`}
                         className={cn(
-                          "flex-1 text-sm resize-none min-h-[44px] bg-muted/20 border-muted-foreground/10 overflow-hidden",
+                          "flex-1 text-sm resize-none min-h-[44px] bg-muted/20 border-muted-foreground/10",
                           "focus-visible:bg-background transition-colors"
                         )}
                         rows={1}
@@ -391,7 +391,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   }
                 }}
                 placeholder="Hauptteil des Skripts hier schreiben…"
-                className="text-sm bg-background/50 resize-none min-h-[120px] overflow-hidden"
+                className="text-sm bg-background/50 resize-none min-h-[120px]"
                 rows={5}
                 disabled={!canEdit}
               />
