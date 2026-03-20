@@ -391,7 +391,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                   }
                 }}
                 placeholder="Hauptteil des Skripts hier schreiben…"
-                className="text-sm bg-background/50 resize-none min-h-[120px] overflow-hidden"
+                className="text-sm bg-background/50 resize-none min-h-[120px]"
                 rows={5}
                 disabled={!canEdit}
               />
