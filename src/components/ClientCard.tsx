@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
-import { ClientDashboardData } from "@/hooks/useClients";
+import { ClientDashboardData, LifecyclePhase } from "@/hooks/useClients";
 import RunwayBadge from "./RunwayBadge";
-import { Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight, Rocket, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import DeleteClientDialog from "./DeleteClientDialog";
+
+const lifecycleConfig: Record<LifecyclePhase, { label: string; className: string; icon?: React.ReactNode }> = {
+  onboarding: { label: "Onboarding", className: "bg-amber-500/15 text-amber-400 border-amber-500/30", icon: <Rocket className="h-3 w-3" /> },
+  active: { label: "Aktiv", className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+  contract_ending: { label: "Vertrag endet", className: "bg-red-500/15 text-red-400 border-red-500/30", icon: <AlertTriangle className="h-3 w-3" /> },
+};
 
 interface ClientCardProps {
   client: ClientDashboardData;
