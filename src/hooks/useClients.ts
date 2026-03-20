@@ -12,6 +12,8 @@ export interface Client {
   drive_branding_link: string | null;
   drive_logo_link: string | null;
   drive_styleguide_link: string | null;
+  contract_start: string | null;
+  contract_duration: string | null;
 }
 
 export interface PipelineCounts {
