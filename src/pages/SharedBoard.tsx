@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Tldraw, TLStoreSnapshot, Editor } from "tldraw";
+import { Tldraw, Editor, loadSnapshot } from "tldraw";
 import "tldraw/tldraw.css";
 import { Presentation, Loader2 } from "lucide-react";
 
