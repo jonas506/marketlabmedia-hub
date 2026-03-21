@@ -53,6 +53,12 @@ const STRATEGY_TYPES = [
   { value: "full", icon: "🔄", label: "Vollständige Strategie", desc: "Kombiniert Funnel, Journey und Content-Plan" },
 ];
 
+interface ClientFile {
+  name: string;
+  path: string;
+  selected: boolean;
+}
+
 const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId }: Props) => {
   const [files, setFiles] = useState<SourceFile[]>([]);
   const [briefing, setBriefing] = useState("");
@@ -64,8 +70,42 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
   const [structured, setStructured] = useState({ company: "", audience: "", problem: "", measures: "", goal: "", budget: "" });
   const [generating, setGenerating] = useState(false);
   const [genPhase, setGenPhase] = useState("");
+  const [clientFiles, setClientFiles] = useState<ClientFile[]>([]);
+  const [loadingClientFiles, setLoadingClientFiles] = useState(false);
 
-  const hasSource = files.length > 0 || briefing.trim() || urls.length > 0 || (clientData && includeClientData) || Object.values(structured).some(v => v.trim());
+  // Load CI-assets from client storage when panel opens
+  useEffect(() => {
+    if (!open || !clientData?.id) {
+      setClientFiles([]);
+      return;
+    }
+    const loadClientFiles = async () => {
+      setLoadingClientFiles(true);
+      try {
+        const { data: fileList } = await supabase.storage
+          .from("client-logos")
+          .list(`${clientData.id}/ci-assets`, { limit: 50 });
+        if (fileList && fileList.length > 0) {
+          setClientFiles(
+            fileList
+              .filter(f => f.name !== ".emptyFolderPlaceholder")
+              .map(f => ({
+                name: f.name,
+                path: `${clientData.id}/ci-assets/${f.name}`,
+                selected: false,
+              }))
+          );
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingClientFiles(false);
+      }
+    };
+    loadClientFiles();
+  }, [open, clientData?.id]);
+
+  const hasSource = files.length > 0 || briefing.trim() || urls.length > 0 || (clientData && includeClientData) || Object.values(structured).some(v => v.trim()) || clientFiles.some(f => f.selected);
 
   const handleFileUpload = useCallback(async (fileList: FileList) => {
     for (const file of Array.from(fileList)) {
