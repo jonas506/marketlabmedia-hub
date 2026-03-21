@@ -13,10 +13,11 @@ import ClientNotebook from "@/components/client/ClientNotebook";
 import MarketingTracking from "@/components/client/MarketingTracking";
 import TaskList from "@/components/client/TaskList";
 import InspirationBoard from "@/components/client/InspirationBoard";
+import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -172,6 +173,10 @@ const ClientDetail = () => {
               <BookOpen className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Notebook</span>
             </TabsTrigger>
+            <TabsTrigger value="strategy" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Presentation className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Strategie</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="mt-4">
@@ -188,6 +193,9 @@ const ClientDetail = () => {
           </TabsContent>
           <TabsContent value="notebook" className="mt-4">
             <ClientNotebook clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+          </TabsContent>
+          <TabsContent value="strategy" className="mt-4">
+            <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
           </TabsContent>
         </Tabs>
       </motion.div>
