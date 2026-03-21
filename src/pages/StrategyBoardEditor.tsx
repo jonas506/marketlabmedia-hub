@@ -44,7 +44,7 @@ const StrategyBoardEditor = () => {
     setSaveStatus(error ? "unsaved" : "saved");
   }, [id]);
 
-  const debouncedSave = useCallback((snapshot: TLStoreSnapshot) => {
+  const debouncedSave = useCallback((snapshot: any) => {
     setSaveStatus("unsaved");
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => saveBoard(snapshot), 3000);
