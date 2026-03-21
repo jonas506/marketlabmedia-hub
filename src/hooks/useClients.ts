@@ -76,7 +76,7 @@ export const useClients = () => {
         const handedOver = pieces.filter((c) => c.phase === "handed_over").length;
 
         const handedOverThisMonth = pieces.filter(
-          (c) => c.phase === "handed_over" && c.target_month === month && c.target_year === year
+          (c) => (c.phase === "approved" || c.phase === "handed_over") && c.target_month === month && c.target_year === year
         );
 
         // Runway: only reels + stories, done + handed_over
