@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
     userMessage += `\nErstelle jetzt die Strategie als JSON.`;
 
     // Call Lovable AI
-    const aiResponse = await fetch("https://ai-gateway.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
