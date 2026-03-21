@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      board_source_files: {
+        Row: {
+          board_id: string
+          created_at: string
+          extracted_text: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+        }
+        Insert: {
+          board_id: string
+          created_at?: string
+          extracted_text?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+        }
+        Update: {
+          board_id?: string
+          created_at?: string
+          extracted_text?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "board_source_files_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "strategy_boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       board_templates: {
         Row: {
           category: string
@@ -1793,39 +1834,48 @@ export type Database = {
       }
       strategy_boards: {
         Row: {
+          ai_generated: boolean | null
           board_data: Json
+          chat_history: Json | null
           client_id: string
           created_at: string
           created_by: string
           description: string | null
           id: string
           share_token: string | null
+          sources: Json | null
           template_type: string | null
           thumbnail: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          ai_generated?: boolean | null
           board_data?: Json
+          chat_history?: Json | null
           client_id: string
           created_at?: string
           created_by: string
           description?: string | null
           id?: string
           share_token?: string | null
+          sources?: Json | null
           template_type?: string | null
           thumbnail?: string | null
           title?: string
           updated_at?: string
         }
         Update: {
+          ai_generated?: boolean | null
           board_data?: Json
+          chat_history?: Json | null
           client_id?: string
           created_at?: string
           created_by?: string
           description?: string | null
           id?: string
           share_token?: string | null
+          sources?: Json | null
           template_type?: string | null
           thumbnail?: string | null
           title?: string
