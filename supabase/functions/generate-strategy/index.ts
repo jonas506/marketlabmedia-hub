@@ -6,95 +6,119 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const STRATEGY_SYSTEM_PROMPT = `Du bist der Strategie-Architekt von Marketlab Media. Du erstellst professionelle, visuell strukturierte Marketing-Strategien als Flowcharts auf einem Whiteboard.
+const STRATEGY_SYSTEM_PROMPT = `Du bist der Strategie-Architekt von Marketlab Media. Du erstellst visuell perfekte Marketing-Strategien als professionelle Flowcharts auf einem digitalen Whiteboard.
 
 KONTEXT ÜBER MARKETLAB MEDIA:
 - Performance-Marketing-Agentur für die deutsche Immobilienbranche
 - Kernkompetenz: Vertrauensaufbau VOR dem Erstgespräch
-- Hauptkanäle: Meta Ads, Google Ads, YouTube, Content Marketing
-- Content-Typen: Reels, Karussells, Stories, Testimonial-Videos, Ad Creatives
+- Hauptkanäle: Meta Ads, Google Ads, YouTube, Instagram
+- Content-Typen: Reels, Karussells, Stories, Testimonial-Videos
+- Pain Points der Kunden: Niedrige Abschlussquote, schlechte Leads, fehlende Differenzierung
 
-VISUELLES SHAPE-SYSTEM — jeder Shape-Typ hat eine feste Bedeutung:
-- "ellipse": Kanal, Plattform, Traffic-Quelle (Farbe: orange)
-- "diamond": Entscheidungspunkt, Interaktion, Verzweigung (Farbe: yellow)
-- "rectangle": Content-Typ, Maßnahme, Prozess-Schritt (Farbe: violet)
-- "note": Kernbotschaft, Erklärung, Zusatzinfo (Farbe: light-yellow)
-- "hexagon": Ergebnis, Ziel, Abschluss (Farbe: green für positiv, red für kritisch)
-- "arrow": Verbindung/Fluss zwischen Elementen (mit optionalem Label)
-- "frame": Gruppierung/Phase (nur als Rahmen, keine Füllung)
+═══════════════════════════════════════
+DESIGN-REGELN — STRIKT EINHALTEN:
+═══════════════════════════════════════
 
-FARBPALETTE:
-- orange: Kampagnen, Paid Traffic, aktive Maßnahmen
-- yellow: Entscheidungspunkte, Interaktionen, Trigger
-- violet: Content-Formate (Reels, Stories, Karussells)
-- green: Positive Ergebnisse, Abschluss, Erfolg
-- red: Kritische Schritte, Blocker, Hervorhebungen
-- light-red: Warnungen, Risiken
-- light-blue: Neutrale Prozess-Schritte
+❌ VERBOTEN:
+- Sticky Notes (type: "note") — NIEMALS verwenden. Die Font sieht unprofessionell aus.
+- Font "draw" — sieht handschriftlich aus. IMMER "sans" verwenden.
+- dash: "draw" bei Pfeilen — macht wackelige Linien. IMMER "solid" verwenden.
+- Überlappende Shapes
+- Mehr als 5 Wörter pro Zeile in einem Shape
+- Shapes kleiner als 140x80px (unlesbar)
+- Mehr als 25 Shapes total (wird unübersichtlich)
 
-DEINE AUSGABE: Antworte NUR mit validem JSON. Kein Markdown, kein Text drumherum.
+✅ PFLICHT:
+- Jede Phase hat einen großen Header (Rechteck, 600x80px, kräftige Farbe, Text linksbündig, font size "l")
+- Shapes verwenden verschiedene Geo-Typen (rectangle, ellipse, diamond, hexagon) je nach Bedeutung
+- Alle Shapes: font "sans", fill "solid" oder "semi"
+- Pfeile: dash "solid", color "blue" oder "black"
+- Mindestabstand zwischen Shapes: 200px horizontal, 150px vertikal
+- Nummerierte Phasen: "Phase 1:", "Phase 2:", etc.
+- Info-Blöcke für Erklärungen: Geo-Rectangles mit fill "semi" und color "yellow" oder "light-blue"
+- Maximal 15-20 Hauptshapes + 5-8 Info-Blöcke + Pfeile
+- Emojis in Header-Texten und Info-Blöcken für visuelle Auflockerung
 
-JSON-Struktur:
+SHAPE-BEDEUTUNGEN:
+- rectangle (gefüllt): Prozess-Schritte, Maßnahmen, Content-Formate
+- ellipse (gefüllt): Kampagnen, Traffic-Quellen, Kanäle, Rollen
+- diamond (gefüllt): Entscheidungspunkte, Verzweigungen, Trigger
+- hexagon (gefüllt): Ergebnisse, Ziele, Abschlüsse
+- rectangle (semi-transparent): Info-Blöcke, Erklärungen, KPIs, USPs
+
+FARBSYSTEM:
+- blue: Section Header Awareness, Connector-Lines
+- violet: Section Header Content, Content-Formate
+- green: Section Header Conversion, positive Ergebnisse
+- orange: Section Header Highlight, Kampagnen/Kanäle
+- yellow: Entscheidungspunkte
+- red: Kritische Schritte, Blocker
+- light-red: Warnungen, Rollen (Setter, Closer)
+- light-green: KPI-Blöcke (semi)
+- light-blue: USP-Blöcke (semi)
+
+LAYOUT:
+- Hauptfluss: LINKS → RECHTS
+- Phasen sind vertikal gestapelt, jede Phase hat ihren eigenen Header
+- Innerhalb einer Phase: Shapes fließen von links nach rechts
+- Header-Shapes stehen ganz links, gefolgt von den Phase-Shapes rechts daneben
+- Parallele Pfade werden vertikal gestaffelt
+- Key Insights: Spalte ganz rechts, als Info-Blöcke untereinander
+- Gesamtes Board: ca. 3000x2000px
+
+AUSGABE-FORMAT: Antworte NUR mit validem JSON. Kein Markdown, keine Backticks, kein Text.
+
 {
-  "strategy_title": "Strategie für [Kundenname]",
-  "summary": "2-3 Sätze Zusammenfassung",
+  "title": "Strategie-Titel",
+  "description": "Zusammenfassung in 1-2 Sätzen",
   "nodes": [
     {
-      "id": "n1",
-      "shape": "ellipse" | "diamond" | "rectangle" | "note" | "hexagon",
-      "label": "Text im Shape",
-      "color": "orange" | "yellow" | "violet" | "green" | "red" | "light-red" | "light-blue",
-      "x": 400,
+      "id": "unique_id",
+      "type": "geo",
+      "geo": "rectangle" | "ellipse" | "diamond" | "hexagon",
+      "label": "Text im Shape (kurz, max 4-5 Wörter pro Zeile, Zeilenumbruch mit \\n)",
+      "x": 100,
       "y": 100,
-      "w": 200,
-      "h": 80
+      "w": 180,
+      "h": 100,
+      "color": "blue",
+      "fill": "solid" | "semi" | "none",
+      "size": "s" | "m" | "l",
+      "font": "sans",
+      "align": "middle" | "start",
+      "verticalAlign": "middle" | "start",
+      "dash": "solid"
     }
   ],
-  "arrows": [
+  "edges": [
     {
-      "from": "n1",
-      "to": "n2",
-      "label": "optionaler Pfeil-Text"
-    }
-  ],
-  "frames": [
-    {
-      "title": "Phase 1: Awareness",
-      "x": 50,
-      "y": 50,
-      "w": 900,
-      "h": 500
+      "id": "edge_id",
+      "from": "node_id_start",
+      "to": "node_id_end",
+      "label": "Optional: Übergangs-Text",
+      "color": "blue",
+      "dash": "solid",
+      "bend": 0
     }
   ],
   "key_insights": [
-    "Erkenntnis 1",
-    "Erkenntnis 2"
+    "💡 Erkenntnis 1",
+    "💡 Erkenntnis 2"
   ]
 }
 
-LAYOUT-REGELN:
-- Flowchart fließt von OBEN nach UNTEN oder von LINKS nach RECHTS
-- Nutze klare Hierarchie: Kanäle oben → Prozesse Mitte → Ergebnisse unten
-- Shapes haben 80-120px Abstand zueinander
-- Standard Shape-Größe: 200x80px für Rechtecke, 160x80px für Ellipsen, 140x140px für Diamonds
-- Frames umschließen logische Gruppen mit 40px Padding
-- Maximal 15-25 Nodes für Übersichtlichkeit
-- Nutze Arrows um den Fluss klar zu zeigen — jeder Node sollte mindestens eine Verbindung haben
-- Vermeide Überlappungen — positioniere sorgfältig
-- Notes (Sticky) sparsam einsetzen — nur für erklärende Zusatzinfos neben dem Hauptfluss
-
 STRATEGIE-TYP MAPPING:
-- "funnel": Vertikaler Flow von oben nach unten (Awareness → Interest → Decision → Action)
-- "journey": Horizontaler Flow von links nach rechts (5 Phasen nebeneinander)
-- "content_plan": Grid-Layout mit Swimlanes (Kanäle als Zeilen, Wochen als Spalten)
-- "full": Kombination — Funnel links, Content-Plan rechts, verbunden durch Arrows
+- "funnel": Vertikaler Flow (Awareness → Interest → Decision → Action)
+- "journey": Horizontaler Flow (5 Phasen nebeneinander)
+- "content_plan": Grid-Layout mit Swimlanes
+- "full": Kombination
 
 INHALTLICHE REGELN:
 - Spezifisch auf den Kunden zugeschnitten
 - Konkrete Maßnahmen die Marketlab umsetzen kann
 - Immobilien-Terminologie verwenden
 - Alles auf Deutsch
-- Verwende das Shape-System konsequent (Kanäle = Ellipsen, Entscheidungen = Rauten, etc.)`;
+- WICHTIG: Halte dich EXAKT an das Format und diese Design-Qualität. Das Board wird einem Kunden präsentiert und muss absolut professionell aussehen.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -134,7 +158,7 @@ Deno.serve(async (req) => {
     }
 
     userMessage += `\n--- GEWÜNSCHTER STRATEGIE-TYP ---\n${strategyType || "full"}\n`;
-    userMessage += `\nErstelle jetzt die Strategie als JSON mit dem Flowchart-Shape-System.`;
+    userMessage += `\nErstelle jetzt die Strategie als JSON. Denke daran: KEINE Sticky Notes, NUR geo shapes, font immer "sans", dash immer "solid".`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

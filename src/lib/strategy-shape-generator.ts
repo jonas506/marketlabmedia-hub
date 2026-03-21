@@ -4,263 +4,287 @@ import { createShapeId, type TLShapeId } from "tldraw";
 
 interface StrategyNode {
   id: string;
-  shape: "ellipse" | "diamond" | "rectangle" | "note" | "hexagon";
+  type: "geo";
+  geo: "rectangle" | "ellipse" | "diamond" | "hexagon";
   label: string;
-  color?: string;
-  x: number;
-  y: number;
-  w?: number;
-  h?: number;
-}
-
-interface StrategyArrow {
-  from: string;
-  to: string;
-  label?: string;
-}
-
-interface StrategyFrame {
-  title: string;
   x: number;
   y: number;
   w: number;
   h: number;
+  color: string;
+  fill: "solid" | "semi" | "none";
+  size: "s" | "m" | "l";
+  font: "sans";
+  align: "middle" | "start";
+  verticalAlign: "middle" | "start";
+  dash: "solid";
+}
+
+interface StrategyEdge {
+  id: string;
+  from: string;
+  to: string;
+  label?: string;
+  color: string;
+  dash: "solid" | "dashed";
+  bend?: number;
 }
 
 interface StrategyJSON {
-  strategy_title: string;
-  summary?: string;
+  title: string;
+  description?: string;
   nodes: StrategyNode[];
-  arrows: StrategyArrow[];
-  frames?: StrategyFrame[];
+  edges: StrategyEdge[];
   key_insights?: string[];
-  // Legacy support
-  sections?: any[];
+  // Legacy compat
+  strategy_title?: string;
+  summary?: string;
+  arrows?: any[];
+  frames?: any[];
 }
-
-const COLOR_MAP: Record<string, string> = {
-  orange: "orange",
-  yellow: "yellow",
-  violet: "violet",
-  green: "green",
-  red: "red",
-  "light-red": "light-red",
-  "light-blue": "light-blue",
-  "light-yellow": "yellow",
-  blue: "blue",
-  white: "white",
-  purple: "violet",
-};
-
-const GEO_MAP: Record<string, string> = {
-  ellipse: "ellipse",
-  diamond: "diamond",
-  rectangle: "rectangle",
-  hexagon: "hexagon",
-};
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-export async function generateBoardFromStrategy(editor: Editor, strategy: StrategyJSON) {
-  // Map from AI node IDs to tldraw shape IDs
-  const nodeIdMap = new Map<string, TLShapeId>();
+function validateStrategy(strategy: StrategyJSON): StrategyJSON {
+  // Minimum size
+  strategy.nodes.forEach(n => {
+    if (n.w < 120) n.w = 120;
+    if (n.h < 60) n.h = 60;
+  });
 
-  // 1. Title
+  // Force sans font and solid dash on all nodes
+  strategy.nodes.forEach(n => {
+    (n as any).font = "sans";
+    if ((n as any).dash !== "solid") (n as any).dash = "solid";
+  });
+
+  // Filter edges to valid node references
+  const nodeIds = new Set(strategy.nodes.map(n => n.id));
+  strategy.edges = strategy.edges.filter(e => nodeIds.has(e.from) && nodeIds.has(e.to));
+
+  // Force solid/dashed on edges
+  strategy.edges.forEach(e => {
+    if (e.dash !== "solid" && e.dash !== "dashed") {
+      e.dash = "solid";
+    }
+  });
+
+  // Shift to positive coordinates
+  const minX = Math.min(...strategy.nodes.map(n => n.x), 0);
+  const minY = Math.min(...strategy.nodes.map(n => n.y), 0);
+  if (minX < 0 || minY < 0) {
+    const offsetX = minX < 0 ? Math.abs(minX) + 50 : 0;
+    const offsetY = minY < 0 ? Math.abs(minY) + 50 : 0;
+    strategy.nodes.forEach(n => {
+      n.x += offsetX;
+      n.y += offsetY;
+    });
+  }
+
+  return strategy;
+}
+
+export async function generateBoardFromStrategy(editor: Editor, strategy: StrategyJSON) {
+  const shapeIdMap = new Map<string, TLShapeId>();
+
+  // Handle legacy format
+  const title = strategy.title || strategy.strategy_title || "Marketing-Strategie";
+  const description = strategy.description || strategy.summary || "";
+  
+  // Handle legacy arrows format
+  if (!strategy.edges && strategy.arrows) {
+    strategy.edges = strategy.arrows.map((a: any, i: number) => ({
+      id: `legacy_e${i}`,
+      from: a.from,
+      to: a.to,
+      label: a.label || "",
+      color: "blue",
+      dash: "solid" as const,
+      bend: 0,
+    }));
+  }
+  if (!strategy.edges) strategy.edges = [];
+
+  const validated = validateStrategy(strategy);
+
+  // ═══════════════════════════════════
+  // 1. TITLE
+  // ═══════════════════════════════════
   editor.createShape({
     type: "text" as any,
-    x: (strategy.nodes?.[0]?.x ?? 400) - 200,
-    y: (strategy.frames?.[0]?.y ?? strategy.nodes?.[0]?.y ?? 0) - 120,
+    x: 0,
+    y: -140,
     props: {
-      richText: toRichText(strategy.strategy_title || "Marketing-Strategie"),
+      richText: toRichText(title),
       size: "xl",
       font: "sans",
       autoSize: true,
     } as any,
   });
-  await delay(120);
+  await delay(100);
 
-  // 2. Summary
-  if (strategy.summary) {
+  if (description) {
     editor.createShape({
       type: "text" as any,
-      x: (strategy.nodes?.[0]?.x ?? 400) - 200,
-      y: (strategy.frames?.[0]?.y ?? strategy.nodes?.[0]?.y ?? 0) - 60,
+      x: 0,
+      y: -70,
       props: {
-        richText: toRichText(strategy.summary),
+        richText: toRichText(description),
         size: "s",
         font: "sans",
+        color: "grey",
         autoSize: true,
       } as any,
     });
     await delay(80);
   }
 
-  // 3. Frames (create first so nodes appear inside)
-  if (strategy.frames) {
-    for (const frame of strategy.frames) {
-      editor.createShape({
-        type: "frame" as any,
-        x: frame.x,
-        y: frame.y,
-        props: {
-          w: frame.w || 900,
-          h: frame.h || 500,
-          name: frame.title || "Phase",
-        } as any,
-      });
-      await delay(100);
-    }
-  }
+  // ═══════════════════════════════════
+  // 2. NODES — ALL as geo shapes, NEVER sticky notes
+  // ═══════════════════════════════════
+  for (const node of validated.nodes) {
+    const shapeId = createShapeId();
+    shapeIdMap.set(node.id, shapeId);
 
-  // 4. Nodes — geo shapes and notes
-  if (strategy.nodes) {
-    for (const node of strategy.nodes) {
-      const tldrawId = createShapeId();
-      nodeIdMap.set(node.id, tldrawId);
-      const color = COLOR_MAP[node.color || "violet"] || "violet";
+    const isSolidFill = node.fill === "solid";
 
-      if (node.shape === "note") {
-        editor.createShape({
-          id: tldrawId,
-          type: "note" as any,
-          x: node.x,
-          y: node.y,
-          props: {
-            richText: toRichText(node.label || ""),
-            color,
-            size: "m",
-          } as any,
-        });
-      } else {
-        const geo = GEO_MAP[node.shape] || "rectangle";
-        const w = node.w || (node.shape === "diamond" ? 140 : node.shape === "ellipse" ? 180 : 200);
-        const h = node.h || (node.shape === "diamond" ? 140 : 80);
-
-        editor.createShape({
-          id: tldrawId,
-          type: "geo" as any,
-          x: node.x,
-          y: node.y,
-          props: {
-            geo,
-            w,
-            h,
-            richText: toRichText(node.label || ""),
-            color,
-            fill: "solid",
-            size: "m",
-            font: "sans",
-          } as any,
-        });
-      }
-      await delay(50);
-    }
-  }
-
-  // 5. Arrows — connect nodes
-  if (strategy.arrows) {
-    for (const arrow of strategy.arrows) {
-      const fromId = nodeIdMap.get(arrow.from);
-      const toId = nodeIdMap.get(arrow.to);
-      if (!fromId || !toId) continue;
-
-      try {
-        const arrowProps: any = {
-          type: "arrow" as any,
-          props: {
-            color: "black",
-            size: "m",
-            arrowheadEnd: "arrow",
-            arrowheadStart: "none",
-          } as any,
-        };
-
-        if (arrow.label) {
-          arrowProps.props.richText = toRichText(arrow.label);
-        }
-
-        const arrowId = createShapeId();
-        editor.createShape({
-          id: arrowId,
-          ...arrowProps,
-        });
-
-        // Bind arrow terminals to shapes
-        editor.createBindings([
-          {
-            type: "arrow",
-            fromId: arrowId,
-            toId: fromId,
-            props: {
-              terminal: "start",
-              isExact: false,
-              isPrecise: false,
-              normalizedAnchor: { x: 0.5, y: 0.5 },
-            },
-          },
-          {
-            type: "arrow",
-            fromId: arrowId,
-            toId: toId,
-            props: {
-              terminal: "end",
-              isExact: false,
-              isPrecise: false,
-              normalizedAnchor: { x: 0.5, y: 0.5 },
-            },
-          },
-        ]);
-      } catch (e) {
-        console.warn("Arrow creation error:", e);
-      }
-      await delay(30);
-    }
-  }
-
-  // 6. Key Insights
-  if (strategy.key_insights && strategy.key_insights.length > 0) {
-    const allShapes = editor.getCurrentPageShapes();
-    let maxX = 0;
-    for (const shape of allShapes) {
-      const bounds = editor.getShapePageBounds(shape);
-      if (bounds && bounds.maxX > maxX) maxX = bounds.maxX;
-    }
-
-    const insightX = maxX + 150;
     editor.createShape({
-      type: "text" as any,
-      x: insightX,
-      y: strategy.frames?.[0]?.y ?? 0,
+      id: shapeId,
+      type: "geo" as any,
+      x: node.x,
+      y: node.y,
       props: {
-        richText: toRichText("💡 Key Insights"),
-        size: "l",
+        w: node.w,
+        h: node.h,
+        geo: node.geo || "rectangle",
+        color: node.color || "blue",
+        fill: node.fill || "solid",
+        size: node.size || "m",
+        richText: toRichText(node.label || ""),
         font: "sans",
-        autoSize: true,
+        align: node.align || "middle",
+        verticalAlign: node.verticalAlign || "middle",
+        dash: "solid",
+        labelColor: isSolidFill ? "white" : "black",
+      } as any,
+    });
+    await delay(70);
+  }
+
+  // ═══════════════════════════════════
+  // 3. EDGES — Arrows with bindings
+  // ═══════════════════════════════════
+  for (const edge of validated.edges) {
+    const fromId = shapeIdMap.get(edge.from);
+    const toId = shapeIdMap.get(edge.to);
+    if (!fromId || !toId) continue;
+
+    const arrowId = createShapeId();
+
+    editor.createShape({
+      id: arrowId,
+      type: "arrow" as any,
+      props: {
+        color: edge.color || "blue",
+        size: "m",
+        dash: edge.dash === "dashed" ? "dashed" : "solid",
+        richText: edge.label ? toRichText(edge.label) : toRichText(""),
+        font: "sans",
+        arrowheadEnd: "arrow",
+        arrowheadStart: "none",
+        bend: edge.bend || 0,
+      } as any,
+    });
+
+    try {
+      editor.createBindings([
+        {
+          type: "arrow",
+          fromId: arrowId,
+          toId: fromId,
+          props: {
+            terminal: "start",
+            isExact: false,
+            isPrecise: false,
+            normalizedAnchor: { x: 0.5, y: 0.5 },
+          },
+        },
+        {
+          type: "arrow",
+          fromId: arrowId,
+          toId: toId,
+          props: {
+            terminal: "end",
+            isExact: false,
+            isPrecise: false,
+            normalizedAnchor: { x: 0.5, y: 0.5 },
+          },
+        },
+      ]);
+    } catch (e) {
+      console.warn("Could not create binding for edge:", edge.id, e);
+    }
+
+    await delay(40);
+  }
+
+  // ═══════════════════════════════════
+  // 4. KEY INSIGHTS — as geo rectangles, NOT sticky notes
+  // ═══════════════════════════════════
+  if (validated.key_insights && validated.key_insights.length > 0) {
+    const maxX = Math.max(...validated.nodes.map(n => n.x + n.w));
+    const insightX = maxX + 250;
+
+    // Header
+    editor.createShape({
+      type: "geo" as any,
+      x: insightX,
+      y: 0,
+      props: {
+        w: 300,
+        h: 60,
+        geo: "rectangle",
+        color: "yellow",
+        fill: "solid",
+        richText: toRichText("💡 Key Insights"),
+        font: "sans",
+        size: "l",
+        align: "start",
+        verticalAlign: "middle",
+        dash: "solid",
+        labelColor: "black",
       } as any,
     });
     await delay(80);
 
-    for (let i = 0; i < strategy.key_insights.length; i++) {
+    // Insight blocks as semi-transparent geo rectangles
+    for (let i = 0; i < validated.key_insights.length; i++) {
       editor.createShape({
         type: "geo" as any,
         x: insightX,
-        y: (strategy.frames?.[0]?.y ?? 0) + 60 + i * 100,
+        y: 90 + i * 140,
         props: {
-          geo: "rectangle",
           w: 300,
-          h: 70,
-          richText: toRichText(`💡 ${strategy.key_insights[i]}`),
+          h: 110,
+          geo: "rectangle",
           color: "yellow",
-          fill: "solid",
-          size: "s",
+          fill: "semi",
+          richText: toRichText(validated.key_insights[i]),
           font: "sans",
+          size: "s",
+          align: "start",
+          verticalAlign: "start",
+          dash: "solid",
+          labelColor: "black",
         } as any,
       });
-      await delay(50);
+      await delay(60);
     }
   }
 
-  // 7. Zoom to fit
-  await delay(300);
-  editor.zoomToFit({ animation: { duration: 500 } });
+  // ═══════════════════════════════════
+  // 5. ZOOM TO FIT
+  // ═══════════════════════════════════
+  await delay(400);
+  editor.zoomToFit({ animation: { duration: 600 } });
 }
