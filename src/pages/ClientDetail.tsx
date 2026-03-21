@@ -177,8 +177,6 @@ const ClientDetail = () => {
               <Presentation className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Strategie</span>
             </TabsTrigger>
-              <span className="hidden sm:inline">Notebook</span>
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="mt-4">
