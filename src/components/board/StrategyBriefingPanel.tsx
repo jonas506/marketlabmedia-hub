@@ -186,11 +186,28 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
         if (parts.length > 0) fullBriefing = (fullBriefing ? fullBriefing + "\n\n" : "") + parts.join("\n");
       }
 
+      // Download text from selected client files
+      const clientFileDocs: { name: string; text: string }[] = [];
+      for (const cf of clientFiles.filter(f => f.selected)) {
+        try {
+          const { data } = await supabase.storage.from("client-logos").download(cf.path);
+          if (data) {
+            const text = await data.text().catch(() => `[Datei: ${cf.name}]`);
+            clientFileDocs.push({ name: cf.name, text: text.substring(0, 10000) });
+          }
+        } catch {
+          clientFileDocs.push({ name: cf.name, text: `[Datei: ${cf.name}]` });
+        }
+      }
+
       const payload = {
         briefing: fullBriefing || undefined,
         strategyType,
         clientData: (clientData && includeClientData) ? clientData : undefined,
-        documents: files.filter(f => f.status === "done").map(f => ({ name: f.name, text: f.text })),
+        documents: [
+          ...files.filter(f => f.status === "done").map(f => ({ name: f.name, text: f.text })),
+          ...clientFileDocs,
+        ],
         urls: urls.filter(u => u.status === "done").map(u => ({ url: u.url, text: u.text })),
         boardId,
       };
