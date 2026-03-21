@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { X, Upload, Plus, Globe, Sparkles, FileText, Loader2, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { X, Upload, Plus, Globe, Sparkles, FileText, Loader2, Check, ChevronDown, ChevronUp, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,12 @@ const STRATEGY_TYPES = [
   { value: "full", icon: "🔄", label: "Vollständige Strategie", desc: "Kombiniert Funnel, Journey und Content-Plan" },
 ];
 
+interface ClientFile {
+  name: string;
+  path: string;
+  selected: boolean;
+}
+
 const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId }: Props) => {
   const [files, setFiles] = useState<SourceFile[]>([]);
   const [briefing, setBriefing] = useState("");
@@ -64,8 +70,42 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
   const [structured, setStructured] = useState({ company: "", audience: "", problem: "", measures: "", goal: "", budget: "" });
   const [generating, setGenerating] = useState(false);
   const [genPhase, setGenPhase] = useState("");
+  const [clientFiles, setClientFiles] = useState<ClientFile[]>([]);
+  const [loadingClientFiles, setLoadingClientFiles] = useState(false);
 
-  const hasSource = files.length > 0 || briefing.trim() || urls.length > 0 || (clientData && includeClientData) || Object.values(structured).some(v => v.trim());
+  // Load CI-assets from client storage when panel opens
+  useEffect(() => {
+    if (!open || !clientData?.id) {
+      setClientFiles([]);
+      return;
+    }
+    const loadClientFiles = async () => {
+      setLoadingClientFiles(true);
+      try {
+        const { data: fileList } = await supabase.storage
+          .from("client-logos")
+          .list(`${clientData.id}/ci-assets`, { limit: 50 });
+        if (fileList && fileList.length > 0) {
+          setClientFiles(
+            fileList
+              .filter(f => f.name !== ".emptyFolderPlaceholder")
+              .map(f => ({
+                name: f.name,
+                path: `${clientData.id}/ci-assets/${f.name}`,
+                selected: false,
+              }))
+          );
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingClientFiles(false);
+      }
+    };
+    loadClientFiles();
+  }, [open, clientData?.id]);
+
+  const hasSource = files.length > 0 || briefing.trim() || urls.length > 0 || (clientData && includeClientData) || Object.values(structured).some(v => v.trim()) || clientFiles.some(f => f.selected);
 
   const handleFileUpload = useCallback(async (fileList: FileList) => {
     for (const file of Array.from(fileList)) {
@@ -146,11 +186,28 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
         if (parts.length > 0) fullBriefing = (fullBriefing ? fullBriefing + "\n\n" : "") + parts.join("\n");
       }
 
+      // Download text from selected client files
+      const clientFileDocs: { name: string; text: string }[] = [];
+      for (const cf of clientFiles.filter(f => f.selected)) {
+        try {
+          const { data } = await supabase.storage.from("client-logos").download(cf.path);
+          if (data) {
+            const text = await data.text().catch(() => `[Datei: ${cf.name}]`);
+            clientFileDocs.push({ name: cf.name, text: text.substring(0, 10000) });
+          }
+        } catch {
+          clientFileDocs.push({ name: cf.name, text: `[Datei: ${cf.name}]` });
+        }
+      }
+
       const payload = {
         briefing: fullBriefing || undefined,
         strategyType,
         clientData: (clientData && includeClientData) ? clientData : undefined,
-        documents: files.filter(f => f.status === "done").map(f => ({ name: f.name, text: f.text })),
+        documents: [
+          ...files.filter(f => f.status === "done").map(f => ({ name: f.name, text: f.text })),
+          ...clientFileDocs,
+        ],
         urls: urls.filter(u => u.status === "done").map(u => ({ url: u.url, text: u.text })),
         boardId,
       };
@@ -167,7 +224,7 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
       setGenerating(false);
       setGenPhase("");
     }
-  }, [briefing, structured, showStructured, strategyType, clientData, includeClientData, files, urls, boardId, onGenerate, onClose]);
+  }, [briefing, structured, showStructured, strategyType, clientData, includeClientData, files, urls, clientFiles, boardId, onGenerate, onClose]);
 
   return (
     <AnimatePresence>
@@ -256,7 +313,41 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
                   </div>
                 )}
 
-                {/* Briefing text */}
+                {/* Client CI-Assets */}
+                {clientData && clientFiles.length > 0 && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Label className="text-xs">Kunden-Dokumente</Label>
+                    </div>
+                    {clientFiles.map((cf, i) => (
+                      <label
+                        key={i}
+                        className={`flex items-center justify-between text-xs p-2 rounded cursor-pointer transition-colors ${
+                          cf.selected ? "bg-primary/10 border border-primary/20" : "bg-muted/50 hover:bg-muted"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <input
+                            type="checkbox"
+                            checked={cf.selected}
+                            onChange={() => setClientFiles(prev => prev.map((f, j) => j === i ? { ...f, selected: !f.selected } : f))}
+                            className="rounded border-border"
+                          />
+                          <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="truncate">{cf.name}</span>
+                        </div>
+                        {cf.selected && <Check className="h-3 w-3 text-primary shrink-0" />}
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {loadingClientFiles && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Kunden-Dokumente werden geladen...
+                  </div>
+                )}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs">Briefing-Notizen</Label>
