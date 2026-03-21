@@ -64,7 +64,7 @@ const StrategyBoardEditor = () => {
 
     // Listen for changes
     const unsub = editor.store.listen(() => {
-      const snapshot = editor.store.getSnapshot();
+      const snapshot = getSnapshot(editor.store);
       debouncedSave(snapshot);
     }, { source: "user", scope: "document" });
 

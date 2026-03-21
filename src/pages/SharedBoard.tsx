@@ -26,7 +26,7 @@ const SharedBoard = () => {
   const handleMount = useCallback((editor: Editor) => {
     if (board?.board_data && Object.keys(board.board_data).length > 0) {
       try {
-        editor.store.loadSnapshot(board.board_data as TLStoreSnapshot);
+        loadSnapshot(editor.store, board.board_data as any);
       } catch (e) {
         console.warn("Could not load shared board data:", e);
       }
