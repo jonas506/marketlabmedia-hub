@@ -296,7 +296,41 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
                   </div>
                 )}
 
-                {/* Briefing text */}
+                {/* Client CI-Assets */}
+                {clientData && clientFiles.length > 0 && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <FolderOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Label className="text-xs">Kunden-Dokumente</Label>
+                    </div>
+                    {clientFiles.map((cf, i) => (
+                      <label
+                        key={i}
+                        className={`flex items-center justify-between text-xs p-2 rounded cursor-pointer transition-colors ${
+                          cf.selected ? "bg-primary/10 border border-primary/20" : "bg-muted/50 hover:bg-muted"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <input
+                            type="checkbox"
+                            checked={cf.selected}
+                            onChange={() => setClientFiles(prev => prev.map((f, j) => j === i ? { ...f, selected: !f.selected } : f))}
+                            className="rounded border-border"
+                          />
+                          <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="truncate">{cf.name}</span>
+                        </div>
+                        {cf.selected && <Check className="h-3 w-3 text-primary shrink-0" />}
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {loadingClientFiles && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Kunden-Dokumente werden geladen...
+                  </div>
+                )}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs">Briefing-Notizen</Label>
