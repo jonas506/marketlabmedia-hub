@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageCircle, X, Send, Loader2, Undo2, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import type { Editor } from "tldraw";
+import { toRichText } from "@tldraw/tlschema";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -64,19 +64,24 @@ const BoardAIChat = ({ boardId, editorRef, chatHistory, onChatUpdate }: Props) =
       try {
         if (action.action === "add" && action.shape) {
           const { type, x, y, props } = action.shape;
+          const shapeProps: any = { ...props };
+          // Convert text to richText for tldraw v4
+          if (shapeProps.text) {
+            shapeProps.richText = toRichText(shapeProps.text);
+            delete shapeProps.text;
+          }
           editor.createShape({
             type: type || "note",
             x: x || 0,
             y: y || 0,
-            props: props || {},
-          });
+            props: shapeProps,
+          } as any);
         }
       } catch (e) {
         console.warn("Failed to execute board action:", e);
       }
     }
 
-    // Zoom to fit after changes
     setTimeout(() => {
       editor.zoomToFit({ animation: { duration: 400 } });
     }, 300);
@@ -112,22 +117,20 @@ const BoardAIChat = ({ boardId, editorRef, chatHistory, onChatUpdate }: Props) =
         boardActions: data.board_actions,
       };
 
-      const withAi = [...updated, aiMsg];
-      onChatUpdate(withAi);
+      onChatUpdate([...updated, aiMsg]);
 
-      // Execute board actions if present
       if (data.board_actions && data.board_actions.length > 0) {
         executeBoardActions(data.board_actions);
         toast.success("Board aktualisiert", { duration: 2000 });
       }
-    } catch (e) {
-      toast.error("Chat-Anfrage fehlgeschlagen");
+    } catch {
       const errorMsg: ChatMessage = {
         role: "assistant",
         content: "Entschuldigung, es gab einen Fehler. Bitte versuche es erneut.",
         timestamp: new Date().toISOString(),
       };
       onChatUpdate([...updated, errorMsg]);
+      toast.error("Chat-Anfrage fehlgeschlagen");
     } finally {
       setSending(false);
     }

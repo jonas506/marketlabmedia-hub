@@ -1,13 +1,16 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Tldraw, Editor, getSnapshot, loadSnapshot } from "tldraw";
 import "tldraw/tldraw.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, Cloud, CloudOff, Download, Share2, Presentation, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, Cloud, CloudOff, Download, Share2, Presentation, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import StrategyBriefingPanel from "@/components/board/StrategyBriefingPanel";
+import BoardAIChat from "@/components/board/BoardAIChat";
+import { generateBoardFromStrategy } from "@/lib/strategy-shape-generator";
 
 type SaveStatus = "saved" | "saving" | "unsaved";
 
@@ -19,13 +22,15 @@ const StrategyBoardEditor = () => {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [presentFrameIndex, setPresentFrameIndex] = useState(0);
+  const [briefingOpen, setBriefingOpen] = useState(false);
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
 
   const { data: board, isLoading } = useQuery({
     queryKey: ["strategy-board", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("strategy_boards")
-        .select("*, clients(name)")
+        .select("*, clients(name, industry, target_audience, usps, tonality, content_topics, services, summary)")
         .eq("id", id!)
         .single();
       if (error) throw error;
@@ -33,6 +38,13 @@ const StrategyBoardEditor = () => {
     },
     enabled: !!id,
   });
+
+  // Load chat history from board
+  useEffect(() => {
+    if (board?.chat_history && Array.isArray(board.chat_history)) {
+      setChatHistory(board.chat_history);
+    }
+  }, [board?.chat_history]);
 
   const saveBoard = useCallback(async (snapshot: any) => {
     if (!id) return;
@@ -53,7 +65,6 @@ const StrategyBoardEditor = () => {
   const handleMount = useCallback((editor: Editor) => {
     editorRef.current = editor;
 
-    // Load existing board data
     if (board?.board_data && Object.keys(board.board_data).length > 0) {
       try {
         loadSnapshot(editor.store, board.board_data as any);
@@ -62,7 +73,6 @@ const StrategyBoardEditor = () => {
       }
     }
 
-    // Listen for changes
     const unsub = editor.store.listen(() => {
       const snapshot = getSnapshot(editor.store);
       debouncedSave(snapshot);
@@ -83,7 +93,6 @@ const StrategyBoardEditor = () => {
         toast.error("Keine Elemente zum Exportieren");
         return;
       }
-      // Use tldraw's built-in export
       if (format === "svg") {
         const svg = await editor.getSvgString([...shapeIds]);
         if (svg) {
@@ -118,6 +127,23 @@ const StrategyBoardEditor = () => {
     toast.success("Share-Link kopiert!");
   }, [id]);
 
+  const handleGenerateStrategy = useCallback(async (payload: any) => {
+    const editor = editorRef.current;
+    if (!editor) throw new Error("Editor not ready");
+
+    const { data, error } = await supabase.functions.invoke("generate-strategy", { body: payload });
+
+    if (error || !data?.success) {
+      throw new Error(data?.error || "Generation failed");
+    }
+
+    await generateBoardFromStrategy(editor, data.strategy);
+
+    // Save the board after generation
+    const snapshot = getSnapshot(editor.store);
+    await saveBoard(snapshot);
+  }, [saveBoard]);
+
   // Presentation mode keyboard nav
   useEffect(() => {
     if (!presenting) return;
@@ -140,7 +166,6 @@ const StrategyBoardEditor = () => {
     }
     setPresentFrameIndex(0);
     setPresenting(true);
-    // Zoom to first frame
     const sorted = [...frames].sort((a, b) => a.x - b.x || a.y - b.y);
     editor.zoomToFit();
     if (sorted[0]) {
@@ -161,6 +186,18 @@ const StrategyBoardEditor = () => {
       if (bounds) editor.zoomToBounds(bounds, { animation: { duration: 400 } });
     }
   }, [presentFrameIndex, presenting]);
+
+  const clientData = board?.clients ? {
+    id: board.client_id,
+    name: board.clients.name,
+    industry: board.clients.industry,
+    target_audience: board.clients.target_audience,
+    usps: board.clients.usps,
+    tonality: board.clients.tonality,
+    content_topics: board.clients.content_topics,
+    services: board.clients.services,
+    summary: board.clients.summary,
+  } : null;
 
   if (isLoading) {
     return (
@@ -202,6 +239,10 @@ const StrategyBoardEditor = () => {
               {saveStatus === "unsaved" && <><CloudOff className="h-3 w-3 text-amber-500" /> Nicht gespeichert</>}
             </span>
 
+            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setBriefingOpen(true)}>
+              <Sparkles className="h-3.5 w-3.5" /> AI Strategie
+            </Button>
+
             <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5" onClick={handleShare}>
               <Share2 className="h-3.5 w-3.5" /> Teilen
             </Button>
@@ -242,6 +283,25 @@ const StrategyBoardEditor = () => {
           inferDarkMode
         />
       </div>
+
+      {/* AI Strategy Briefing Panel */}
+      <StrategyBriefingPanel
+        open={briefingOpen}
+        onClose={() => setBriefingOpen(false)}
+        onGenerate={handleGenerateStrategy}
+        clientData={clientData}
+        boardId={id!}
+      />
+
+      {/* AI Board Chat */}
+      {!presenting && (
+        <BoardAIChat
+          boardId={id!}
+          editorRef={editorRef}
+          chatHistory={chatHistory}
+          onChatUpdate={setChatHistory}
+        />
+      )}
     </div>
   );
 };
