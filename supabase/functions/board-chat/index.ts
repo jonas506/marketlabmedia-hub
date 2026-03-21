@@ -14,15 +14,53 @@ Du kannst:
 - Bestehende Elemente modifizieren
 - Erklärungen und Empfehlungen geben
 
+DESIGN-REGELN:
+- KEINE Sticky Notes (type: "note"). Verwende NUR geo shapes (type: "geo").
+- Font ist IMMER "sans". Niemals "draw".
+- Dash ist IMMER "solid" (außer "dashed" für gestrichelte Linien). Niemals "draw".
+- Verwende das Farbsystem:
+  - ellipse (orange) = Kampagnen/Kanäle
+  - rectangle (violet) = Content/Maßnahmen
+  - diamond (yellow) = Entscheidungspunkte
+  - hexagon (green) = Ergebnisse
+  - rectangle mit fill "semi" = Info-Blöcke/Erklärungen
+
 Wenn der User möchte dass du etwas auf dem Board ÄNDERST oder HINZUFÜGST, antworte mit:
 1. Einem kurzen erklärenden Text
 2. Einem JSON-Block mit den Änderungen im Format:
 
 \`\`\`json
 {"board_actions": [
-  {"action": "add", "shape": {"type": "note", "x": 0, "y": 0, "props": {"text": "...", "color": "yellow", "size": "m"}}},
-  {"action": "add", "shape": {"type": "text", "x": 0, "y": 0, "props": {"text": "...", "size": "m"}}},
-  {"action": "add", "shape": {"type": "frame", "x": 0, "y": 0, "props": {"w": 800, "h": 600, "name": "..."}}}
+  {
+    "action": "add_node",
+    "node": {
+      "id": "new_1",
+      "type": "geo",
+      "geo": "rectangle",
+      "label": "Retargeting\\nKampagne",
+      "x": 800, "y": 600,
+      "w": 180, "h": 100,
+      "color": "orange",
+      "fill": "solid",
+      "size": "m",
+      "font": "sans",
+      "align": "middle",
+      "verticalAlign": "middle",
+      "dash": "solid"
+    }
+  },
+  {
+    "action": "add_edge",
+    "edge": {
+      "id": "new_e1",
+      "from": "existing_node_id",
+      "to": "new_1",
+      "label": "Kein Abschluss",
+      "color": "orange",
+      "dash": "dashed",
+      "bend": -20
+    }
+  }
 ]}
 \`\`\`
 
@@ -33,8 +71,7 @@ REGELN:
 - Sei konkret und praxisnah
 - Beziehe dich auf die Immobilienbranche
 - Halte Antworten kurz (max 3-4 Sätze + Board-Aktionen)
-- Platziere neue Elemente an sinnvollen Positionen (positive x/y Werte, genug Abstand zu bestehenden)
-- Farben für Sticky Notes: blue=Kanäle, yellow=Ideen, green=Maßnahmen, red=Pain Points, orange=Warnungen, violet=KPIs`;
+- Platziere neue Elemente an sinnvollen Positionen (positive x/y Werte, genug Abstand zu bestehenden)`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -49,10 +86,6 @@ Deno.serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build messages array
-    const messages = [];
-
-    // Add board context
     let systemWithContext = BOARD_CHAT_SYSTEM;
     if (boardShapes && boardShapes.length > 0) {
       const shapesSummary = boardShapes.map((s: any) => ({
@@ -65,13 +98,11 @@ Deno.serve(async (req) => {
       systemWithContext += `\n\nAKTUELLER BOARD-STATE (Shapes):\n${JSON.stringify(shapesSummary, null, 2)}`;
     }
 
-    // Add recent chat history (max 20 messages)
+    const messages = [];
     const recentHistory = (chatHistory || []).slice(-20);
     for (const msg of recentHistory) {
       messages.push({ role: msg.role, content: msg.content });
     }
-
-    // Add current message
     messages.push({ role: "user", content: message });
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -102,7 +133,6 @@ Deno.serve(async (req) => {
       throw new Error("No content in AI response");
     }
 
-    // Parse board actions if present
     let boardActions = null;
     const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
     if (jsonMatch) {
@@ -116,10 +146,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Clean response text (remove JSON block)
     const responseText = content.replace(/```json[\s\S]*?```/g, "").trim();
 
-    // Save chat history to board
     if (boardId) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -129,7 +157,7 @@ Deno.serve(async (req) => {
         ...recentHistory,
         { role: "user", content: message, timestamp: new Date().toISOString() },
         { role: "assistant", content: content, timestamp: new Date().toISOString() },
-      ].slice(-40); // Keep last 40 messages
+      ].slice(-40);
 
       await supabase
         .from("strategy_boards")

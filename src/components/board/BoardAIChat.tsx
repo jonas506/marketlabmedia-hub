@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import type { Editor } from "tldraw";
+import { createShapeId } from "tldraw";
 import { toRichText } from "@tldraw/tlschema";
 
 interface ChatMessage {
@@ -60,18 +61,74 @@ const BoardAIChat = ({ boardId, editorRef, chatHistory, onChatUpdate }: Props) =
     const editor = editorRef.current;
     if (!editor || !actions) return;
 
+    const nodeIdMap = new Map<string, any>();
+
     for (const action of actions) {
       try {
-        if (action.action === "add" && action.shape) {
+        if (action.action === "add_node" && action.node) {
+          const node = action.node;
+          const shapeId = createShapeId();
+          if (node.id) nodeIdMap.set(node.id, shapeId);
+          const isSolidFill = node.fill === "solid";
+          editor.createShape({
+            id: shapeId,
+            type: "geo",
+            x: node.x || 0,
+            y: node.y || 0,
+            props: {
+              w: node.w || 180,
+              h: node.h || 100,
+              geo: node.geo || "rectangle",
+              color: node.color || "blue",
+              fill: node.fill || "solid",
+              size: node.size || "m",
+              richText: toRichText(node.label || ""),
+              font: "sans",
+              align: node.align || "middle",
+              verticalAlign: node.verticalAlign || "middle",
+              dash: "solid",
+              labelColor: isSolidFill ? "white" : "black",
+            },
+          } as any);
+        } else if (action.action === "add_edge" && action.edge) {
+          const edge = action.edge;
+          const fromId = nodeIdMap.get(edge.from);
+          const toId = nodeIdMap.get(edge.to);
+          if (fromId && toId) {
+            const arrowId = createShapeId();
+            editor.createShape({
+              id: arrowId,
+              type: "arrow",
+              props: {
+                color: edge.color || "blue",
+                size: "m",
+                dash: edge.dash === "dashed" ? "dashed" : "solid",
+                richText: edge.label ? toRichText(edge.label) : toRichText(""),
+                font: "sans",
+                arrowheadEnd: "arrow",
+                arrowheadStart: "none",
+                bend: edge.bend || 0,
+              },
+            } as any);
+            try {
+              editor.createBindings([
+                { type: "arrow", fromId: arrowId, toId: fromId, props: { terminal: "start", isExact: false, isPrecise: false, normalizedAnchor: { x: 0.5, y: 0.5 } } },
+                { type: "arrow", fromId: arrowId, toId: toId, props: { terminal: "end", isExact: false, isPrecise: false, normalizedAnchor: { x: 0.5, y: 0.5 } } },
+              ]);
+            } catch (e) {
+              console.warn("Binding error:", e);
+            }
+          }
+        } else if (action.action === "add" && action.shape) {
+          // Legacy format support
           const { type, x, y, props } = action.shape;
           const shapeProps: any = { ...props };
-          // Convert text to richText for tldraw v4
           if (shapeProps.text) {
             shapeProps.richText = toRichText(shapeProps.text);
             delete shapeProps.text;
           }
           editor.createShape({
-            type: type || "note",
+            type: type || "geo",
             x: x || 0,
             y: y || 0,
             props: shapeProps,
