@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import type { Editor } from "tldraw";
+import { createShapeId } from "tldraw";
 import { toRichText } from "@tldraw/tlschema";
 
 interface ChatMessage {
