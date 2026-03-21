@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      board_templates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          preview_image: string | null
+          template_data: Json
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          preview_image?: string | null
+          template_data?: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          preview_image?: string | null
+          template_data?: Json
+        }
+        Relationships: []
+      }
       cb_brands: {
         Row: {
           colors: string[]
@@ -1760,6 +1790,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      strategy_boards: {
+        Row: {
+          board_data: Json
+          client_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          share_token: string | null
+          template_type: string | null
+          thumbnail: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          board_data?: Json
+          client_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          share_token?: string | null
+          template_type?: string | null
+          thumbnail?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          board_data?: Json
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          share_token?: string | null
+          template_type?: string | null
+          thumbnail?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_boards_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {
