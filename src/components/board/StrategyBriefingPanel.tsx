@@ -224,7 +224,7 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
       setGenerating(false);
       setGenPhase("");
     }
-  }, [briefing, structured, showStructured, strategyType, clientData, includeClientData, files, urls, boardId, onGenerate, onClose]);
+  }, [briefing, structured, showStructured, strategyType, clientData, includeClientData, files, urls, clientFiles, boardId, onGenerate, onClose]);
 
   return (
     <AnimatePresence>
