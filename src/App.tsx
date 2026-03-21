@@ -63,6 +63,9 @@ const App = () => (
               <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
               <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
+              <Route path="/strategy-boards" element={<ProtectedRoute><StrategyBoards /></ProtectedRoute>} />
+              <Route path="/strategy-boards/:id" element={<ProtectedRoute><StrategyBoardEditor /></ProtectedRoute>} />
+              <Route path="/shared/boards/:token" element={<SharedBoard />} />
               <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
               <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
               <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
