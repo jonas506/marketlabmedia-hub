@@ -173,6 +173,12 @@ const ClientDetail = () => {
               <BookOpen className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Notebook</span>
             </TabsTrigger>
+            <TabsTrigger value="strategy" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Presentation className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Strategie</span>
+            </TabsTrigger>
+              <span className="hidden sm:inline">Notebook</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="mt-4">
