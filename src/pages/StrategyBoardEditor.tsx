@@ -34,12 +34,12 @@ const StrategyBoardEditor = () => {
     enabled: !!id,
   });
 
-  const saveBoard = useCallback(async (snapshot: TLStoreSnapshot) => {
+  const saveBoard = useCallback(async (snapshot: any) => {
     if (!id) return;
     setSaveStatus("saving");
     const { error } = await supabase
       .from("strategy_boards")
-      .update({ board_data: snapshot, updated_at: new Date().toISOString() })
+      .update({ board_data: snapshot as any, updated_at: new Date().toISOString() })
       .eq("id", id);
     setSaveStatus(error ? "unsaved" : "saved");
   }, [id]);
