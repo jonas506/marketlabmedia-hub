@@ -13,6 +13,7 @@ import ClientNotebook from "@/components/client/ClientNotebook";
 import MarketingTracking from "@/components/client/MarketingTracking";
 import TaskList from "@/components/client/TaskList";
 import InspirationBoard from "@/components/client/InspirationBoard";
+import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
