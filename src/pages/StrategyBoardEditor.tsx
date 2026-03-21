@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Tldraw, TLStoreSnapshot, Editor } from "tldraw";
+import { Tldraw, Editor, getSnapshot, loadSnapshot } from "tldraw";
 import "tldraw/tldraw.css";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, Cloud, CloudOff, Download, Share2, Presentation, Loader2 } from "lucide-react";
