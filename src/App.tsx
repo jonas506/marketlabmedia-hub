@@ -7,6 +7,9 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import ClientDetail from "./pages/ClientDetail";
+import StrategyBoards from "./pages/StrategyBoards";
+import StrategyBoardEditor from "./pages/StrategyBoardEditor";
+import SharedBoard from "./pages/SharedBoard";
 
 import ClientApproval from "./pages/ClientApproval";
 import TeamOverview from "./pages/TeamOverview";
