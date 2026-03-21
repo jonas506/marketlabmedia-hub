@@ -1,13 +1,14 @@
 import type { Editor } from "tldraw";
+import { toRichText } from "@tldraw/tlschema";
 
 interface StrategyElement {
-  type: "sticky" | "text" | "arrow" | "frame";
+  type: string;
   content?: string;
   color?: string;
   position?: { x: number; y: number };
   width?: number;
   height?: number;
-  fontSize?: "s" | "m" | "l" | "xl";
+  fontSize?: string;
 }
 
 interface StrategySection {
@@ -40,34 +41,32 @@ const COLOR_MAP: Record<string, string> = {
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 export async function generateBoardFromStrategy(editor: Editor, strategy: StrategyJSON) {
-  // Clear existing AI-generated content (optional - for now, we'll just add to the board)
-  
   // 1. Title
   editor.createShape({
-    type: "text",
+    type: "text" as any,
     x: 0,
     y: -150,
     props: {
-      text: strategy.strategy_title || "Marketing-Strategie",
+      richText: toRichText(strategy.strategy_title || "Marketing-Strategie"),
       size: "xl",
       font: "sans",
       autoSize: true,
-    },
+    } as any,
   });
   await delay(150);
 
-  // 2. Summary as subtitle
+  // 2. Summary
   if (strategy.summary) {
     editor.createShape({
-      type: "text",
+      type: "text" as any,
       x: 0,
       y: -80,
       props: {
-        text: strategy.summary,
+        richText: toRichText(strategy.summary),
         size: "m",
         font: "sans",
         autoSize: true,
-      },
+      } as any,
     });
     await delay(100);
   }
@@ -79,20 +78,14 @@ export async function generateBoardFromStrategy(editor: Editor, strategy: Strate
     const sw = section.width || 800;
     const sh = section.height || 600;
 
-    // Create frame
     editor.createShape({
-      type: "frame",
+      type: "frame" as any,
       x: sx,
       y: sy,
-      props: {
-        w: sw,
-        h: sh,
-        name: section.title || "Section",
-      },
+      props: { w: sw, h: sh, name: section.title || "Section" } as any,
     });
     await delay(200);
 
-    // Create elements
     if (section.elements) {
       for (const element of section.elements) {
         const ex = sx + (element.position?.x || 20);
@@ -102,26 +95,26 @@ export async function generateBoardFromStrategy(editor: Editor, strategy: Strate
         try {
           if (element.type === "sticky" || element.type === "note") {
             editor.createShape({
-              type: "note",
+              type: "note" as any,
               x: ex,
               y: ey,
               props: {
-                text: element.content || "",
-                color: color as any,
+                richText: toRichText(element.content || ""),
+                color,
                 size: element.fontSize || "m",
-              },
+              } as any,
             });
           } else if (element.type === "text") {
             editor.createShape({
-              type: "text",
+              type: "text" as any,
               x: ex,
               y: ey,
               props: {
-                text: element.content || "",
-                size: (element.fontSize || "m") as any,
+                richText: toRichText(element.content || ""),
+                size: element.fontSize || "m",
                 font: "sans",
                 autoSize: true,
-              },
+              } as any,
             });
           }
         } catch (e) {
@@ -137,7 +130,6 @@ export async function generateBoardFromStrategy(editor: Editor, strategy: Strate
 
   // 4. Key Insights
   if (strategy.key_insights && strategy.key_insights.length > 0) {
-    // Find max X to place insights to the right
     const allShapes = editor.getCurrentPageShapes();
     let maxX = 0;
     for (const shape of allShapes) {
@@ -148,28 +140,28 @@ export async function generateBoardFromStrategy(editor: Editor, strategy: Strate
     const insightX = maxX + 200;
 
     editor.createShape({
-      type: "text",
+      type: "text" as any,
       x: insightX,
       y: 0,
       props: {
-        text: "💡 Key Insights",
+        richText: toRichText("💡 Key Insights"),
         size: "l",
         font: "sans",
         autoSize: true,
-      },
+      } as any,
     });
     await delay(100);
 
     for (let i = 0; i < strategy.key_insights.length; i++) {
       editor.createShape({
-        type: "note",
+        type: "note" as any,
         x: insightX,
         y: 60 + i * 220,
         props: {
-          text: `💡 ${strategy.key_insights[i]}`,
+          richText: toRichText(`💡 ${strategy.key_insights[i]}`),
           color: "yellow",
           size: "m",
-        },
+        } as any,
       });
       await delay(80);
     }
