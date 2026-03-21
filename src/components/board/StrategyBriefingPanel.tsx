@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { X, Upload, Plus, Globe, Sparkles, FileText, Loader2, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { X, Upload, Plus, Globe, Sparkles, FileText, Loader2, Check, ChevronDown, ChevronUp, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
