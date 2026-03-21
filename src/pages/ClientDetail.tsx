@@ -196,6 +196,9 @@ const ClientDetail = () => {
           <TabsContent value="notebook" className="mt-4">
             <ClientNotebook clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
           </TabsContent>
+          <TabsContent value="strategy" className="mt-4">
+            <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
         </Tabs>
       </motion.div>
     </AppLayout>
