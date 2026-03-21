@@ -63,7 +63,7 @@ const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 export async function generateBoardFromStrategy(editor: Editor, strategy: StrategyJSON) {
   // Map from AI node IDs to tldraw shape IDs
-  const nodeIdMap = new Map<string, string>();
+  const nodeIdMap = new Map<string, TLShapeId>();
 
   // 1. Title
   editor.createShape({
