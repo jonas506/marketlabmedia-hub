@@ -76,7 +76,7 @@ export const useClients = () => {
         const handedOver = pieces.filter((c) => c.phase === "handed_over").length;
 
         const handedOverThisMonth = pieces.filter(
-          (c) => (c.phase === "approved" || c.phase === "handed_over") && c.target_month === month && c.target_year === year
+          (c) => (c.phase === "approved" || c.phase === "handed_over") && Number(c.target_month) === month && Number(c.target_year) === year
         );
 
         // Runway: only reels + stories, done + handed_over
@@ -84,7 +84,7 @@ export const useClients = () => {
         const dailyFreq = reelStoryTarget / 30;
         const readyPieces = pieces.filter(
           (c) => (c.type === "reel" || c.type === "story") && (c.phase === "approved" || c.phase === "handed_over") &&
-          c.target_month === month && c.target_year === year
+          Number(c.target_month) === month && Number(c.target_year) === year
         ).length;
         const runway = dailyFreq > 0 ? Math.round(readyPieces / dailyFreq) : 999;
 
