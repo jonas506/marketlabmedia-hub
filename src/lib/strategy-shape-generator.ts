@@ -1,6 +1,6 @@
 import type { Editor } from "tldraw";
 import { toRichText } from "@tldraw/tlschema";
-import { createShapeId } from "tldraw";
+import { createShapeId, type TLShapeId } from "tldraw";
 
 interface StrategyNode {
   id: string;
