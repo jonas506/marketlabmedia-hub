@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, MessageSquare, GripVertical, User, Tag } from "lucide-react";
+import { ExternalLink, FileText, MessageSquare, GripVertical, User, Tag, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 interface ContentPiece {
   id: string;
@@ -25,6 +27,7 @@ interface ContentPiece {
   video_path?: string | null;
   cta_label?: string | null;
   tag?: string | null;
+  scheduled_post_date?: string | null;
 }
 
 interface PhaseConfig {
@@ -223,6 +226,17 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                           {piece.client_comment && (
                             <span className="text-[10px] text-[hsl(var(--runway-yellow))] flex items-center gap-0.5">
                               <MessageSquare className="h-2.5 w-2.5" />
+                            </span>
+                          )}
+                          {piece.scheduled_post_date && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[hsl(var(--runway-green))] bg-[hsl(var(--runway-green))]/10 rounded-md px-1.5 py-0.5">
+                              <CalendarIcon className="h-2.5 w-2.5" />
+                              {format(new Date(piece.scheduled_post_date), "dd.MM.", { locale: de })}
+                            </span>
+                          )}
+                          {!piece.scheduled_post_date && (piece.phase === "approved" || piece.phase === "handed_over") && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-destructive bg-destructive/10 rounded-md px-1.5 py-0.5">
+                              📅 Datum fehlt
                             </span>
                           )}
                         </div>
