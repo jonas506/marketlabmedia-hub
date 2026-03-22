@@ -103,7 +103,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
     + getExtra("reel") + opusProCount + overlayCount + bereitsGeplantCount;
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
-  const totalTarget = client.monthly_reels + client.monthly_carousels + client.monthly_stories + (ytTarget > 0 ? ytTarget : 0);
+  const totalTarget = client.monthly_reels + client.monthly_carousels + (ytTarget > 0 ? ytTarget : 0);
   const totalDone = types.filter(t => t.type !== "ad").reduce((acc, t) => acc + t.current, 0);
   const overallPct = totalTarget > 0 ? Math.round((totalDone / totalTarget) * 100) : 0;
 
