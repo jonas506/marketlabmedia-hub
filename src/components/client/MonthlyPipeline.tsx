@@ -232,6 +232,15 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   // Move single piece
   const movePiece = useCallback(async (pieceId: string, nextPhase: string) => {
+    // Gate: require scheduled_post_date before handed_over
+    if (nextPhase === "handed_over") {
+      const piece = monthPieces.find(p => p.id === pieceId);
+      if (!piece?.scheduled_post_date) {
+        toast.error("📅 Posting-Datum fehlt", { description: "Bitte zuerst ein Posting-Datum setzen, bevor das Piece übergeben wird." });
+        return;
+      }
+    }
+
     await supabase.from("content_pieces").update({ phase: nextPhase }).eq("id", pieceId);
     
     setRecentlyMoved(prev => new Set(prev).add(pieceId));
@@ -256,6 +265,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     }
     
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+    qc.invalidateQueries({ queryKey: ["posting-calendar"] });
   }, [qc, clientId, config, getPhaseLabel, monthPieces, triggerTranscription]);
 
   // Bulk move
