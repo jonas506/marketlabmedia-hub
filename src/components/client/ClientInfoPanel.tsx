@@ -296,10 +296,9 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
               onSave={() => saveFields(values)} onCancel={() => setEditing(null)}>
               {editing === "contract" ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <InputField label="Reels/Monat" type="number" value={values.monthly_reels} onChange={(v) => setValues({ ...values, monthly_reels: Number(v) })} />
                     <InputField label="Karussells/Monat" type="number" value={values.monthly_carousels} onChange={(v) => setValues({ ...values, monthly_carousels: Number(v) })} />
-                    <InputField label="Story Ads/Monat" type="number" value={values.monthly_stories} onChange={(v) => setValues({ ...values, monthly_stories: Number(v) })} />
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <InputField label="Vertragsbeginn" type="date" value={values.contract_start} onChange={(v) => setValues({ ...values, contract_start: v })} />
