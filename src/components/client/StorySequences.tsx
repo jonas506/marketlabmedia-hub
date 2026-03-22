@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, ArrowLeft, BarChart3, ArrowUp, ArrowDown, X, Upload, Image, Settings, Tag, Eye, MousePointerClick, TrendingUp, Users } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, BarChart3, ArrowUp, ArrowDown, X, Upload, Image, Settings, Tag, Eye, MousePointerClick, TrendingUp, Users, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -550,18 +550,23 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                   ) : null}
 
                   <div className="flex-1 space-y-2">
-                    {canEdit ? (
-                      <Textarea
-                        defaultValue={slide.content_text}
-                        onBlur={(e) => {
-                          if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
-                        }}
-                        placeholder="Story-Text eingeben..."
-                        className="min-h-[60px] text-sm bg-background border-border resize-none"
-                      />
-                    ) : (
-                      <p className="text-sm whitespace-pre-wrap">{slide.content_text || <span className="text-muted-foreground italic">Kein Text</span>}</p>
-                    )}
+                    <div className="relative group/text">
+                      {canEdit ? (
+                        <Textarea
+                          defaultValue={slide.content_text}
+                          onBlur={(e) => {
+                            if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
+                          }}
+                          placeholder="Story-Text eingeben..."
+                          className="min-h-[60px] text-sm bg-background border-border resize-none pr-9"
+                        />
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap select-all cursor-text">{slide.content_text || <span className="text-muted-foreground italic select-none">Kein Text</span>}</p>
+                      )}
+                      {slide.content_text && (
+                        <CopyButton text={slide.content_text} />
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -843,6 +848,19 @@ function NumberField({ label, value, onChange, disabled }: { label: string; valu
         className="h-8 text-sm font-mono bg-background border-border"
       />
     </div>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+      className="absolute top-1 right-1 opacity-0 group-hover/text:opacity-100 transition-opacity p-1.5 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground"
+      title="Text kopieren"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
   );
 }
 
