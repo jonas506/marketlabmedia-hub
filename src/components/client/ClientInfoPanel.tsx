@@ -131,7 +131,6 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
   const kontingentSummary = [
     client.monthly_reels > 0 && `${client.monthly_reels} Reels`,
     client.monthly_carousels > 0 && `${client.monthly_carousels} Karussells`,
-    client.monthly_stories > 0 && `${client.monthly_stories} Stories`,
   ].filter(Boolean).join(" · ") || "Kein Kontingent";
 
   const brandingLinks = [
