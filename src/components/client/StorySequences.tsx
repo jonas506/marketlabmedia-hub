@@ -1083,10 +1083,9 @@ function StoryDashboard({ clientId }: { clientId: string }) {
 
     const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
     const totalSlideClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
-    const totalReplies = tracking.reduce((s, t) => s + (t.total_replies || 0), 0);
+    const totalReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
     const totalProfileVisits = tracking.reduce((s, t) => s + (t.total_profile_visits || 0), 0);
     const totalTriggers = tracking.reduce((s, t) => s + (t.keyword_triggers || 0), 0);
-    const totalLinkClicks = tracking.reduce((s, t) => s + (t.total_link_clicks || 0), 0);
 
     // Retention: avg of (last slide views / first slide views) per sequence
     let retentionSum = 0, retentionCount = 0;
@@ -1103,6 +1102,8 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       ? ctaSlidesWithViews.reduce((s, sl) => s + (sl.slide_clicks / sl.slide_views) * 100, 0) / ctaSlidesWithViews.length
       : 0;
 
+    const engagementRate = totalSlideViews > 0 ? ((totalReplies / totalSlideViews) * 100).toFixed(1) : null;
+
     return {
       sequenceCount: filteredSeqs.length,
       totalSlideViews,
@@ -1110,7 +1111,7 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       totalReplies,
       totalProfileVisits,
       totalTriggers,
-      totalLinkClicks,
+      engagementRate,
       avgRetention: retentionCount > 0 ? (retentionSum / retentionCount).toFixed(1) : null,
       avgCTR: avgCTR > 0 ? avgCTR.toFixed(1) : null,
       avgViewsPerSlide: slides.length > 0 ? Math.round(totalSlideViews / slides.length) : 0,
@@ -1125,12 +1126,13 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       const slides = allSlides.filter(sl => sl.sequence_id === seq.id).sort((a, b) => a.sort_order - b.sort_order);
       const tracking = allTracking.find(t => t.sequence_id === seq.id);
       const totalViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
+      const totalReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
       const ctaClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
       const firstViews = slides[0]?.slide_views || 0;
       const lastViews = slides[slides.length - 1]?.slide_views || 0;
       const retention = firstViews > 0 ? ((lastViews / firstViews) * 100).toFixed(1) : null;
       const cat = categories.find(c => c.id === seq.category_id);
-      return { seq, slides: slides.length, totalViews, ctaClicks, retention, replies: tracking?.total_replies || 0, profileVisits: tracking?.total_profile_visits || 0, cat };
+      return { seq, slides: slides.length, totalViews, ctaClicks, retention, replies: totalReplies, profileVisits: tracking?.total_profile_visits || 0, cat };
     });
   }, [filteredSeqs, allSlides, allTracking, categories]);
 
