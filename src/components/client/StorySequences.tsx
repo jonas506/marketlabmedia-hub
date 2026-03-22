@@ -35,6 +35,8 @@ interface Slide {
   content_text: string;
   slide_type: string;
   image_url: string | null;
+  slide_views: number;
+  slide_clicks: number;
 }
 
 interface Tracking {
