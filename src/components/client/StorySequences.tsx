@@ -550,18 +550,23 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                   ) : null}
 
                   <div className="flex-1 space-y-2">
-                    {canEdit ? (
-                      <Textarea
-                        defaultValue={slide.content_text}
-                        onBlur={(e) => {
-                          if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
-                        }}
-                        placeholder="Story-Text eingeben..."
-                        className="min-h-[60px] text-sm bg-background border-border resize-none"
-                      />
-                    ) : (
-                      <p className="text-sm whitespace-pre-wrap">{slide.content_text || <span className="text-muted-foreground italic">Kein Text</span>}</p>
-                    )}
+                    <div className="relative group/text">
+                      {canEdit ? (
+                        <Textarea
+                          defaultValue={slide.content_text}
+                          onBlur={(e) => {
+                            if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
+                          }}
+                          placeholder="Story-Text eingeben..."
+                          className="min-h-[60px] text-sm bg-background border-border resize-none pr-9"
+                        />
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap select-all cursor-text">{slide.content_text || <span className="text-muted-foreground italic select-none">Kein Text</span>}</p>
+                      )}
+                      {slide.content_text && (
+                        <CopyButton text={slide.content_text} />
+                      )}
+                    </div>
                   </div>
                 </div>
 
