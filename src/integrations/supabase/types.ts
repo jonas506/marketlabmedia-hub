@@ -1974,6 +1974,7 @@ export type Database = {
           image_url: string | null
           sequence_id: string
           slide_clicks: number | null
+          slide_replies: number | null
           slide_type: string
           slide_views: number | null
           sort_order: number
@@ -1986,6 +1987,7 @@ export type Database = {
           image_url?: string | null
           sequence_id: string
           slide_clicks?: number | null
+          slide_replies?: number | null
           slide_type?: string
           slide_views?: number | null
           sort_order?: number
@@ -1998,6 +2000,7 @@ export type Database = {
           image_url?: string | null
           sequence_id?: string
           slide_clicks?: number | null
+          slide_replies?: number | null
           slide_type?: string
           slide_views?: number | null
           sort_order?: number

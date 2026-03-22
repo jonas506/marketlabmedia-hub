@@ -48,6 +48,7 @@ interface Slide {
   image_url: string | null;
   slide_views: number;
   slide_clicks: number;
+  slide_replies: number;
   category_id: string | null;
 }
 
@@ -566,7 +567,7 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
 
                 {/* Per-slide tracking (only when posted/tracked) */}
                 {isTracking && (
-                  <div className="flex items-center gap-3 pt-1 border-t border-border/50 mt-2">
+                  <div className="flex items-center gap-3 pt-1 border-t border-border/50 mt-2 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] text-muted-foreground">👁 Views:</span>
                       <Input
@@ -575,6 +576,19 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                         onBlur={(e) => {
                           const val = parseInt(e.target.value) || 0;
                           if (val !== slide.slide_views) updateSlide.mutate({ id: slide.id, slide_views: val });
+                        }}
+                        disabled={!canEdit}
+                        className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground">💬 Replies:</span>
+                      <Input
+                        type="number"
+                        defaultValue={slide.slide_replies || 0}
+                        onBlur={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          if (val !== slide.slide_replies) updateSlide.mutate({ id: slide.id, slide_replies: val });
                         }}
                         disabled={!canEdit}
                         className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
@@ -618,12 +632,14 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
       {(sequence.status === "posted" || sequence.status === "tracked") && slides.length > 0 && (() => {
         const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
         const totalSlideClicks = slides.filter(s => s.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
+        const totalSlideReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
         const ctaSlides = slides.filter(s => s.slide_type === "cta");
         const firstSlideViews = slides[0]?.slide_views || 0;
         const lastSlideViews = slides[slides.length - 1]?.slide_views || 0;
         const retentionRate = firstSlideViews > 0 ? ((lastSlideViews / firstSlideViews) * 100).toFixed(1) : null;
         const ctaClickRate = ctaSlides.length > 0 && totalSlideClicks > 0 && ctaSlides[0]?.slide_views > 0
           ? ((totalSlideClicks / ctaSlides[0].slide_views) * 100).toFixed(1) : null;
+        const engagementRate = totalSlideViews > 0 ? ((totalSlideReplies / totalSlideViews) * 100).toFixed(1) : null;
 
         return totalSlideViews > 0 ? (
           <div className="flex gap-3 flex-wrap">
@@ -635,6 +651,11 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                 Retention: {retentionRate}%
               </span>
             )}
+            {engagementRate && (
+              <span className="text-xs bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-full font-mono">
+                Engagement: {engagementRate}%
+              </span>
+            )}
             {ctaClickRate && (
               <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-mono">
                 CTA Click Rate: {ctaClickRate}%
@@ -644,7 +665,7 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
         ) : null;
       })()}
 
-      {/* Tracking Section */}
+      {/* Tracking Section – sequence-level extras */}
       {(sequence.status === "posted" || sequence.status === "tracked") && (
         <TrackingSection
           id="tracking-section"
@@ -682,25 +703,16 @@ function TrackingSection({
   onSaved: () => void;
 }) {
   const qc = useQueryClient();
-  const [views, setViews] = useState(tracking?.total_views ?? 0);
-  const [replies, setReplies] = useState(tracking?.total_replies ?? 0);
-  const [clicks, setClicks] = useState(tracking?.total_link_clicks ?? 0);
   const [profileVisits, setProfileVisits] = useState(tracking?.total_profile_visits ?? 0);
   const [triggers, setTriggers] = useState(tracking?.keyword_triggers ?? 0);
   const [notes, setNotes] = useState(tracking?.notes ?? "");
   const [screenshots, setScreenshots] = useState<string[]>(tracking?.screenshot_urls ?? []);
   const [uploading, setUploading] = useState(false);
 
-  // Sync from tracking prop when it changes
-  const trackingId = tracking?.id;
-
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
         sequence_id: sequenceId,
-        total_views: views,
-        total_replies: replies,
-        total_link_clicks: clicks,
         total_profile_visits: profileVisits,
         keyword_triggers: triggers,
         screenshot_urls: screenshots,
@@ -749,22 +761,17 @@ function TrackingSection({
     setScreenshots((prev) => prev.filter((u) => u !== url));
   };
 
-  const engagementRate = views > 0 ? ((replies / views) * 100).toFixed(1) : null;
-  const clickRate = views > 0 ? ((clicks / views) * 100).toFixed(1) : null;
-
   return (
     <div id={id} className="bg-card border border-border rounded-lg p-4 space-y-4">
       <div className="flex items-center gap-2">
         <BarChart3 className="h-4 w-4 text-primary" />
-        <h4 className="font-display font-semibold text-sm">Performance</h4>
+        <h4 className="font-display font-semibold text-sm">Zusätzliche Metriken</h4>
+        <span className="text-[10px] text-muted-foreground">(Views, Replies & Klicks werden pro Story erfasst)</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <NumberField label="Views gesamt" value={views} onChange={setViews} disabled={!canEdit} />
-        <NumberField label="Replies gesamt" value={replies} onChange={setReplies} disabled={!canEdit} />
-        <NumberField label="Link-Klicks" value={clicks} onChange={setClicks} disabled={!canEdit} />
-        <NumberField label="Profilbesuche" value={profileVisits} onChange={setProfileVisits} disabled={!canEdit} />
-        <NumberField label="Keyword-Triggers" value={triggers} onChange={setTriggers} disabled={!canEdit} />
+        <NumberField label="Profilbesuche (gesamt)" value={profileVisits} onChange={setProfileVisits} disabled={!canEdit} />
+        <NumberField label="Keyword-Triggers (gesamt)" value={triggers} onChange={setTriggers} disabled={!canEdit} />
       </div>
 
       <div>
@@ -811,25 +818,9 @@ function TrackingSection({
         </div>
       </div>
 
-      {/* KPIs */}
-      {views > 0 && (
-        <div className="flex gap-3 flex-wrap">
-          {engagementRate && (
-            <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-mono">
-              Engagement: {engagementRate}%
-            </span>
-          )}
-          {clickRate && (
-            <span className="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full font-mono">
-              Click Rate: {clickRate}%
-            </span>
-          )}
-        </div>
-      )}
-
       {canEdit && (
         <Button size="sm" className="gap-1.5" onClick={() => save.mutate()} disabled={save.isPending}>
-          {save.isPending ? "Speichert..." : "Performance speichern"}
+          {save.isPending ? "Speichert..." : "Speichern"}
         </Button>
       )}
     </div>
@@ -1092,10 +1083,9 @@ function StoryDashboard({ clientId }: { clientId: string }) {
 
     const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
     const totalSlideClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
-    const totalReplies = tracking.reduce((s, t) => s + (t.total_replies || 0), 0);
+    const totalReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
     const totalProfileVisits = tracking.reduce((s, t) => s + (t.total_profile_visits || 0), 0);
     const totalTriggers = tracking.reduce((s, t) => s + (t.keyword_triggers || 0), 0);
-    const totalLinkClicks = tracking.reduce((s, t) => s + (t.total_link_clicks || 0), 0);
 
     // Retention: avg of (last slide views / first slide views) per sequence
     let retentionSum = 0, retentionCount = 0;
@@ -1112,6 +1102,8 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       ? ctaSlidesWithViews.reduce((s, sl) => s + (sl.slide_clicks / sl.slide_views) * 100, 0) / ctaSlidesWithViews.length
       : 0;
 
+    const engagementRate = totalSlideViews > 0 ? ((totalReplies / totalSlideViews) * 100).toFixed(1) : null;
+
     return {
       sequenceCount: filteredSeqs.length,
       totalSlideViews,
@@ -1119,7 +1111,7 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       totalReplies,
       totalProfileVisits,
       totalTriggers,
-      totalLinkClicks,
+      engagementRate,
       avgRetention: retentionCount > 0 ? (retentionSum / retentionCount).toFixed(1) : null,
       avgCTR: avgCTR > 0 ? avgCTR.toFixed(1) : null,
       avgViewsPerSlide: slides.length > 0 ? Math.round(totalSlideViews / slides.length) : 0,
@@ -1134,12 +1126,13 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       const slides = allSlides.filter(sl => sl.sequence_id === seq.id).sort((a, b) => a.sort_order - b.sort_order);
       const tracking = allTracking.find(t => t.sequence_id === seq.id);
       const totalViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
+      const totalReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
       const ctaClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
       const firstViews = slides[0]?.slide_views || 0;
       const lastViews = slides[slides.length - 1]?.slide_views || 0;
       const retention = firstViews > 0 ? ((lastViews / firstViews) * 100).toFixed(1) : null;
       const cat = categories.find(c => c.id === seq.category_id);
-      return { seq, slides: slides.length, totalViews, ctaClicks, retention, replies: tracking?.total_replies || 0, profileVisits: tracking?.total_profile_visits || 0, cat };
+      return { seq, slides: slides.length, totalViews, ctaClicks, retention, replies: totalReplies, profileVisits: tracking?.total_profile_visits || 0, cat };
     });
   }, [filteredSeqs, allSlides, allTracking, categories]);
 
@@ -1167,21 +1160,21 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <KPICard icon={<Eye className="h-4 w-4" />} label="Ø Views / Slide" value={stats.avgViewsPerSlide.toLocaleString("de-DE")} />
         <KPICard icon={<TrendingUp className="h-4 w-4" />} label="Ø Retention" value={stats.avgRetention ? `${stats.avgRetention}%` : "–"} />
         <KPICard icon={<MousePointerClick className="h-4 w-4" />} label="Ø CTA Click Rate" value={stats.avgCTR ? `${stats.avgCTR}%` : "–"} />
+        <KPICard icon={<Users className="h-4 w-4" />} label="Engagement" value={stats.engagementRate ? `${stats.engagementRate}%` : "–"} />
         <KPICard icon={<Users className="h-4 w-4" />} label="Profilbesuche" value={stats.totalProfileVisits.toLocaleString("de-DE")} />
       </div>
 
       {/* Summary row */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
         <MiniStat label="Sequenzen" value={stats.sequenceCount} />
         <MiniStat label="Gesamt Views" value={stats.totalSlideViews} />
         <MiniStat label="CTA Klicks" value={stats.totalSlideClicks} />
         <MiniStat label="Replies" value={stats.totalReplies} />
         <MiniStat label="Triggers" value={stats.totalTriggers} />
-        <MiniStat label="Link Klicks" value={stats.totalLinkClicks} />
       </div>
 
       {/* Per-sequence breakdown */}
