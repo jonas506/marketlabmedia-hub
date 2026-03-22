@@ -97,6 +97,11 @@ const getGoogleDriveEmbedUrl = (url: string): string | null => {
   return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
 };
 
+const getGoogleDriveVideoUrl = (url: string): string | null => {
+  const fileId = getGoogleDriveFileId(url);
+  return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null;
+};
+
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
   const isMobile = useIsMobile();
