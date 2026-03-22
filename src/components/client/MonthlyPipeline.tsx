@@ -44,6 +44,7 @@ interface ContentPiece {
   video_path?: string | null;
   cta_label?: string | null;
   tag?: string | null;
+  scheduled_post_date?: string | null;
 }
 
 const PRIORITY_OPTIONS = [
