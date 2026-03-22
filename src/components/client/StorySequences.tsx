@@ -557,8 +557,16 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                           onBlur={(e) => {
                             if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
                           }}
+                          onInput={(e) => {
+                            const t = e.currentTarget;
+                            t.style.height = 'auto';
+                            t.style.height = t.scrollHeight + 'px';
+                          }}
+                          ref={(el) => {
+                            if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+                          }}
                           placeholder="Story-Text eingeben..."
-                          className="min-h-[60px] text-sm bg-background border-border resize-none pr-9"
+                          className="min-h-[60px] text-sm bg-background border-border resize-none pr-9 overflow-hidden"
                         />
                       ) : (
                         <p className="text-sm whitespace-pre-wrap select-all cursor-text">{slide.content_text || <span className="text-muted-foreground italic select-none">Kein Text</span>}</p>
