@@ -79,11 +79,11 @@ export const useClients = () => {
           (c) => (c.phase === "approved" || c.phase === "handed_over") && Number(c.target_month) === month && Number(c.target_year) === year
         );
 
-        // Runway: only reels + stories, done + handed_over
-        const reelStoryTarget = client.monthly_reels + client.monthly_stories;
-        const dailyFreq = reelStoryTarget / 30;
+        // Runway: only reels, done + handed_over
+        const reelTarget = client.monthly_reels;
+        const dailyFreq = reelTarget / 30;
         const readyPieces = pieces.filter(
-          (c) => (c.type === "reel" || c.type === "story") && (c.phase === "approved" || c.phase === "handed_over") &&
+          (c) => c.type === "reel" && (c.phase === "approved" || c.phase === "handed_over") &&
           Number(c.target_month) === month && Number(c.target_year) === year
         ).length;
         const runway = dailyFreq > 0 ? Math.round(readyPieces / dailyFreq) : 999;
