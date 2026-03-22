@@ -567,7 +567,7 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
 
                 {/* Per-slide tracking (only when posted/tracked) */}
                 {isTracking && (
-                  <div className="flex items-center gap-3 pt-1 border-t border-border/50 mt-2">
+                  <div className="flex items-center gap-3 pt-1 border-t border-border/50 mt-2 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] text-muted-foreground">👁 Views:</span>
                       <Input
@@ -576,6 +576,19 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                         onBlur={(e) => {
                           const val = parseInt(e.target.value) || 0;
                           if (val !== slide.slide_views) updateSlide.mutate({ id: slide.id, slide_views: val });
+                        }}
+                        disabled={!canEdit}
+                        className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground">💬 Replies:</span>
+                      <Input
+                        type="number"
+                        defaultValue={slide.slide_replies || 0}
+                        onBlur={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          if (val !== slide.slide_replies) updateSlide.mutate({ id: slide.id, slide_replies: val });
                         }}
                         disabled={!canEdit}
                         className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
