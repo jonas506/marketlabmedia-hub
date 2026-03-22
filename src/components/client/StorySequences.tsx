@@ -1160,21 +1160,21 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <KPICard icon={<Eye className="h-4 w-4" />} label="Ø Views / Slide" value={stats.avgViewsPerSlide.toLocaleString("de-DE")} />
         <KPICard icon={<TrendingUp className="h-4 w-4" />} label="Ø Retention" value={stats.avgRetention ? `${stats.avgRetention}%` : "–"} />
         <KPICard icon={<MousePointerClick className="h-4 w-4" />} label="Ø CTA Click Rate" value={stats.avgCTR ? `${stats.avgCTR}%` : "–"} />
+        <KPICard icon={<Users className="h-4 w-4" />} label="Engagement" value={stats.engagementRate ? `${stats.engagementRate}%` : "–"} />
         <KPICard icon={<Users className="h-4 w-4" />} label="Profilbesuche" value={stats.totalProfileVisits.toLocaleString("de-DE")} />
       </div>
 
       {/* Summary row */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
         <MiniStat label="Sequenzen" value={stats.sequenceCount} />
         <MiniStat label="Gesamt Views" value={stats.totalSlideViews} />
         <MiniStat label="CTA Klicks" value={stats.totalSlideClicks} />
         <MiniStat label="Replies" value={stats.totalReplies} />
         <MiniStat label="Triggers" value={stats.totalTriggers} />
-        <MiniStat label="Link Klicks" value={stats.totalLinkClicks} />
       </div>
 
       {/* Per-sequence breakdown */}
