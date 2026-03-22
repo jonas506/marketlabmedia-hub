@@ -296,6 +296,7 @@ function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEd
 
 function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId: string; clientId: string; canEdit: boolean; onBack: () => void }) {
   const qc = useQueryClient();
+  const { data: categories = [] } = useCategories(clientId);
 
   const { data: sequence } = useQuery({
     queryKey: ["story-sequence", sequenceId],
