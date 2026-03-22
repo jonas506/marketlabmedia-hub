@@ -144,12 +144,12 @@ const ClientDetail = () => {
           </Select>
         </div>
 
-        {/* Core workflow: Kontingent → Shoot Days → Stories → Pipeline */}
+        {/* Core workflow: Kontingent → Shoot Days → Pipeline → Stories */}
         <div className="space-y-4">
           <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
-          <StorySequences clientId={client.id} canEdit={canEdit} />
           <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+          <StorySequences clientId={client.id} canEdit={canEdit} />
         </div>
 
         {/* Tabbed secondary sections */}
@@ -158,6 +158,10 @@ const ClientDetail = () => {
             <TabsTrigger value="tasks" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <ClipboardList className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Aufgaben</span>
+            </TabsTrigger>
+            <TabsTrigger value="strategy" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Presentation className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Strategie</span>
             </TabsTrigger>
             <TabsTrigger value="inspo" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <Sparkles className="h-3.5 w-3.5" />
@@ -174,10 +178,6 @@ const ClientDetail = () => {
             <TabsTrigger value="notebook" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <BookOpen className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Notebook</span>
-            </TabsTrigger>
-            <TabsTrigger value="strategy" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
-              <Presentation className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Strategie</span>
             </TabsTrigger>
           </TabsList>
 
