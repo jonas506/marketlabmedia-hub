@@ -57,6 +57,11 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Posting Calendar */}
+        <div className="mt-6">
+          <PostingCalendar />
+        </div>
+
         {/* My Tasks */}
         <div className="mt-6">
           <MyTasks />

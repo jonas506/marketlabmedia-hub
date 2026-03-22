@@ -1016,13 +1016,46 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       </Select>
                     </motion.div>
                   )}
-                  {/* Bottom action row — link + caption compact */}
+                  {/* Bottom action row — link + caption + posting date compact */}
                   {isLatePhase && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="flex items-center gap-2 pl-9 flex-wrap"
+                      className="flex items-center gap-2 pl-7 sm:pl-9 flex-wrap"
                     >
+                      {/* Scheduled Post Date */}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            disabled={!canEdit}
+                            className={cn(
+                              "h-6 sm:h-7 justify-start text-[10px] sm:text-xs font-mono border-0 px-2 sm:px-2.5 rounded-md gap-1.5",
+                              piece.scheduled_post_date
+                                ? "bg-[hsl(var(--runway-green))]/10 text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/20"
+                                : "bg-destructive/10 text-destructive animate-pulse"
+                            )}
+                          >
+                            <CalendarIcon className="h-3 w-3 shrink-0" />
+                            {piece.scheduled_post_date
+                              ? format(new Date(piece.scheduled_post_date), "dd. MMM", { locale: de })
+                              : "📅 Posting-Datum!"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={piece.scheduled_post_date ? new Date(piece.scheduled_post_date) : undefined}
+                            onSelect={(date) => {
+                              updatePiece(piece.id, { scheduled_post_date: date ? format(date, "yyyy-MM-dd") : null });
+                              qc.invalidateQueries({ queryKey: ["posting-calendar"] });
+                            }}
+                            initialFocus
+                            locale={de}
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
                       {/* Script button in late phases */}
                       <Button
                         size="sm"
