@@ -48,6 +48,7 @@ interface Slide {
   image_url: string | null;
   slide_views: number;
   slide_clicks: number;
+  slide_replies: number;
   category_id: string | null;
 }
 
