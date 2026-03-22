@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, ArrowLeft, BarChart3, ArrowUp, ArrowDown, X, Upload, Image } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Trash2, ArrowLeft, BarChart3, ArrowUp, ArrowDown, X, Upload, Image, Settings, Tag, Eye, MousePointerClick, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -18,6 +20,14 @@ interface Props {
   canEdit: boolean;
 }
 
+interface Category {
+  id: string;
+  client_id: string;
+  name: string;
+  color: string;
+  scope: string;
+}
+
 interface Sequence {
   id: string;
   client_id: string;
@@ -26,6 +36,7 @@ interface Sequence {
   posted_at: string | null;
   notes: string | null;
   created_at: string;
+  category_id: string | null;
 }
 
 interface Slide {
@@ -37,6 +48,7 @@ interface Slide {
   image_url: string | null;
   slide_views: number;
   slide_clicks: number;
+  category_id: string | null;
 }
 
 interface Tracking {
@@ -70,14 +82,70 @@ const SLIDE_TYPES = [
   { value: "image", label: "Bild", icon: "🖼️" },
 ];
 
+const CATEGORY_COLORS = ["blue", "emerald", "amber", "purple", "pink", "orange", "red", "cyan", "teal"];
+const COLOR_CLASSES: Record<string, string> = {
+  blue: "bg-blue-500/20 text-blue-400",
+  emerald: "bg-emerald-500/20 text-emerald-400",
+  amber: "bg-amber-500/20 text-amber-400",
+  purple: "bg-purple-500/20 text-purple-400",
+  pink: "bg-pink-500/20 text-pink-400",
+  orange: "bg-orange-500/20 text-orange-400",
+  red: "bg-red-500/20 text-red-400",
+  cyan: "bg-cyan-500/20 text-cyan-400",
+  teal: "bg-teal-500/20 text-teal-400",
+};
+
+// ════════════════════════════════════
+// Hook: Categories
+// ════════════════════════════════════
+function useCategories(clientId: string) {
+  return useQuery({
+    queryKey: ["story-categories", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("story_categories" as any)
+        .select("*")
+        .eq("client_id", clientId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as unknown as Category[];
+    },
+  });
+}
+
 export default function StorySequences({ clientId, canEdit }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("sequences");
 
   if (selectedId) {
     return <SequenceDetail sequenceId={selectedId} clientId={clientId} canEdit={canEdit} onBack={() => setSelectedId(null)} />;
   }
 
-  return <SequenceList clientId={clientId} canEdit={canEdit} onSelect={setSelectedId} />;
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex items-center justify-between mb-4">
+          <TabsList className="bg-muted/50 h-8">
+            <TabsTrigger value="sequences" className="text-xs h-7 px-3 gap-1.5">
+              <Tag className="h-3 w-3" /> Sequenzen
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" className="text-xs h-7 px-3 gap-1.5">
+              <BarChart3 className="h-3 w-3" /> Dashboard
+            </TabsTrigger>
+          </TabsList>
+          <div className="flex items-center gap-2">
+            {canEdit && <CategoryManager clientId={clientId} />}
+          </div>
+        </div>
+        <TabsContent value="sequences" className="mt-0">
+          <SequenceList clientId={clientId} canEdit={canEdit} onSelect={setSelectedId} />
+        </TabsContent>
+        <TabsContent value="dashboard" className="mt-0">
+          <StoryDashboard clientId={clientId} />
+        </TabsContent>
+      </Tabs>
+    </motion.div>
+  );
 }
 
 // ════════════════════════════════════
