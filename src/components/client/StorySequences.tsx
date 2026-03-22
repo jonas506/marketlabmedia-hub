@@ -35,6 +35,8 @@ interface Slide {
   content_text: string;
   slide_type: string;
   image_url: string | null;
+  slide_views: number;
+  slide_clicks: number;
 }
 
 interface Tracking {
@@ -357,7 +359,9 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
       <div>
         <h4 className="text-xs font-display font-semibold text-muted-foreground uppercase tracking-wider mb-3">Skript</h4>
         <div className="space-y-3">
-          {slides.map((slide, idx) => (
+          {slides.map((slide, idx) => {
+            const isTracking = sequence.status === "posted" || sequence.status === "tracked";
+            return (
             <div key={slide.id} className="bg-card border border-border rounded-lg p-3 flex gap-3">
               {/* Number + Move */}
               <div className="flex flex-col items-center gap-1 shrink-0">
@@ -396,34 +400,89 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                   )}
                 </div>
 
-                {canEdit ? (
-                  <Textarea
-                    defaultValue={slide.content_text}
-                    onBlur={(e) => {
-                      if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
-                    }}
-                    placeholder="Story-Text eingeben..."
-                    className="min-h-[60px] text-sm bg-background border-border resize-none"
-                  />
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">{slide.content_text || <span className="text-muted-foreground italic">Kein Text</span>}</p>
-                )}
+                {/* Image upload – available for ALL slide types */}
+                <div className="flex items-start gap-3">
+                  {slide.image_url ? (
+                    <div className="relative group shrink-0">
+                      <img src={slide.image_url} alt="" className="h-24 w-24 object-cover rounded-md border border-border" />
+                      {canEdit && (
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                          <SlideImageUpload
+                            clientId={clientId}
+                            sequenceId={sequenceId}
+                            slideId={slide.id}
+                            currentUrl={slide.image_url}
+                            onUploaded={(url) => updateSlide.mutate({ id: slide.id, image_url: url })}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : canEdit ? (
+                    <SlideImageUploadBox
+                      clientId={clientId}
+                      sequenceId={sequenceId}
+                      slideId={slide.id}
+                      onUploaded={(url) => updateSlide.mutate({ id: slide.id, image_url: url })}
+                    />
+                  ) : null}
 
-                {(slide.slide_type === "image" || slide.slide_type === "video") && canEdit && (
-                  <SlideImageUpload
-                    clientId={clientId}
-                    sequenceId={sequenceId}
-                    slideId={slide.id}
-                    currentUrl={slide.image_url}
-                    onUploaded={(url) => updateSlide.mutate({ id: slide.id, image_url: url })}
-                  />
-                )}
-                {slide.image_url && (
-                  <img src={slide.image_url} alt="" className="h-20 w-20 object-cover rounded-md border border-border" />
+                  <div className="flex-1 space-y-2">
+                    {canEdit ? (
+                      <Textarea
+                        defaultValue={slide.content_text}
+                        onBlur={(e) => {
+                          if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
+                        }}
+                        placeholder="Story-Text eingeben..."
+                        className="min-h-[60px] text-sm bg-background border-border resize-none"
+                      />
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap">{slide.content_text || <span className="text-muted-foreground italic">Kein Text</span>}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Per-slide tracking (only when posted/tracked) */}
+                {isTracking && (
+                  <div className="flex items-center gap-3 pt-1 border-t border-border/50 mt-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground">👁 Views:</span>
+                      <Input
+                        type="number"
+                        defaultValue={slide.slide_views || 0}
+                        onBlur={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          if (val !== slide.slide_views) updateSlide.mutate({ id: slide.id, slide_views: val });
+                        }}
+                        disabled={!canEdit}
+                        className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
+                      />
+                    </div>
+                    {slide.slide_type === "cta" && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground">🔗 Klicks:</span>
+                        <Input
+                          type="number"
+                          defaultValue={slide.slide_clicks || 0}
+                          onBlur={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            if (val !== slide.slide_clicks) updateSlide.mutate({ id: slide.id, slide_clicks: val });
+                          }}
+                          disabled={!canEdit}
+                          className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
+                        />
+                      </div>
+                    )}
+                    {slide.slide_views > 0 && slide.slide_type === "cta" && slide.slide_clicks > 0 && (
+                      <span className="text-[10px] font-mono text-emerald-400">
+                        CTR: {((slide.slide_clicks / slide.slide_views) * 100).toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {canEdit && (
@@ -432,6 +491,36 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
           </Button>
         )}
       </div>
+
+      {/* Per-Slide KPI Summary */}
+      {(sequence.status === "posted" || sequence.status === "tracked") && slides.length > 0 && (() => {
+        const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
+        const totalSlideClicks = slides.filter(s => s.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
+        const ctaSlides = slides.filter(s => s.slide_type === "cta");
+        const firstSlideViews = slides[0]?.slide_views || 0;
+        const lastSlideViews = slides[slides.length - 1]?.slide_views || 0;
+        const retentionRate = firstSlideViews > 0 ? ((lastSlideViews / firstSlideViews) * 100).toFixed(1) : null;
+        const ctaClickRate = ctaSlides.length > 0 && totalSlideClicks > 0 && ctaSlides[0]?.slide_views > 0
+          ? ((totalSlideClicks / ctaSlides[0].slide_views) * 100).toFixed(1) : null;
+
+        return totalSlideViews > 0 ? (
+          <div className="flex gap-3 flex-wrap">
+            <span className="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full font-mono">
+              Ø Views: {Math.round(totalSlideViews / slides.length)}
+            </span>
+            {retentionRate && (
+              <span className="text-xs bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-full font-mono">
+                Retention: {retentionRate}%
+              </span>
+            )}
+            {ctaClickRate && (
+              <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-mono">
+                CTA Click Rate: {ctaClickRate}%
+              </span>
+            )}
+          </div>
+        ) : null;
+      })()}
 
       {/* Tracking Section */}
       {(sequence.status === "posted" || sequence.status === "tracked") && (
@@ -670,6 +759,43 @@ function SlideImageUpload({ clientId, sequenceId, slideId, currentUrl, onUploade
     <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors">
       {uploading ? <div className="h-3 w-3 animate-spin rounded-full border border-primary/30 border-t-primary" /> : <Image className="h-3 w-3" />}
       {currentUrl ? "Bild ersetzen" : "Bild hochladen"}
+      <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+    </label>
+  );
+}
+
+function SlideImageUploadBox({ clientId, sequenceId, slideId, onUploaded }: { clientId: string; sequenceId: string; slideId: string; onUploaded: (url: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${clientId}/${sequenceId}/slides/${slideId}.${ext}`;
+      const { error } = await supabase.storage.from("story-screenshots").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("story-screenshots").getPublicUrl(path);
+      onUploaded(data.publicUrl);
+      toast.success("Bild hochgeladen");
+    } catch {
+      toast.error("Upload fehlgeschlagen");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <label className="h-24 w-24 shrink-0 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer">
+      {uploading ? (
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+      ) : (
+        <>
+          <Image className="h-5 w-5 mb-1" />
+          <span className="text-[9px]">Bild</span>
+        </>
+      )}
       <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
     </label>
   );

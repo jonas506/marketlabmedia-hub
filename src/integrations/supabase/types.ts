@@ -1927,7 +1927,9 @@ export type Database = {
           id: string
           image_url: string | null
           sequence_id: string
+          slide_clicks: number | null
           slide_type: string
+          slide_views: number | null
           sort_order: number
         }
         Insert: {
@@ -1936,7 +1938,9 @@ export type Database = {
           id?: string
           image_url?: string | null
           sequence_id: string
+          slide_clicks?: number | null
           slide_type?: string
+          slide_views?: number | null
           sort_order?: number
         }
         Update: {
@@ -1945,7 +1949,9 @@ export type Database = {
           id?: string
           image_url?: string | null
           sequence_id?: string
+          slide_clicks?: number | null
           slide_type?: string
+          slide_views?: number | null
           sort_order?: number
         }
         Relationships: [
