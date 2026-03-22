@@ -922,3 +922,327 @@ function SlideImageUploadBox({ clientId, sequenceId, slideId, onUploaded }: { cl
     </label>
   );
 }
+
+// ════════════════════════════════════
+// CATEGORY MANAGER
+// ════════════════════════════════════
+
+function CategoryManager({ clientId }: { clientId: string }) {
+  const qc = useQueryClient();
+  const { data: categories = [] } = useCategories(clientId);
+  const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState("blue");
+  const [newScope, setNewScope] = useState("sequence");
+
+  const addCat = useMutation({
+    mutationFn: async () => {
+      if (!newName.trim()) return;
+      const { error } = await supabase.from("story_categories" as any).insert({
+        client_id: clientId,
+        name: newName.trim(),
+        color: newColor,
+        scope: newScope,
+      } as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setNewName("");
+      qc.invalidateQueries({ queryKey: ["story-categories", clientId] });
+      toast.success("Kategorie erstellt");
+    },
+  });
+
+  const deleteCat = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("story_categories" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["story-categories", clientId] }),
+  });
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground">
+          <Settings className="h-3 w-3" /> Kategorien
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-display text-sm">Kategorien verwalten</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          {/* Existing */}
+          <div className="space-y-2">
+            {categories.map(cat => (
+              <div key={cat.id} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>
+                    {cat.name}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {cat.scope === "sequence" ? "Sequenz" : "Slide"}
+                  </span>
+                </div>
+                <button onClick={() => deleteCat.mutate(cat.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            {categories.length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-4">Noch keine Kategorien erstellt.</p>
+            )}
+          </div>
+
+          {/* Add new */}
+          <div className="space-y-2 border-t border-border pt-3">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Kategorie-Name..."
+              className="h-8 text-sm"
+              onKeyDown={(e) => e.key === "Enter" && addCat.mutate()}
+            />
+            <div className="flex items-center gap-2">
+              <Select value={newScope} onValueChange={setNewScope}>
+                <SelectTrigger className="h-7 text-xs flex-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sequence">Für Sequenzen</SelectItem>
+                  <SelectItem value="slide">Für Slides</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex gap-1">
+                {CATEGORY_COLORS.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setNewColor(c)}
+                    className={cn("h-5 w-5 rounded-full transition-all", COLOR_CLASSES[c]?.split(" ")[0], newColor === c ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "")}
+                  />
+                ))}
+              </div>
+            </div>
+            <Button size="sm" className="w-full text-xs gap-1.5" onClick={() => addCat.mutate()} disabled={!newName.trim()}>
+              <Plus className="h-3 w-3" /> Hinzufügen
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ════════════════════════════════════
+// STORY DASHBOARD
+// ════════════════════════════════════
+
+function StoryDashboard({ clientId }: { clientId: string }) {
+  const { data: categories = [] } = useCategories(clientId);
+  const [filterCat, setFilterCat] = useState<string | null>(null);
+
+  const { data: sequences = [] } = useQuery({
+    queryKey: ["story-sequences", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("story_sequences" as any)
+        .select("*")
+        .eq("client_id", clientId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as unknown as Sequence[];
+    },
+  });
+
+  const trackedSeqs = sequences.filter(s => s.status === "tracked" || s.status === "posted");
+  const filteredSeqs = filterCat ? trackedSeqs.filter(s => s.category_id === filterCat) : trackedSeqs;
+
+  const { data: allSlides = [] } = useQuery({
+    queryKey: ["story-all-slides", clientId],
+    queryFn: async () => {
+      const seqIds = trackedSeqs.map(s => s.id);
+      if (!seqIds.length) return [];
+      const { data, error } = await supabase
+        .from("story_slides" as any)
+        .select("*")
+        .in("sequence_id", seqIds);
+      if (error) throw error;
+      return data as unknown as Slide[];
+    },
+    enabled: trackedSeqs.length > 0,
+  });
+
+  const { data: allTracking = [] } = useQuery({
+    queryKey: ["story-all-tracking", clientId],
+    queryFn: async () => {
+      const seqIds = trackedSeqs.map(s => s.id);
+      if (!seqIds.length) return [];
+      const { data, error } = await supabase
+        .from("story_sequence_tracking" as any)
+        .select("*")
+        .in("sequence_id", seqIds);
+      if (error) throw error;
+      return data as unknown as Tracking[];
+    },
+    enabled: trackedSeqs.length > 0,
+  });
+
+  const stats = useMemo(() => {
+    const relevantSeqIds = new Set(filteredSeqs.map(s => s.id));
+    const slides = allSlides.filter(sl => relevantSeqIds.has(sl.sequence_id));
+    const tracking = allTracking.filter(t => relevantSeqIds.has(t.sequence_id));
+
+    const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
+    const totalSlideClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
+    const totalReplies = tracking.reduce((s, t) => s + (t.total_replies || 0), 0);
+    const totalProfileVisits = tracking.reduce((s, t) => s + (t.total_profile_visits || 0), 0);
+    const totalTriggers = tracking.reduce((s, t) => s + (t.keyword_triggers || 0), 0);
+    const totalLinkClicks = tracking.reduce((s, t) => s + (t.total_link_clicks || 0), 0);
+
+    // Retention: avg of (last slide views / first slide views) per sequence
+    let retentionSum = 0, retentionCount = 0;
+    for (const seq of filteredSeqs) {
+      const seqSlides = slides.filter(sl => sl.sequence_id === seq.id).sort((a, b) => a.sort_order - b.sort_order);
+      if (seqSlides.length >= 2 && seqSlides[0].slide_views > 0) {
+        retentionSum += (seqSlides[seqSlides.length - 1].slide_views / seqSlides[0].slide_views) * 100;
+        retentionCount++;
+      }
+    }
+
+    const ctaSlidesWithViews = slides.filter(sl => sl.slide_type === "cta" && sl.slide_views > 0);
+    const avgCTR = ctaSlidesWithViews.length > 0
+      ? ctaSlidesWithViews.reduce((s, sl) => s + (sl.slide_clicks / sl.slide_views) * 100, 0) / ctaSlidesWithViews.length
+      : 0;
+
+    return {
+      sequenceCount: filteredSeqs.length,
+      totalSlideViews,
+      totalSlideClicks,
+      totalReplies,
+      totalProfileVisits,
+      totalTriggers,
+      totalLinkClicks,
+      avgRetention: retentionCount > 0 ? (retentionSum / retentionCount).toFixed(1) : null,
+      avgCTR: avgCTR > 0 ? avgCTR.toFixed(1) : null,
+      avgViewsPerSlide: slides.length > 0 ? Math.round(totalSlideViews / slides.length) : 0,
+    };
+  }, [filteredSeqs, allSlides, allTracking]);
+
+  const seqCategories = categories.filter(c => c.scope === "sequence");
+
+  // Per-sequence breakdown
+  const seqBreakdown = useMemo(() => {
+    return filteredSeqs.map(seq => {
+      const slides = allSlides.filter(sl => sl.sequence_id === seq.id).sort((a, b) => a.sort_order - b.sort_order);
+      const tracking = allTracking.find(t => t.sequence_id === seq.id);
+      const totalViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
+      const ctaClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
+      const firstViews = slides[0]?.slide_views || 0;
+      const lastViews = slides[slides.length - 1]?.slide_views || 0;
+      const retention = firstViews > 0 ? ((lastViews / firstViews) * 100).toFixed(1) : null;
+      const cat = categories.find(c => c.id === seq.category_id);
+      return { seq, slides: slides.length, totalViews, ctaClicks, retention, replies: tracking?.total_replies || 0, profileVisits: tracking?.total_profile_visits || 0, cat };
+    });
+  }, [filteredSeqs, allSlides, allTracking, categories]);
+
+  return (
+    <div className="space-y-6">
+      {/* Category filter */}
+      {seqCategories.length > 0 && (
+        <div className="flex items-center gap-1 flex-wrap">
+          <button
+            onClick={() => setFilterCat(null)}
+            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", !filterCat ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}
+          >
+            Alle
+          </button>
+          {seqCategories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setFilterCat(filterCat === cat.id ? null : cat.id)}
+              className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", filterCat === cat.id ? COLOR_CLASSES[cat.color] || "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <KPICard icon={<Eye className="h-4 w-4" />} label="Ø Views / Slide" value={stats.avgViewsPerSlide.toLocaleString("de-DE")} />
+        <KPICard icon={<TrendingUp className="h-4 w-4" />} label="Ø Retention" value={stats.avgRetention ? `${stats.avgRetention}%` : "–"} />
+        <KPICard icon={<MousePointerClick className="h-4 w-4" />} label="Ø CTA Click Rate" value={stats.avgCTR ? `${stats.avgCTR}%` : "–"} />
+        <KPICard icon={<Users className="h-4 w-4" />} label="Profilbesuche" value={stats.totalProfileVisits.toLocaleString("de-DE")} />
+      </div>
+
+      {/* Summary row */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        <MiniStat label="Sequenzen" value={stats.sequenceCount} />
+        <MiniStat label="Gesamt Views" value={stats.totalSlideViews} />
+        <MiniStat label="CTA Klicks" value={stats.totalSlideClicks} />
+        <MiniStat label="Replies" value={stats.totalReplies} />
+        <MiniStat label="Triggers" value={stats.totalTriggers} />
+        <MiniStat label="Link Klicks" value={stats.totalLinkClicks} />
+      </div>
+
+      {/* Per-sequence breakdown */}
+      <div>
+        <h4 className="font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Sequenz-Übersicht</h4>
+        {seqBreakdown.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-8">Keine getrackten Sequenzen vorhanden.</p>
+        ) : (
+          <div className="space-y-2">
+            {seqBreakdown.map(({ seq, slides, totalViews, ctaClicks, retention, replies, profileVisits, cat }) => (
+              <div key={seq.id} className="bg-card border border-border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <p className="font-display font-semibold text-xs">{seq.title}</p>
+                    {cat && (
+                      <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", COLOR_CLASSES[cat.color])}>
+                        {cat.name}
+                      </span>
+                    )}
+                    <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status])}>
+                      {STATUS_LABELS[seq.status]}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {seq.posted_at && format(new Date(seq.posted_at), "dd.MM.yyyy", { locale: de })}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  <MiniStat label="Slides" value={slides} />
+                  <MiniStat label="Views" value={totalViews} />
+                  <MiniStat label="CTA Klicks" value={ctaClicks} />
+                  <MiniStat label="Retention" value={retention ? `${retention}%` : "–"} isText />
+                  <MiniStat label="Replies" value={replies} />
+                  <MiniStat label="Profilbesuche" value={profileVisits} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function KPICard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="bg-card border border-border rounded-lg p-3">
+      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+        {icon}
+        <span className="text-[10px]">{label}</span>
+      </div>
+      <p className="font-mono font-bold text-lg">{value}</p>
+    </div>
+  );
+}
+
+function MiniStat({ label, value, isText }: { label: string; value: number | string; isText?: boolean }) {
+  return (
+    <div className="text-center">
+      <p className="font-mono font-bold text-sm">{isText ? value : typeof value === "number" ? value.toLocaleString("de-DE") : value}</p>
+      <p className="text-[9px] text-muted-foreground">{label}</p>
+    </div>
+  );
+}
