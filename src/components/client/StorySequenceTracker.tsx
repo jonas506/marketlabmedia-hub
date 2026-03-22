@@ -127,7 +127,10 @@ export default function StorySequenceTracker({ clientId, canEdit }: Props) {
         .eq("template_id", activeTemplate!.id)
         .order("day_number", { ascending: true });
       if (error) throw error;
-      return data as SequenceDay[];
+      return (data ?? []).map((d: any) => ({
+        ...d,
+        slides: Array.isArray(d.slides) ? d.slides : [],
+      })) as SequenceDay[];
     },
     enabled: !!activeTemplate,
   });
