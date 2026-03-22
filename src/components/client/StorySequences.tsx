@@ -492,6 +492,36 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
         )}
       </div>
 
+      {/* Per-Slide KPI Summary */}
+      {(sequence.status === "posted" || sequence.status === "tracked") && slides.length > 0 && (() => {
+        const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
+        const totalSlideClicks = slides.filter(s => s.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
+        const ctaSlides = slides.filter(s => s.slide_type === "cta");
+        const firstSlideViews = slides[0]?.slide_views || 0;
+        const lastSlideViews = slides[slides.length - 1]?.slide_views || 0;
+        const retentionRate = firstSlideViews > 0 ? ((lastSlideViews / firstSlideViews) * 100).toFixed(1) : null;
+        const ctaClickRate = ctaSlides.length > 0 && totalSlideClicks > 0 && ctaSlides[0]?.slide_views > 0
+          ? ((totalSlideClicks / ctaSlides[0].slide_views) * 100).toFixed(1) : null;
+
+        return totalSlideViews > 0 ? (
+          <div className="flex gap-3 flex-wrap">
+            <span className="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full font-mono">
+              Ø Views: {Math.round(totalSlideViews / slides.length)}
+            </span>
+            {retentionRate && (
+              <span className="text-xs bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-full font-mono">
+                Retention: {retentionRate}%
+              </span>
+            )}
+            {ctaClickRate && (
+              <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-mono">
+                CTA Click Rate: {ctaClickRate}%
+              </span>
+            )}
+          </div>
+        ) : null;
+      })()}
+
       {/* Tracking Section */}
       {(sequence.status === "posted" || sequence.status === "tracked") && (
         <TrackingSection
