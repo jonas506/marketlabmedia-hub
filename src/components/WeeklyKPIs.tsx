@@ -48,10 +48,10 @@ const WeeklyKPIs = () => {
       // Clients with low runway (< 7 days worth)
       const lowRunwayClients = activeClients.filter((client) => {
         const clientPieces = allPieces.filter((p) => p.client_id === client.id);
-        const reelStoryTarget = client.monthly_reels + client.monthly_stories;
-        const dailyFreq = reelStoryTarget / 30;
+        const reelTarget = client.monthly_reels;
+        const dailyFreq = reelTarget / 30;
         const readyPieces = clientPieces.filter(
-          (p) => (p.type === "reel" || p.type === "story") && (p.phase === "approved" || p.phase === "handed_over") &&
+          (p) => p.type === "reel" && (p.phase === "approved" || p.phase === "handed_over") &&
           p.target_month === month && p.target_year === year
         ).length;
         const runway = dailyFreq > 0 ? Math.round(readyPieces / dailyFreq) : 999;
