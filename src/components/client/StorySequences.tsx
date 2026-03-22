@@ -733,3 +733,40 @@ function SlideImageUpload({ clientId, sequenceId, slideId, currentUrl, onUploade
     </label>
   );
 }
+
+function SlideImageUploadBox({ clientId, sequenceId, slideId, onUploaded }: { clientId: string; sequenceId: string; slideId: string; onUploaded: (url: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${clientId}/${sequenceId}/slides/${slideId}.${ext}`;
+      const { error } = await supabase.storage.from("story-screenshots").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("story-screenshots").getPublicUrl(path);
+      onUploaded(data.publicUrl);
+      toast.success("Bild hochgeladen");
+    } catch {
+      toast.error("Upload fehlgeschlagen");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <label className="h-24 w-24 shrink-0 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer">
+      {uploading ? (
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+      ) : (
+        <>
+          <Image className="h-5 w-5 mb-1" />
+          <span className="text-[9px]">Bild</span>
+        </>
+      )}
+      <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+    </label>
+  );
+}
