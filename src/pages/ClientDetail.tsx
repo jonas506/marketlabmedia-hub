@@ -14,10 +14,11 @@ import MarketingTracking from "@/components/client/MarketingTracking";
 import TaskList from "@/components/client/TaskList";
 import InspirationBoard from "@/components/client/InspirationBoard";
 import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
+import StorySequenceTracker from "@/components/client/StorySequenceTracker";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles, Presentation } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles, Presentation, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -161,6 +162,10 @@ const ClientDetail = () => {
               <Sparkles className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Inspirationen</span>
             </TabsTrigger>
+            <TabsTrigger value="stories" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Film className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Stories</span>
+            </TabsTrigger>
             <TabsTrigger value="marketing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <TrendingUp className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Marketing</span>
@@ -184,6 +189,9 @@ const ClientDetail = () => {
           </TabsContent>
           <TabsContent value="inspo" className="mt-4">
             <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="stories" className="mt-4">
+            <StorySequenceTracker clientId={client.id} canEdit={canEdit} />
           </TabsContent>
           <TabsContent value="marketing" className="mt-4">
             <MarketingTracking clientId={client.id} canEdit={canEdit} />

@@ -1835,6 +1835,129 @@ export type Database = {
         }
         Relationships: []
       }
+      story_sequence_days: {
+        Row: {
+          created_at: string | null
+          day_label: string
+          day_number: number
+          id: string
+          keyword_trigger: string | null
+          slides: Json | null
+          template_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          day_label: string
+          day_number: number
+          id?: string
+          keyword_trigger?: string | null
+          slides?: Json | null
+          template_id: string
+        }
+        Update: {
+          created_at?: string | null
+          day_label?: string
+          day_number?: number
+          id?: string
+          keyword_trigger?: string | null
+          slides?: Json | null
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_sequence_days_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "story_sequence_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_sequence_templates: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_sequence_templates_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_tracking: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          day_type: string
+          id: string
+          keyword_triggers_received: number | null
+          link_clicks: number | null
+          notes: string | null
+          profile_visits_from_stories: number | null
+          stories_posted: number | null
+          story_replies: number | null
+          story_views: number | null
+          tracking_date: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          day_type: string
+          id?: string
+          keyword_triggers_received?: number | null
+          link_clicks?: number | null
+          notes?: string | null
+          profile_visits_from_stories?: number | null
+          stories_posted?: number | null
+          story_replies?: number | null
+          story_views?: number | null
+          tracking_date?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          day_type?: string
+          id?: string
+          keyword_triggers_received?: number | null
+          link_clicks?: number | null
+          notes?: string | null
+          profile_visits_from_stories?: number | null
+          stories_posted?: number | null
+          story_replies?: number | null
+          story_views?: number | null
+          tracking_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_tracking_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strategy_boards: {
         Row: {
           ai_generated: boolean | null
