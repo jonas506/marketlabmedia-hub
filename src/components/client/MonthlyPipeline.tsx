@@ -87,18 +87,6 @@ const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { 
     ],
     addLabel: "+ Karussell",
   },
-  story: {
-    label: "Story Ads",
-    emoji: "📱",
-    phases: [
-      { key: "filmed", label: "Gedreht", emoji: "📹" },
-      { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
-      { key: "approved", label: "Freigegeben", emoji: "✅" },
-      { key: "handed_over", label: "Übergeben", emoji: "🚀" },
-    ],
-    addLabel: "+ Story Ad",
-  },
   ad: {
     label: "Ads",
     emoji: "📢",

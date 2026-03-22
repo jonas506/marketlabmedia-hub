@@ -35,7 +35,6 @@ const KontingentSection: React.FC<KontingentSectionProps> = ({ client, clips, ca
   const types = [
     { key: "monthly_reels" as const, label: "Reels", type: "reel" },
     { key: "monthly_carousels" as const, label: "Karussell", type: "carousel" },
-    { key: "monthly_stories" as const, label: "Story Ads", type: "story" },
   ];
 
   const save = async () => {

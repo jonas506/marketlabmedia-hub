@@ -131,7 +131,6 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
   const kontingentSummary = [
     client.monthly_reels > 0 && `${client.monthly_reels} Reels`,
     client.monthly_carousels > 0 && `${client.monthly_carousels} Karussells`,
-    client.monthly_stories > 0 && `${client.monthly_stories} Stories`,
   ].filter(Boolean).join(" · ") || "Kein Kontingent";
 
   const brandingLinks = [
@@ -297,10 +296,9 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
               onSave={() => saveFields(values)} onCancel={() => setEditing(null)}>
               {editing === "contract" ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <InputField label="Reels/Monat" type="number" value={values.monthly_reels} onChange={(v) => setValues({ ...values, monthly_reels: Number(v) })} />
                     <InputField label="Karussells/Monat" type="number" value={values.monthly_carousels} onChange={(v) => setValues({ ...values, monthly_carousels: Number(v) })} />
-                    <InputField label="Story Ads/Monat" type="number" value={values.monthly_stories} onChange={(v) => setValues({ ...values, monthly_stories: Number(v) })} />
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <InputField label="Vertragsbeginn" type="date" value={values.contract_start} onChange={(v) => setValues({ ...values, contract_start: v })} />
@@ -326,7 +324,6 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                     {[
                       { label: "Reels", value: client.monthly_reels },
                       { label: "Karussells", value: client.monthly_carousels },
-                      { label: "Story Ads", value: client.monthly_stories },
                       { label: "Beginn", value: client.contract_start || "–" },
                       { label: "Laufzeit", value: client.contract_duration || "–" },
                       { label: "Preis", value: client.monthly_price ? `${client.monthly_price} €` : "–" },

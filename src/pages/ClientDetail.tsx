@@ -18,7 +18,7 @@ import StorySequences from "@/components/client/StorySequences";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles, Presentation, Film } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -144,10 +144,11 @@ const ClientDetail = () => {
           </Select>
         </div>
 
-        {/* Core workflow: Kontingent → Shoot Days → Pipeline */}
+        {/* Core workflow: Kontingent → Shoot Days → Stories → Pipeline */}
         <div className="space-y-4">
           <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+          <StorySequences clientId={client.id} canEdit={canEdit} />
           <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
         </div>
 
@@ -161,10 +162,6 @@ const ClientDetail = () => {
             <TabsTrigger value="inspo" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <Sparkles className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Inspirationen</span>
-            </TabsTrigger>
-            <TabsTrigger value="stories" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
-              <Film className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Stories</span>
             </TabsTrigger>
             <TabsTrigger value="marketing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <TrendingUp className="h-3.5 w-3.5" />
@@ -189,9 +186,6 @@ const ClientDetail = () => {
           </TabsContent>
           <TabsContent value="inspo" className="mt-4">
             <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
-          </TabsContent>
-          <TabsContent value="stories" className="mt-4">
-            <StorySequences clientId={client.id} canEdit={canEdit} />
           </TabsContent>
           <TabsContent value="marketing" className="mt-4">
             <MarketingTracking clientId={client.id} canEdit={canEdit} />
