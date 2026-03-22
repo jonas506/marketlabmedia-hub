@@ -437,12 +437,13 @@ const ClientApproval = () => {
                 >
                   {currentEmbed ? (
                     <>
-                      <div className={isMobile ? "p-2.5" : ""}>
-                        <div className={isMobile ? "mx-auto w-full max-w-[22rem]" : ""}>
+                      <div className="p-2.5 sm:p-0">
+                        <div className="mx-auto w-full max-w-[22rem] sm:max-w-none">
                           <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[60vh]"}`}>
                             <iframe
                               src={currentEmbed}
-                              className={isMobile ? "absolute left-1/2 top-1/2 h-[118%] w-[168%] -translate-x-1/2 -translate-y-1/2" : "w-full h-full"}
+                              className="absolute inset-0 w-full h-full border-0"
+                              style={isMobile ? { transform: 'scale(1.35)', transformOrigin: 'center center' } : undefined}
                               allow="autoplay; encrypted-media; picture-in-picture"
                               allowFullScreen
                               title={currentPiece.title || "Preview"}
