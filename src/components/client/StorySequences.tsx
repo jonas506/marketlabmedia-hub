@@ -425,6 +425,22 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
             <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0", STATUS_BADGES[sequence.status])}>
               {STATUS_LABELS[sequence.status]}
             </span>
+            {canEdit && categories.filter(c => c.scope === "sequence").length > 0 && (
+              <Select
+                value={sequence.category_id || "none"}
+                onValueChange={(v) => updateSequence.mutate({ category_id: v === "none" ? null : v } as any)}
+              >
+                <SelectTrigger className="h-7 text-[10px] w-[110px] bg-transparent border-border">
+                  <SelectValue placeholder="Kategorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Keine</SelectItem>
+                  {categories.filter(c => c.scope === "sequence").map(cat => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {canEdit && (
