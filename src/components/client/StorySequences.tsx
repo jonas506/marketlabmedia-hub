@@ -66,13 +66,11 @@ interface Tracking {
 
 const STATUS_BADGES: Record<string, string> = {
   draft: "bg-slate-500/20 text-slate-400",
-  posted: "bg-blue-500/20 text-blue-400",
-  tracked: "bg-emerald-500/20 text-emerald-400",
+  posted: "bg-emerald-500/20 text-emerald-400",
 };
 const STATUS_LABELS: Record<string, string> = {
   draft: "Entwurf",
   posted: "Gepostet",
-  tracked: "Getrackt",
 };
 
 const SLIDE_TYPES = [
@@ -97,7 +95,7 @@ const COLOR_CLASSES: Record<string, string> = {
 };
 
 // ════════════════════════════════════
-// Hook: Categories
+// Hook: Categories (only sequence-scope)
 // ════════════════════════════════════
 function useCategories(clientId: string) {
   return useQuery({
@@ -107,6 +105,7 @@ function useCategories(clientId: string) {
         .from("story_categories" as any)
         .select("*")
         .eq("client_id", clientId)
+        .eq("scope", "sequence")
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data as unknown as Category[];
@@ -123,18 +122,18 @@ export default function StorySequences({ clientId, canEdit }: Props) {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border bg-card p-5 shadow-lg">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between mb-4">
-          <TabsList className="bg-muted/50 h-8">
-            <TabsTrigger value="sequences" className="text-xs h-7 px-3 gap-1.5">
-              <Tag className="h-3 w-3" /> Sequenzen
-            </TabsTrigger>
-            <TabsTrigger value="dashboard" className="text-xs h-7 px-3 gap-1.5">
-              <BarChart3 className="h-3 w-3" /> Dashboard
-            </TabsTrigger>
-          </TabsList>
           <div className="flex items-center gap-2">
+            <Tag className="h-4 w-4 text-primary" />
+            <h3 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">STORIES</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <TabsList className="bg-muted/50 h-7">
+              <TabsTrigger value="sequences" className="text-[10px] h-6 px-2.5">Sequenzen</TabsTrigger>
+              <TabsTrigger value="dashboard" className="text-[10px] h-6 px-2.5">Dashboard</TabsTrigger>
+            </TabsList>
             {canEdit && <CategoryManager clientId={clientId} />}
           </div>
         </div>
@@ -208,22 +207,20 @@ function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEd
     onError: () => toast.error("Fehler beim Erstellen"),
   });
 
-  const seqCategories = categories.filter(c => c.scope === "sequence");
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="font-display text-sm font-semibold">Story Sequences</h3>
-          {seqCategories.length > 0 && (
-            <div className="flex items-center gap-1">
+      {/* Filters + Add */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {categories.length > 0 && (
+            <>
               <button
                 onClick={() => setFilterCat(null)}
                 className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", !filterCat ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}
               >
                 Alle
               </button>
-              {seqCategories.map(cat => (
+              {categories.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setFilterCat(filterCat === cat.id ? null : cat.id)}
@@ -232,54 +229,56 @@ function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEd
                   {cat.name}
                 </button>
               ))}
-            </div>
+            </>
           )}
         </div>
         {canEdit && (
-          <Button size="sm" className="gap-1.5 text-xs" onClick={() => createSequence.mutate()}>
-            <Plus className="h-3.5 w-3.5" /> Neue Sequenz
+          <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => createSequence.mutate()}>
+            <Plus className="h-3 w-3" /> Sequenz
           </Button>
         )}
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-12"><div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" /></div>
+        <div className="flex justify-center py-8"><div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground text-sm">
-          <p className="mb-3">{filterCat ? "Keine Sequenzen in dieser Kategorie." : "Noch keine Story Sequences erstellt."}</p>
+        <div className="text-center py-10 text-muted-foreground text-xs">
+          <p className="mb-2">{filterCat ? "Keine Sequenzen in dieser Kategorie." : "Noch keine Sequenzen."}</p>
           {canEdit && !filterCat && (
-            <Button variant="outline" onClick={() => createSequence.mutate()} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Erste Sequenz erstellen
+            <Button variant="outline" size="sm" onClick={() => createSequence.mutate()} className="gap-1.5 text-xs">
+              <Plus className="h-3 w-3" /> Erste Sequenz
             </Button>
           )}
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="space-y-1.5">
           {filtered.map((seq) => {
             const cat = categories.find(c => c.id === seq.category_id);
             return (
               <button
                 key={seq.id}
                 onClick={() => onSelect(seq.id)}
-                className="bg-card border border-border rounded-lg p-4 text-left hover:border-primary/30 transition-colors w-full"
+                className="w-full flex items-center justify-between bg-muted/30 hover:bg-muted/60 rounded-lg px-3 py-2.5 text-left transition-colors group"
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-display font-semibold text-sm">{seq.title}</p>
-                      {cat && (
-                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>
-                          {cat.name}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {slideCounts[seq.id] ?? 0} Stories
-                      {seq.posted_at && ` · Gepostet ${format(new Date(seq.posted_at), "dd.MM.yyyy", { locale: de })}`}
-                    </p>
-                  </div>
-                  <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status])}>
-                    {STATUS_LABELS[seq.status]}
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="font-display font-medium text-xs truncate">{seq.title}</p>
+                  {cat && (
+                    <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>
+                      {cat.name}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    {slideCounts[seq.id] ?? 0} Stories
+                  </span>
+                  {seq.posted_at && (
+                    <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                      {format(new Date(seq.posted_at), "dd.MM.", { locale: de })}
+                    </span>
+                  )}
+                  <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status] || STATUS_BADGES.draft)}>
+                    {STATUS_LABELS[seq.status] || seq.status}
                   </span>
                 </div>
               </button>
@@ -400,10 +399,26 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
     ]).then(() => qc.invalidateQueries({ queryKey: ["story-slides", sequenceId] }));
   }, [slides, sequenceId, qc]);
 
+  // Auto-save tracking fields
+  const upsertTracking = useCallback(async (field: string, value: any) => {
+    const payload = {
+      sequence_id: sequenceId,
+      [field]: value,
+    };
+    if (tracking) {
+      await supabase.from("story_sequence_tracking" as any).update({ [field]: value } as any).eq("id", tracking.id);
+    } else {
+      await supabase.from("story_sequence_tracking" as any).insert(payload as any);
+    }
+    qc.invalidateQueries({ queryKey: ["story-tracking", sequenceId] });
+  }, [tracking, sequenceId, qc]);
+
   if (!sequence) return <div className="flex justify-center py-12"><div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" /></div>;
 
+  const isPosted = sequence.status === "posted" || sequence.status === "tracked";
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       {/* Header */}
       <div>
         <button onClick={onBack} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-3 group transition-colors">
@@ -411,32 +426,32 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
         </button>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-1">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {canEdit ? (
               <Input
                 defaultValue={sequence.title}
                 onBlur={(e) => {
                   if (e.target.value !== sequence.title) updateSequence.mutate({ title: e.target.value } as any);
                 }}
-                className="font-display font-semibold text-sm h-9 bg-transparent border-border max-w-xs"
+                className="font-display font-semibold text-sm h-8 bg-transparent border-border max-w-xs"
               />
             ) : (
-              <h3 className="font-display font-semibold text-sm">{sequence.title}</h3>
+              <h3 className="font-display font-semibold text-sm truncate">{sequence.title}</h3>
             )}
-            <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0", STATUS_BADGES[sequence.status])}>
-              {STATUS_LABELS[sequence.status]}
+            <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0", STATUS_BADGES[sequence.status] || STATUS_BADGES.draft)}>
+              {STATUS_LABELS[sequence.status] || sequence.status}
             </span>
-            {canEdit && categories.filter(c => c.scope === "sequence").length > 0 && (
+            {canEdit && categories.length > 0 && (
               <Select
                 value={sequence.category_id || "none"}
                 onValueChange={(v) => updateSequence.mutate({ category_id: v === "none" ? null : v } as any)}
               >
-                <SelectTrigger className="h-7 text-[10px] w-[110px] bg-transparent border-border">
+                <SelectTrigger className="h-7 text-[10px] w-[100px] bg-transparent border-border">
                   <SelectValue placeholder="Kategorie" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Keine</SelectItem>
-                  {categories.filter(c => c.scope === "sequence").map(cat => (
+                  {categories.map(cat => (
                     <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -445,20 +460,15 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
           </div>
 
           {canEdit && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               {sequence.status === "draft" && (
-                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={markPosted}>
-                  ✓ Als gepostet markieren
-                </Button>
-              )}
-              {sequence.status === "posted" && (
-                <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => document.getElementById("tracking-section")?.scrollIntoView({ behavior: "smooth" })}>
-                  <BarChart3 className="h-3 w-3" /> Tracking eintragen
+                <Button variant="outline" size="sm" className="text-xs gap-1.5 h-7" onClick={markPosted}>
+                  ✓ Gepostet
                 </Button>
               )}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </AlertDialogTrigger>
@@ -479,217 +489,198 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
       </div>
 
       {/* Slides */}
-      <div>
-        <h4 className="text-xs font-display font-semibold text-muted-foreground uppercase tracking-wider mb-3">Skript</h4>
-        <div className="space-y-3">
-          {slides.map((slide, idx) => {
-            const isTracking = sequence.status === "posted" || sequence.status === "tracked";
-            return (
-            <div key={slide.id} className="bg-card border border-border rounded-lg p-3 flex gap-3">
-              {/* Number + Move */}
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <span className="bg-primary/10 text-primary rounded-full h-6 w-6 flex items-center justify-center font-mono text-xs font-bold">
-                  {idx + 1}
-                </span>
+      <div className="space-y-2">
+        {slides.map((slide, idx) => (
+          <div key={slide.id} className="bg-muted/30 rounded-lg p-3 flex gap-3">
+            {/* Number + Move */}
+            <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
+              <span className="bg-primary/10 text-primary rounded-full h-5 w-5 flex items-center justify-center font-mono text-[10px] font-bold">
+                {idx + 1}
+              </span>
+              {canEdit && (
+                <>
+                  <button onClick={() => moveSlide(idx, -1)} disabled={idx === 0} className="text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors p-0.5">
+                    <ArrowUp className="h-2.5 w-2.5" />
+                  </button>
+                  <button onClick={() => moveSlide(idx, 1)} disabled={idx === slides.length - 1} className="text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors p-0.5">
+                    <ArrowDown className="h-2.5 w-2.5" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                {canEdit ? (
+                  <Select value={slide.slide_type} onValueChange={(v) => updateSlide.mutate({ id: slide.id, slide_type: v })}>
+                    <SelectTrigger className="h-6 text-[10px] w-[80px] bg-transparent border-border"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {SLIDE_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className="text-[10px] text-muted-foreground">{SLIDE_TYPES.find((t) => t.value === slide.slide_type)?.icon} {SLIDE_TYPES.find((t) => t.value === slide.slide_type)?.label}</span>
+                )}
                 {canEdit && (
-                  <>
-                    <button onClick={() => moveSlide(idx, -1)} disabled={idx === 0} className="text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors">
-                      <ArrowUp className="h-3 w-3" />
-                    </button>
-                    <button onClick={() => moveSlide(idx, 1)} disabled={idx === slides.length - 1} className="text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors">
-                      <ArrowDown className="h-3 w-3" />
-                    </button>
-                  </>
+                  <button onClick={() => deleteSlide.mutate(slide.id)} className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
                 )}
               </div>
 
-              {/* Content */}
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  {canEdit ? (
-                    <Select value={slide.slide_type} onValueChange={(v) => updateSlide.mutate({ id: slide.id, slide_type: v })}>
-                      <SelectTrigger className="h-7 text-xs w-[90px] bg-transparent border-border"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {SLIDE_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">{SLIDE_TYPES.find((t) => t.value === slide.slide_type)?.icon} {SLIDE_TYPES.find((t) => t.value === slide.slide_type)?.label}</span>
-                  )}
-                  {canEdit && (
-                    <button onClick={() => deleteSlide.mutate(slide.id)} className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Image upload – available for ALL slide types */}
-                <div className="flex items-start gap-3">
-                  {slide.image_url ? (
-                    <div className="relative group shrink-0">
-                      <img src={slide.image_url} alt="" className="h-24 w-24 object-cover rounded-md border border-border" />
-                      {canEdit && (
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
-                          <SlideImageUpload
-                            clientId={clientId}
-                            sequenceId={sequenceId}
-                            slideId={slide.id}
-                            currentUrl={slide.image_url}
-                            onUploaded={(url) => updateSlide.mutate({ id: slide.id, image_url: url })}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ) : canEdit ? (
-                    <SlideImageUploadBox
-                      clientId={clientId}
-                      sequenceId={sequenceId}
-                      slideId={slide.id}
-                      onUploaded={(url) => updateSlide.mutate({ id: slide.id, image_url: url })}
-                    />
-                  ) : null}
-
-                  <div className="flex-1 space-y-2">
-                    <div className="relative group/text">
-                      {canEdit ? (
-                        <Textarea
-                          defaultValue={slide.content_text}
-                          onBlur={(e) => {
-                            if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
-                          }}
-                          onInput={(e) => {
-                            const t = e.currentTarget;
-                            t.style.height = 'auto';
-                            t.style.height = t.scrollHeight + 'px';
-                          }}
-                          ref={(el) => {
-                            if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-                          }}
-                          placeholder="Story-Text eingeben..."
-                          className="min-h-[60px] text-sm bg-background border-border resize-none pr-9 overflow-hidden"
-                        />
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap select-all cursor-text">{slide.content_text || <span className="text-muted-foreground italic select-none">Kein Text</span>}</p>
-                      )}
-                      {slide.content_text && (
-                        <CopyButton text={slide.content_text} />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Per-slide tracking (only when posted/tracked) */}
-                {isTracking && (
-                  <div className="flex items-center gap-3 pt-1 border-t border-border/50 mt-2 flex-wrap">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted-foreground">👁 Views:</span>
-                      <Input
-                        type="number"
-                        defaultValue={slide.slide_views || 0}
-                        onBlur={(e) => {
-                          const val = parseInt(e.target.value) || 0;
-                          if (val !== slide.slide_views) updateSlide.mutate({ id: slide.id, slide_views: val });
-                        }}
-                        disabled={!canEdit}
-                        className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted-foreground">💬 Replies:</span>
-                      <Input
-                        type="number"
-                        defaultValue={slide.slide_replies || 0}
-                        onBlur={(e) => {
-                          const val = parseInt(e.target.value) || 0;
-                          if (val !== slide.slide_replies) updateSlide.mutate({ id: slide.id, slide_replies: val });
-                        }}
-                        disabled={!canEdit}
-                        className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
-                      />
-                    </div>
-                    {slide.slide_type === "cta" && (
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-muted-foreground">🔗 Klicks:</span>
-                        <Input
-                          type="number"
-                          defaultValue={slide.slide_clicks || 0}
-                          onBlur={(e) => {
-                            const val = parseInt(e.target.value) || 0;
-                            if (val !== slide.slide_clicks) updateSlide.mutate({ id: slide.id, slide_clicks: val });
-                          }}
-                          disabled={!canEdit}
-                          className="h-6 w-16 text-xs font-mono bg-background border-border px-1.5"
-                        />
+              {/* Image + Text side by side */}
+              <div className="flex items-start gap-2.5">
+                {slide.image_url ? (
+                  <div className="relative group shrink-0">
+                    <img src={slide.image_url} alt="" className="h-20 w-20 object-cover rounded-md border border-border" />
+                    {canEdit && (
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                        <SlideImageUpload clientId={clientId} sequenceId={sequenceId} slideId={slide.id} currentUrl={slide.image_url} onUploaded={(url) => updateSlide.mutate({ id: slide.id, image_url: url })} />
                       </div>
                     )}
-                    {slide.slide_views > 0 && slide.slide_type === "cta" && slide.slide_clicks > 0 && (
-                      <span className="text-[10px] font-mono text-emerald-400">
-                        CTR: {((slide.slide_clicks / slide.slide_views) * 100).toFixed(1)}%
-                      </span>
-                    )}
                   </div>
-                )}
+                ) : canEdit ? (
+                  <SlideImageUploadBox clientId={clientId} sequenceId={sequenceId} slideId={slide.id} onUploaded={(url) => updateSlide.mutate({ id: slide.id, image_url: url })} />
+                ) : null}
+
+                <div className="flex-1 min-w-0">
+                  <div className="relative group/text">
+                    {canEdit ? (
+                      <Textarea
+                        defaultValue={slide.content_text}
+                        onBlur={(e) => {
+                          if (e.target.value !== slide.content_text) updateSlide.mutate({ id: slide.id, content_text: e.target.value });
+                        }}
+                        onInput={(e) => {
+                          const t = e.currentTarget;
+                          t.style.height = 'auto';
+                          t.style.height = t.scrollHeight + 'px';
+                        }}
+                        ref={(el) => {
+                          if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+                        }}
+                        placeholder="Story-Text..."
+                        className="min-h-[48px] text-xs bg-background border-border resize-none pr-8 overflow-hidden"
+                      />
+                    ) : (
+                      <p className="text-xs whitespace-pre-wrap select-all cursor-text">{slide.content_text || <span className="text-muted-foreground italic select-none">Kein Text</span>}</p>
+                    )}
+                    {slide.content_text && <CopyButton text={slide.content_text} />}
+                  </div>
+                </div>
               </div>
+
+              {/* Per-slide tracking (only when posted) */}
+              {isPosted && (
+                <div className="flex items-center gap-2.5 pt-1.5 mt-1.5 border-t border-border/30 flex-wrap">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">👁</span>
+                    <Input
+                      type="number"
+                      defaultValue={slide.slide_views || 0}
+                      onBlur={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        if (val !== slide.slide_views) updateSlide.mutate({ id: slide.id, slide_views: val });
+                      }}
+                      disabled={!canEdit}
+                      className="h-5 w-14 text-[10px] font-mono bg-background border-border px-1"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">💬</span>
+                    <Input
+                      type="number"
+                      defaultValue={slide.slide_replies || 0}
+                      onBlur={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        if (val !== slide.slide_replies) updateSlide.mutate({ id: slide.id, slide_replies: val });
+                      }}
+                      disabled={!canEdit}
+                      className="h-5 w-14 text-[10px] font-mono bg-background border-border px-1"
+                    />
+                  </div>
+                  {slide.slide_type === "cta" && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-muted-foreground">🔗</span>
+                      <Input
+                        type="number"
+                        defaultValue={slide.slide_clicks || 0}
+                        onBlur={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          if (val !== slide.slide_clicks) updateSlide.mutate({ id: slide.id, slide_clicks: val });
+                        }}
+                        disabled={!canEdit}
+                        className="h-5 w-14 text-[10px] font-mono bg-background border-border px-1"
+                      />
+                    </div>
+                  )}
+                  {slide.slide_views > 0 && slide.slide_type === "cta" && slide.slide_clicks > 0 && (
+                    <span className="text-[9px] font-mono text-emerald-400">
+                      CTR {((slide.slide_clicks / slide.slide_views) * 100).toFixed(1)}%
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-          )})}
-        </div>
+          </div>
+        ))}
 
         {canEdit && (
-          <Button variant="outline" size="sm" className="mt-3 text-xs gap-1.5" onClick={() => addSlide.mutate()}>
+          <button
+            onClick={() => addSlide.mutate()}
+            className="w-full rounded-lg border border-dashed border-border hover:border-primary/40 text-muted-foreground hover:text-primary transition-colors py-2 text-xs flex items-center justify-center gap-1.5"
+          >
             <Plus className="h-3 w-3" /> Story hinzufügen
-          </Button>
+          </button>
         )}
       </div>
 
-      {/* Per-Slide KPI Summary */}
-      {(sequence.status === "posted" || sequence.status === "tracked") && slides.length > 0 && (() => {
+      {/* KPI Summary (inline, only when posted and has data) */}
+      {isPosted && slides.length > 0 && (() => {
         const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
         const totalSlideClicks = slides.filter(s => s.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
         const totalSlideReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
+        const firstViews = slides[0]?.slide_views || 0;
+        const lastViews = slides[slides.length - 1]?.slide_views || 0;
+        const retention = firstViews > 0 ? ((lastViews / firstViews) * 100).toFixed(1) : null;
         const ctaSlides = slides.filter(s => s.slide_type === "cta");
-        const firstSlideViews = slides[0]?.slide_views || 0;
-        const lastSlideViews = slides[slides.length - 1]?.slide_views || 0;
-        const retentionRate = firstSlideViews > 0 ? ((lastSlideViews / firstSlideViews) * 100).toFixed(1) : null;
         const ctaClickRate = ctaSlides.length > 0 && totalSlideClicks > 0 && ctaSlides[0]?.slide_views > 0
           ? ((totalSlideClicks / ctaSlides[0].slide_views) * 100).toFixed(1) : null;
         const engagementRate = totalSlideViews > 0 ? ((totalSlideReplies / totalSlideViews) * 100).toFixed(1) : null;
 
         return totalSlideViews > 0 ? (
-          <div className="flex gap-3 flex-wrap">
-            <span className="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full font-mono">
-              Ø Views: {Math.round(totalSlideViews / slides.length)}
+          <div className="flex gap-2 flex-wrap">
+            <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full font-mono">
+              Ø {Math.round(totalSlideViews / slides.length)} Views
             </span>
-            {retentionRate && (
-              <span className="text-xs bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-full font-mono">
-                Retention: {retentionRate}%
+            {retention && (
+              <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full font-mono">
+                {retention}% Retention
               </span>
             )}
             {engagementRate && (
-              <span className="text-xs bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-full font-mono">
-                Engagement: {engagementRate}%
+              <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full font-mono">
+                {engagementRate}% Engagement
               </span>
             )}
             {ctaClickRate && (
-              <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-mono">
-                CTA Click Rate: {ctaClickRate}%
+              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-mono">
+                {ctaClickRate}% CTR
               </span>
             )}
           </div>
         ) : null;
       })()}
 
-      {/* Tracking Section – sequence-level extras */}
-      {(sequence.status === "posted" || sequence.status === "tracked") && (
+      {/* Extra tracking (auto-save, only when posted) */}
+      {isPosted && (
         <TrackingSection
-          id="tracking-section"
           sequenceId={sequenceId}
           clientId={clientId}
           tracking={tracking ?? null}
           canEdit={canEdit}
-          onSaved={() => {
-            updateSequence.mutate({ status: "tracked" } as any);
-            invalidateAll();
-          }}
+          upsertField={upsertTracking}
         />
       )}
     </motion.div>
@@ -697,54 +688,24 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
 }
 
 // ════════════════════════════════════
-// TRACKING SECTION
+// TRACKING SECTION (auto-save)
 // ════════════════════════════════════
 
 function TrackingSection({
-  id,
   sequenceId,
   clientId,
   tracking,
   canEdit,
-  onSaved,
+  upsertField,
 }: {
-  id?: string;
   sequenceId: string;
   clientId: string;
   tracking: Tracking | null;
   canEdit: boolean;
-  onSaved: () => void;
+  upsertField: (field: string, value: any) => Promise<void>;
 }) {
-  const qc = useQueryClient();
-  const [profileVisits, setProfileVisits] = useState(tracking?.total_profile_visits ?? 0);
-  const [triggers, setTriggers] = useState(tracking?.keyword_triggers ?? 0);
-  const [notes, setNotes] = useState(tracking?.notes ?? "");
-  const [screenshots, setScreenshots] = useState<string[]>(tracking?.screenshot_urls ?? []);
   const [uploading, setUploading] = useState(false);
-
-  const save = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        sequence_id: sequenceId,
-        total_profile_visits: profileVisits,
-        keyword_triggers: triggers,
-        screenshot_urls: screenshots,
-        notes: notes || null,
-      };
-      if (tracking) {
-        const { error } = await supabase.from("story_sequence_tracking" as any).update(payload as any).eq("id", tracking.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("story_sequence_tracking" as any).insert(payload as any);
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      onSaved();
-      toast.success("Performance gespeichert");
-    },
-    onError: () => toast.error("Fehler beim Speichern"),
-  });
+  const [screenshots, setScreenshots] = useState<string[]>(tracking?.screenshot_urls ?? []);
 
   const handleScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -760,7 +721,9 @@ function TrackingSection({
         const { data: urlData } = supabase.storage.from("story-screenshots").getPublicUrl(path);
         newUrls.push(urlData.publicUrl);
       }
-      setScreenshots((prev) => [...prev, ...newUrls]);
+      const updated = [...screenshots, ...newUrls];
+      setScreenshots(updated);
+      await upsertField("screenshot_urls", updated);
       toast.success(`${files.length} Screenshot(s) hochgeladen`);
     } catch {
       toast.error("Upload fehlgeschlagen");
@@ -770,72 +733,79 @@ function TrackingSection({
     }
   };
 
-  const removeScreenshot = (url: string) => {
-    setScreenshots((prev) => prev.filter((u) => u !== url));
+  const removeScreenshot = async (url: string) => {
+    const updated = screenshots.filter((u) => u !== url);
+    setScreenshots(updated);
+    await upsertField("screenshot_urls", updated);
   };
 
   return (
-    <div id={id} className="bg-card border border-border rounded-lg p-4 space-y-4">
-      <div className="flex items-center gap-2">
-        <BarChart3 className="h-4 w-4 text-primary" />
-        <h4 className="font-display font-semibold text-sm">Zusätzliche Metriken</h4>
-        <span className="text-[10px] text-muted-foreground">(Views, Replies & Klicks werden pro Story erfasst)</span>
-      </div>
+    <div className="bg-muted/20 rounded-lg p-3 space-y-3">
+      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Zusätzlich</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <NumberField label="Profilbesuche (gesamt)" value={profileVisits} onChange={setProfileVisits} disabled={!canEdit} />
-        <NumberField label="Keyword-Triggers (gesamt)" value={triggers} onChange={setTriggers} disabled={!canEdit} />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-[10px] text-muted-foreground mb-0.5 block">Profilbesuche</label>
+          <Input
+            type="number"
+            defaultValue={tracking?.total_profile_visits ?? 0}
+            onBlur={(e) => upsertField("total_profile_visits", parseInt(e.target.value) || 0)}
+            disabled={!canEdit}
+            className="h-7 text-xs font-mono bg-background border-border"
+          />
+        </div>
+        <div>
+          <label className="text-[10px] text-muted-foreground mb-0.5 block">Keyword-Triggers</label>
+          <Input
+            type="number"
+            defaultValue={tracking?.keyword_triggers ?? 0}
+            onBlur={(e) => upsertField("keyword_triggers", parseInt(e.target.value) || 0)}
+            disabled={!canEdit}
+            className="h-7 text-xs font-mono bg-background border-border"
+          />
+        </div>
       </div>
 
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Notizen</label>
+        <label className="text-[10px] text-muted-foreground mb-0.5 block">Notizen</label>
         <Textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          defaultValue={tracking?.notes ?? ""}
+          onBlur={(e) => upsertField("notes", e.target.value || null)}
           disabled={!canEdit}
-          placeholder="Beobachtungen, Learnings..."
-          className="min-h-[60px] text-sm bg-background border-border resize-none"
+          placeholder="Learnings..."
+          className="min-h-[40px] text-xs bg-background border-border resize-none"
         />
       </div>
 
       {/* Screenshots */}
-      <div>
-        <label className="text-xs text-muted-foreground mb-2 block">Screenshots</label>
-        <div className="flex flex-wrap gap-2">
-          {screenshots.map((url) => (
-            <div key={url} className="relative group">
-              <img src={url} alt="" className="h-20 w-20 object-cover rounded-md border border-border" />
-              {canEdit && (
-                <button
-                  onClick={() => removeScreenshot(url)}
-                  className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full h-4 w-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              )}
-            </div>
-          ))}
-          {canEdit && (
-            <label className="h-20 w-20 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer">
-              {uploading ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
-              ) : (
-                <>
-                  <Upload className="h-4 w-4 mb-1" />
-                  <span className="text-[9px]">Upload</span>
-                </>
-              )}
-              <input type="file" accept="image/*" multiple onChange={handleScreenshotUpload} className="hidden" />
-            </label>
-          )}
-        </div>
+      <div className="flex flex-wrap gap-1.5">
+        {screenshots.map((url) => (
+          <div key={url} className="relative group">
+            <img src={url} alt="" className="h-16 w-16 object-cover rounded-md border border-border" />
+            {canEdit && (
+              <button
+                onClick={() => removeScreenshot(url)}
+                className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-3.5 w-3.5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="h-2 w-2" />
+              </button>
+            )}
+          </div>
+        ))}
+        {canEdit && (
+          <label className="h-16 w-16 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer">
+            {uploading ? (
+              <div className="h-3 w-3 animate-spin rounded-full border border-primary/30 border-t-primary" />
+            ) : (
+              <>
+                <Upload className="h-3 w-3 mb-0.5" />
+                <span className="text-[8px]">Upload</span>
+              </>
+            )}
+            <input type="file" accept="image/*" multiple onChange={handleScreenshotUpload} className="hidden" />
+          </label>
+        )}
       </div>
-
-      {canEdit && (
-        <Button size="sm" className="gap-1.5" onClick={() => save.mutate()} disabled={save.isPending}>
-          {save.isPending ? "Speichert..." : "Speichern"}
-        </Button>
-      )}
     </div>
   );
 }
@@ -844,37 +814,21 @@ function TrackingSection({
 // HELPERS
 // ════════════════════════════════════
 
-function NumberField({ label, value, onChange, disabled }: { label: string; value: number; onChange: (v: number) => void; disabled: boolean }) {
-  return (
-    <div>
-      <label className="text-xs text-muted-foreground mb-1 block">{label}</label>
-      <Input
-        type="number"
-        value={value}
-        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-        disabled={disabled}
-        className="h-8 text-sm font-mono bg-background border-border"
-      />
-    </div>
-  );
-}
-
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-      className="absolute top-1 right-1 opacity-0 group-hover/text:opacity-100 transition-opacity p-1.5 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground"
-      title="Text kopieren"
+      className="absolute top-1 right-1 opacity-0 group-hover/text:opacity-100 transition-opacity p-1 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground"
+      title="Kopieren"
     >
-      {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
     </button>
   );
 }
 
 function SlideImageUpload({ clientId, sequenceId, slideId, currentUrl, onUploaded }: { clientId: string; sequenceId: string; slideId: string; currentUrl: string | null; onUploaded: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
-
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -886,18 +840,16 @@ function SlideImageUpload({ clientId, sequenceId, slideId, currentUrl, onUploade
       if (error) throw error;
       const { data } = supabase.storage.from("story-screenshots").getPublicUrl(path);
       onUploaded(data.publicUrl);
-      toast.success("Bild hochgeladen");
     } catch {
       toast.error("Upload fehlgeschlagen");
     } finally {
       setUploading(false);
     }
   };
-
   return (
-    <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors">
+    <label className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary cursor-pointer transition-colors">
       {uploading ? <div className="h-3 w-3 animate-spin rounded-full border border-primary/30 border-t-primary" /> : <Image className="h-3 w-3" />}
-      {currentUrl ? "Bild ersetzen" : "Bild hochladen"}
+      Ersetzen
       <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
     </label>
   );
@@ -905,7 +857,6 @@ function SlideImageUpload({ clientId, sequenceId, slideId, currentUrl, onUploade
 
 function SlideImageUploadBox({ clientId, sequenceId, slideId, onUploaded }: { clientId: string; sequenceId: string; slideId: string; onUploaded: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
-
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -917,22 +868,20 @@ function SlideImageUploadBox({ clientId, sequenceId, slideId, onUploaded }: { cl
       if (error) throw error;
       const { data } = supabase.storage.from("story-screenshots").getPublicUrl(path);
       onUploaded(data.publicUrl);
-      toast.success("Bild hochgeladen");
     } catch {
       toast.error("Upload fehlgeschlagen");
     } finally {
       setUploading(false);
     }
   };
-
   return (
-    <label className="h-24 w-24 shrink-0 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer">
+    <label className="h-20 w-20 shrink-0 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors cursor-pointer">
       {uploading ? (
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+        <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
       ) : (
         <>
-          <Image className="h-5 w-5 mb-1" />
-          <span className="text-[9px]">Bild</span>
+          <Image className="h-4 w-4 mb-0.5" />
+          <span className="text-[8px]">Bild</span>
         </>
       )}
       <input type="file" accept="image/*" onChange={handleUpload} className="hidden" />
@@ -941,7 +890,7 @@ function SlideImageUploadBox({ clientId, sequenceId, slideId, onUploaded }: { cl
 }
 
 // ════════════════════════════════════
-// CATEGORY MANAGER
+// CATEGORY MANAGER (simplified – sequence only)
 // ════════════════════════════════════
 
 function CategoryManager({ clientId }: { clientId: string }) {
@@ -949,7 +898,6 @@ function CategoryManager({ clientId }: { clientId: string }) {
   const { data: categories = [] } = useCategories(clientId);
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState("blue");
-  const [newScope, setNewScope] = useState("sequence");
 
   const addCat = useMutation({
     mutationFn: async () => {
@@ -958,7 +906,7 @@ function CategoryManager({ clientId }: { clientId: string }) {
         client_id: clientId,
         name: newName.trim(),
         color: newColor,
-        scope: newScope,
+        scope: "sequence",
       } as any);
       if (error) throw error;
     },
@@ -980,67 +928,43 @@ function CategoryManager({ clientId }: { clientId: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground">
-          <Settings className="h-3 w-3" /> Kategorien
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
+          <Settings className="h-3.5 w-3.5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="font-display text-sm">Kategorien verwalten</DialogTitle>
+          <DialogTitle className="font-display text-sm">Kategorien</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          {/* Existing */}
-          <div className="space-y-2">
-            {categories.map(cat => (
-              <div key={cat.id} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>
-                    {cat.name}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {cat.scope === "sequence" ? "Sequenz" : "Slide"}
-                  </span>
-                </div>
-                <button onClick={() => deleteCat.mutate(cat.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-            {categories.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-4">Noch keine Kategorien erstellt.</p>
-            )}
-          </div>
+        <div className="space-y-3">
+          {categories.map(cat => (
+            <div key={cat.id} className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+              <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>
+                {cat.name}
+              </span>
+              <button onClick={() => deleteCat.mutate(cat.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+          {categories.length === 0 && <p className="text-xs text-muted-foreground text-center py-3">Keine Kategorien.</p>}
 
-          {/* Add new */}
           <div className="space-y-2 border-t border-border pt-3">
-            <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Kategorie-Name..."
-              className="h-8 text-sm"
-              onKeyDown={(e) => e.key === "Enter" && addCat.mutate()}
-            />
+            <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Name..." className="h-7 text-xs" onKeyDown={(e) => e.key === "Enter" && addCat.mutate()} />
             <div className="flex items-center gap-2">
-              <Select value={newScope} onValueChange={setNewScope}>
-                <SelectTrigger className="h-7 text-xs flex-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sequence">Für Sequenzen</SelectItem>
-                  <SelectItem value="slide">Für Slides</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex gap-1">
+              <div className="flex gap-1 flex-1">
                 {CATEGORY_COLORS.map(c => (
                   <button
                     key={c}
                     onClick={() => setNewColor(c)}
-                    className={cn("h-5 w-5 rounded-full transition-all", COLOR_CLASSES[c]?.split(" ")[0], newColor === c ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "")}
+                    className={cn("h-4 w-4 rounded-full transition-all", COLOR_CLASSES[c]?.split(" ")[0], newColor === c ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "")}
                   />
                 ))}
               </div>
+              <Button size="sm" className="text-xs h-7 gap-1" onClick={() => addCat.mutate()} disabled={!newName.trim()}>
+                <Plus className="h-3 w-3" /> Hinzufügen
+              </Button>
             </div>
-            <Button size="sm" className="w-full text-xs gap-1.5" onClick={() => addCat.mutate()} disabled={!newName.trim()}>
-              <Plus className="h-3 w-3" /> Hinzufügen
-            </Button>
           </div>
         </div>
       </DialogContent>
@@ -1069,13 +993,13 @@ function StoryDashboard({ clientId }: { clientId: string }) {
     },
   });
 
-  const trackedSeqs = sequences.filter(s => s.status === "tracked" || s.status === "posted");
-  const filteredSeqs = filterCat ? trackedSeqs.filter(s => s.category_id === filterCat) : trackedSeqs;
+  const postedSeqs = sequences.filter(s => s.status === "posted" || s.status === "tracked");
+  const filteredSeqs = filterCat ? postedSeqs.filter(s => s.category_id === filterCat) : postedSeqs;
 
   const { data: allSlides = [] } = useQuery({
     queryKey: ["story-all-slides", clientId],
     queryFn: async () => {
-      const seqIds = trackedSeqs.map(s => s.id);
+      const seqIds = postedSeqs.map(s => s.id);
       if (!seqIds.length) return [];
       const { data, error } = await supabase
         .from("story_slides" as any)
@@ -1084,13 +1008,13 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       if (error) throw error;
       return data as unknown as Slide[];
     },
-    enabled: trackedSeqs.length > 0,
+    enabled: postedSeqs.length > 0,
   });
 
   const { data: allTracking = [] } = useQuery({
     queryKey: ["story-all-tracking", clientId],
     queryFn: async () => {
-      const seqIds = trackedSeqs.map(s => s.id);
+      const seqIds = postedSeqs.map(s => s.id);
       if (!seqIds.length) return [];
       const { data, error } = await supabase
         .from("story_sequence_tracking" as any)
@@ -1099,7 +1023,7 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       if (error) throw error;
       return data as unknown as Tracking[];
     },
-    enabled: trackedSeqs.length > 0,
+    enabled: postedSeqs.length > 0,
   });
 
   const stats = useMemo(() => {
@@ -1108,12 +1032,10 @@ function StoryDashboard({ clientId }: { clientId: string }) {
     const tracking = allTracking.filter(t => relevantSeqIds.has(t.sequence_id));
 
     const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
-    const totalSlideClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
     const totalReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
     const totalProfileVisits = tracking.reduce((s, t) => s + (t.total_profile_visits || 0), 0);
     const totalTriggers = tracking.reduce((s, t) => s + (t.keyword_triggers || 0), 0);
 
-    // Retention: avg of (last slide views / first slide views) per sequence
     let retentionSum = 0, retentionCount = 0;
     for (const seq of filteredSeqs) {
       const seqSlides = slides.filter(sl => sl.sequence_id === seq.id).sort((a, b) => a.sort_order - b.sort_order);
@@ -1133,7 +1055,6 @@ function StoryDashboard({ clientId }: { clientId: string }) {
     return {
       sequenceCount: filteredSeqs.length,
       totalSlideViews,
-      totalSlideClicks,
       totalReplies,
       totalProfileVisits,
       totalTriggers,
@@ -1144,13 +1065,9 @@ function StoryDashboard({ clientId }: { clientId: string }) {
     };
   }, [filteredSeqs, allSlides, allTracking]);
 
-  const seqCategories = categories.filter(c => c.scope === "sequence");
-
-  // Per-sequence breakdown
   const seqBreakdown = useMemo(() => {
     return filteredSeqs.map(seq => {
       const slides = allSlides.filter(sl => sl.sequence_id === seq.id).sort((a, b) => a.sort_order - b.sort_order);
-      const tracking = allTracking.find(t => t.sequence_id === seq.id);
       const totalViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
       const totalReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
       const ctaClicks = slides.filter(sl => sl.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
@@ -1158,27 +1075,20 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       const lastViews = slides[slides.length - 1]?.slide_views || 0;
       const retention = firstViews > 0 ? ((lastViews / firstViews) * 100).toFixed(1) : null;
       const cat = categories.find(c => c.id === seq.category_id);
-      return { seq, slides: slides.length, totalViews, ctaClicks, retention, replies: totalReplies, profileVisits: tracking?.total_profile_visits || 0, cat };
+      return { seq, slides: slides.length, totalViews, ctaClicks, retention, replies: totalReplies, cat };
     });
-  }, [filteredSeqs, allSlides, allTracking, categories]);
+  }, [filteredSeqs, allSlides, categories]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Category filter */}
-      {seqCategories.length > 0 && (
+      {categories.length > 0 && (
         <div className="flex items-center gap-1 flex-wrap">
-          <button
-            onClick={() => setFilterCat(null)}
-            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", !filterCat ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}
-          >
+          <button onClick={() => setFilterCat(null)} className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", !filterCat ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}>
             Alle
           </button>
-          {seqCategories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setFilterCat(filterCat === cat.id ? null : cat.id)}
-              className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", filterCat === cat.id ? COLOR_CLASSES[cat.color] || "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}
-            >
+          {categories.map(cat => (
+            <button key={cat.id} onClick={() => setFilterCat(filterCat === cat.id ? null : cat.id)} className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", filterCat === cat.id ? COLOR_CLASSES[cat.color] || "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}>
               {cat.name}
             </button>
           ))}
@@ -1186,73 +1096,52 @@ function StoryDashboard({ clientId }: { clientId: string }) {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <KPICard icon={<Eye className="h-4 w-4" />} label="Ø Views / Slide" value={stats.avgViewsPerSlide.toLocaleString("de-DE")} />
-        <KPICard icon={<TrendingUp className="h-4 w-4" />} label="Ø Retention" value={stats.avgRetention ? `${stats.avgRetention}%` : "–"} />
-        <KPICard icon={<MousePointerClick className="h-4 w-4" />} label="Ø CTA Click Rate" value={stats.avgCTR ? `${stats.avgCTR}%` : "–"} />
-        <KPICard icon={<Users className="h-4 w-4" />} label="Engagement" value={stats.engagementRate ? `${stats.engagementRate}%` : "–"} />
-        <KPICard icon={<Users className="h-4 w-4" />} label="Profilbesuche" value={stats.totalProfileVisits.toLocaleString("de-DE")} />
-      </div>
-
-      {/* Summary row */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-        <MiniStat label="Sequenzen" value={stats.sequenceCount} />
-        <MiniStat label="Gesamt Views" value={stats.totalSlideViews} />
-        <MiniStat label="CTA Klicks" value={stats.totalSlideClicks} />
-        <MiniStat label="Replies" value={stats.totalReplies} />
-        <MiniStat label="Triggers" value={stats.totalTriggers} />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <KPICard icon={<Eye className="h-3.5 w-3.5" />} label="Ø Views/Slide" value={stats.avgViewsPerSlide.toLocaleString("de-DE")} />
+        <KPICard icon={<TrendingUp className="h-3.5 w-3.5" />} label="Ø Retention" value={stats.avgRetention ? `${stats.avgRetention}%` : "–"} />
+        <KPICard icon={<MousePointerClick className="h-3.5 w-3.5" />} label="Ø CTR" value={stats.avgCTR ? `${stats.avgCTR}%` : "–"} />
+        <KPICard icon={<Users className="h-3.5 w-3.5" />} label="Engagement" value={stats.engagementRate ? `${stats.engagementRate}%` : "–"} />
       </div>
 
       {/* Per-sequence breakdown */}
-      <div>
-        <h4 className="font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Sequenz-Übersicht</h4>
-        {seqBreakdown.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-8">Keine getrackten Sequenzen vorhanden.</p>
-        ) : (
-          <div className="space-y-2">
-            {seqBreakdown.map(({ seq, slides, totalViews, ctaClicks, retention, replies, profileVisits, cat }) => (
-              <div key={seq.id} className="bg-card border border-border rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <p className="font-display font-semibold text-xs">{seq.title}</p>
-                    {cat && (
-                      <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", COLOR_CLASSES[cat.color])}>
-                        {cat.name}
-                      </span>
-                    )}
-                    <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status])}>
-                      {STATUS_LABELS[seq.status]}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    {seq.posted_at && format(new Date(seq.posted_at), "dd.MM.yyyy", { locale: de })}
-                  </span>
+      {seqBreakdown.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-6">Keine geposteten Sequenzen.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {seqBreakdown.map(({ seq, slides, totalViews, ctaClicks, retention, replies, cat }) => (
+            <div key={seq.id} className="bg-muted/30 rounded-lg px-3 py-2">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <p className="font-display font-medium text-[11px] truncate">{seq.title}</p>
+                  {cat && <span className={cn("text-[8px] px-1.5 py-0.5 rounded-full font-medium shrink-0", COLOR_CLASSES[cat.color])}>{cat.name}</span>}
                 </div>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  <MiniStat label="Slides" value={slides} />
-                  <MiniStat label="Views" value={totalViews} />
-                  <MiniStat label="CTA Klicks" value={ctaClicks} />
-                  <MiniStat label="Retention" value={retention ? `${retention}%` : "–"} isText />
-                  <MiniStat label="Replies" value={replies} />
-                  <MiniStat label="Profilbesuche" value={profileVisits} />
-                </div>
+                <span className="text-[9px] text-muted-foreground shrink-0">
+                  {seq.posted_at && format(new Date(seq.posted_at), "dd.MM.yy", { locale: de })}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                <MiniStat label="Slides" value={slides} />
+                <MiniStat label="Views" value={totalViews} />
+                <MiniStat label="CTR" value={ctaClicks > 0 && totalViews > 0 ? `${((ctaClicks / totalViews) * 100).toFixed(1)}%` : "–"} isText />
+                <MiniStat label="Retention" value={retention ? `${retention}%` : "–"} isText />
+                <MiniStat label="Replies" value={replies} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 function KPICard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-card border border-border rounded-lg p-3">
-      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+    <div className="bg-muted/30 rounded-lg p-2.5">
+      <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
         {icon}
-        <span className="text-[10px]">{label}</span>
+        <span className="text-[9px]">{label}</span>
       </div>
-      <p className="font-mono font-bold text-lg">{value}</p>
+      <p className="font-mono font-bold text-sm">{value}</p>
     </div>
   );
 }
@@ -1260,8 +1149,8 @@ function KPICard({ icon, label, value }: { icon: React.ReactNode; label: string;
 function MiniStat({ label, value, isText }: { label: string; value: number | string; isText?: boolean }) {
   return (
     <div className="text-center">
-      <p className="font-mono font-bold text-sm">{isText ? value : typeof value === "number" ? value.toLocaleString("de-DE") : value}</p>
-      <p className="text-[9px] text-muted-foreground">{label}</p>
+      <p className="font-mono font-bold text-xs">{isText ? value : typeof value === "number" ? value.toLocaleString("de-DE") : value}</p>
+      <p className="text-[8px] text-muted-foreground">{label}</p>
     </div>
   );
 }
