@@ -324,7 +324,6 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                     {[
                       { label: "Reels", value: client.monthly_reels },
                       { label: "Karussells", value: client.monthly_carousels },
-                      { label: "Story Ads", value: client.monthly_stories },
                       { label: "Beginn", value: client.contract_start || "–" },
                       { label: "Laufzeit", value: client.contract_duration || "–" },
                       { label: "Preis", value: client.monthly_price ? `${client.monthly_price} €` : "–" },
