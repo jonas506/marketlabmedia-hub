@@ -1,0 +1,1 @@
+ALTER TABLE public.story_slides ADD COLUMN IF NOT EXISTS slide_replies integer DEFAULT 0;
