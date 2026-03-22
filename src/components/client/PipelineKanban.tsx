@@ -228,6 +228,17 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                               <MessageSquare className="h-2.5 w-2.5" />
                             </span>
                           )}
+                          {piece.scheduled_post_date && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[hsl(var(--runway-green))] bg-[hsl(var(--runway-green))]/10 rounded-md px-1.5 py-0.5">
+                              <CalendarIcon className="h-2.5 w-2.5" />
+                              {format(new Date(piece.scheduled_post_date), "dd.MM.", { locale: de })}
+                            </span>
+                          )}
+                          {!piece.scheduled_post_date && (piece.phase === "approved" || piece.phase === "handed_over") && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-destructive bg-destructive/10 rounded-md px-1.5 py-0.5">
+                              📅 Datum fehlt
+                            </span>
+                          )}
                         </div>
                       </div>
                     </motion.div>
