@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, MessageSquare, GripVertical, User, Tag } from "lucide-react";
+import { ExternalLink, FileText, MessageSquare, GripVertical, User, Tag, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 interface ContentPiece {
   id: string;
