@@ -703,25 +703,16 @@ function TrackingSection({
   onSaved: () => void;
 }) {
   const qc = useQueryClient();
-  const [views, setViews] = useState(tracking?.total_views ?? 0);
-  const [replies, setReplies] = useState(tracking?.total_replies ?? 0);
-  const [clicks, setClicks] = useState(tracking?.total_link_clicks ?? 0);
   const [profileVisits, setProfileVisits] = useState(tracking?.total_profile_visits ?? 0);
   const [triggers, setTriggers] = useState(tracking?.keyword_triggers ?? 0);
   const [notes, setNotes] = useState(tracking?.notes ?? "");
   const [screenshots, setScreenshots] = useState<string[]>(tracking?.screenshot_urls ?? []);
   const [uploading, setUploading] = useState(false);
 
-  // Sync from tracking prop when it changes
-  const trackingId = tracking?.id;
-
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
         sequence_id: sequenceId,
-        total_views: views,
-        total_replies: replies,
-        total_link_clicks: clicks,
         total_profile_visits: profileVisits,
         keyword_triggers: triggers,
         screenshot_urls: screenshots,
@@ -770,22 +761,17 @@ function TrackingSection({
     setScreenshots((prev) => prev.filter((u) => u !== url));
   };
 
-  const engagementRate = views > 0 ? ((replies / views) * 100).toFixed(1) : null;
-  const clickRate = views > 0 ? ((clicks / views) * 100).toFixed(1) : null;
-
   return (
     <div id={id} className="bg-card border border-border rounded-lg p-4 space-y-4">
       <div className="flex items-center gap-2">
         <BarChart3 className="h-4 w-4 text-primary" />
-        <h4 className="font-display font-semibold text-sm">Performance</h4>
+        <h4 className="font-display font-semibold text-sm">Zusätzliche Metriken</h4>
+        <span className="text-[10px] text-muted-foreground">(Views, Replies & Klicks werden pro Story erfasst)</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <NumberField label="Views gesamt" value={views} onChange={setViews} disabled={!canEdit} />
-        <NumberField label="Replies gesamt" value={replies} onChange={setReplies} disabled={!canEdit} />
-        <NumberField label="Link-Klicks" value={clicks} onChange={setClicks} disabled={!canEdit} />
-        <NumberField label="Profilbesuche" value={profileVisits} onChange={setProfileVisits} disabled={!canEdit} />
-        <NumberField label="Keyword-Triggers" value={triggers} onChange={setTriggers} disabled={!canEdit} />
+        <NumberField label="Profilbesuche (gesamt)" value={profileVisits} onChange={setProfileVisits} disabled={!canEdit} />
+        <NumberField label="Keyword-Triggers (gesamt)" value={triggers} onChange={setTriggers} disabled={!canEdit} />
       </div>
 
       <div>
@@ -832,25 +818,9 @@ function TrackingSection({
         </div>
       </div>
 
-      {/* KPIs */}
-      {views > 0 && (
-        <div className="flex gap-3 flex-wrap">
-          {engagementRate && (
-            <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-mono">
-              Engagement: {engagementRate}%
-            </span>
-          )}
-          {clickRate && (
-            <span className="text-xs bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full font-mono">
-              Click Rate: {clickRate}%
-            </span>
-          )}
-        </div>
-      )}
-
       {canEdit && (
         <Button size="sm" className="gap-1.5" onClick={() => save.mutate()} disabled={save.isPending}>
-          {save.isPending ? "Speichert..." : "Performance speichern"}
+          {save.isPending ? "Speichert..." : "Speichern"}
         </Button>
       )}
     </div>
