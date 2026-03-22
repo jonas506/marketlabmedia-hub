@@ -42,7 +42,7 @@ const WeeklyKPIs = () => {
 
       // Total target this month
       const totalTarget = activeClients.reduce(
-        (sum, c) => sum + c.monthly_reels + c.monthly_carousels + c.monthly_stories, 0
+        (sum, c) => sum + c.monthly_reels + c.monthly_carousels, 0
       );
 
       // Clients with low runway (< 7 days worth)
