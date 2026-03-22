@@ -4,6 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import CreateClientDialog from "@/components/CreateClientDialog";
 import MyTasks from "@/components/MyTasks";
 import WeeklyKPIs from "@/components/WeeklyKPIs";
+import PostingCalendar from "@/components/PostingCalendar";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
