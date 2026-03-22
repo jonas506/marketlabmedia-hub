@@ -473,22 +473,14 @@ function EditDayDialog({
   const [slides, setSlides] = useState<{ text: string; type: string }[]>([]);
   const [trigger, setTrigger] = useState(day?.keyword_trigger ?? "");
 
-  // Reset when day changes
-  const currentDayId = day?.id;
-  useState(() => {
+  // Sync state when day changes
+  useEffect(() => {
     if (day) {
       setDayLabel(day.day_label);
       setSlides((day.slides as any[]) ?? []);
       setTrigger(day.keyword_trigger ?? "");
     }
-  });
-
-  // Sync state on open
-  if (day && dayLabel !== day.day_label && slides.length === 0) {
-    setDayLabel(day.day_label);
-    setSlides((day.slides as any[]) ?? []);
-    setTrigger(day.keyword_trigger ?? "");
-  }
+  }, [day?.id]);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
