@@ -851,6 +851,19 @@ function NumberField({ label, value, onChange, disabled }: { label: string; valu
   );
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+      className="absolute top-1 right-1 opacity-0 group-hover/text:opacity-100 transition-opacity p-1.5 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground"
+      title="Text kopieren"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
 function SlideImageUpload({ clientId, sequenceId, slideId, currentUrl, onUploaded }: { clientId: string; sequenceId: string; slideId: string; currentUrl: string | null; onUploaded: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
 
