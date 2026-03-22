@@ -86,7 +86,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const types = [
     { label: "Reels", emoji: "🎬", type: "reel", target: client.monthly_reels, current: reelTotalCurrent },
     { label: "Karussells", emoji: "🖼️", type: "carousel", target: client.monthly_carousels, current: countByType("carousel") + getExtra("carousel") },
-    { label: "Story Ads", emoji: "📱", type: "story", target: client.monthly_stories, current: countByType("story") + getExtra("story") },
     ...(ytTarget > 0 ? [{ label: "YouTube", emoji: "🎥", type: "youtube_longform", target: ytTarget, current: ytDone + getExtra("youtube_longform") }] : []),
     ...(adsDone > 0 ? [{ label: "Ads", emoji: "📢", type: "ad", target: 0, current: adsDone }] : []),
   ];
