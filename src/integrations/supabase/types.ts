@@ -1835,125 +1835,125 @@ export type Database = {
         }
         Relationships: []
       }
-      story_sequence_days: {
+      story_sequence_tracking: {
         Row: {
           created_at: string | null
-          day_label: string
-          day_number: number
           id: string
-          keyword_trigger: string | null
-          slides: Json | null
-          template_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          day_label: string
-          day_number: number
-          id?: string
-          keyword_trigger?: string | null
-          slides?: Json | null
-          template_id: string
-        }
-        Update: {
-          created_at?: string | null
-          day_label?: string
-          day_number?: number
-          id?: string
-          keyword_trigger?: string | null
-          slides?: Json | null
-          template_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "story_sequence_days_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "story_sequence_templates"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      story_sequence_templates: {
-        Row: {
-          client_id: string
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          name: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          name: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          name?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "story_sequence_templates_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      story_tracking: {
-        Row: {
-          client_id: string
-          created_at: string | null
-          day_type: string
-          id: string
-          keyword_triggers_received: number | null
-          link_clicks: number | null
+          keyword_triggers: number | null
           notes: string | null
-          profile_visits_from_stories: number | null
-          stories_posted: number | null
-          story_replies: number | null
-          story_views: number | null
-          tracking_date: string
+          screenshot_urls: string[] | null
+          sequence_id: string
+          total_link_clicks: number | null
+          total_profile_visits: number | null
+          total_replies: number | null
+          total_views: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          keyword_triggers?: number | null
+          notes?: string | null
+          screenshot_urls?: string[] | null
+          sequence_id: string
+          total_link_clicks?: number | null
+          total_profile_visits?: number | null
+          total_replies?: number | null
+          total_views?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          keyword_triggers?: number | null
+          notes?: string | null
+          screenshot_urls?: string[] | null
+          sequence_id?: string
+          total_link_clicks?: number | null
+          total_profile_visits?: number | null
+          total_replies?: number | null
+          total_views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_sequence_tracking_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: true
+            referencedRelation: "story_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_sequences: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          posted_at: string | null
+          status: string
+          title: string
         }
         Insert: {
           client_id: string
           created_at?: string | null
-          day_type: string
           id?: string
-          keyword_triggers_received?: number | null
-          link_clicks?: number | null
           notes?: string | null
-          profile_visits_from_stories?: number | null
-          stories_posted?: number | null
-          story_replies?: number | null
-          story_views?: number | null
-          tracking_date?: string
+          posted_at?: string | null
+          status?: string
+          title: string
         }
         Update: {
           client_id?: string
           created_at?: string | null
-          day_type?: string
           id?: string
-          keyword_triggers_received?: number | null
-          link_clicks?: number | null
           notes?: string | null
-          profile_visits_from_stories?: number | null
-          stories_posted?: number | null
-          story_replies?: number | null
-          story_views?: number | null
-          tracking_date?: string
+          posted_at?: string | null
+          status?: string
+          title?: string
         }
         Relationships: [
           {
-            foreignKeyName: "story_tracking_client_id_fkey"
+            foreignKeyName: "story_sequences_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_slides: {
+        Row: {
+          content_text: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          sequence_id: string
+          slide_type: string
+          sort_order: number
+        }
+        Insert: {
+          content_text?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          sequence_id: string
+          slide_type?: string
+          sort_order?: number
+        }
+        Update: {
+          content_text?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          sequence_id?: string
+          slide_type?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_slides_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "story_sequences"
             referencedColumns: ["id"]
           },
         ]
