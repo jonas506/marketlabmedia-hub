@@ -90,17 +90,17 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
     ...(adsDone > 0 ? [{ label: "Ads", emoji: "📢", type: "ad", target: 0, current: adsDone }] : []),
   ];
 
-  const reelStoryTarget = client.monthly_reels + client.monthly_stories;
-  const dailyRate = reelStoryTarget / 30;
+  const reelTarget = client.monthly_reels;
+  const dailyRate = reelTarget / 30;
 
-  const reelStoryPieces = monthPieces.filter((c) => c.type === "reel" || c.type === "story");
+  const reelPieces = monthPieces.filter((c) => c.type === "reel");
 
-  const conservative = reelStoryPieces.filter((c) => c.phase === "approved" || c.phase === "handed_over").length
-    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount + bereitsGeplantCount;
+  const conservative = reelPieces.filter((c) => c.phase === "approved" || c.phase === "handed_over").length
+    + getExtra("reel") + opusProCount + overlayCount + bereitsGeplantCount;
   const conservativeDays = dailyRate > 0 ? Math.round(conservative / dailyRate) : 999;
 
-  const prognose = reelStoryPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length
-    + getExtra("reel") + getExtra("story") + opusProCount + overlayCount + bereitsGeplantCount;
+  const prognose = reelPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length
+    + getExtra("reel") + opusProCount + overlayCount + bereitsGeplantCount;
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
   const totalTarget = client.monthly_reels + client.monthly_carousels + client.monthly_stories + (ytTarget > 0 ? ytTarget : 0);
