@@ -97,6 +97,11 @@ const getGoogleDriveEmbedUrl = (url: string): string | null => {
   return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
 };
 
+const getGoogleDriveVideoUrl = (url: string): string | null => {
+  const fileId = getGoogleDriveFileId(url);
+  return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null;
+};
+
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
   const isMobile = useIsMobile();
@@ -316,6 +321,7 @@ const ClientApproval = () => {
   const currentPiece = pieces[currentIndex];
   const currentComments = currentPiece ? pieceComments(currentPiece.id) : [];
   const currentEmbed = currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
+  const currentVideoSrc = currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
   const currentPreviewLink = currentPiece?.preview_link ?? null;
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
 
@@ -435,17 +441,21 @@ const ClientApproval = () => {
                   transition={{ duration: 0.25 }}
                   className="rounded-[28px] overflow-hidden border border-white/[0.05] bg-[#17181d] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]"
                 >
-                  {currentEmbed ? (
+                  {currentVideoSrc ? (
                     <>
                       <div className="p-2.5 sm:p-0">
                         <div className="mx-auto w-full max-w-[22rem] sm:max-w-none">
                           <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[60vh]"}`}>
-                            <iframe
-                              src={currentEmbed}
-                              className="absolute inset-0 w-full h-full border-0"
-                              style={isMobile ? { transform: 'scale(1.35)', transformOrigin: 'center center' } : undefined}
-                              allow="autoplay; encrypted-media; picture-in-picture"
-                              allowFullScreen
+                            <video
+                              ref={(el) => {
+                                if (currentPiece) videoRefs.current[currentPiece.id] = el;
+                              }}
+                              src={currentVideoSrc}
+                              className="absolute inset-0 h-full w-full object-contain"
+                              controls
+                              playsInline
+                              preload="metadata"
+                              controlsList="nodownload"
                               title={currentPiece.title || "Preview"}
                             />
                           </div>
