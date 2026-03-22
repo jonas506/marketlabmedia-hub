@@ -144,10 +144,11 @@ const ClientDetail = () => {
           </Select>
         </div>
 
-        {/* Core workflow: Kontingent → Shoot Days → Pipeline */}
+        {/* Core workflow: Kontingent → Shoot Days → Stories → Pipeline */}
         <div className="space-y-4">
           <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
           <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+          <StorySequences clientId={client.id} canEdit={canEdit} />
           <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
         </div>
 
