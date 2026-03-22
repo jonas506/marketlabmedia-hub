@@ -632,12 +632,14 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
       {(sequence.status === "posted" || sequence.status === "tracked") && slides.length > 0 && (() => {
         const totalSlideViews = slides.reduce((s, sl) => s + (sl.slide_views || 0), 0);
         const totalSlideClicks = slides.filter(s => s.slide_type === "cta").reduce((s, sl) => s + (sl.slide_clicks || 0), 0);
+        const totalSlideReplies = slides.reduce((s, sl) => s + (sl.slide_replies || 0), 0);
         const ctaSlides = slides.filter(s => s.slide_type === "cta");
         const firstSlideViews = slides[0]?.slide_views || 0;
         const lastSlideViews = slides[slides.length - 1]?.slide_views || 0;
         const retentionRate = firstSlideViews > 0 ? ((lastSlideViews / firstSlideViews) * 100).toFixed(1) : null;
         const ctaClickRate = ctaSlides.length > 0 && totalSlideClicks > 0 && ctaSlides[0]?.slide_views > 0
           ? ((totalSlideClicks / ctaSlides[0].slide_views) * 100).toFixed(1) : null;
+        const engagementRate = totalSlideViews > 0 ? ((totalSlideReplies / totalSlideViews) * 100).toFixed(1) : null;
 
         return totalSlideViews > 0 ? (
           <div className="flex gap-3 flex-wrap">
@@ -649,6 +651,11 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
                 Retention: {retentionRate}%
               </span>
             )}
+            {engagementRate && (
+              <span className="text-xs bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-full font-mono">
+                Engagement: {engagementRate}%
+              </span>
+            )}
             {ctaClickRate && (
               <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-mono">
                 CTA Click Rate: {ctaClickRate}%
@@ -658,7 +665,7 @@ function SequenceDetail({ sequenceId, clientId, canEdit, onBack }: { sequenceId:
         ) : null;
       })()}
 
-      {/* Tracking Section */}
+      {/* Tracking Section – sequence-level extras */}
       {(sequence.status === "posted" || sequence.status === "tracked") && (
         <TrackingSection
           id="tracking-section"
