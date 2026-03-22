@@ -1835,6 +1835,41 @@ export type Database = {
         }
         Relationships: []
       }
+      story_categories: {
+        Row: {
+          client_id: string
+          color: string
+          created_at: string | null
+          id: string
+          name: string
+          scope: string
+        }
+        Insert: {
+          client_id: string
+          color?: string
+          created_at?: string | null
+          id?: string
+          name: string
+          scope?: string
+        }
+        Update: {
+          client_id?: string
+          color?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          scope?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_categories_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       story_sequence_tracking: {
         Row: {
           created_at: string | null
@@ -1884,6 +1919,7 @@ export type Database = {
       }
       story_sequences: {
         Row: {
+          category_id: string | null
           client_id: string
           created_at: string | null
           id: string
@@ -1893,6 +1929,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          category_id?: string | null
           client_id: string
           created_at?: string | null
           id?: string
@@ -1902,6 +1939,7 @@ export type Database = {
           title: string
         }
         Update: {
+          category_id?: string | null
           client_id?: string
           created_at?: string | null
           id?: string
@@ -1911,6 +1949,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "story_sequences_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "story_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "story_sequences_client_id_fkey"
             columns: ["client_id"]
@@ -1922,6 +1967,7 @@ export type Database = {
       }
       story_slides: {
         Row: {
+          category_id: string | null
           content_text: string
           created_at: string | null
           id: string
@@ -1933,6 +1979,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          category_id?: string | null
           content_text?: string
           created_at?: string | null
           id?: string
@@ -1944,6 +1991,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          category_id?: string | null
           content_text?: string
           created_at?: string | null
           id?: string
@@ -1955,6 +2003,13 @@ export type Database = {
           sort_order?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "story_slides_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "story_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "story_slides_sequence_id_fkey"
             columns: ["sequence_id"]
