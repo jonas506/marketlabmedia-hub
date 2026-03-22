@@ -154,6 +154,8 @@ export default function StorySequences({ clientId, canEdit }: Props) {
 
 function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEdit: boolean; onSelect: (id: string) => void }) {
   const qc = useQueryClient();
+  const [filterCat, setFilterCat] = useState<string | null>(null);
+  const { data: categories = [] } = useCategories(clientId);
 
   const { data: sequences = [], isLoading } = useQuery({
     queryKey: ["story-sequences", clientId],
@@ -167,6 +169,8 @@ function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEd
       return data as unknown as Sequence[];
     },
   });
+
+  const filtered = filterCat ? sequences.filter(s => s.category_id === filterCat) : sequences;
 
   const { data: slideCounts = {} } = useQuery({
     queryKey: ["story-slide-counts", clientId],
@@ -203,10 +207,33 @@ function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEd
     onError: () => toast.error("Fehler beim Erstellen"),
   });
 
+  const seqCategories = categories.filter(c => c.scope === "sequence");
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display text-sm font-semibold">Story Sequences</h3>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h3 className="font-display text-sm font-semibold">Story Sequences</h3>
+          {seqCategories.length > 0 && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setFilterCat(null)}
+                className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", !filterCat ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}
+              >
+                Alle
+              </button>
+              {seqCategories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setFilterCat(filterCat === cat.id ? null : cat.id)}
+                  className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors", filterCat === cat.id ? COLOR_CLASSES[cat.color] || "bg-primary/20 text-primary" : "bg-muted text-muted-foreground hover:text-foreground")}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {canEdit && (
           <Button size="sm" className="gap-1.5 text-xs" onClick={() => createSequence.mutate()}>
             <Plus className="h-3.5 w-3.5" /> Neue Sequenz
@@ -216,10 +243,10 @@ function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEd
 
       {isLoading ? (
         <div className="flex justify-center py-12"><div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" /></div>
-      ) : sequences.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground text-sm">
-          <p className="mb-3">Noch keine Story Sequences erstellt.</p>
-          {canEdit && (
+          <p className="mb-3">{filterCat ? "Keine Sequenzen in dieser Kategorie." : "Noch keine Story Sequences erstellt."}</p>
+          {canEdit && !filterCat && (
             <Button variant="outline" onClick={() => createSequence.mutate()} className="gap-1.5">
               <Plus className="h-4 w-4" /> Erste Sequenz erstellen
             </Button>
@@ -227,29 +254,39 @@ function SequenceList({ clientId, canEdit, onSelect }: { clientId: string; canEd
         </div>
       ) : (
         <div className="grid gap-3">
-          {sequences.map((seq) => (
-            <button
-              key={seq.id}
-              onClick={() => onSelect(seq.id)}
-              className="bg-card border border-border rounded-lg p-4 text-left hover:border-primary/30 transition-colors w-full"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-display font-semibold text-sm">{seq.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {slideCounts[seq.id] ?? 0} Stories
-                    {seq.posted_at && ` · Gepostet ${format(new Date(seq.posted_at), "dd.MM.yyyy", { locale: de })}`}
-                  </p>
+          {filtered.map((seq) => {
+            const cat = categories.find(c => c.id === seq.category_id);
+            return (
+              <button
+                key={seq.id}
+                onClick={() => onSelect(seq.id)}
+                className="bg-card border border-border rounded-lg p-4 text-left hover:border-primary/30 transition-colors w-full"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-display font-semibold text-sm">{seq.title}</p>
+                      {cat && (
+                        <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>
+                          {cat.name}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {slideCounts[seq.id] ?? 0} Stories
+                      {seq.posted_at && ` · Gepostet ${format(new Date(seq.posted_at), "dd.MM.yyyy", { locale: de })}`}
+                    </p>
+                  </div>
+                  <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status])}>
+                    {STATUS_LABELS[seq.status]}
+                  </span>
                 </div>
-                <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status])}>
-                  {STATUS_LABELS[seq.status]}
-                </span>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
