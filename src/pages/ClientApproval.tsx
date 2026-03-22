@@ -321,8 +321,8 @@ const ClientApproval = () => {
   const currentPiece = pieces[currentIndex];
   const currentComments = currentPiece ? pieceComments(currentPiece.id) : [];
   const currentEmbed = currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
+  const currentVideoSrc = currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
   const currentPreviewLink = currentPiece?.preview_link ?? null;
-  const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
 
   return (
     <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
