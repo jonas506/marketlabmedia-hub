@@ -1,0 +1,1 @@
+ALTER TABLE public.content_pieces ADD COLUMN scheduled_post_date date;
