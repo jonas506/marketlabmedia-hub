@@ -103,9 +103,9 @@ const ClientDetail = () => {
           </Link>
           {canEdit && (client as any).approval_token && (
             <Button
-              variant="ghost"
+              variant={copied ? "default" : "outline"}
               size="sm"
-              className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
+              className={`gap-1.5 text-xs h-7 transition-all ${copied ? "bg-[hsl(var(--runway-green))] text-white hover:bg-[hsl(var(--runway-green))]/90" : ""}`}
               onClick={() => {
                 const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
                 navigator.clipboard.writeText(url);
@@ -113,14 +113,19 @@ const ClientDetail = () => {
                 setTimeout(() => setCopied(false), 2000);
               }}
             >
-              {copied ? <Check className="h-3 w-3 text-[hsl(var(--runway-green))]" /> : <LinkIcon className="h-3 w-3" />}
-              {copied ? "Kopiert" : "Freigabe-Link"}
+              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? "Link kopiert!" : "Freigabe-Link kopieren"}
             </Button>
           )}
         </div>
 
         {/* Client header (collapsible info) */}
         <ClientInfoPanel client={client} canEdit={canEdit} />
+
+        {/* Dokumente – always visible */}
+        <div className="mt-4">
+          <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+        </div>
 
         {/* Month selector – compact inline */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 mb-4 gap-2">
@@ -175,10 +180,6 @@ const ClientDetail = () => {
               <Globe className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Landing Pages</span>
             </TabsTrigger>
-            <TabsTrigger value="docs" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
-              <FileText className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Dokumente</span>
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="mt-4">
@@ -192,9 +193,6 @@ const ClientDetail = () => {
           </TabsContent>
           <TabsContent value="landing" className="mt-4">
             <LandingPagesList clientId={client.id} canEdit={canEdit} />
-          </TabsContent>
-          <TabsContent value="docs" className="mt-4">
-            <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
           </TabsContent>
           <TabsContent value="strategy" className="mt-4">
             <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
