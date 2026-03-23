@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
       .single();
 
     const assigneeName = profile?.name || "Unbekannt";
-    const assigneeEmail = profile?.email || null;
+    const slackUserId = profile?.slack_user_id || null;
     const clientName = (piece as any).clients?.name || "Unbekannt";
     const typeLabels: Record<string, string> = {
       reel: "🎬 Reel",
