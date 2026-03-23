@@ -739,4 +739,84 @@ function MarketingSummaryBar({ marketing }: { marketing: MarketingSummary }) {
   );
 }
 
+function CarouselSlideGallery({ slides, scriptText }: { slides: string[]; scriptText?: string | null }) {
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  return (
+    <div>
+      {/* Main slide */}
+      <div className="relative bg-black">
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={activeSlide}
+            src={slides[activeSlide]}
+            alt={`Slide ${activeSlide + 1}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full max-h-[60vh] object-contain mx-auto"
+          />
+        </AnimatePresence>
+
+        {/* Slide counter */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md text-white text-[11px] font-mono px-2.5 py-1 rounded-full">
+          {activeSlide + 1} / {slides.length}
+        </div>
+
+        {/* Nav arrows */}
+        {slides.length > 1 && (
+          <>
+            {activeSlide > 0 && (
+              <button
+                onClick={() => setActiveSlide(activeSlide - 1)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-black/60 transition-all"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            )}
+            {activeSlide < slides.length - 1 && (
+              <button
+                onClick={() => setActiveSlide(activeSlide + 1)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-black/60 transition-all"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Thumbnail strip */}
+      {slides.length > 1 && (
+        <div className="flex gap-1.5 p-3 overflow-x-auto justify-center">
+          {slides.map((url, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveSlide(idx)}
+              className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                idx === activeSlide
+                  ? "border-[#0083F7] ring-1 ring-[#0083F7]/30"
+                  : "border-white/10 opacity-50 hover:opacity-80"
+              }`}
+            >
+              <img src={url} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Script text if available */}
+      {scriptText && (
+        <div className="border-t border-white/[0.05] p-4">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-white/20 mb-2">Karussell-Text</div>
+          <div className="text-sm text-white/60 whitespace-pre-wrap leading-relaxed max-h-[120px] overflow-y-auto">
+            {scriptText}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default ClientApproval;
+
