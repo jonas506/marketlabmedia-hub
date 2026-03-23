@@ -103,9 +103,9 @@ const ClientDetail = () => {
           </Link>
           {canEdit && (client as any).approval_token && (
             <Button
-              variant="ghost"
+              variant={copied ? "default" : "outline"}
               size="sm"
-              className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
+              className={`gap-1.5 text-xs h-7 transition-all ${copied ? "bg-[hsl(var(--runway-green))] text-white hover:bg-[hsl(var(--runway-green))]/90" : ""}`}
               onClick={() => {
                 const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
                 navigator.clipboard.writeText(url);
@@ -113,8 +113,8 @@ const ClientDetail = () => {
                 setTimeout(() => setCopied(false), 2000);
               }}
             >
-              {copied ? <Check className="h-3 w-3 text-[hsl(var(--runway-green))]" /> : <LinkIcon className="h-3 w-3" />}
-              {copied ? "Kopiert" : "Freigabe-Link"}
+              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? "Link kopiert!" : "Freigabe-Link kopieren"}
             </Button>
           )}
         </div>
