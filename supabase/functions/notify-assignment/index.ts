@@ -100,31 +100,22 @@ Deno.serve(async (req) => {
       "Content-Type": "application/json",
     };
 
-    // Try to find Slack user by email for DM
+    // Try to open DM with stored Slack user ID
     let dmChannelId: string | null = null;
 
-    if (assigneeEmail) {
+    if (slackUserId) {
       try {
-        const lookupRes = await fetch(
-          `${GATEWAY_URL}/users.lookupByEmail?email=${encodeURIComponent(assigneeEmail)}`,
-          { headers: slackHeaders }
-        );
-        const lookupData = await lookupRes.json();
-
-        if (lookupData.ok && lookupData.user?.id) {
-          // Open DM conversation
-          const dmRes = await fetch(`${GATEWAY_URL}/conversations.open`, {
-            method: "POST",
-            headers: slackHeaders,
-            body: JSON.stringify({ users: lookupData.user.id }),
-          });
-          const dmData = await dmRes.json();
-          if (dmData.ok && dmData.channel?.id) {
-            dmChannelId = dmData.channel.id;
-          }
+        const dmRes = await fetch(`${GATEWAY_URL}/conversations.open`, {
+          method: "POST",
+          headers: slackHeaders,
+          body: JSON.stringify({ users: slackUserId }),
+        });
+        const dmData = await dmRes.json();
+        if (dmData.ok && dmData.channel?.id) {
+          dmChannelId = dmData.channel.id;
         }
       } catch (e) {
-        console.log("DM lookup failed, falling back to channel:", e);
+        console.log("DM open failed, falling back to channel:", e);
       }
     }
 
