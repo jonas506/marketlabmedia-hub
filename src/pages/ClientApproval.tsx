@@ -479,13 +479,6 @@ const ClientApproval = () => {
                         </div>
                       )}
                     </>
-                  ) : isCarousel && currentPiece?.script_text ? (
-                    <div className="p-5 sm:p-6">
-                      <div className="text-xs font-mono uppercase tracking-wider text-white/20 mb-3">Karussell-Text</div>
-                      <div className="text-sm text-white/70 whitespace-pre-wrap leading-relaxed max-h-[50vh] overflow-y-auto">
-                        {currentPiece.script_text}
-                      </div>
-                    </div>
                   ) : currentPreviewLink ? (
                     <a
                       href={currentPreviewLink}
@@ -805,15 +798,6 @@ function CarouselSlideGallery({ slides, scriptText }: { slides: string[]; script
         </div>
       )}
 
-      {/* Script text if available */}
-      {scriptText && (
-        <div className="border-t border-white/[0.05] p-4">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-white/20 mb-2">Karussell-Text</div>
-          <div className="text-sm text-white/60 whitespace-pre-wrap leading-relaxed max-h-[120px] overflow-y-auto">
-            {scriptText}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
