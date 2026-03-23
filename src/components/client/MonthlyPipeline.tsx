@@ -878,33 +878,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       animate={{ opacity: 1, height: "auto" }}
                       className="pl-9"
                     >
-                      {activeType === "carousel" ? (
-                        <div className="space-y-2">
-                          <Textarea
-                            value={piece.script_text || ""}
-                            placeholder="Karussell-Inhalt hier reinschreiben... (Slide-Texte, Hooks, CTA etc.)"
-                            className="text-sm border border-border bg-muted/20 rounded-md resize-y min-h-[100px] focus:border-primary/40"
-                            rows={5}
-                            onChange={(e) => updatePiece(piece.id, { script_text: e.target.value })}
-                            disabled={!canEdit}
-                          />
-                        </div>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className={cn(
-                            "h-7 text-xs font-mono gap-1.5",
-                            piece.script_text
-                              ? "text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/30 bg-[hsl(var(--runway-green))]/5"
-                              : "text-muted-foreground"
-                          )}
-                          onClick={() => setScriptPiece(piece)}
-                        >
-                          <FileText className="h-3 w-3" />
-                          {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className={cn(
+                          "h-7 text-xs font-mono gap-1.5",
+                          piece.script_text
+                            ? "text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/30 bg-[hsl(var(--runway-green))]/5"
+                            : "text-muted-foreground"
+                        )}
+                        onClick={() => setScriptPiece(piece)}
+                      >
+                        <FileText className="h-3 w-3" />
+                        {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
+                      </Button>
                     </motion.div>
                   )}
 
