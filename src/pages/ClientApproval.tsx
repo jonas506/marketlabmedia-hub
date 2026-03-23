@@ -445,7 +445,10 @@ const ClientApproval = () => {
                   transition={{ duration: 0.25 }}
                   className="rounded-[28px] overflow-hidden border border-white/[0.05] bg-[#17181d] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]"
                 >
-                  {currentEmbed ? (
+                  {/* Carousel slides gallery */}
+                  {isCarousel && carouselSlides.length > 0 ? (
+                    <CarouselSlideGallery slides={carouselSlides} scriptText={currentPiece?.script_text} />
+                  ) : currentEmbed ? (
                     <>
                       <div className="p-2.5 sm:p-0">
                         <div className="mx-auto w-full max-w-[22rem] sm:max-w-none">
@@ -476,6 +479,13 @@ const ClientApproval = () => {
                         </div>
                       )}
                     </>
+                  ) : isCarousel && currentPiece?.script_text ? (
+                    <div className="p-5 sm:p-6">
+                      <div className="text-xs font-mono uppercase tracking-wider text-white/20 mb-3">Karussell-Text</div>
+                      <div className="text-sm text-white/70 whitespace-pre-wrap leading-relaxed max-h-[50vh] overflow-y-auto">
+                        {currentPiece.script_text}
+                      </div>
+                    </div>
                   ) : currentPreviewLink ? (
                     <a
                       href={currentPreviewLink}
