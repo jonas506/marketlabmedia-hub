@@ -322,8 +322,10 @@ const ClientApproval = () => {
   const totalPieces = pieces.length + approvedCount;
   const currentPiece = pieces[currentIndex];
   const currentComments = currentPiece ? pieceComments(currentPiece.id) : [];
-  const currentEmbed = currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
-  const currentVideoSrc = currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
+  const isCarousel = currentPiece?.type === "carousel";
+  const carouselSlides = currentPiece?.slide_images || [];
+  const currentEmbed = !isCarousel && currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
+  const currentVideoSrc = !isCarousel && currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
   const currentPreviewLink = currentPiece?.preview_link ?? null;
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
 
