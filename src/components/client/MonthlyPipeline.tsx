@@ -754,23 +754,54 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
                   {/* Row 2: Tag, CTA, Assign, Target month, Move button */}
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap pl-7 sm:pl-9">
-                    {/* Tag */}
-                    {piece.tag ? (
-                      <span
-                        className="inline-flex items-center gap-1 h-6 sm:h-7 text-[10px] sm:text-xs font-mono bg-accent/15 text-accent-foreground px-2 sm:px-2.5 rounded-md cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
-                        onClick={() => canEdit && updatePiece(piece.id, { tag: null })}
-                        title="Klicken zum Entfernen"
-                      >
-                        <Tag className="h-3 w-3 shrink-0" />
-                        {piece.tag}
-                        {canEdit && <span className="text-[10px] ml-0.5">✕</span>}
-                      </span>
-                    ) : canEdit ? (
-                      <TagInput
-                        clientId={clientId}
-                        onSelect={(tag) => updatePiece(piece.id, { tag })}
-                      />
-                    ) : null}
+                    {/* Tags */}
+                    {(() => {
+                      const TAG_COLORS = [
+                        "bg-primary/15 text-primary",
+                        "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+                        "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+                        "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+                        "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+                        "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400",
+                        "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+                        "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
+                      ];
+                      const tags = piece.tag ? piece.tag.split(",").map(t => t.trim()).filter(Boolean) : [];
+                      return (
+                        <>
+                          {tags.map((t, i) => (
+                            <span
+                              key={t}
+                              className={cn(
+                                "inline-flex items-center gap-1 h-6 sm:h-7 text-[10px] sm:text-xs font-mono px-2 sm:px-2.5 rounded-md transition-colors",
+                                TAG_COLORS[i % TAG_COLORS.length],
+                                canEdit && "cursor-pointer hover:bg-destructive/10 hover:text-destructive"
+                              )}
+                              onClick={() => {
+                                if (!canEdit) return;
+                                const remaining = tags.filter(x => x !== t);
+                                updatePiece(piece.id, { tag: remaining.length ? remaining.join(", ") : null });
+                              }}
+                              title={canEdit ? "Klicken zum Entfernen" : undefined}
+                            >
+                              <Tag className="h-3 w-3 shrink-0" />
+                              {t}
+                              {canEdit && <span className="text-[10px] ml-0.5">✕</span>}
+                            </span>
+                          ))}
+                          {canEdit && (
+                            <TagInput
+                              clientId={clientId}
+                              onSelect={(newTag) => {
+                                if (tags.includes(newTag)) return;
+                                const updated = [...tags, newTag].join(", ");
+                                updatePiece(piece.id, { tag: updated });
+                              }}
+                            />
+                          )}
+                        </>
+                      );
+                    })()}
 
                     {/* CTA Label — Story Ads only */}
                     {activeType === "story" && (

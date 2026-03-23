@@ -184,12 +184,22 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
 
                         {/* Meta row */}
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          {piece.tag && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-accent-foreground bg-accent/15 rounded-md px-1.5 py-0.5">
-                              <Tag className="h-2.5 w-2.5" />
-                              {piece.tag}
-                            </span>
-                          )}
+                          {piece.tag && (() => {
+                            const TAG_COLORS = [
+                              "bg-primary/15 text-primary",
+                              "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+                              "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+                              "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+                              "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+                              "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400",
+                            ];
+                            return piece.tag.split(",").map((t, i) => t.trim()).filter(Boolean).map((t, i) => (
+                              <span key={t} className={cn("inline-flex items-center gap-1 text-[10px] font-mono rounded-md px-1.5 py-0.5", TAG_COLORS[i % TAG_COLORS.length])}>
+                                <Tag className="h-2.5 w-2.5" />
+                                {t}
+                              </span>
+                            ));
+                          })()}
                           {piece.cta_label && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-mono text-secondary bg-secondary/15 rounded-md px-1.5 py-0.5">
                               📢 {piece.cta_label}
