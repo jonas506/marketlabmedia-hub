@@ -135,6 +135,26 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
                 {idx + 1}
               </div>
               {canEdit && (
+                <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-0.5 pb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {idx > 0 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); moveSlide(idx, -1); }}
+                      className="p-0.5 bg-black/60 text-white rounded hover:bg-primary/80"
+                    >
+                      <ArrowLeft className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+                  {idx < slideImages.length - 1 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); moveSlide(idx, 1); }}
+                      className="p-0.5 bg-black/60 text-white rounded hover:bg-primary/80"
+                    >
+                      <ArrowRight className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+              {canEdit && (
                 <button
                   onClick={(e) => { e.stopPropagation(); removeSlide(idx); }}
                   className="absolute top-0.5 right-0.5 p-0.5 bg-black/60 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
