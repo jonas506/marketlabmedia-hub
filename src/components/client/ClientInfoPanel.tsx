@@ -290,8 +290,9 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
               onEdit={() => startEdit("contract", {
                 monthly_reels: client.monthly_reels, monthly_carousels: client.monthly_carousels,
                 monthly_stories: client.monthly_stories, contract_start: client.contract_start || "",
-                contract_duration: client.contract_duration || "", monthly_price: client.monthly_price || "",
+                contract_end: (client as any).contract_end || "", monthly_price: client.monthly_price || "",
                 additional_products: client.additional_products || [],
+                contract_duration: client.contract_duration || "",
               })}
               onSave={() => saveFields(values)} onCancel={() => setEditing(null)}>
               {editing === "contract" ? (
@@ -302,9 +303,14 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <InputField label="Vertragsbeginn" type="date" value={values.contract_start} onChange={(v) => setValues({ ...values, contract_start: v })} />
-                    <InputField label="Laufzeit" value={values.contract_duration} onChange={(v) => setValues({ ...values, contract_duration: v })} placeholder="z.B. 12 Monate" />
+                    <InputField label="Vertragsende" type="date" value={values.contract_end} onChange={(v) => setValues({ ...values, contract_end: v })} />
                     <InputField label="Preis/Monat (€)" type="number" value={values.monthly_price} onChange={(v) => setValues({ ...values, monthly_price: Number(v) })} />
                   </div>
+                  {(client as any).contract_end && values.contract_end && values.contract_end !== (client as any).contract_end && (
+                    <div className="rounded-md bg-primary/5 border border-primary/20 px-3 py-2">
+                      <span className="text-xs text-primary font-medium">📅 Vertragsverlängerung: {(client as any).contract_end} → {values.contract_end}</span>
+                    </div>
+                  )}
                   <div>
                     <label className="text-[10px] text-muted-foreground font-body mb-1.5 block uppercase tracking-wider">Zusatzprodukte</label>
                     <div className="flex flex-wrap gap-1.5 mb-2">
@@ -324,8 +330,8 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                     {[
                       { label: "Reels", value: client.monthly_reels },
                       { label: "Karussells", value: client.monthly_carousels },
-                      { label: "Beginn", value: client.contract_start || "–" },
-                      { label: "Laufzeit", value: client.contract_duration || "–" },
+                      { label: "Beginn", value: client.contract_start ? new Date(client.contract_start).toLocaleDateString("de-DE") : "–" },
+                      { label: "Ende", value: (client as any).contract_end ? new Date((client as any).contract_end).toLocaleDateString("de-DE") : "–" },
                       { label: "Preis", value: client.monthly_price ? `${client.monthly_price} €` : "–" },
                     ].map((item) => (
                       <div key={item.label} className="rounded-md bg-muted/30 px-2.5 py-2">

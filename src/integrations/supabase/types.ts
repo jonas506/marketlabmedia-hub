@@ -455,6 +455,7 @@ export type Database = {
           contact_phone: string | null
           content_topics: string | null
           contract_duration: string | null
+          contract_end: string | null
           contract_start: string | null
           created_at: string
           drive_branding_link: string | null
@@ -490,6 +491,7 @@ export type Database = {
           contact_phone?: string | null
           content_topics?: string | null
           contract_duration?: string | null
+          contract_end?: string | null
           contract_start?: string | null
           created_at?: string
           drive_branding_link?: string | null
@@ -525,6 +527,7 @@ export type Database = {
           contact_phone?: string | null
           content_topics?: string | null
           contract_duration?: string | null
+          contract_end?: string | null
           contract_start?: string | null
           created_at?: string
           drive_branding_link?: string | null
