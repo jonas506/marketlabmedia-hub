@@ -18,6 +18,7 @@ import StorySequences from "@/components/client/StorySequences";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -101,30 +102,48 @@ const ClientDetail = () => {
             <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
             Dashboard
           </Link>
-          {canEdit && (client as any).approval_token && (
-            <Button
-              variant={copied ? "default" : "outline"}
-              size="sm"
-              className={`gap-1.5 text-xs h-7 transition-all ${copied ? "bg-[hsl(var(--runway-green))] text-white hover:bg-[hsl(var(--runway-green))]/90" : ""}`}
-              onClick={() => {
-                const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
-                navigator.clipboard.writeText(url);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }}
-            >
-              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              {copied ? "Link kopiert!" : "Freigabe-Link kopieren"}
-            </Button>
-          )}
-        </div>
-
-        {/* Client header (collapsible info) */}
-        <ClientInfoPanel client={client} canEdit={canEdit} />
-
-        {/* Dokumente – always visible */}
-        <div className="mt-4">
-          <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+          <div className="flex items-center gap-1.5">
+            {client.website_url && (
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground" asChild>
+                <a href={client.website_url} target="_blank" rel="noopener noreferrer">
+                  <Globe className="h-3 w-3" />
+                  Website
+                </a>
+              </Button>
+            )}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground">
+                  <FileText className="h-3 w-3" />
+                  Dokumente
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle>Dokumente</SheetTitle>
+                </SheetHeader>
+                <div className="mt-4">
+                  <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+                </div>
+              </SheetContent>
+            </Sheet>
+            {canEdit && (client as any).approval_token && (
+              <Button
+                variant={copied ? "default" : "outline"}
+                size="sm"
+                className={`gap-1.5 text-xs h-7 transition-all ${copied ? "bg-[hsl(var(--runway-green))] text-white hover:bg-[hsl(var(--runway-green))]/90" : ""}`}
+                onClick={() => {
+                  const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
+                  navigator.clipboard.writeText(url);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                {copied ? "Link kopiert!" : "Freigabe-Link kopieren"}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Month selector – compact inline */}
