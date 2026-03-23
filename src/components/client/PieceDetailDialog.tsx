@@ -160,7 +160,8 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     await supabase.from("content_pieces").update({ caption, transcript }).eq("id", piece.id);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     toast.success("Gespeichert!");
-  }, [piece, caption, transcript, clientId, qc]);
+    onOpenChange(false);
+  }, [piece, caption, transcript, clientId, qc, onOpenChange]);
 
   const copyText = (field: string, text: string) => {
     navigator.clipboard.writeText(text);
