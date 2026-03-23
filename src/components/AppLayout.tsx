@@ -19,6 +19,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
   { to: "/strategy-boards", label: "Strategy Boards", icon: Presentation, roles: ["admin", "head_of_content"] },
   { to: "/marketing", label: "Marketing", icon: BarChart3, roles: ["admin", "head_of_content"] },
   { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
+  { to: "/contracts", label: "Verträge", icon: CalendarRange, roles: ["admin"] },
   { to: "/team", label: "Team", icon: Users, roles: ["admin"] },
 ];
 

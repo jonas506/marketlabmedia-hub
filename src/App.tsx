@@ -67,6 +67,7 @@ const App = () => (
               <Route path="/strategy-boards" element={<ProtectedRoute><StrategyBoards /></ProtectedRoute>} />
               <Route path="/strategy-boards/:id" element={<ProtectedRoute><StrategyBoardEditor /></ProtectedRoute>} />
               <Route path="/shared/boards/:token" element={<SharedBoard />} />
+              <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
               <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
               <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
               <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
