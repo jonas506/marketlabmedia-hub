@@ -192,9 +192,16 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                               "bg-violet-500/15 text-violet-600 dark:text-violet-400",
                               "bg-rose-500/15 text-rose-600 dark:text-rose-400",
                               "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400",
+                              "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+                              "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
                             ];
-                            return piece.tag.split(",").map((t, i) => t.trim()).filter(Boolean).map((t, i) => (
-                              <span key={t} className={cn("inline-flex items-center gap-1 text-[10px] font-mono rounded-md px-1.5 py-0.5", TAG_COLORS[i % TAG_COLORS.length])}>
+                            const hashTag = (s: string) => {
+                              let h = 0;
+                              for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+                              return ((h % TAG_COLORS.length) + TAG_COLORS.length) % TAG_COLORS.length;
+                            };
+                            return piece.tag.split(",").map(t => t.trim()).filter(Boolean).map((t) => (
+                              <span key={t} className={cn("inline-flex items-center gap-1 text-[10px] font-mono rounded-md px-1.5 py-0.5", TAG_COLORS[hashTag(t.toLowerCase())])}>
                                 <Tag className="h-2.5 w-2.5" />
                                 {t}
                               </span>
