@@ -55,6 +55,14 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
     onUpdate(pieceId, updated);
   }, [pieceId, slideImages, onUpdate]);
 
+  const moveSlide = useCallback((from: number, direction: -1 | 1) => {
+    const to = from + direction;
+    if (to < 0 || to >= slideImages.length) return;
+    const updated = [...slideImages];
+    [updated[from], updated[to]] = [updated[to], updated[from]];
+    onUpdate(pieceId, updated);
+  }, [pieceId, slideImages, onUpdate]);
+
   const downloadSingle = (url: string, idx: number) => {
     const a = document.createElement("a");
     a.href = url;
