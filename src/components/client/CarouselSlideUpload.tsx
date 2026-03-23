@@ -120,42 +120,35 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
       </div>
 
       {slideImages.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <Reorder.Group
+          axis="x"
+          values={slideImages}
+          onReorder={(newOrder) => canEdit && onUpdate(pieceId, newOrder)}
+          className="flex gap-2 overflow-x-auto pb-1 scrollbar-none"
+        >
           {slideImages.map((url, idx) => (
-            <div
-              key={idx}
-              className="relative shrink-0 group rounded-lg overflow-hidden border border-border bg-muted/30 cursor-pointer"
+            <Reorder.Item
+              key={url}
+              value={url}
+              dragListener={canEdit}
+              onDragStart={() => { isDragging.current = true; }}
+              onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 100); }}
+              className={cn(
+                "relative shrink-0 group rounded-lg overflow-hidden border bg-muted/30",
+                canEdit ? "cursor-grab active:cursor-grabbing border-border hover:border-primary/40" : "cursor-pointer border-border"
+              )}
               style={{ width: 80, height: 100 }}
-              onClick={() => setLightboxIdx(idx)}
+              whileDrag={{ scale: 1.08, boxShadow: "0 8px 24px rgba(0,0,0,0.25)", zIndex: 50 }}
+              onClick={() => { if (!isDragging.current) setLightboxIdx(idx); }}
             >
               <img
                 src={url}
                 alt={`Slide ${idx + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
               />
               <div className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[9px] font-mono px-1 rounded">
                 {idx + 1}
               </div>
-              {canEdit && (
-                <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-0.5 pb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {idx > 0 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); moveSlide(idx, -1); }}
-                      className="p-0.5 bg-black/60 text-white rounded hover:bg-primary/80"
-                    >
-                      <ArrowLeft className="h-2.5 w-2.5" />
-                    </button>
-                  )}
-                  {idx < slideImages.length - 1 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); moveSlide(idx, 1); }}
-                      className="p-0.5 bg-black/60 text-white rounded hover:bg-primary/80"
-                    >
-                      <ArrowRight className="h-2.5 w-2.5" />
-                    </button>
-                  )}
-                </div>
-              )}
               {canEdit && (
                 <button
                   onClick={(e) => { e.stopPropagation(); removeSlide(idx); }}
@@ -164,9 +157,9 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
                   <X className="h-3 w-3" />
                 </button>
               )}
-            </div>
+            </Reorder.Item>
           ))}
-        </div>
+        </Reorder.Group>
       )}
 
       {/* Lightbox */}
