@@ -9,7 +9,7 @@ import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import LandingPagesList from "@/components/client/LandingPagesList";
-import ClientNotebook from "@/components/client/ClientNotebook";
+import ClientDocuments from "@/components/client/ClientDocuments";
 import MarketingTracking from "@/components/client/MarketingTracking";
 import TaskList from "@/components/client/TaskList";
 import InspirationBoard from "@/components/client/InspirationBoard";
@@ -18,7 +18,7 @@ import StorySequences from "@/components/client/StorySequences";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, BookOpen, Sparkles, Presentation } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -175,9 +175,9 @@ const ClientDetail = () => {
               <Globe className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Landing Pages</span>
             </TabsTrigger>
-            <TabsTrigger value="notebook" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
-              <BookOpen className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Notebook</span>
+            <TabsTrigger value="docs" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <FileText className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Dokumente</span>
             </TabsTrigger>
           </TabsList>
 
@@ -193,8 +193,8 @@ const ClientDetail = () => {
           <TabsContent value="landing" className="mt-4">
             <LandingPagesList clientId={client.id} canEdit={canEdit} />
           </TabsContent>
-          <TabsContent value="notebook" className="mt-4">
-            <ClientNotebook clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+          <TabsContent value="docs" className="mt-4">
+            <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
           </TabsContent>
           <TabsContent value="strategy" className="mt-4">
             <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
