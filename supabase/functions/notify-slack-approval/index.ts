@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/slack/api";
-const TARGET_CHANNEL = "content-freigabe";
+const TARGET_CHANNEL = "content-freigaben";
 const FALLBACK_CHANNEL = "mlm-hub";
 
 const corsHeaders = {
