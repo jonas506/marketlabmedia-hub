@@ -122,6 +122,11 @@ const ClientDetail = () => {
         {/* Client header (collapsible info) */}
         <ClientInfoPanel client={client} canEdit={canEdit} />
 
+        {/* Dokumente – always visible */}
+        <div className="mt-4">
+          <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+        </div>
+
         {/* Month selector – compact inline */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 mb-4 gap-2">
           <div className="flex items-center gap-2">
