@@ -196,9 +196,9 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                               "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
                             ];
                             const hashTag = (s: string) => {
-                              let h = 0;
-                              for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-                              return ((h % TAG_COLORS.length) + TAG_COLORS.length) % TAG_COLORS.length;
+                              let h = 0x811c9dc5;
+                              for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+                              return (h >>> 0) % TAG_COLORS.length;
                             };
                             return piece.tag.split(",").map(t => t.trim()).filter(Boolean).map((t) => (
                               <span key={t} className={cn("inline-flex items-center gap-1 text-[10px] font-mono rounded-md px-1.5 py-0.5", TAG_COLORS[hashTag(t.toLowerCase())])}>
