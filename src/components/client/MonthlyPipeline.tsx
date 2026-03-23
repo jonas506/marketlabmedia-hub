@@ -767,7 +767,6 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
                       ];
                       const hashTag = (s: string) => {
-                      const hashTag = (s: string) => {
                         let h = 0x811c9dc5;
                         for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
                         return (h >>> 0) % TAG_COLORS.length;
