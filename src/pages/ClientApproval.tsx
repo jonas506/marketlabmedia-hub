@@ -27,6 +27,8 @@ interface Piece {
   phase: string;
   preview_link: string | null;
   client_comment: string | null;
+  script_text?: string | null;
+  slide_images?: string[] | null;
 }
 
 interface ClientInfo {
