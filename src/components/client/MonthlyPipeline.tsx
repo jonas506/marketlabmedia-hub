@@ -22,6 +22,7 @@ import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
 import PrintScriptsDialog from "./PrintScriptsDialog";
+import CarouselSlideUpload from "./CarouselSlideUpload";
 
 interface ContentPiece {
   id: string;
@@ -45,6 +46,7 @@ interface ContentPiece {
   cta_label?: string | null;
   tag?: string | null;
   scheduled_post_date?: string | null;
+  slide_images?: string[] | null;
 }
 
 const PRIORITY_OPTIONS = [
@@ -877,14 +879,16 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       className="pl-9"
                     >
                       {activeType === "carousel" ? (
-                        <Textarea
-                          value={piece.script_text || ""}
-                          placeholder="Skript hier reinschreiben..."
-                          className="text-sm border-0 bg-muted/30 rounded-md resize-y min-h-[60px]"
-                          rows={3}
-                          onChange={(e) => updatePiece(piece.id, { script_text: e.target.value })}
-                          disabled={!canEdit}
-                        />
+                        <div className="space-y-2">
+                          <Textarea
+                            value={piece.script_text || ""}
+                            placeholder="Karussell-Inhalt hier reinschreiben... (Slide-Texte, Hooks, CTA etc.)"
+                            className="text-sm border border-border bg-muted/20 rounded-md resize-y min-h-[100px] focus:border-primary/40"
+                            rows={5}
+                            onChange={(e) => updatePiece(piece.id, { script_text: e.target.value })}
+                            disabled={!canEdit}
+                          />
+                        </div>
                       ) : (
                         <Button
                           size="sm"
@@ -901,6 +905,23 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                           {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
                         </Button>
                       )}
+                    </motion.div>
+                  )}
+
+                  {/* Carousel slide images — shown in review+ phases */}
+                  {activeType === "carousel" && (activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script") && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="pl-7 sm:pl-9"
+                    >
+                      <CarouselSlideUpload
+                        pieceId={piece.id}
+                        clientId={clientId}
+                        slideImages={piece.slide_images || []}
+                        canEdit={canEdit}
+                        onUpdate={(id, images) => updatePiece(id, { slide_images: images })}
+                      />
                     </motion.div>
                   )}
 

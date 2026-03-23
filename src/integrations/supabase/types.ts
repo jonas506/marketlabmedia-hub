@@ -677,6 +677,7 @@ export type Database = {
           script_links: Json | null
           script_text: string | null
           shoot_day_id: string | null
+          slide_images: string[] | null
           tag: string | null
           target_month: number
           target_year: number
@@ -703,6 +704,7 @@ export type Database = {
           script_links?: Json | null
           script_text?: string | null
           shoot_day_id?: string | null
+          slide_images?: string[] | null
           tag?: string | null
           target_month: number
           target_year: number
@@ -729,6 +731,7 @@ export type Database = {
           script_links?: Json | null
           script_text?: string | null
           shoot_day_id?: string | null
+          slide_images?: string[] | null
           tag?: string | null
           target_month?: number
           target_year?: number
