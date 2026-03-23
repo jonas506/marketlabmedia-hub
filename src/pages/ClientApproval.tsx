@@ -441,22 +441,18 @@ const ClientApproval = () => {
                   transition={{ duration: 0.25 }}
                   className="rounded-[28px] overflow-hidden border border-white/[0.05] bg-[#17181d] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]"
                 >
-                  {currentVideoSrc ? (
+                  {currentEmbed ? (
                     <>
                       <div className="p-2.5 sm:p-0">
                         <div className="mx-auto w-full max-w-[22rem] sm:max-w-none">
                           <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[60vh]"}`}>
-                            <video
-                              ref={(el) => {
-                                if (currentPiece) videoRefs.current[currentPiece.id] = el;
-                              }}
-                              src={currentVideoSrc}
-                              className="absolute inset-0 h-full w-full object-contain"
-                              controls
-                              playsInline
-                              preload="metadata"
-                              controlsList="nodownload"
+                            <iframe
+                              src={currentEmbed}
+                              className="absolute inset-0 h-full w-full"
+                              allow="autoplay; encrypted-media"
+                              allowFullScreen
                               title={currentPiece.title || "Preview"}
+                              style={{ border: 0 }}
                             />
                           </div>
                         </div>
