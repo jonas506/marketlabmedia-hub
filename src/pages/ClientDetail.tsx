@@ -9,7 +9,7 @@ import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
 import LandingPagesList from "@/components/client/LandingPagesList";
-import ClientNotebook from "@/components/client/ClientNotebook";
+import ClientDocuments from "@/components/client/ClientDocuments";
 import MarketingTracking from "@/components/client/MarketingTracking";
 import TaskList from "@/components/client/TaskList";
 import InspirationBoard from "@/components/client/InspirationBoard";
