@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X, Loader2, GripVertical } from "lucide-react";
+import { ImagePlus, X, Loader2, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface CarouselSlideUploadProps {
   pieceId: string;
@@ -21,6 +22,7 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
   onUpdate,
 }) => {
   const [uploading, setUploading] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -53,6 +55,26 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
     onUpdate(pieceId, updated);
   }, [pieceId, slideImages, onUpdate]);
 
+  const downloadSingle = (url: string, idx: number) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `slide-${idx + 1}.jpg`;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const downloadAll = async () => {
+    for (let i = 0; i < slideImages.length; i++) {
+      downloadSingle(slideImages[i], i);
+      // Small delay to avoid browser blocking multiple downloads
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    toast.success(`${slideImages.length} Slides heruntergeladen`);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -76,6 +98,15 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
             />
           </label>
         )}
+        {slideImages.length > 1 && (
+          <button
+            onClick={downloadAll}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Download className="h-3 w-3" />
+            Alle laden
+          </button>
+        )}
       </div>
 
       {slideImages.length > 0 && (
@@ -83,8 +114,9 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
           {slideImages.map((url, idx) => (
             <div
               key={idx}
-              className="relative shrink-0 group rounded-lg overflow-hidden border border-border bg-muted/30"
+              className="relative shrink-0 group rounded-lg overflow-hidden border border-border bg-muted/30 cursor-pointer"
               style={{ width: 80, height: 100 }}
+              onClick={() => setLightboxIdx(idx)}
             >
               <img
                 src={url}
@@ -96,7 +128,7 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
               </div>
               {canEdit && (
                 <button
-                  onClick={() => removeSlide(idx)}
+                  onClick={(e) => { e.stopPropagation(); removeSlide(idx); }}
                   className="absolute top-0.5 right-0.5 p-0.5 bg-black/60 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
                 >
                   <X className="h-3 w-3" />
@@ -106,6 +138,57 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
           ))}
         </div>
       )}
+
+      {/* Lightbox */}
+      <Dialog open={lightboxIdx !== null} onOpenChange={() => setLightboxIdx(null)}>
+        <DialogContent className="max-w-4xl p-0 bg-black/95 border-border/20 overflow-hidden [&>button]:text-white">
+          {lightboxIdx !== null && (
+            <div className="relative flex flex-col items-center">
+              <img
+                src={slideImages[lightboxIdx]}
+                alt={`Slide ${lightboxIdx + 1}`}
+                className="max-h-[80vh] w-auto object-contain"
+              />
+
+              {/* Navigation */}
+              {slideImages.length > 1 && (
+                <>
+                  {lightboxIdx > 0 && (
+                    <button
+                      onClick={() => setLightboxIdx(lightboxIdx - 1)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                  )}
+                  {lightboxIdx < slideImages.length - 1 && (
+                    <button
+                      onClick={() => setLightboxIdx(lightboxIdx + 1)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  )}
+                </>
+              )}
+
+              {/* Bottom bar */}
+              <div className="flex items-center justify-between w-full px-4 py-3 bg-black/60">
+                <span className="text-white/50 text-xs font-mono">
+                  {lightboxIdx + 1} / {slideImages.length}
+                </span>
+                <button
+                  onClick={() => downloadSingle(slideImages[lightboxIdx], lightboxIdx)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono text-white/70 hover:text-white bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
