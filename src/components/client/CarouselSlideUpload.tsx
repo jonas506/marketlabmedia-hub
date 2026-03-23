@@ -24,6 +24,7 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
 }) => {
   const [uploading, setUploading] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const isDragging = useRef(false);
 
   const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
