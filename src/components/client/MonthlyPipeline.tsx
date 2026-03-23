@@ -23,6 +23,7 @@ import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
 import PrintScriptsDialog from "./PrintScriptsDialog";
 import CarouselSlideUpload from "./CarouselSlideUpload";
+import TagInput from "./TagInput";
 
 interface ContentPiece {
   id: string;
