@@ -98,10 +98,19 @@ const ClientDetail = () => {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-[1200px] mx-auto">
         {/* Top bar: Back + Approval link */}
         <div className="flex items-center justify-between mb-4">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-body transition-colors group">
-            <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            Dashboard
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-body transition-colors group">
+              <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            </Link>
+            {client.logo_url ? (
+              <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-lg object-cover ring-1 ring-border" />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 font-display text-sm font-bold text-primary">
+                {client.name.charAt(0)}
+              </div>
+            )}
+            <h1 className="font-display text-lg font-bold tracking-tight truncate">{client.name}</h1>
+          </div>
           <div className="flex items-center gap-1.5">
             {client.website_url && (
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground" asChild>
