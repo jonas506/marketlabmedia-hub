@@ -23,6 +23,7 @@ import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
 import CRMPipelines from "./pages/crm/CRMPipelines";
 import CRMSettings from "./pages/crm/CRMSettings";
 
+import ContractTimeline from "./pages/ContractTimeline";
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
