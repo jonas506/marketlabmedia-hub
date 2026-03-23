@@ -1,0 +1,2 @@
+SELECT vault.create_secret('https://winsekbpsgwtwfdehyms.supabase.co', 'SUPABASE_URL');
+SELECT vault.create_secret('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpbnNla2Jwc2d3dHdmZGVoeW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwODc0NTcsImV4cCI6MjA4ODY2MzQ1N30.V4AnsmBlJKjIBnLzwsLr6-EXTfw2vAwepK5NF55NT1s', 'SUPABASE_ANON_KEY');
