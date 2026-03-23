@@ -19,7 +19,7 @@ import StorySequences from "@/components/client/StorySequences";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Settings2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -112,22 +112,6 @@ const ClientDetail = () => {
             <h1 className="font-display text-lg font-bold tracking-tight truncate">{client.name}</h1>
           </div>
           <div className="flex items-center gap-1.5">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground">
-                  <Settings2 className="h-3 w-3" />
-                  Kundeninfo
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>Kundeninformationen</SheetTitle>
-                </SheetHeader>
-                <div className="mt-4">
-                  <ClientInfoPanel client={client} canEdit={canEdit} />
-                </div>
-              </SheetContent>
-            </Sheet>
             {client.website_url && (
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground" asChild>
                 <a href={client.website_url} target="_blank" rel="noopener noreferrer">
@@ -169,6 +153,11 @@ const ClientDetail = () => {
               </Button>
             )}
           </div>
+        </div>
+
+        {/* Client Info Panel – directly visible */}
+        <div className="mt-4">
+          <ClientInfoPanel client={client} canEdit={canEdit} />
         </div>
 
         {/* Month selector – compact inline */}
