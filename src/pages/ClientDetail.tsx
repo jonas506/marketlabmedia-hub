@@ -194,9 +194,6 @@ const ClientDetail = () => {
           <TabsContent value="landing" className="mt-4">
             <LandingPagesList clientId={client.id} canEdit={canEdit} />
           </TabsContent>
-          <TabsContent value="docs" className="mt-4">
-            <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
-          </TabsContent>
           <TabsContent value="strategy" className="mt-4">
             <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
           </TabsContent>
