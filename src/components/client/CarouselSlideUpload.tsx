@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X, Loader2, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { ImagePlus, X, Loader2, Download, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -52,6 +52,14 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
 
   const removeSlide = useCallback((index: number) => {
     const updated = slideImages.filter((_, i) => i !== index);
+    onUpdate(pieceId, updated);
+  }, [pieceId, slideImages, onUpdate]);
+
+  const moveSlide = useCallback((from: number, direction: -1 | 1) => {
+    const to = from + direction;
+    if (to < 0 || to >= slideImages.length) return;
+    const updated = [...slideImages];
+    [updated[from], updated[to]] = [updated[to], updated[from]];
     onUpdate(pieceId, updated);
   }, [pieceId, slideImages, onUpdate]);
 
@@ -126,6 +134,26 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
               <div className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[9px] font-mono px-1 rounded">
                 {idx + 1}
               </div>
+              {canEdit && (
+                <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-0.5 pb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {idx > 0 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); moveSlide(idx, -1); }}
+                      className="p-0.5 bg-black/60 text-white rounded hover:bg-primary/80"
+                    >
+                      <ArrowLeft className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+                  {idx < slideImages.length - 1 && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); moveSlide(idx, 1); }}
+                      className="p-0.5 bg-black/60 text-white rounded hover:bg-primary/80"
+                    >
+                      <ArrowRight className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+                </div>
+              )}
               {canEdit && (
                 <button
                   onClick={(e) => { e.stopPropagation(); removeSlide(idx); }}
