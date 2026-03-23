@@ -766,21 +766,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         {canEdit && <span className="text-[10px] ml-0.5">✕</span>}
                       </span>
                     ) : canEdit ? (
-                      <Input
-                        placeholder="+ Tag"
-                        className="h-6 sm:h-7 w-20 sm:w-28 text-[10px] sm:text-xs font-mono border-0 bg-muted/60 px-2 rounded-md placeholder:text-muted-foreground/50"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
-                            updatePiece(piece.id, { tag: (e.target as HTMLInputElement).value.trim() });
-                            (e.target as HTMLInputElement).value = "";
-                          }
-                        }}
-                        onBlur={(e) => {
-                          if (e.target.value.trim()) {
-                            updatePiece(piece.id, { tag: e.target.value.trim() });
-                            e.target.value = "";
-                          }
-                        }}
+                      <TagInput
+                        clientId={clientId}
+                        onSelect={(tag) => updatePiece(piece.id, { tag })}
                       />
                     ) : null}
 
