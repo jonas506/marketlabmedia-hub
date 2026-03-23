@@ -335,7 +335,7 @@ const ClientApproval = () => {
           <img src={logoDark} alt="Marketlab Media" className="h-5 opacity-60 hidden sm:block" />
           <div className="w-px h-5 bg-white/10 hidden sm:block" />
           {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-7 w-7 rounded-lg object-cover ring-1 ring-white/10" />
+            <img src={client.logo_url} alt={client.name} className="h-7 w-7 rounded-lg object-contain bg-white p-0.5 ring-1 ring-white/10" />
           ) : (
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#0083F7] to-[#21089B] text-[11px] font-bold">
               {client.name.charAt(0)}

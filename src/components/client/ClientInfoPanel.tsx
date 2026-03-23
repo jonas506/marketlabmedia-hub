@@ -148,7 +148,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
       <CollapsibleTrigger asChild>
         <button className="w-full flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-3.5 hover:border-primary/20 transition-all text-left group">
           {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-cover ring-1 ring-border" />
+            <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 font-display text-base font-bold text-primary">
               {client.name.charAt(0)}

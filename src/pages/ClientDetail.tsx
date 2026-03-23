@@ -103,7 +103,7 @@ const ClientDetail = () => {
               <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
             </Link>
             {client.logo_url ? (
-              <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-lg object-cover ring-1 ring-border" />
+              <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
             ) : (
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 font-display text-sm font-bold text-primary">
                 {client.name.charAt(0)}
