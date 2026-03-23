@@ -28,6 +28,7 @@ interface ContentPiece {
   cta_label?: string | null;
   tag?: string | null;
   scheduled_post_date?: string | null;
+  slide_images?: string[] | null;
 }
 
 interface PhaseConfig {
