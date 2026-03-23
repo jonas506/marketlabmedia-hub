@@ -62,7 +62,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
             {client.logo_url ? (
-              <img src={client.logo_url} alt={client.name} className="h-9 w-9 rounded-lg object-cover ring-1 ring-border" />
+              <img src={client.logo_url} alt={client.name} className="h-9 w-9 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
             ) : (
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 font-display text-sm font-bold text-primary">
                 {client.name.charAt(0)}
