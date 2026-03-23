@@ -766,15 +766,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         "bg-orange-500/15 text-orange-600 dark:text-orange-400",
                         "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
                       ];
+                      const hashTag = (s: string) => {
+                        let h = 0;
+                        for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+                        return ((h % TAG_COLORS.length) + TAG_COLORS.length) % TAG_COLORS.length;
+                      };
                       const tags = piece.tag ? piece.tag.split(",").map(t => t.trim()).filter(Boolean) : [];
                       return (
                         <>
-                          {tags.map((t, i) => (
+                          {tags.map((t) => (
                             <span
                               key={t}
                               className={cn(
                                 "inline-flex items-center gap-1 h-6 sm:h-7 text-[10px] sm:text-xs font-mono px-2 sm:px-2.5 rounded-md transition-colors",
-                                TAG_COLORS[i % TAG_COLORS.length],
+                                TAG_COLORS[hashTag(t.toLowerCase())],
                                 canEdit && "cursor-pointer hover:bg-destructive/10 hover:text-destructive"
                               )}
                               onClick={() => {
