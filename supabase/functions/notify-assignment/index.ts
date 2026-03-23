@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     // Fetch assignee profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("name, email")
+      .select("name, email, slack_user_id")
       .eq("user_id", assigned_to)
       .single();
 
