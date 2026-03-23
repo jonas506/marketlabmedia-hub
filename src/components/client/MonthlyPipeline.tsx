@@ -22,6 +22,7 @@ import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
 import PrintScriptsDialog from "./PrintScriptsDialog";
+import CarouselSlideUpload from "./CarouselSlideUpload";
 
 interface ContentPiece {
   id: string;
