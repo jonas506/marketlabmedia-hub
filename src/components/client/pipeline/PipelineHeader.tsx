@@ -48,6 +48,12 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           <span className="font-mono text-[10px] text-muted-foreground">{progress}%</span>
         </div>
       )}
+      {noDeadlineCount > 0 && (
+        <span className="flex items-center gap-1.5 text-[10px] font-mono text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md">
+          <AlertTriangle className="h-3 w-3" />
+          {noDeadlineCount} ohne Deadline
+        </span>
+      )}
       <div className="flex-1" />
       <div className="flex items-center gap-1.5 flex-wrap">
         {hasPieces && (
