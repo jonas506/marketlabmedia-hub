@@ -554,84 +554,109 @@ const ClientApproval = () => {
                     </motion.div>
                   )}
 
-                  <AnimatePresence mode="wait">
-                    {showFeedback ? (
-                      <motion.div
-                        key="input"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-3 space-y-2.5">
-                          <div className="flex items-center gap-2">
-                            {commentTimestamp != null ? (
-                              <button
-                                onClick={() => setCommentTimestamp(null)}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#0083F7]/15 text-[#0083F7] text-xs font-mono font-bold hover:bg-[#0083F7]/25 transition-colors"
-                              >
-                                <Clock className="h-3 w-3" />
-                                {formatTimestamp(commentTimestamp)}
-                                <X className="h-3 w-3 opacity-60" />
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleCaptureTimestamp(currentPiece.id)}
-                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.04] text-white/30 text-xs hover:bg-white/[0.08] hover:text-white/50 transition-colors"
-                              >
-                                <Clock className="h-3 w-3" />
-                                <span>Zeitstempel</span>
-                              </button>
+                  {isRevisionBlocked ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4 flex items-start gap-3"
+                    >
+                      <AlertCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-300">Maximale Revisionen erreicht</p>
+                        <p className="text-xs text-white/35 mt-1 leading-relaxed">
+                          Du hast bereits 2× Feedback gegeben. Bitte kontaktiere dein Marketlab-Team direkt für weitere Änderungen.
+                        </p>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <AnimatePresence mode="wait">
+                      {showFeedback ? (
+                        <motion.div
+                          key="input"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-3 space-y-2.5">
+                            {(currentPiece?.revision_count ?? 0) === 1 && (
+                              <div className="flex items-center gap-2 text-amber-400/70 text-[11px] font-medium px-1">
+                                <AlertCircle className="h-3 w-3" />
+                                Letzte Revision — danach bitte direkt mit dem Team sprechen
+                              </div>
                             )}
-                            <div className="flex-1" />
-                            <button
-                              onClick={() => { setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
-                              className="p-1 rounded-lg text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
+                            <div className="flex items-center gap-2">
+                              {commentTimestamp != null ? (
+                                <button
+                                  onClick={() => setCommentTimestamp(null)}
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#0083F7]/15 text-[#0083F7] text-xs font-mono font-bold hover:bg-[#0083F7]/25 transition-colors"
+                                >
+                                  <Clock className="h-3 w-3" />
+                                  {formatTimestamp(commentTimestamp)}
+                                  <X className="h-3 w-3 opacity-60" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleCaptureTimestamp(currentPiece.id)}
+                                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.04] text-white/30 text-xs hover:bg-white/[0.08] hover:text-white/50 transition-colors"
+                                >
+                                  <Clock className="h-3 w-3" />
+                                  <span>Zeitstempel</span>
+                                </button>
+                              )}
+                              <div className="flex-1" />
+                              <button
+                                onClick={() => { setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
+                                className="p-1 rounded-lg text-white/20 hover:text-white/50 hover:bg-white/5 transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
 
-                          <div className="flex gap-2">
-                            <Textarea
-                              value={commentText}
-                              onChange={(e) => setCommentText(e.target.value)}
-                              placeholder="Was soll geändert werden?"
-                              className="min-h-[44px] max-h-[120px] text-sm bg-transparent border-0 text-white/80 placeholder:text-white/15 resize-none p-0 focus-visible:ring-0 shadow-none"
-                              rows={2}
-                              autoFocus
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  handleAddComment(currentPiece.id);
-                                }
-                              }}
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddComment(currentPiece.id)}
-                              disabled={addingComment || !commentText.trim()}
-                              className="self-end shrink-0 bg-[#0083F7] hover:bg-[#0083F7]/80 text-white rounded-xl h-10 w-10 p-0"
-                            >
-                              {addingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                            </Button>
+                            <div className="flex gap-2">
+                              <Textarea
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                                placeholder="Was soll geändert werden?"
+                                className="min-h-[44px] max-h-[120px] text-sm bg-transparent border-0 text-white/80 placeholder:text-white/15 resize-none p-0 focus-visible:ring-0 shadow-none"
+                                rows={2}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleAddComment(currentPiece.id);
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => handleAddComment(currentPiece.id)}
+                                disabled={addingComment || !commentText.trim()}
+                                className="self-end shrink-0 bg-[#0083F7] hover:bg-[#0083F7]/80 text-white rounded-xl h-10 w-10 p-0"
+                              >
+                                {addingComment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.button
-                        key="toggle"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setShowFeedback(true)}
-                        className="w-full py-3 rounded-2xl border border-dashed border-white/[0.06] text-white/25 text-sm hover:border-white/10 hover:text-white/40 hover:bg-white/[0.02] transition-all flex items-center justify-center gap-2"
-                      >
-                        <MessageSquare className="h-3.5 w-3.5" />
-                        Feedback hinzufügen
-                      </motion.button>
-                    )}
-                  </AnimatePresence>
+                        </motion.div>
+                      ) : (
+                        <motion.button
+                          key="toggle"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          onClick={() => setShowFeedback(true)}
+                          className="w-full py-3 rounded-2xl border border-dashed border-white/[0.06] text-white/25 text-sm hover:border-white/10 hover:text-white/40 hover:bg-white/[0.02] transition-all flex items-center justify-center gap-2"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          Feedback hinzufügen
+                          {(currentPiece?.revision_count ?? 0) > 0 && (
+                            <span className="text-[10px] opacity-50">({currentPiece?.revision_count}/2)</span>
+                          )}
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  )}
                 </div>
               )}
             </div>
