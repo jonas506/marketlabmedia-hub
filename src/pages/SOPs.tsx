@@ -164,7 +164,7 @@ const SOPs = () => {
               <div key={cat}>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">{cat}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <AnimatePresence>
+                  
                     {tpls.map((tpl) => {
                       const nodeCount = tpl.board_data?.nodes?.length || 0;
                       const connCount = tpl.board_data?.connections?.length || 0;
