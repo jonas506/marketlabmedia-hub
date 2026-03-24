@@ -70,8 +70,9 @@ export function sortByPriority(tasks: Task[]): Task[] {
   return tasks.sort((a, b) => (PRIORITY_ORDER[a.priority || "normal"] ?? 2) - (PRIORITY_ORDER[b.priority || "normal"] ?? 2));
 }
 
+import { startOfDay, endOfWeek, isToday, isBefore } from "date-fns";
+
 export function groupTasks(tasks: Task[], todayStr: string): Record<GroupKey, Task[]> {
-  const { startOfDay, endOfWeek, isToday, isBefore } = require("date-fns");
   const today = startOfDay(new Date(todayStr));
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
   const groups: Record<GroupKey, Task[]> = { overdue: [], today: [], week: [], later: [], no_deadline: [] };
