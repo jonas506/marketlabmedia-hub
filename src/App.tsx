@@ -73,33 +73,36 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <OfflineBanner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/accept-invite" element={<AcceptInvite />} />
-              <Route path="/approve/:token" element={<ClientApproval />} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
-              <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-              <Route path="/activity" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
-              
-              <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
-              <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
-              <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
-              <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
-              <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
-              <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
-              <Route path="/strategy-boards" element={<ProtectedRoute><StrategyBoards /></ProtectedRoute>} />
-              <Route path="/strategy-boards/:id" element={<ProtectedRoute><StrategyBoardEditor /></ProtectedRoute>} />
-              <Route path="/shared/boards/:token" element={<SharedBoard />} />
-              <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
-              <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
-              <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
-              <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
-              <Route path="/crm/settings" element={<ProtectedRoute><CRMSettings /></ProtectedRoute>} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <ErrorBoundary level="page">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/accept-invite" element={<AcceptInvite />} />
+                <Route path="/approve/:token" element={<ClientApproval />} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
+                <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+                <Route path="/activity" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
+                
+                <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
+                <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
+                <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
+                <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
+                <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
+                <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
+                <Route path="/strategy-boards" element={<ProtectedRoute><StrategyBoards /></ProtectedRoute>} />
+                <Route path="/strategy-boards/:id" element={<ProtectedRoute><StrategyBoardEditor /></ProtectedRoute>} />
+                <Route path="/shared/boards/:token" element={<SharedBoard />} />
+                <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
+                <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
+                <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
+                <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
+                <Route path="/crm/settings" element={<ProtectedRoute><CRMSettings /></ProtectedRoute>} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
         </NotificationProvider>
