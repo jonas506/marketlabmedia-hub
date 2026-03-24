@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, FileText, LayoutList, Columns3 } from "lucide-react";
+import { Printer, FileText, LayoutList, Columns3, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { PipelineConfig } from "./types";
