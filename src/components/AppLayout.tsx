@@ -13,6 +13,7 @@ import QuickAddTask from "@/components/QuickAddTask";
 // roles: which roles can see this nav item (undefined = all)
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
