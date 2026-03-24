@@ -50,6 +50,7 @@ const PHASE_CONFIG: { key: string; label: string }[] = [
   { key: "filmed", label: "Gedreht" },
   { key: "editing", label: "Schnitt" },
   { key: "review", label: "Review" },
+  { key: "feedback", label: "Feedback" },
   { key: "approved", label: "Freigegeben" },
   { key: "handed_over", label: "Übergeben" },
 ];
