@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardList, Calendar, Filter } from "lucide-react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const getWeekNumber = (d: Date) => {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
