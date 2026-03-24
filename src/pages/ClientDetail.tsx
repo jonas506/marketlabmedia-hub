@@ -152,27 +152,7 @@ const ClientDetail = () => {
             )}
             <h1 className="font-display text-lg font-bold tracking-tight truncate">{client.name}</h1>
           </div>
-          <div className="flex items-center gap-1.5">
-            <input
-              ref={pdfInputRef}
-              type="file"
-              accept=".pdf"
-              multiple
-              className="hidden"
-              onChange={handlePdfUpload}
-            />
-            {canEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
-                disabled={uploading}
-                onClick={() => pdfInputRef.current?.click()}
-              >
-                {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
-                PDF
-              </Button>
-            )}
+           <div className="flex items-center gap-1.5">
             {client.website_url && (
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground" asChild>
                 <a href={client.website_url} target="_blank" rel="noopener noreferrer">
@@ -189,8 +169,32 @@ const ClientDetail = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>Dokumente</SheetTitle>
+               <SheetHeader>
+                  <SheetTitle className="flex items-center justify-between pr-4">
+                    Dokumente
+                    {canEdit && (
+                      <>
+                        <input
+                          ref={pdfInputRef}
+                          type="file"
+                          accept=".pdf"
+                          multiple
+                          className="hidden"
+                          onChange={handlePdfUpload}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs h-7"
+                          disabled={uploading}
+                          onClick={() => pdfInputRef.current?.click()}
+                        >
+                          {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                          PDF hochladen
+                        </Button>
+                      </>
+                    )}
+                  </SheetTitle>
                 </SheetHeader>
                 <div className="mt-4">
                   <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
