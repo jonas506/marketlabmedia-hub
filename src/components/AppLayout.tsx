@@ -153,6 +153,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           })}
         </nav>
         <div className="flex flex-col items-center gap-2 pb-2">
+          <NotificationBell />
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all"
