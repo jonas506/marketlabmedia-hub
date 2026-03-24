@@ -300,6 +300,9 @@ const ClientDetail = () => {
           <TabsContent value="strategy" className="mt-4">
             <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
           </TabsContent>
+          <TabsContent value="activity" className="mt-4">
+            <ClientActivityTimeline clientId={client.id} />
+          </TabsContent>
         </Tabs>
       </motion.div>
     </AppLayout>
