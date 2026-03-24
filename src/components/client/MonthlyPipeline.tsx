@@ -914,6 +914,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         </Button>
                       </motion.div>
                     )}
+                    {/* Timestamp — how long in current phase */}
+                    {piece.updated_at && (
+                      <span className="text-[10px] text-muted-foreground/60 font-mono hidden sm:inline" title={`Seit ${format(new Date(piece.updated_at), "dd. MMM yyyy, HH:mm", { locale: de })} Uhr`}>
+                        {relativeTime(piece.updated_at)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Script button — shown in script phase for types with script */}
