@@ -170,10 +170,9 @@ const SOPs = () => {
                       const connCount = tpl.board_data?.connections?.length || 0;
                       return (
                         <motion.div
-                          key={tpl.id} layout
+                          key={tpl.id}
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0 }}
                           className={cn(
                             "rounded-lg border border-border bg-card p-4 transition-all group",
                             "cursor-pointer hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
