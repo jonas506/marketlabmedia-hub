@@ -420,12 +420,14 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                     )}
 
                     {client.approval_token && (
-                      <div className="rounded-md bg-muted/30 p-2.5 flex items-center gap-2">
-                        <LinkIcon className="h-3 w-3 text-muted-foreground shrink-0" />
-                        <code className="text-[10px] text-muted-foreground truncate flex-1">
-                          {`${window.location.origin}/approve/${client.approval_token}`}
-                        </code>
-                        <Button size="sm" variant="ghost" className="h-6 px-1.5 shrink-0" onClick={() => {
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5 flex-1" onClick={() => {
+                          window.open(`${window.location.origin}/approve/${client.approval_token}`, '_blank');
+                        }}>
+                          <LinkIcon className="h-3 w-3" />
+                          Freigabe-Link öffnen
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 px-2 shrink-0" onClick={() => {
                           navigator.clipboard.writeText(`${window.location.origin}/approve/${client.approval_token}`);
                           toast.success("Link kopiert");
                         }}><Copy className="h-3 w-3" /></Button>
