@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import { AlertTriangle, CheckCircle2, Eye, Clock, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Eye, Clock, TrendingUp, CalendarOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
