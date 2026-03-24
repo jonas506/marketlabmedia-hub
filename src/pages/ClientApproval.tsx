@@ -555,7 +555,31 @@ const ClientApproval = () => {
                     </motion.div>
                   )}
 
-                  {isRevisionBlocked ? (
+                  {allPreviewLinks.length > 0 && (
+                    <div className="mb-3 space-y-1.5">
+                      <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest px-1">
+                        {allPreviewLinks.length === 1 ? "Preview-Link" : "Preview-Links"}
+                      </span>
+                      {allPreviewLinks.map((link, i) => (
+                        <a
+                          key={i}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2.5 py-2.5 px-3 rounded-2xl bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/[0.08] transition-colors group/link"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-[#0083F7]/10 border border-[#0083F7]/20 flex items-center justify-center shrink-0">
+                            <Play className="h-3 w-3 text-[#0083F7] ml-px" />
+                          </div>
+                          <span className="text-sm text-white/50 group-hover/link:text-white/70 transition-colors flex-1 truncate">
+                            {allPreviewLinks.length > 1 ? `Variante ${i + 1}` : "Preview öffnen"}
+                          </span>
+                          <ExternalLink className="h-3.5 w-3.5 text-white/20 group-hover/link:text-white/40 transition-colors shrink-0" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
