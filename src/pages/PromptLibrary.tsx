@@ -12,6 +12,7 @@ import { Plus, Trash2, Copy, Check, Pencil, BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const CATEGORIES = [
   { value: "caption", label: "Caption" },
@@ -94,6 +95,7 @@ const PromptLibrary = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -226,6 +228,7 @@ const PromptLibrary = () => {
           </DialogContent>
         </Dialog>
       </div>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

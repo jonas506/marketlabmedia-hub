@@ -23,6 +23,7 @@ import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface Task {
   id: string;
@@ -326,6 +327,7 @@ const Tasks = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -718,6 +720,7 @@ const Tasks = () => {
           </SheetContent>
         </Sheet>
       </motion.div>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

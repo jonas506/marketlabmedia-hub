@@ -10,6 +10,7 @@ import { Plus, ExternalLink, GripVertical } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface Pipeline { id: string; name: string; }
 interface Stage { id: string; pipeline_id: string; name: string; color: string; sort_order: number; }
@@ -79,6 +80,7 @@ export default function CRMPipelines() {
 
   return (
     <CRMLayout>
+      <ErrorBoundary level="section">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -165,6 +167,7 @@ export default function CRMPipelines() {
           </div>
         </DialogContent>
       </Dialog>
+      </ErrorBoundary>
     </CRMLayout>
   );
 }

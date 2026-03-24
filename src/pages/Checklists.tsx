@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardList, Calendar, Filter } from "lucide-react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const getWeekNumber = (d: Date) => {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -76,6 +77,7 @@ const Checklists = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -194,6 +196,7 @@ const Checklists = () => {
           </div>
         )}
       </motion.div>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

@@ -10,6 +10,7 @@ import { Plus, Search, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const SOURCE_OPTIONS = [
   { value: "empfehlung", label: "Empfehlung" },
@@ -96,6 +97,7 @@ export default function CRMLeads() {
 
   return (
     <CRMLayout>
+      <ErrorBoundary level="section">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-[#FAFBFF] font-[Manrope]">Kunden</h1>
@@ -189,6 +191,7 @@ export default function CRMLeads() {
           </div>
         </DialogContent>
       </Dialog>
+      </ErrorBoundary>
     </CRMLayout>
   );
 }

@@ -6,6 +6,7 @@ import CanvasApp from "@/components/contentbase/CanvasApp";
 import BrandManager from "@/components/contentbase/BrandManager";
 import ReelIdeas from "@/components/contentbase/ReelIdeas";
 import { NODE_W, NODE_H } from "@/lib/content-types";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface Project {
   id: string;
@@ -96,6 +97,7 @@ const ContentBase = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <div className="max-w-5xl space-y-8">
         {/* Reel Ideas */}
         <ReelIdeas userId={userId} />
@@ -145,6 +147,7 @@ const ContentBase = () => {
 
         {showBrands && <BrandManager userId={userId} onClose={() => setShowBrands(false)} />}
       </div>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

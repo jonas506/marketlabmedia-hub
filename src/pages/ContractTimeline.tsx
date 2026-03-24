@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const ContractTimeline = () => {
   const { data: clients, isLoading } = useClients();
@@ -58,6 +59,7 @@ const ContractTimeline = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         <div className="mb-6">
           <h1 className="text-xl font-display font-bold tracking-tight">Vertragslaufzeiten</h1>
@@ -123,6 +125,7 @@ const ContractTimeline = () => {
           </div>
         )}
       </motion.div>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

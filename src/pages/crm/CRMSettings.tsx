@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface Pipeline { id: string; name: string; }
 interface Stage { id: string; pipeline_id: string; name: string; color: string; sort_order: number; }
@@ -77,6 +78,7 @@ export default function CRMSettings() {
 
   return (
     <CRMLayout>
+      <ErrorBoundary level="section">
       <div className="space-y-8 max-w-3xl">
         <h1 className="text-xl font-bold text-[#FAFBFF] font-[Manrope]">Einstellungen</h1>
 
@@ -158,6 +160,7 @@ export default function CRMSettings() {
           </div>
         </section>
       </div>
+      </ErrorBoundary>
     </CRMLayout>
   );
 }

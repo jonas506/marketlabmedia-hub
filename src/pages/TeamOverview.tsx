@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Plus, Mail, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const PHASE_CONFIG: Record<string, { label: string; color: string }> = {
   filmed: { label: "Gedreht", color: "bg-muted text-muted-foreground" },
@@ -148,6 +149,7 @@ const TeamOverview = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-display font-bold tracking-tight">Team</h1>
@@ -369,6 +371,7 @@ const TeamOverview = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </ErrorBoundary>
     </AppLayout>
   );
 };

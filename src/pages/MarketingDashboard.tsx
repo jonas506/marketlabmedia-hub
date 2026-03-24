@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import AppLayout from "@/components/AppLayout";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, Users, DollarSign, MessageSquare, CalendarCheck, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight } from "lucide-react";
@@ -210,6 +211,7 @@ export default function MarketingDashboard() {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -351,6 +353,7 @@ export default function MarketingDashboard() {
           </div>
         )}
       </div>
+      </ErrorBoundary>
     </AppLayout>
   );
 }
