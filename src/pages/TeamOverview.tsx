@@ -149,6 +149,7 @@ const TeamOverview = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-display font-bold tracking-tight">Team</h1>
