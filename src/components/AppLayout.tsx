@@ -50,7 +50,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
             <span className="font-display text-sm font-semibold text-sidebar-foreground">Marketlab</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <NotificationBell />
             <button
               onClick={toggleTheme}
               className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 transition-all"
