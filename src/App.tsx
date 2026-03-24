@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import OfflineBanner from "@/components/OfflineBanner";
 import Index from "./pages/Index";
 import ClientDetail from "./pages/ClientDetail";
 import StrategyBoards from "./pages/StrategyBoards";
@@ -31,7 +33,24 @@ import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        const status = error?.status || error?.code;
+        if (status === 401 || status === 403 || status === 404 || status === "PGRST116") {
+          return false;
+        }
+        return failureCount < 2;
+      },
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
