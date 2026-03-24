@@ -328,6 +328,7 @@ const ClientApproval = () => {
   const currentEmbed = !isCarousel && currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
   const currentVideoSrc = !isCarousel && currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
   const currentPreviewLink = currentPiece?.preview_link ?? null;
+  const allPreviewLinks = (currentPiece?.preview_link ?? "").split("\n").map(l => l.trim()).filter(Boolean);
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
   const isRevisionBlocked = (currentPiece?.revision_count ?? 0) >= 2;
 
