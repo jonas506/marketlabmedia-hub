@@ -99,7 +99,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
     + getExtra("reel") + opusProCount + overlayCount + bereitsGeplantCount;
   const conservativeDays = dailyRate > 0 ? Math.round(conservative / dailyRate) : 999;
 
-  const prognose = reelPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "approved" || c.phase === "handed_over").length
+  const prognose = reelPieces.filter((c) => c.phase === "editing" || c.phase === "review" || c.phase === "feedback" || c.phase === "approved" || c.phase === "handed_over").length
     + getExtra("reel") + opusProCount + overlayCount + bereitsGeplantCount;
   const prognoseDays = dailyRate > 0 ? Math.round(prognose / dailyRate) : 999;
 
