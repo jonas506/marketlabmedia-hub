@@ -123,6 +123,15 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         return;
       }
     }
+    if (nextPhase === "editing") {
+      const piece = monthPieces.find(p => p.id === pieceId);
+      if (!piece?.deadline) {
+        toast.warning("⏰ Keine Deadline gesetzt", {
+          description: "Dieses Piece hat keine Deadline. Bitte setze eine, damit das Team priorisieren kann.",
+          duration: 5000,
+        });
+      }
+    }
     await supabase.from("content_pieces").update({ phase: nextPhase }).eq("id", pieceId);
     setRecentlyMoved(prev => new Set(prev).add(pieceId));
     setTimeout(() => setRecentlyMoved(prev => { const s = new Set(prev); s.delete(pieceId); return s; }), 600);
