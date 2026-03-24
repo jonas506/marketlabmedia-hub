@@ -12,6 +12,7 @@ import { Plus, Trash2, Copy, Check, Pencil, BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const CATEGORIES = [
   { value: "caption", label: "Caption" },
