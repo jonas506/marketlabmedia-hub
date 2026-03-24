@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import QuickAddTask from "@/components/QuickAddTask";
 
 // roles: which roles can see this nav item (undefined = all)
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
