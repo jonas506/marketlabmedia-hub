@@ -34,8 +34,47 @@ const ClientDetail = () => {
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [copied, setCopied] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const canEdit = role === "admin" || role === "head_of_content" || role === "cutter";
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !id) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (file.type !== "application/pdf") {
+          toast.error(`${file.name} ist keine PDF-Datei`);
+          continue;
+        }
+        const filePath = `${id}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabaseClient.storage
+          .from("client-documents")
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabaseClient.storage
+          .from("client-documents")
+          .getPublicUrl(filePath);
+
+        await supabase.from("client_knowledge").insert({
+          client_id: id,
+          title: file.name.replace(/\.pdf$/i, ""),
+          content: `PDF-Dokument: ${file.name}`,
+          category: "sonstiges",
+          source_url: publicUrl,
+        });
+      }
+      toast.success("PDF(s) hochgeladen");
+    } catch (err: any) {
+      toast.error(err.message || "Upload fehlgeschlagen");
+    } finally {
+      setUploading(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = "";
+    }
+  };
 
   const { data: client, isLoading } = useQuery({
     queryKey: ["client", id],
