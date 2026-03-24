@@ -29,6 +29,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   onOpenCaptionStudio,
   canEdit,
   hasPieces,
+  noDeadlineCount = 0,
 }) => {
   return (
     <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
