@@ -665,7 +665,7 @@ const ClientApproval = () => {
               <div className="max-w-3xl mx-auto px-4 sm:px-6">
                 <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
                   <div className="flex gap-2">
-                    {currentComments.length > 0 && (
+                    {currentComments.length > 0 && !isRevisionBlocked && (
                       <Button
                         variant="outline"
                         className="min-w-[7.5rem] gap-1.5 sm:gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-12 sm:h-[52px] rounded-[20px] px-3 sm:px-5 font-medium text-sm"
