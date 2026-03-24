@@ -16,6 +16,8 @@ import InspirationBoard from "@/components/client/InspirationBoard";
 import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
 import StorySequences from "@/components/client/StorySequences";
 import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
+import ClientChecklists from "@/components/client/ClientChecklists";
+import OnboardingBanner from "@/components/OnboardingBanner";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -226,6 +228,9 @@ const ClientDetail = () => {
           <ClientInfoPanel client={client} canEdit={canEdit} />
         </div>
 
+        {/* Onboarding Banner */}
+        <OnboardingBanner clientId={client.id} />
+
         {/* Month selector – compact inline */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 mb-4 gap-2">
           <div className="flex items-center gap-2">
@@ -263,6 +268,10 @@ const ClientDetail = () => {
               <ClipboardList className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Aufgaben</span>
             </TabsTrigger>
+            <TabsTrigger value="checklists" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <ClipboardList className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Checklisten</span>
+            </TabsTrigger>
             <TabsTrigger value="strategy" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <Presentation className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Strategie</span>
@@ -287,6 +296,12 @@ const ClientDetail = () => {
 
           <TabsContent value="tasks" className="mt-4">
             <TaskList clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="checklists" className="mt-4">
+            <ClientChecklists clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="checklists" className="mt-4">
+            <ClientChecklists clientId={client.id} canEdit={canEdit} />
           </TabsContent>
           <TabsContent value="inspo" className="mt-4">
             <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />

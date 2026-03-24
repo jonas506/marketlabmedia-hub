@@ -11,6 +11,7 @@ import { Plus, ChevronRight, ClipboardCheck, ChevronDown, ChevronUp } from "luci
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 
 interface Props {
   clientId: string;
@@ -215,13 +216,42 @@ const ClientChecklists = ({ clientId, canEdit }: Props) => {
         .eq("id", stepId);
       if (error) throw error;
 
-      // Check if all steps in checklist are done
       const step = allChecklistSteps.find((s) => s.id === stepId);
       if (step && completed) {
         const clSteps = allChecklistSteps.filter((s) => s.checklist_id === step.checklist_id);
         const allDone = clSteps.every((s) => (s.id === stepId ? true : s.is_completed));
         if (allDone) {
           await supabase.from("checklists").update({ status: "completed" }).eq("id", step.checklist_id);
+
+          // Check if this was an onboarding checklist and all onboarding is done
+          const { data: checklist } = await supabase
+            .from("checklists")
+            .select("category, client_id")
+            .eq("id", step.checklist_id)
+            .single();
+
+          if (checklist?.category === "onboarding") {
+            const { data: openOnboarding } = await supabase
+              .from("checklists")
+              .select("id")
+              .eq("client_id", checklist.client_id)
+              .eq("category", "onboarding")
+              .neq("status", "done")
+              .neq("status", "completed");
+
+            if (!openOnboarding || openOnboarding.length === 0) {
+              confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ["#0083F7", "#21089B", "#10B981", "#F59E0B"],
+              });
+              toast.success("🎉 Onboarding abgeschlossen!", {
+                description: "Alle Onboarding-Schritte sind erledigt. Der Kunde ist jetzt aktiv.",
+                duration: 6000,
+              });
+            }
+          }
         }
       } else if (step && !completed) {
         await supabase.from("checklists").update({ status: "open" }).eq("id", step.checklist_id);
@@ -231,6 +261,9 @@ const ClientChecklists = ({ clientId, canEdit }: Props) => {
       qc.invalidateQueries({ queryKey: ["checklists", clientId] });
       qc.invalidateQueries({ queryKey: ["checklist-steps", clientId] });
       qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
+      qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-progress"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-overview"] });
     },
   });
 

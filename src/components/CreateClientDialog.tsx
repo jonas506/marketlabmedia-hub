@@ -257,12 +257,21 @@ Erstelle eine kurze, umsetzbare Strategie (3-5 Sätze): Was ist das Ziel? Welche
       }
 
       await createNewClientChecklists(data.id);
+      return data.id;
     },
-    onSuccess: () => {
+    onSuccess: (clientId) => {
       qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
-      toast.success("Kunde erfolgreich angelegt!");
+      qc.invalidateQueries({ queryKey: ["onboarding-overview"] });
       setOpen(false);
       resetAll();
+      toast.success("Kunde erfolgreich angelegt!", {
+        description: "Onboarding-Checkliste wurde automatisch erstellt.",
+        action: {
+          label: "Onboarding starten →",
+          onClick: () => window.location.href = `/client/${clientId}`,
+        },
+        duration: 8000,
+      });
     },
     onError: (err: Error) => {
       toast.error("Fehler: " + err.message);
