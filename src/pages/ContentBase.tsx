@@ -6,6 +6,7 @@ import CanvasApp from "@/components/contentbase/CanvasApp";
 import BrandManager from "@/components/contentbase/BrandManager";
 import ReelIdeas from "@/components/contentbase/ReelIdeas";
 import { NODE_W, NODE_H } from "@/lib/content-types";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface Project {
   id: string;
