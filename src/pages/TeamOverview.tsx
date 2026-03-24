@@ -62,7 +62,6 @@ const TeamOverview = () => {
       return (profiles ?? []).map((profile) => {
         const userPieces = pieces?.filter((p) => p.assigned_to === profile.user_id) ?? [];
         const openTasks = (taskData as any[] ?? []).filter((t: any) => t.assigned_to === profile.user_id).length;
-        const userPieces = pieces?.filter((p) => p.assigned_to === profile.user_id) ?? [];
         const byPhase: Record<string, number> = {};
         userPieces.forEach((p) => { byPhase[p.phase] = (byPhase[p.phase] || 0) + 1; });
         const byClient = (clients ?? [])
