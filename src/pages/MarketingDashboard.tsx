@@ -211,6 +211,7 @@ export default function MarketingDashboard() {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
