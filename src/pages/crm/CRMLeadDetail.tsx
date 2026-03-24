@@ -244,6 +244,7 @@ export default function CRMLeadDetail() {
 
   return (
     <CRMLayout>
+      <ErrorBoundary level="section">
       <div className="flex flex-col h-[calc(100vh-48px)] -m-6">
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-[#3A3A44] bg-[#1E1E24] shrink-0">
