@@ -203,13 +203,19 @@ const TeamOverview = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {member.editingCount > 0 && (
-                    <div className="text-center">
-                      <span className="font-mono text-xl font-bold text-status-working">{member.editingCount}</span>
-                      <p className="text-[9px] font-mono text-muted-foreground">Im Schnitt</p>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {member.openTasks > 0 && (
+                      <div className="text-center">
+                        <span className="font-mono text-xl font-bold text-primary">{member.openTasks}</span>
+                        <p className="text-[9px] font-mono text-muted-foreground">Aufgaben</p>
+                      </div>
+                    )}
+                    {member.editingCount > 0 && (
+                      <div className="text-center">
+                        <span className="font-mono text-xl font-bold text-status-working">{member.editingCount}</span>
+                        <p className="text-[9px] font-mono text-muted-foreground">Im Schnitt</p>
+                      </div>
+                    )}
                   {member.reviewCount > 0 && (
                     <div className="text-center">
                       <span className="font-mono text-xl font-bold text-status-review">{member.reviewCount}</span>
