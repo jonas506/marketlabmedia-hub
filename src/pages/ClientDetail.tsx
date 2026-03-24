@@ -169,8 +169,32 @@ const ClientDetail = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>Dokumente</SheetTitle>
+               <SheetHeader>
+                  <SheetTitle className="flex items-center justify-between pr-4">
+                    Dokumente
+                    {canEdit && (
+                      <>
+                        <input
+                          ref={pdfInputRef}
+                          type="file"
+                          accept=".pdf"
+                          multiple
+                          className="hidden"
+                          onChange={handlePdfUpload}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs h-7"
+                          disabled={uploading}
+                          onClick={() => pdfInputRef.current?.click()}
+                        >
+                          {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                          PDF hochladen
+                        </Button>
+                      </>
+                    )}
+                  </SheetTitle>
                 </SheetHeader>
                 <div className="mt-4">
                   <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
