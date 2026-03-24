@@ -75,6 +75,7 @@ const TeamOverview = () => {
           email: profile.email,
           role: roles.find((r) => r.user_id === profile.user_id)?.role ?? "cutter",
           totalPieces: userPieces.length,
+          openTasks,
           editingCount: byPhase["editing"] || 0,
           reviewCount: byPhase["review"] || 0,
           byPhase,
