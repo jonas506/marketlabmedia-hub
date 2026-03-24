@@ -238,7 +238,7 @@ const SOPs = () => {
                         </motion.div>
                       );
                     })}
-                  </AnimatePresence>
+                  
                 </div>
               </div>
             ))}
