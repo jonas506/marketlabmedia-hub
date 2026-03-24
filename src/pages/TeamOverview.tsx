@@ -52,10 +52,11 @@ const TeamOverview = () => {
       if (!roles?.length) return [];
 
       const userIds = roles.map((r) => r.user_id);
-      const [{ data: profiles }, { data: pieces }, { data: clients }] = await Promise.all([
+      const [{ data: profiles }, { data: pieces }, { data: clients }, { data: taskData }] = await Promise.all([
         supabase.from("profiles").select("user_id, name, email").in("user_id", userIds),
         supabase.from("content_pieces").select("id, client_id, assigned_to, phase, type").in("assigned_to", userIds),
         supabase.from("clients").select("id, name"),
+        supabase.from("tasks" as any).select("id, assigned_to, is_completed").in("assigned_to", userIds).eq("is_completed", false),
       ]);
 
       return (profiles ?? []).map((profile) => {
