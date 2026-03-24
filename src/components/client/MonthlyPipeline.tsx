@@ -1,81 +1,31 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronRight, Filter, Plus, ExternalLink, Link as LinkIcon, Trash2, Sparkles, CalendarIcon, AlertTriangle, MessageSquare, ListPlus, FileText, Copy, Loader2, Mail, LayoutList, Columns3, Printer, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
-import confetti from "canvas-confetti";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
 import PrintScriptsDialog from "./PrintScriptsDialog";
-import CarouselSlideUpload from "./CarouselSlideUpload";
-import TagInput from "./TagInput";
-
-interface ContentPiece {
-  id: string;
-  client_id: string;
-  shoot_day_id: string | null;
-  type: string;
-  title: string | null;
-  assigned_to: string | null;
-  phase: string;
-  target_month: number;
-  target_year: number;
-  has_script: boolean;
-  preview_link?: string | null;
-  deadline?: string | null;
-  priority?: string | null;
-  client_comment?: string | null;
-  script_text?: string | null;
-  transcript?: string | null;
-  caption?: string | null;
-  video_path?: string | null;
-  cta_label?: string | null;
-  tag?: string | null;
-  scheduled_post_date?: string | null;
-  slide_images?: string[] | null;
-  updated_at?: string | null;
-  created_at?: string | null;
-}
-
-const relativeTime = (dateStr: string | null | undefined) => {
-  if (!dateStr) return null;
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "gerade eben";
-  if (mins < 60) return `vor ${mins} Min.`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `vor ${hours} Std.`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "gestern";
-  if (days < 7) return `vor ${days} Tagen`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `vor ${weeks} Wo.`;
-  return format(new Date(dateStr), "dd. MMM", { locale: de });
-};
-
-const PRIORITY_OPTIONS = [
-  { value: "low", label: "Niedrig", color: "text-muted-foreground", bg: "bg-muted/60" },
-  { value: "normal", label: "Normal", color: "text-foreground", bg: "bg-muted/60" },
-  { value: "high", label: "Hoch", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/10" },
-  { value: "urgent", label: "Dringend", color: "text-destructive", bg: "bg-destructive/10" },
-];
+import {
+  PipelineHeader,
+  PipelineTypeTabs,
+  PhasePills,
+  ReviewMailBanner,
+  PipelineFilterBar,
+  PipelinePieceCard,
+  PIPELINE_CONFIG,
+  PRIORITY_WEIGHT,
+  fireConfetti,
+  fireSmallCelebration,
+} from "./pipeline";
+import type { ContentPiece } from "./pipeline/types";
 
 interface MonthlyPipelineProps {
   clientId: string;
@@ -84,80 +34,6 @@ interface MonthlyPipelineProps {
   year: number;
   canEdit: boolean;
 }
-
-const PIPELINE_CONFIG: Record<string, { label: string; emoji: string; phases: { key: string; label: string; emoji: string }[]; addLabel: string }> = {
-  reel: {
-    label: "Reels",
-    emoji: "🎬",
-    phases: [
-      { key: "script", label: "Skript", emoji: "📝" },
-      { key: "filmed", label: "Gedreht", emoji: "📹" },
-      { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
-      { key: "feedback", label: "Feedback", emoji: "💬" },
-      { key: "approved", label: "Freigegeben", emoji: "✅" },
-      { key: "handed_over", label: "Übergeben", emoji: "🚀" },
-    ],
-    addLabel: "+ Reel",
-  },
-  carousel: {
-    label: "Karussells",
-    emoji: "🖼️",
-    phases: [
-      { key: "script", label: "Skript", emoji: "📝" },
-      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
-      { key: "feedback", label: "Feedback", emoji: "💬" },
-      { key: "approved", label: "Freigegeben", emoji: "✅" },
-      { key: "handed_over", label: "Übergeben", emoji: "🚀" },
-    ],
-    addLabel: "+ Karussell",
-  },
-  ad: {
-    label: "Ads",
-    emoji: "📢",
-    phases: [
-      { key: "filmed", label: "Gedreht", emoji: "📹" },
-      { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
-      { key: "feedback", label: "Feedback", emoji: "💬" },
-      { key: "approved", label: "Freigegeben", emoji: "✅" },
-      { key: "handed_over", label: "Übergeben", emoji: "🚀" },
-    ],
-    addLabel: "+ Ad",
-  },
-  youtube_longform: {
-    label: "YouTube",
-    emoji: "🎥",
-    phases: [
-      { key: "filmed", label: "Gedreht", emoji: "📹" },
-      { key: "editing", label: "Im Schnitt", emoji: "✂️" },
-      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
-      { key: "feedback", label: "Feedback", emoji: "💬" },
-      { key: "approved", label: "Freigegeben", emoji: "✅" },
-      { key: "handed_over", label: "Übergeben", emoji: "🚀" },
-    ],
-    addLabel: "+ YouTube Video",
-  },
-};
-
-const fireConfetti = () => {
-  confetti({
-    particleCount: 80,
-    spread: 60,
-    origin: { y: 0.7 },
-    colors: ["#0083F7", "#21089B", "#FAFBFF", "#10B981"],
-  });
-};
-
-const fireSmallCelebration = () => {
-  confetti({
-    particleCount: 30,
-    spread: 40,
-    origin: { y: 0.8, x: 0.7 },
-    colors: ["#0083F7", "#21089B"],
-    gravity: 1.2,
-  });
-};
 
 const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit }) => {
   const qc = useQueryClient();
@@ -178,14 +54,14 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const config = PIPELINE_CONFIG[activeType];
 
-  const handleTypeChange = (type: string) => {
+  const handleTypeChange = useCallback((type: string) => {
     setActiveType(type);
     setActivePhase(PIPELINE_CONFIG[type].phases[0].key);
     setSelected(new Set());
     setFilterPerson("all");
-  };
+  }, []);
 
-  const { data: team } = useQuery({
+  const { data: team = [] } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
       const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["cutter", "head_of_content"]);
@@ -200,8 +76,6 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     contentPieces.filter((c) => c.type === activeType && c.target_month === month && c.target_year === year),
     [contentPieces, activeType, month, year]
   );
-
-  const PRIORITY_WEIGHT: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
 
   const phasePieces = useMemo(() => {
     let filtered = monthPieces.filter((c) => c.phase === activePhase);
@@ -220,22 +94,16 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const nextPhaseMap = useMemo(() => {
     const phases = config.phases;
     const map: Record<string, string> = {};
-    for (let i = 0; i < phases.length - 1; i++) {
-      map[phases[i].key] = phases[i + 1].key;
-    }
-    // Feedback loops back to review, not forward to approved
+    for (let i = 0; i < phases.length - 1; i++) map[phases[i].key] = phases[i + 1].key;
     map["feedback"] = "review";
     return map;
   }, [config]);
 
   const getPhaseLabel = useCallback((key: string) => config.phases.find(p => p.key === key)?.label ?? key, [config]);
 
-  // Trigger transcription for a piece
   const triggerTranscription = useCallback(async (pieceId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
-        body: { piece_id: pieceId },
-      });
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", { body: { piece_id: pieceId } });
       if (error) throw error;
       if (data?.success) {
         qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
@@ -247,9 +115,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     }
   }, [qc, clientId]);
 
-  // Move single piece
   const movePiece = useCallback(async (pieceId: string, nextPhase: string) => {
-    // Gate: require scheduled_post_date before handed_over
     if (nextPhase === "handed_over") {
       const piece = monthPieces.find(p => p.id === pieceId);
       if (!piece?.scheduled_post_date) {
@@ -257,19 +123,15 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         return;
       }
     }
-
     await supabase.from("content_pieces").update({ phase: nextPhase }).eq("id", pieceId);
-    
     setRecentlyMoved(prev => new Set(prev).add(pieceId));
     setTimeout(() => setRecentlyMoved(prev => { const s = new Set(prev); s.delete(pieceId); return s; }), 600);
-    
     if (nextPhase === "handed_over") {
       fireConfetti();
       toast.success(`${config.emoji} ${config.label.slice(0, -1)} übergeben!`, { description: "Zählt jetzt ins Kontingent 🎯" });
     } else if (nextPhase === "approved") {
       fireSmallCelebration();
       toast.success(`✅ Freigegeben!`, { description: "Kunde hat freigegeben" });
-      // Auto-trigger transcription for video types with preview link
       const piece = monthPieces.find(p => p.id === pieceId);
       if (piece?.preview_link && piece.type !== "carousel") {
         toast.info("🎙️ Transkription wird gestartet...", { description: "Caption wird automatisch generiert" });
@@ -280,12 +142,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     } else {
       toast.success(`→ ${getPhaseLabel(nextPhase)}`);
     }
-    
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     qc.invalidateQueries({ queryKey: ["posting-calendar"] });
   }, [qc, clientId, config, getPhaseLabel, monthPieces, triggerTranscription]);
 
-  // Bulk move
   const bulkMove = useMutation({
     mutationFn: async () => {
       const next = nextPhaseMap[activePhase];
@@ -298,101 +158,59 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
       setSelected(new Set());
       if (result) {
-        if (result.next === "handed_over") {
-          fireConfetti();
-          toast.success(`🚀 ${result.count} Pieces übergeben!`, { description: "Alles zählt jetzt ins Kontingent" });
-        } else if (result.next === "approved") {
-          fireSmallCelebration();
-          toast.success(`✅ ${result.count} Pieces freigegeben!`);
-        } else {
-          toast.success(`${result.count} Pieces → ${getPhaseLabel(result.next)}`);
-        }
+        if (result.next === "handed_over") { fireConfetti(); toast.success(`🚀 ${result.count} Pieces übergeben!`, { description: "Alles zählt jetzt ins Kontingent" }); }
+        else if (result.next === "approved") { fireSmallCelebration(); toast.success(`✅ ${result.count} Pieces freigegeben!`); }
+        else { toast.success(`${result.count} Pieces → ${getPhaseLabel(result.next)}`); }
       }
     },
   });
 
-  // Add piece
   const addPiece = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("content_pieces").insert({
-        client_id: clientId,
-        type: activeType,
-        phase: activePhase,
-        target_month: month,
-        target_year: year,
-      });
+      const { error } = await supabase.from("content_pieces").insert({ client_id: clientId, type: activeType, phase: activePhase, target_month: month, target_year: year });
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
-      toast.success(`${config.emoji} Neues Piece erstellt`, { description: `In "${getPhaseLabel(activePhase)}"` });
-    },
-    onError: (err: any) => {
-      console.error("Add piece error:", err);
-      toast.error("Fehler beim Erstellen", { description: err.message });
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["content-pieces", clientId] }); toast.success(`${config.emoji} Neues Piece erstellt`, { description: `In "${getPhaseLabel(activePhase)}"` }); },
+    onError: (err: any) => { console.error("Add piece error:", err); toast.error("Fehler beim Erstellen", { description: err.message }); },
   });
 
-  // Bulk add pieces
   const bulkAddPieces = useMutation({
     mutationFn: async (titles: string[]) => {
-      const rows = titles.map((title) => ({
-        client_id: clientId,
-        type: activeType,
-        phase: config.phases[0].key,
-        target_month: month,
-        target_year: year,
-        title: title.trim() || null,
-      }));
+      const rows = titles.map((title) => ({ client_id: clientId, type: activeType, phase: config.phases[0].key, target_month: month, target_year: year, title: title.trim() || null }));
       await supabase.from("content_pieces").insert(rows);
       return rows.length;
     },
     onSuccess: (count) => {
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
-      setBulkOpen(false);
-      setBulkTitles("");
-      setActivePhase(config.phases[0].key);
+      setBulkOpen(false); setBulkTitles(""); setActivePhase(config.phases[0].key);
       toast.success(`${config.emoji} ${count} Pieces erstellt`, { description: `In "${getPhaseLabel(config.phases[0].key)}"` });
     },
   });
 
-  const handleBulkCreate = () => {
+  const handleBulkCreate = useCallback(() => {
     const lines = bulkTitles.split("\n").map(l => l.trim()).filter(Boolean);
-    if (lines.length === 0) {
-      toast.error("Bitte mindestens einen Titel eingeben");
-      return;
-    }
+    if (lines.length === 0) { toast.error("Bitte mindestens einen Titel eingeben"); return; }
     bulkAddPieces.mutate(lines);
-  };
+  }, [bulkTitles, bulkAddPieces]);
 
-  const updatePiece = async (pieceId: string, updates: Record<string, any>) => {
+  const updatePiece = useCallback(async (pieceId: string, updates: Record<string, any>) => {
     await supabase.from("content_pieces").update(updates).eq("id", pieceId);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
-  };
+  }, [qc, clientId]);
 
-  // Auto-fetch title from Google Drive file name when preview link is set
   const handlePreviewLinkChange = useCallback(async (pieceId: string, allLinks: string, currentTitle: string | null) => {
     updatePiece(pieceId, { preview_link: allLinks });
     const url = allLinks.split("\n").filter(l => l.trim())[0] || "";
-    
-    // Only auto-title if piece has no title yet and URL looks like Google Drive
     if (currentTitle || !url.includes("drive.google.com")) return;
-    
     try {
-      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "get_file_info", url },
-      });
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", { body: { action: "get_file_info", url } });
       if (error || !data?.name) return;
-      
-      // Set the title locally and in DB
       setLocalTitles(prev => ({ ...prev, [pieceId]: data.name }));
       await supabase.from("content_pieces").update({ title: data.name }).eq("id", pieceId);
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
       toast.success("📎 Titel aus Dateiname übernommen", { description: data.name });
-    } catch {
-      // Silently fail — title can be set manually
-    }
-  }, [qc, clientId]);
+    } catch { /* Silently fail */ }
+  }, [qc, clientId, updatePiece]);
 
   const saveTitleQuietly = useCallback(async (pieceId: string, title: string) => {
     await supabase.from("content_pieces").update({ title }).eq("id", pieceId);
@@ -401,903 +219,161 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const handleTitleChange = useCallback((pieceId: string, value: string) => {
     setLocalTitles((prev) => ({ ...prev, [pieceId]: value }));
     if (titleTimerRef.current[pieceId]) clearTimeout(titleTimerRef.current[pieceId]);
-    titleTimerRef.current[pieceId] = setTimeout(() => {
-      saveTitleQuietly(pieceId, value);
-    }, 600);
+    titleTimerRef.current[pieceId] = setTimeout(() => { saveTitleQuietly(pieceId, value); }, 600);
   }, [saveTitleQuietly]);
 
-  const deletePiece = async (pieceId: string) => {
+  const deletePiece = useCallback(async (pieceId: string) => {
     await supabase.from("content_pieces").delete().eq("id", pieceId);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     toast("Piece gelöscht", { description: "Wurde aus der Pipeline entfernt" });
-  };
+  }, [qc, clientId]);
 
-  const toggleSelect = (id: string) => {
-    const s = new Set(selected);
-    s.has(id) ? s.delete(id) : s.add(id);
-    setSelected(s);
-  };
+  const toggleSelect = useCallback((id: string) => {
+    setSelected(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  }, []);
 
-  const toggleAll = () => {
+  const toggleAll = useCallback(() => {
     if (selected.size === phasePieces.length) setSelected(new Set());
     else setSelected(new Set(phasePieces.map((c) => c.id)));
-  };
+  }, [selected.size, phasePieces]);
 
-  const monthOptions = Array.from({ length: 6 }, (_, i) => {
+  const monthOptions = useMemo(() => Array.from({ length: 6 }, (_, i) => {
     const d = new Date(year, month - 1 + i);
     return { month: d.getMonth() + 1, year: d.getFullYear(), label: format(d, "MM/yyyy", { locale: de }) };
-  });
+  }), [year, month]);
 
-  const phaseSummary = config.phases.map((p) => ({
-    ...p,
-    count: monthPieces.filter((c) => c.phase === p.key).length,
-  }));
+  const phaseSummary = useMemo(() => config.phases.map((p) => ({
+    ...p, count: monthPieces.filter((c) => c.phase === p.key).length,
+  })), [config.phases, monthPieces]);
 
   const totalPieces = monthPieces.length;
   const handedOver = monthPieces.filter(c => c.phase === "handed_over" || c.phase === "approved").length;
   const progress = totalPieces > 0 ? Math.round((handedOver / totalPieces) * 100) : 0;
 
+  const handlePhaseChange = useCallback((phase: string) => { setActivePhase(phase); setSelected(new Set()); }, []);
+  const handleOpenPrintScripts = useCallback(() => setPrintScriptsOpen(true), []);
+  const handleOpenCaptionStudio = useCallback(() => setCaptionStudioOpen(true), []);
+  const handleViewModeChange = useCallback((mode: "list" | "kanban") => setViewMode(mode), []);
+  const handleAddPiece = useCallback(() => addPiece.mutate(), [addPiece]);
+  const handleBulkMove = useCallback(() => bulkMove.mutate(), [bulkMove]);
+
+  const nextPhaseInfo = useMemo(() => {
+    const nextKey = nextPhaseMap[activePhase];
+    const nextP = nextKey ? config.phases.find(p => p.key === nextKey) : undefined;
+    return { emoji: nextP?.emoji || "", label: nextP?.label || "" };
+  }, [nextPhaseMap, activePhase, config.phases]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg border border-border bg-card overflow-hidden"
-    >
-      {/* Header - Monday group style */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
-        <div className="w-1 h-5 rounded-full bg-primary" />
-        <h3 className="font-display text-sm font-semibold">Material-Pipeline</h3>
-        {totalPieces > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="w-20 h-[5px] rounded-full bg-muted/50 overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-status-done"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              />
-            </div>
-            <span className="font-mono text-[10px] text-muted-foreground">{progress}%</span>
-          </div>
-        )}
-        <div className="flex-1" />
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {monthPieces.length > 0 && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs font-mono gap-1.5"
-              onClick={() => setPrintScriptsOpen(true)}
-            >
-              <Printer className="h-3 w-3" />
-              <span className="hidden sm:inline">Drucken</span>
-            </Button>
-          )}
-          {canEdit && monthPieces.length > 0 && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs font-mono gap-1.5"
-              onClick={() => setCaptionStudioOpen(true)}
-            >
-              <FileText className="h-3 w-3" />
-              <span className="hidden sm:inline">Caption Studio</span>
-            </Button>
-          )}
-          {/* View mode toggle */}
-          <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
-            <button
-              onClick={() => setViewMode("list")}
-              className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
-                viewMode === "list"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <LayoutList className="h-3 w-3" />
-              <span className="hidden sm:inline">Liste</span>
-            </button>
-            <button
-              onClick={() => setViewMode("kanban")}
-              className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
-                viewMode === "kanban"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Columns3 className="h-3 w-3" />
-              <span className="hidden sm:inline">Kanban</span>
-            </button>
-          </div>
-        </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground w-full sm:w-auto mt-1 sm:mt-0">
-          {phaseSummary.map((p, i) => (
-            <span key={p.key} className="flex items-center gap-1">
-              {i > 0 && <span className="text-border mx-0.5">·</span>}
-              <span className={p.count > 0 ? "text-foreground font-semibold" : ""}>{p.count}</span>
-              <span>{p.label}</span>
-            </span>
-          ))}
-        </div>
-      </div>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-border bg-card overflow-hidden">
+      <PipelineHeader
+        config={config}
+        totalPieces={totalPieces}
+        progress={progress}
+        phaseSummary={phaseSummary}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+        onOpenPrintScripts={handleOpenPrintScripts}
+        onOpenCaptionStudio={handleOpenCaptionStudio}
+        canEdit={canEdit}
+        hasPieces={monthPieces.length > 0}
+      />
 
       <div className="p-4">
+        <PipelineTypeTabs activeType={activeType} onTypeChange={handleTypeChange} contentPieces={contentPieces} month={month} year={year} />
 
-      {/* Type tabs */}
-      <Tabs value={activeType} onValueChange={handleTypeChange} className="mb-4">
-        <TabsList className="h-auto flex-wrap bg-muted/50 gap-0.5 p-1">
-          {Object.entries(PIPELINE_CONFIG).map(([key, cfg]) => {
-            const typeCount = contentPieces.filter((c) => c.type === key && c.target_month === month && c.target_year === year).length;
-            return (
-              <TabsTrigger key={key} value={key} className="text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <span>{cfg.emoji}</span>
-                <span className="hidden sm:inline">{cfg.label}</span>
-                <span className="rounded-full bg-background/50 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-mono">{typeCount}</span>
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+        {viewMode === "kanban" ? (
+          <PipelineKanban
+            pieces={monthPieces}
+            phases={config.phases}
+            team={team}
+            canEdit={canEdit}
+            onMovePiece={(pieceId, targetPhase) => movePiece(pieceId, targetPhase)}
+            onOpenDetail={(piece) => setDetailPiece(piece)}
+            onOpenScript={(piece) => setScriptPiece(piece)}
+          />
+        ) : (
+          <>
+            <PhasePills phases={config.phases} activePhase={activePhase} onPhaseChange={handlePhaseChange} monthPieces={monthPieces} />
+            {activePhase === "review" && <ReviewMailBanner clientId={clientId} phasePieces={phasePieces} canEdit={canEdit} />}
+            <PipelineFilterBar
+              filterPerson={filterPerson}
+              onFilterChange={setFilterPerson}
+              team={team}
+              selectedCount={selected.size}
+              canBulkMove={!!nextPhaseMap[activePhase]}
+              onBulkMove={handleBulkMove}
+              bulkMovePending={bulkMove.isPending}
+              nextPhaseEmoji={nextPhaseInfo.emoji}
+              nextPhaseLabel={nextPhaseInfo.label}
+              canEdit={canEdit}
+              onAddPiece={handleAddPiece}
+              addPiecePending={addPiece.isPending}
+              config={config}
+              bulkOpen={bulkOpen}
+              onBulkOpenChange={setBulkOpen}
+              bulkTitles={bulkTitles}
+              onBulkTitlesChange={setBulkTitles}
+              onBulkCreate={handleBulkCreate}
+              bulkCreatePending={bulkAddPieces.isPending}
+              firstPhaseLabel={getPhaseLabel(config.phases[0].key)}
+            />
 
-      {viewMode === "kanban" ? (
-        <PipelineKanban
-          pieces={monthPieces}
-          phases={config.phases}
-          team={team}
-          canEdit={canEdit}
-          onMovePiece={(pieceId, targetPhase) => movePiece(pieceId, targetPhase)}
-          onOpenDetail={(piece) => setDetailPiece(piece)}
-          onOpenScript={(piece) => setScriptPiece(piece)}
-        />
-      ) : (
-      <>
-      {/* Phase pills */}
-      <div className="flex flex-wrap gap-1.5 mb-5 overflow-x-auto scrollbar-none">
-        {config.phases.map((p) => {
-          const count = monthPieces.filter((c) => c.phase === p.key).length;
-          const isActive = activePhase === p.key;
-          const isHandedOver = p.key === "handed_over";
-          return (
-            <motion.button
-              key={p.key}
-              onClick={() => { setActivePhase(p.key); setSelected(new Set()); }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={`flex items-center gap-1 sm:gap-2 rounded-lg px-2.5 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-mono transition-all whitespace-nowrap ${
-                isActive
-                  ? isHandedOver
-                    ? "bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] text-primary-foreground shadow-md shadow-primary/20"
-                    : "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}>
-              <span className="text-sm sm:text-base">{p.emoji}</span>
-              <span className="hidden sm:inline">{p.label}</span>
-              <motion.span
-                key={count}
-                initial={{ scale: 1.3 }}
-                animate={{ scale: 1 }}
-                className={`rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold ${
-                  isActive ? "bg-primary-foreground/20" : "bg-background/80"
-                }`}>
-                {count}
-              </motion.span>
-            </motion.button>
-          );
-        })}
-      </div>
-
-      {/* Review mail button - prominent placement */}
-      {activePhase === "review" && phasePieces.length > 0 && canEdit && (
-        <div className="flex items-center gap-2 mb-4 p-2.5 rounded-lg bg-amber-500/5 border border-amber-500/20">
-          <Mail className="h-4 w-4 text-amber-500 shrink-0" />
-          <span className="text-xs text-amber-600 dark:text-amber-400 font-mono">{phasePieces.length} Piece{phasePieces.length > 1 ? "s" : ""} zur Freigabe</span>
-          <div className="flex-1" />
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
-            onClick={async () => {
-              try {
-                toast.info("📧 Mail wird gesendet...");
-                const { data: existing } = await supabase
-                  .from("review_notification_queue")
-                  .select("content_piece_id")
-                  .eq("client_id", clientId)
-                  .is("sent_at", null);
-                const existingIds = new Set((existing || []).map(e => e.content_piece_id));
-                const newPieces = phasePieces.filter(p => !existingIds.has(p.id));
-                if (newPieces.length > 0) {
-                  await supabase.from("review_notification_queue").insert(
-                    newPieces.map((p) => ({
-                      client_id: clientId,
-                      content_piece_id: p.id,
-                      piece_title: p.title,
-                      piece_type: p.type,
-                    }))
-                  );
-                }
-                const { error } = await supabase.functions.invoke("send-review-digest", { body: {} });
-                if (error) throw error;
-                toast.success("✅ Freigabe-Mail wurde versendet!");
-              } catch (e: any) {
-                toast.error("Fehler beim Mail-Versand", { description: e?.message });
-              }
-            }}
-          >
-            <Mail className="h-3.5 w-3.5" />
-            Freigabe-Mail senden
-          </Button>
-        </div>
-      )}
-
-      {/* Filter bar + actions */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
-        <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-        <Select value={filterPerson} onValueChange={setFilterPerson}>
-          <SelectTrigger className="h-8 sm:h-9 w-28 sm:w-40 text-xs sm:text-sm"><SelectValue placeholder="Person" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle</SelectItem>
-            {team?.map((t) => (
-              <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex-1" />
-
-        <AnimatePresence>
-          {selected.size > 0 && nextPhaseMap[activePhase] && (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-1.5 text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20"
-                onClick={() => bulkMove.mutate()}
-                disabled={bulkMove.isPending}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{selected.size} →</span>
-                <span className="sm:hidden">{selected.size}→</span>
-                {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}{" "}
-                <span className="hidden sm:inline">{config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}</span>
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {canEdit && (
-          <div className="flex items-center gap-1.5">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm h-8 sm:h-9" onClick={() => addPiece.mutate()} disabled={addPiece.isPending}>
-              <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{config.addLabel}</span><span className="sm:hidden">Neu</span>
-            </Button>
-            <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" title="Mehrere auf einmal erstellen">
-                  <ListPlus className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <span>{config.emoji}</span> Mehrere {config.label} erstellen
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Ein Titel pro Zeile. Kopiere z.B. die Titel aus deinem Google Sheet.
-                  </p>
-                  <Textarea
-                    placeholder={"Karussell 1: Thema A\nKarussell 2: Thema B\nKarussell 3: Thema C\n..."}
-                    value={bulkTitles}
-                    onChange={(e) => setBulkTitles(e.target.value)}
-                    rows={8}
-                    className="font-mono text-sm"
-                  />
-                  {bulkTitles.trim() && (
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {bulkTitles.split("\n").filter(l => l.trim()).length} Pieces werden erstellt → Phase „{getPhaseLabel(config.phases[0].key)}"
-                    </p>
+            <div className="min-h-[280px]">
+              {phasePieces.length === 0 ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
+                  <span className="text-4xl block mb-3">{config.phases.find(p => p.key === activePhase)?.emoji}</span>
+                  <p className="text-sm text-muted-foreground font-body">Keine Pieces in „{getPhaseLabel(activePhase)}"</p>
+                  {canEdit && (
+                    <Button variant="ghost" className="mt-3 text-primary gap-1.5" onClick={handleAddPiece}>
+                      <Plus className="h-4 w-4" /> Erstes Piece erstellen
+                    </Button>
                   )}
+                </motion.div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-3 px-3 py-1.5">
+                    <Checkbox checked={selected.size === phasePieces.length && phasePieces.length > 0} onCheckedChange={toggleAll} />
+                    <span className="text-[11px] font-mono text-muted-foreground">{phasePieces.length} PIECES</span>
+                  </div>
+                  <AnimatePresence mode="popLayout">
+                    {phasePieces.map((piece, index) => (
+                      <PipelinePieceCard
+                        key={piece.id}
+                        piece={piece}
+                        isSelected={selected.has(piece.id)}
+                        wasRecentlyMoved={recentlyMoved.has(piece.id)}
+                        activePhase={activePhase}
+                        activeType={activeType}
+                        config={config}
+                        nextPhase={nextPhaseMap[activePhase]}
+                        team={team}
+                        canEdit={canEdit}
+                        index={index}
+                        clientId={clientId}
+                        monthOptions={monthOptions}
+                        onToggleSelect={toggleSelect}
+                        onMovePiece={movePiece}
+                        onUpdatePiece={updatePiece}
+                        onDeletePiece={deletePiece}
+                        onOpenDetail={setDetailPiece}
+                        onOpenScript={setScriptPiece}
+                        onTitleChange={handleTitleChange}
+                        onPreviewLinkChange={handlePreviewLinkChange}
+                        localTitle={localTitles[piece.id]}
+                      />
+                    ))}
+                  </AnimatePresence>
                 </div>
-                <DialogFooter>
-                  <Button variant="ghost" onClick={() => setBulkOpen(false)}>Abbrechen</Button>
-                  <Button onClick={handleBulkCreate} disabled={bulkAddPieces.isPending} className="gap-2">
-                    <ListPlus className="h-4 w-4" />
-                    {bulkAddPieces.isPending ? "Erstelle..." : "Alle erstellen"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Piece list */}
-      <div className="min-h-[280px]">
-      {phasePieces.length === 0 ? (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
-          <span className="text-4xl block mb-3">{config.phases.find(p => p.key === activePhase)?.emoji}</span>
-          <p className="text-sm text-muted-foreground font-body">Keine Pieces in „{getPhaseLabel(activePhase)}"</p>
-          {canEdit && (
-            <Button variant="ghost" className="mt-3 text-primary gap-1.5" onClick={() => addPiece.mutate()}>
-              <Plus className="h-4 w-4" /> Erstes Piece erstellen
-            </Button>
-          )}
-        </motion.div>
-      ) : (
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3 px-3 py-1.5">
-            <Checkbox checked={selected.size === phasePieces.length && phasePieces.length > 0} onCheckedChange={toggleAll} />
-            <span className="text-[11px] font-mono text-muted-foreground">{phasePieces.length} PIECES</span>
-          </div>
-
-          <AnimatePresence mode="popLayout">
-            {phasePieces.map((piece, index) => {
-              const isLatePhase = activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
-              const isSelected = selected.has(piece.id);
-              const wasRecentlyMoved = recentlyMoved.has(piece.id);
-              return (
-                <motion.div
-                  key={piece.id}
-                  layout
-                  initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                    scale: wasRecentlyMoved ? [1, 1.02, 1] : 1,
-                    transition: { delay: index * 0.03 },
-                  }}
-                  exit={{ opacity: 0, x: 30, scale: 0.9, transition: { duration: 0.2 } }}
-                  className={`flex flex-col gap-2 rounded-lg border p-2.5 sm:p-3.5 transition-all ${
-                    isSelected
-                      ? "border-primary/40 bg-primary/5 shadow-sm shadow-primary/10"
-                      : "border-border hover:border-primary/20 hover:bg-card/80"
-                  }`}
-                >
-                  {/* Row 1: Checkbox + Title + Delete */}
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <Checkbox checked={isSelected} onCheckedChange={() => toggleSelect(piece.id)} />
-
-                    {/* Title */}
-                    <Input
-                      value={localTitles[piece.id] ?? piece.title ?? ""}
-                      placeholder="Titel eingeben..."
-                      className="h-7 flex-1 min-w-0 border-0 bg-transparent text-sm px-1.5 placeholder:text-muted-foreground/40 focus-visible:bg-muted/30 rounded"
-                      onChange={(e) => handleTitleChange(piece.id, e.target.value)}
-                      disabled={!canEdit}
-                    />
-
-                    {/* Delete — always visible */}
-                    {canEdit && (
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive shrink-0"
-                        onClick={() => deletePiece(piece.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Row 2: Tag, CTA, Assign, Target month, Move button */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap pl-7 sm:pl-9">
-                    {/* Tags */}
-                    {(() => {
-                      const TAG_COLORS = [
-                        "bg-primary/15 text-primary",
-                        "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-                        "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-                        "bg-violet-500/15 text-violet-600 dark:text-violet-400",
-                        "bg-rose-500/15 text-rose-600 dark:text-rose-400",
-                        "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400",
-                        "bg-orange-500/15 text-orange-600 dark:text-orange-400",
-                        "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400",
-                      ];
-                      const hashTag = (s: string) => {
-                        let h = 0x811c9dc5;
-                        for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
-                        return (h >>> 0) % TAG_COLORS.length;
-                      };
-                      const tags = piece.tag ? piece.tag.split(",").map(t => t.trim()).filter(Boolean) : [];
-                      return (
-                        <>
-                          {tags.map((t) => (
-                            <span
-                              key={t}
-                              className={cn(
-                                "inline-flex items-center gap-1 h-6 sm:h-7 text-[10px] sm:text-xs font-mono px-2 sm:px-2.5 rounded-md transition-colors",
-                                TAG_COLORS[hashTag(t.toLowerCase())],
-                                canEdit && "cursor-pointer hover:bg-destructive/10 hover:text-destructive"
-                              )}
-                              onClick={() => {
-                                if (!canEdit) return;
-                                const remaining = tags.filter(x => x !== t);
-                                updatePiece(piece.id, { tag: remaining.length ? remaining.join(", ") : null });
-                              }}
-                              title={canEdit ? "Klicken zum Entfernen" : undefined}
-                            >
-                              <Tag className="h-3 w-3 shrink-0" />
-                              {t}
-                              {canEdit && <span className="text-[10px] ml-0.5">✕</span>}
-                            </span>
-                          ))}
-                          {canEdit && (
-                            <TagInput
-                              clientId={clientId}
-                              onSelect={(newTag) => {
-                                if (tags.includes(newTag)) return;
-                                const updated = [...tags, newTag].join(", ");
-                                updatePiece(piece.id, { tag: updated });
-                              }}
-                            />
-                          )}
-                        </>
-                      );
-                    })()}
-
-                    {/* CTA Label — Story Ads only */}
-                    {activeType === "story" && (
-                      <Select
-                        value={piece.cta_label || ""}
-                        onValueChange={(v) => updatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
-                        disabled={!canEdit}
-                      >
-                        <SelectTrigger className={cn(
-                          "h-6 sm:h-7 w-24 sm:w-36 text-[10px] sm:text-xs font-mono border-0 px-2 rounded-md",
-                          piece.cta_label
-                            ? "bg-secondary/15 text-secondary"
-                            : "bg-muted/60 text-muted-foreground"
-                        )}>
-                          <SelectValue placeholder="📢 CTA" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="_clear">
-                            <span className="text-muted-foreground">— Kein CTA</span>
-                          </SelectItem>
-                          <SelectItem value="Community">🏠 Community</SelectItem>
-                          <SelectItem value="Kurs">📚 Kurs</SelectItem>
-                          <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
-                          <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
-                          <SelectItem value="Freebie">🎁 Freebie</SelectItem>
-                          <SelectItem value="Produkt">🛒 Produkt</SelectItem>
-                          <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
-                          <SelectItem value="Coaching">🎯 Coaching</SelectItem>
-                          <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
-                          <SelectItem value="App">📱 App</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-
-                    {/* Assigned */}
-                    <Select value={piece.assigned_to || ""} onValueChange={(v) => updatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
-                      <SelectTrigger className="h-6 sm:h-7 w-24 sm:w-32 text-[10px] sm:text-xs font-mono border-0 bg-muted/60 px-2 rounded-md">
-                        <SelectValue placeholder="Zuweisen" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {team?.map((t) => (
-                          <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {/* Target month — from done/approved onwards */}
-                    {isLatePhase && (
-                      <Select
-                        value={`${piece.target_month}-${piece.target_year}`}
-                        onValueChange={(v) => {
-                          const [m, y] = v.split("-").map(Number);
-                          updatePiece(piece.id, { target_month: m, target_year: y });
-                        }}
-                        disabled={!canEdit}
-                      >
-                        <SelectTrigger className="h-6 sm:h-7 w-20 sm:w-24 text-[10px] sm:text-xs font-mono border-0 bg-muted/60 px-2 rounded-md">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {monthOptions.map((o) => (
-                            <SelectItem key={`${o.month}-${o.year}`} value={`${o.month}-${o.year}`}>{o.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-
-                    <div className="flex-1" />
-
-                    {/* Move to next phase */}
-                    {nextPhaseMap[activePhase] && (
-                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          size="sm"
-                          variant={nextPhaseMap[activePhase] === "handed_over" ? "default" : "outline"}
-                          className={`h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs gap-1 font-mono ${
-                            nextPhaseMap[activePhase] === "handed_over"
-                              ? "bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] shadow-sm shadow-primary/20 border-0"
-                              : ""
-                          }`}
-                          onClick={() => movePiece(piece.id, nextPhaseMap[activePhase])}
-                        >
-                          → {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.emoji}
-                          <span className="hidden sm:inline"> {config.phases.find((p) => p.key === nextPhaseMap[activePhase])?.label}</span>
-                        </Button>
-                      </motion.div>
-                    )}
-                    {/* Timestamp — how long in current phase */}
-                    {piece.updated_at && (
-                      <span className="text-[10px] text-muted-foreground/60 font-mono hidden sm:inline" title={`Seit ${format(new Date(piece.updated_at), "dd. MMM yyyy, HH:mm", { locale: de })} Uhr`}>
-                        {relativeTime(piece.updated_at)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Script button — shown in script phase for types with script */}
-                  {activePhase === "script" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="pl-9"
-                    >
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className={cn(
-                          "h-7 text-xs font-mono gap-1.5",
-                          piece.script_text
-                            ? "text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/30 bg-[hsl(var(--runway-green))]/5"
-                            : "text-muted-foreground"
-                        )}
-                        onClick={() => setScriptPiece(piece)}
-                      >
-                        <FileText className="h-3 w-3" />
-                        {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
-                      </Button>
-                    </motion.div>
-                  )}
-
-                  {/* Carousel slide images — shown in review+ phases */}
-                  {activeType === "carousel" && (activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script") && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="pl-7 sm:pl-9"
-                    >
-                      <CarouselSlideUpload
-                        pieceId={piece.id}
-                        clientId={clientId}
-                        slideImages={piece.slide_images || []}
-                        canEdit={canEdit}
-                        onUpdate={(id, images) => updatePiece(id, { slide_images: images })}
-                      />
-                    </motion.div>
-                  )}
-
-                  {activePhase === "filmed" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="pl-9"
-                    >
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={cn(
-                          "h-7 text-xs font-mono gap-1.5",
-                          piece.script_text
-                            ? "text-[hsl(var(--runway-green))] hover:text-[hsl(var(--runway-green))]"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                        onClick={() => setScriptPiece(piece)}
-                      >
-                        <FileText className="h-3 w-3" />
-                        {piece.script_text ? "Skript ansehen" : "Skript hinzufügen"}
-                      </Button>
-                    </motion.div>
-                  )}
-
-                  {activePhase === "editing" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="flex items-center gap-3 pl-9 flex-wrap"
-                    >
-                      {/* Script button */}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={cn(
-                          "h-7 text-xs font-mono gap-1.5",
-                          piece.script_text
-                            ? "text-[hsl(var(--runway-green))] hover:text-[hsl(var(--runway-green))]"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                        onClick={() => setScriptPiece(piece)}
-                      >
-                        <FileText className="h-3 w-3" />
-                        {piece.script_text ? "Skript ansehen" : "Skript hinzufügen"}
-                      </Button>
-                      {/* Deadline */}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            disabled={!canEdit}
-                            className={cn(
-                              "h-7 w-40 justify-start text-xs font-mono border-0 bg-muted/60 px-2.5 rounded-md gap-1.5",
-                              !piece.deadline && "text-muted-foreground/50",
-                              piece.deadline && new Date(piece.deadline) < new Date() && "text-destructive bg-destructive/10"
-                            )}
-                          >
-                            <CalendarIcon className="h-3 w-3 shrink-0" />
-                            {piece.deadline
-                              ? format(new Date(piece.deadline), "dd. MMM yyyy", { locale: de })
-                              : "Deadline setzen"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={piece.deadline ? new Date(piece.deadline) : undefined}
-                            onSelect={(date) => updatePiece(piece.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
-                            initialFocus
-                            locale={de}
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-
-                      {/* Priority */}
-                      <Select
-                        value={piece.priority || "normal"}
-                        onValueChange={(v) => updatePiece(piece.id, { priority: v })}
-                        disabled={!canEdit}
-                      >
-                        <SelectTrigger className={cn(
-                          "h-7 w-32 text-xs font-mono border-0 px-2.5 rounded-md gap-1.5",
-                          PRIORITY_OPTIONS.find(p => p.value === (piece.priority || "normal"))?.bg,
-                          PRIORITY_OPTIONS.find(p => p.value === (piece.priority || "normal"))?.color,
-                        )}>
-                          {(piece.priority === "high" || piece.priority === "urgent") && (
-                            <AlertTriangle className="h-3 w-3 shrink-0" />
-                          )}
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PRIORITY_OPTIONS.map((p) => (
-                            <SelectItem key={p.value} value={p.value}>
-                              <span className={p.color}>{p.label}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </motion.div>
-                  )}
-                  {/* Bottom action row — link + caption + posting date compact */}
-                  {isLatePhase && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="flex items-center gap-2 pl-7 sm:pl-9 flex-wrap"
-                    >
-                      {/* Scheduled Post Date */}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            disabled={!canEdit}
-                            className={cn(
-                              "h-6 sm:h-7 justify-start text-[10px] sm:text-xs font-mono border-0 px-2 sm:px-2.5 rounded-md gap-1.5",
-                              piece.scheduled_post_date
-                                ? "bg-[hsl(var(--runway-green))]/10 text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/20"
-                                : "bg-destructive/10 text-destructive animate-pulse"
-                            )}
-                          >
-                            <CalendarIcon className="h-3 w-3 shrink-0" />
-                            {piece.scheduled_post_date
-                              ? format(new Date(piece.scheduled_post_date), "dd. MMM", { locale: de })
-                              : "📅 Posting-Datum!"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={piece.scheduled_post_date ? new Date(piece.scheduled_post_date) : undefined}
-                            onSelect={(date) => {
-                              updatePiece(piece.id, { scheduled_post_date: date ? format(date, "yyyy-MM-dd") : null });
-                              qc.invalidateQueries({ queryKey: ["posting-calendar"] });
-                            }}
-                            initialFocus
-                            locale={de}
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {/* Script button in late phases */}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={cn(
-                          "h-6 px-2 text-[10px] font-mono gap-1.5",
-                          piece.script_text
-                            ? "text-[hsl(var(--runway-green))] hover:bg-[hsl(var(--runway-green))]/10"
-                            : "text-muted-foreground hover:bg-muted/60"
-                        )}
-                        onClick={() => setScriptPiece(piece)}
-                      >
-                        <FileText className="h-3 w-3" />
-                        {piece.script_text ? "Skript" : "Skript"}
-                      </Button>
-                      {/* Preview links — multiple links in one popover */}
-                      {(() => {
-                        const links = (piece.preview_link || "").split("\n").filter((l: string) => l.trim());
-                        const linkCount = links.length;
-                        return (
-                          <>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className={cn(
-                                    "h-6 px-2 text-[10px] font-mono gap-1.5",
-                                    linkCount > 0
-                                      ? "text-primary hover:bg-primary/10"
-                                      : "text-muted-foreground hover:bg-muted/60"
-                                  )}
-                                >
-                                  <LinkIcon className="h-3 w-3 shrink-0" />
-                                  {linkCount > 0 ? (
-                                    <span>{linkCount} Link{linkCount > 1 ? "s" : ""}</span>
-                                  ) : (
-                                    <span>Links</span>
-                                  )}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-80 p-3" align="start">
-                                <div className="space-y-3">
-                                  <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Preview-Links (z.B. pro Hook ein Video)</label>
-                                  {[...links, ""].map((link, idx) => (
-                                    <div key={idx} className="flex items-center gap-1.5">
-                                      <span className="text-[10px] text-muted-foreground font-mono w-4 shrink-0">{idx + 1}.</span>
-                                      <Input
-                                        value={link}
-                                        placeholder="https://drive.google.com/..."
-                                        className="h-7 text-xs font-mono flex-1"
-                                        disabled={!canEdit}
-                                        onBlur={(e) => {
-                                          const val = e.target.value.trim();
-                                          const updated = [...links];
-                                          if (idx < links.length) {
-                                            if (val) updated[idx] = val;
-                                            else updated.splice(idx, 1);
-                                          } else if (val) {
-                                            updated.push(val);
-                                          }
-                                          const joined = updated.filter(Boolean).join("\n");
-                                          if (joined !== piece.preview_link) {
-                                            updatePiece(piece.id, { preview_link: joined || null });
-                                            // Auto-title from first link
-                                            if (idx === 0 && val && val.includes("drive.google.com") && !piece.title) {
-                                              handlePreviewLinkChange(piece.id, joined, localTitles[piece.id] ?? piece.title);
-                                            }
-                                          }
-                                        }}
-                                        onChange={(e) => {
-                                          // Optimistic local update
-                                          const updated = [...links];
-                                          if (idx < links.length) updated[idx] = e.target.value;
-                                          else updated.push(e.target.value);
-                                          updatePiece(piece.id, { preview_link: updated.filter(Boolean).join("\n") });
-                                        }}
-                                      />
-                                      {link && (
-                                        <a href={link} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80" onClick={(e) => e.stopPropagation()}>
-                                          <ExternalLink className="h-3 w-3" />
-                                        </a>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-
-                            {linkCount > 0 && (
-                              <a href={links[0]} target="_blank" rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-primary transition-colors">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
-                            )}
-                          </>
-                        );
-                      })()}
-
-                      {/* Caption/Transcript — same row */}
-                      {(activePhase === "approved" || activePhase === "handed_over") && (
-                        <>
-                          <span className="text-border">·</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 px-2 text-[10px] font-mono gap-1.5 hover:bg-primary/10"
-                            onClick={() => setDetailPiece(piece)}
-                          >
-                            <FileText className="h-3 w-3" />
-                            {piece.caption ? (
-                              <span className="text-[hsl(var(--runway-green))]">Caption & Transkript</span>
-                            ) : (
-                              <span className="text-muted-foreground">Caption & Transkript</span>
-                            )}
-                          </Button>
-                          {piece.caption && (
-                            <Button size="sm" variant="ghost"
-                              className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-                              onClick={() => { navigator.clipboard.writeText(piece.caption || ""); toast.success("Caption kopiert!"); }}>
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </>
-                      )}
-                    </motion.div>
-                  )}
-                  {/* Client comment — shown when piece was rejected */}
-                  {piece.client_comment && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="flex items-start gap-2 pl-9"
-                    >
-                      <MessageSquare className="h-3.5 w-3.5 text-[hsl(var(--runway-yellow))] shrink-0 mt-0.5" />
-                      <span className="text-xs text-[hsl(var(--runway-yellow))] font-body bg-[hsl(var(--runway-yellow))]/10 rounded px-2 py-1">
-                        Kundenfeedback: {piece.client_comment}
-                        {piece.updated_at && (
-                          <span className="ml-2 text-[10px] opacity-60">({relativeTime(piece.updated_at)})</span>
-                        )}
-                      </span>
-                      {canEdit && (
-                        <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-muted-foreground"
-                          onClick={() => updatePiece(piece.id, { client_comment: null })}>✕</Button>
-                      )}
-                    </motion.div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-      )}
-      </div>
-      </>
-      )}
-      </div>
-
-      {/* Caption Studio Dialog */}
-      <CaptionStudio
-        open={captionStudioOpen}
-        onOpenChange={setCaptionStudioOpen}
-        pieces={monthPieces}
-        clientId={clientId}
-      />
-
-      {/* Piece Detail Dialog */}
-      <PieceDetailDialog
-        open={!!detailPiece}
-        onOpenChange={(open) => !open && setDetailPiece(null)}
-        piece={detailPiece ? { ...detailPiece, client_id: clientId } : null}
-        clientId={clientId}
-      />
-
-      {/* Script Editor Dialog */}
-      <ScriptEditorDialog
-        open={!!scriptPiece}
-        onOpenChange={(open) => !open && setScriptPiece(null)}
-        piece={scriptPiece}
-        clientId={clientId}
-        canEdit={canEdit}
-      />
-
-      {/* Print Scripts Dialog */}
-      <PrintScriptsDialog
-        open={printScriptsOpen}
-        onOpenChange={setPrintScriptsOpen}
-        pieces={monthPieces}
-      />
+      <CaptionStudio open={captionStudioOpen} onOpenChange={setCaptionStudioOpen} pieces={monthPieces} clientId={clientId} />
+      <PieceDetailDialog open={!!detailPiece} onOpenChange={(open) => !open && setDetailPiece(null)} piece={detailPiece ? { ...detailPiece, client_id: clientId } : null} clientId={clientId} />
+      <ScriptEditorDialog open={!!scriptPiece} onOpenChange={(open) => !open && setScriptPiece(null)} piece={scriptPiece} clientId={clientId} canEdit={canEdit} />
+      <PrintScriptsDialog open={printScriptsOpen} onOpenChange={setPrintScriptsOpen} pieces={monthPieces} />
     </motion.div>
   );
 };
