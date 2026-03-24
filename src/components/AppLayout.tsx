@@ -161,6 +161,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           })}
         </nav>
         <div className="flex flex-col items-center gap-2 pb-2">
+          <button
+            onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+            className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all"
+            title="Suche (⌘K)"
+          >
+            <Search className="h-[18px] w-[18px]" />
+          </button>
           <NotificationBell />
           <button
             onClick={toggleTheme}
