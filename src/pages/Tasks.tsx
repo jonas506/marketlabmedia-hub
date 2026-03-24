@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Task, TeamMember, GroupKey, groupTasks, getInitials } from "@/components/tasks/constants";
+import { TaskCard } from "@/components/tasks";
 import TaskGroupSection from "@/components/tasks/TaskGroupSection";
 import TeamTaskColumn from "@/components/tasks/TeamTaskColumn";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
