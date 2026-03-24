@@ -52,14 +52,16 @@ const TeamOverview = () => {
       if (!roles?.length) return [];
 
       const userIds = roles.map((r) => r.user_id);
-      const [{ data: profiles }, { data: pieces }, { data: clients }] = await Promise.all([
+      const [{ data: profiles }, { data: pieces }, { data: clients }, { data: taskData }] = await Promise.all([
         supabase.from("profiles").select("user_id, name, email").in("user_id", userIds),
         supabase.from("content_pieces").select("id, client_id, assigned_to, phase, type").in("assigned_to", userIds),
         supabase.from("clients").select("id, name"),
+        supabase.from("tasks" as any).select("id, assigned_to, is_completed").in("assigned_to", userIds).eq("is_completed", false),
       ]);
 
       return (profiles ?? []).map((profile) => {
         const userPieces = pieces?.filter((p) => p.assigned_to === profile.user_id) ?? [];
+        const openTasks = (taskData as any[] ?? []).filter((t: any) => t.assigned_to === profile.user_id).length;
         const byPhase: Record<string, number> = {};
         userPieces.forEach((p) => { byPhase[p.phase] = (byPhase[p.phase] || 0) + 1; });
         const byClient = (clients ?? [])
@@ -72,6 +74,7 @@ const TeamOverview = () => {
           email: profile.email,
           role: roles.find((r) => r.user_id === profile.user_id)?.role ?? "cutter",
           totalPieces: userPieces.length,
+          openTasks,
           editingCount: byPhase["editing"] || 0,
           reviewCount: byPhase["review"] || 0,
           byPhase,
@@ -199,13 +202,19 @@ const TeamOverview = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {member.editingCount > 0 && (
-                    <div className="text-center">
-                      <span className="font-mono text-xl font-bold text-status-working">{member.editingCount}</span>
-                      <p className="text-[9px] font-mono text-muted-foreground">Im Schnitt</p>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {member.openTasks > 0 && (
+                      <div className="text-center">
+                        <span className="font-mono text-xl font-bold text-primary">{member.openTasks}</span>
+                        <p className="text-[9px] font-mono text-muted-foreground">Aufgaben</p>
+                      </div>
+                    )}
+                    {member.editingCount > 0 && (
+                      <div className="text-center">
+                        <span className="font-mono text-xl font-bold text-status-working">{member.editingCount}</span>
+                        <p className="text-[9px] font-mono text-muted-foreground">Im Schnitt</p>
+                      </div>
+                    )}
                   {member.reviewCount > 0 && (
                     <div className="text-center">
                       <span className="font-mono text-xl font-bold text-status-review">{member.reviewCount}</span>

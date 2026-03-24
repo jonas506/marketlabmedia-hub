@@ -2,16 +2,18 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import QuickAddTask from "@/components/QuickAddTask";
 
 // roles: which roles can see this nav item (undefined = all)
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
@@ -114,6 +116,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <main className="flex-1 p-4">
           {children}
         </main>
+        <QuickAddTask />
       </div>
     );
   }
@@ -173,6 +176,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <main className="ml-[58px] flex-1 p-6">
         {children}
       </main>
+      <QuickAddTask />
     </div>
   );
 };
