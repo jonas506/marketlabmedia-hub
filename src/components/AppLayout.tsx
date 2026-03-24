@@ -176,6 +176,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <main className="ml-[58px] flex-1 p-6">
         {children}
       </main>
+      <QuickAddTask />
     </div>
   );
 };

@@ -258,6 +258,9 @@ const MyTasks = () => {
             {dedupedReviewCount} zur Freigabe
           </span>
         )}
+        <Link to="/tasks" className="ml-auto text-[10px] font-mono text-primary hover:text-primary/80 transition-colors">
+          Alle Aufgaben →
+        </Link>
       </div>
 
       {totalCount === 0 ? (

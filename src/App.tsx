@@ -58,6 +58,7 @@ const App = () => (
               <Route path="/approve/:token" element={<ClientApproval />} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
+              <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
               
               <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
               <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
