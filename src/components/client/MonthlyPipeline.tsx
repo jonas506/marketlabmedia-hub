@@ -67,9 +67,8 @@ const relativeTime = (dateStr: string | null | undefined) => {
   if (days < 7) return `vor ${days} Tagen`;
   const weeks = Math.floor(days / 7);
   if (weeks < 5) return `vor ${weeks} Wo.`;
-  return formatDate(new Date(dateStr), "dd. MMM", { locale: de });
+  return format(new Date(dateStr), "dd. MMM", { locale: de });
 };
-import { format as formatDate } from "date-fns";
 
 const PRIORITY_OPTIONS = [
   { value: "low", label: "Niedrig", color: "text-muted-foreground", bg: "bg-muted/60" },
