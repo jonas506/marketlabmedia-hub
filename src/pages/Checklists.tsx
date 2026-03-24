@@ -81,7 +81,7 @@ const Checklists = () => {
       <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/15">
               <ClipboardList className="h-5 w-5 text-primary" />
@@ -94,7 +94,7 @@ const Checklists = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {/* Week selector */}
             <Select
               value={`${selectedWeek}-${selectedYear}`}
