@@ -104,7 +104,7 @@ const Checklists = () => {
                 setSelectedYear(y);
               }}
             >
-              <SelectTrigger className="w-[160px] bg-card border-border font-body text-sm">
+              <SelectTrigger className="flex-1 sm:flex-none sm:w-[160px] bg-card border-border font-body text-sm">
                 <Calendar className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
