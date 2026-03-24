@@ -167,7 +167,7 @@ const Tasks = () => {
         .select("*")
         .eq("task_id", selectedTask.id)
         .order("created_at", { ascending: true });
-      return (data ?? []) as TaskComment[];
+      return (data as any[] ?? []) as TaskComment[];
     },
     enabled: !!selectedTask,
   });
