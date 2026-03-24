@@ -245,8 +245,7 @@ const ActivityPage = () => {
           </div>
         )}
       </motion.div>
-    </AppLayout>
-  </ErrorBoundary>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

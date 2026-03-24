@@ -147,8 +147,7 @@ const ContentBase = () => {
 
         {showBrands && <BrandManager userId={userId} onClose={() => setShowBrands(false)} />}
       </div>
-    </AppLayout>
-  </ErrorBoundary>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

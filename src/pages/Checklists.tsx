@@ -196,9 +196,7 @@ const Checklists = () => {
           </div>
         )}
       </motion.div>
-    </AppLayout>
-  );
-  </ErrorBoundary>
+      </ErrorBoundary>
     </AppLayout>
   );
 };

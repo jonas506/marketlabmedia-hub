@@ -280,8 +280,7 @@ const StrategyBoards = () => {
           </DialogContent>
         </Dialog>
       </motion.div>
-    </AppLayout>
-  </ErrorBoundary>
+      </ErrorBoundary>
     </AppLayout>
   );
 };
