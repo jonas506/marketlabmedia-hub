@@ -58,6 +58,11 @@ const WeeklyKPIs = () => {
         return runway < 7;
       });
 
+      // Pieces without deadline in active phases
+      const noDeadline = allPieces.filter(
+        (p) => !p.deadline && !["approved", "handed_over"].includes(p.phase)
+      );
+
       return {
         overdue: overdue.length,
         awaitingReview: awaitingReview.length,
@@ -66,6 +71,7 @@ const WeeklyKPIs = () => {
         totalTarget,
         lowRunwayClients: lowRunwayClients.length,
         activeClients: activeClients.length,
+        noDeadline: noDeadline.length,
       };
     },
   });
