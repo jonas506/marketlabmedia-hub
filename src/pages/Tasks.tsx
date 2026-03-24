@@ -210,7 +210,7 @@ const Tasks = () => {
                     <div className="p-2 space-y-1 max-h-[60vh] overflow-y-auto">
                       <AnimatePresence mode="popLayout">
                         {unassignedTasks.map(t => (
-                          <TaskGroupSection key="no_deadline" groupKey="no_deadline" tasks={[t]} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+                          <TaskCard key={t.id} task={t} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
                         ))}
                       </AnimatePresence>
                     </div>
