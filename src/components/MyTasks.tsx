@@ -304,6 +304,11 @@ const MyTasks = () => {
                             <span className="sm:hidden">{format(new Date(piece.deadline), "dd.MM", { locale: de })}</span>
                           </span>
                         )}
+                        {!piece.deadline && !["approved", "handed_over", "review"].includes(piece.phase) && (
+                          <span className="text-[10px] font-mono text-amber-500/60 shrink-0">
+                            ⏰ offen
+                          </span>
+                        )}
                       </Link>
                     );
                   }

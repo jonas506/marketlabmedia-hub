@@ -114,10 +114,17 @@ const WeeklyKPIs = () => {
       color: kpis.lowRunwayClients > 0 ? "text-destructive" : "text-status-done",
       bg: kpis.lowRunwayClients > 0 ? "bg-destructive/10 border-destructive/20" : "bg-status-done/10 border-status-done/20",
     },
+    {
+      label: "Ohne Deadline",
+      value: kpis.noDeadline,
+      icon: CalendarOff,
+      color: kpis.noDeadline > 0 ? "text-amber-500" : "text-muted-foreground",
+      bg: kpis.noDeadline > 0 ? "bg-amber-500/10 border-amber-500/20" : "bg-muted/30 border-border",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
       {cards.map((card, i) => (
         <motion.div
           key={card.label}

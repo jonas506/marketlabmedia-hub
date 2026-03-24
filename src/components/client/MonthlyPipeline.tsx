@@ -272,6 +272,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     return { emoji: nextP?.emoji || "", label: nextP?.label || "" };
   }, [nextPhaseMap, activePhase, config.phases]);
 
+  const noDeadlineCount = useMemo(() =>
+    monthPieces.filter(p => !p.deadline && !["approved", "handed_over"].includes(p.phase)).length,
+    [monthPieces]
+  );
+
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-border bg-card overflow-hidden">
       <PipelineHeader
@@ -285,6 +290,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         onOpenCaptionStudio={handleOpenCaptionStudio}
         canEdit={canEdit}
         hasPieces={monthPieces.length > 0}
+        noDeadlineCount={noDeadlineCount}
       />
 
       <div className="p-4">
