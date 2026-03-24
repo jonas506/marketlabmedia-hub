@@ -119,6 +119,7 @@ const StrategyBoards = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-[1200px] mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
