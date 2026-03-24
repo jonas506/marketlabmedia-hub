@@ -8,5 +8,6 @@ export { default as PieceTagsRow } from "./PieceTagsRow";
 export { default as PieceActionRow } from "./PieceActionRow";
 export { default as PieceEditingControls } from "./PieceEditingControls";
 export { default as PieceLatePhaseRow } from "./PieceLatePhaseRow";
+export { default as PieceDeadlinePriorityRow } from "./PieceDeadlinePriorityRow";
 export * from "./types";
 export * from "./constants";

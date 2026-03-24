@@ -9,6 +9,7 @@ import { relativeTime } from "./constants";
 import PieceTagsRow from "./PieceTagsRow";
 import PieceActionRow from "./PieceActionRow";
 import PieceEditingControls from "./PieceEditingControls";
+import PieceDeadlinePriorityRow from "./PieceDeadlinePriorityRow";
 import PieceLatePhaseRow from "./PieceLatePhaseRow";
 import CarouselSlideUpload from "../CarouselSlideUpload";
 import type { ContentPiece, TeamMember, PipelineConfig, MonthOption } from "./types";
@@ -190,6 +191,15 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           piece={piece}
           canEdit={canEdit}
           onOpenScript={onOpenScript}
+          onUpdatePiece={onUpdatePiece}
+        />
+      )}
+
+      {/* Deadline + Priority controls for non-editing active phases */}
+      {["script", "filmed", "review"].includes(activePhase) && (
+        <PieceDeadlinePriorityRow
+          piece={piece}
+          canEdit={canEdit}
           onUpdatePiece={onUpdatePiece}
         />
       )}

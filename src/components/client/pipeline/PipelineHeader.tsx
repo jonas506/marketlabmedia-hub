@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, FileText, LayoutList, Columns3 } from "lucide-react";
+import { Printer, FileText, LayoutList, Columns3, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { PipelineConfig } from "./types";
@@ -16,6 +16,7 @@ interface PipelineHeaderProps {
   onOpenCaptionStudio: () => void;
   canEdit: boolean;
   hasPieces: boolean;
+  noDeadlineCount?: number;
 }
 
 const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
@@ -28,6 +29,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   onOpenCaptionStudio,
   canEdit,
   hasPieces,
+  noDeadlineCount = 0,
 }) => {
   return (
     <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
@@ -45,6 +47,12 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           </div>
           <span className="font-mono text-[10px] text-muted-foreground">{progress}%</span>
         </div>
+      )}
+      {noDeadlineCount > 0 && (
+        <span className="flex items-center gap-1.5 text-[10px] font-mono text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md">
+          <AlertTriangle className="h-3 w-3" />
+          {noDeadlineCount} ohne Deadline
+        </span>
       )}
       <div className="flex-1" />
       <div className="flex items-center gap-1.5 flex-wrap">
