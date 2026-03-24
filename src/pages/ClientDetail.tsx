@@ -279,6 +279,10 @@ const ClientDetail = () => {
               <Globe className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Landing Pages</span>
             </TabsTrigger>
+            <TabsTrigger value="activity" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Verlauf</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="mt-4">
