@@ -11,6 +11,7 @@ import { Plus, ChevronRight, ClipboardCheck, ChevronDown, ChevronUp } from "luci
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 
 interface Props {
   clientId: string;
