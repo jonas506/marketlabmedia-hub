@@ -10,6 +10,7 @@ import { Plus, Search, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const SOURCE_OPTIONS = [
   { value: "empfehlung", label: "Empfehlung" },
