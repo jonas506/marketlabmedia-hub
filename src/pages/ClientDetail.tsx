@@ -297,28 +297,25 @@ const ClientDetail = () => {
           </TabsList>
 
           <TabsContent value="tasks" className="mt-4">
-            <TaskList clientId={client.id} canEdit={canEdit} />
+            <ErrorBoundary level="section"><TaskList clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="checklists" className="mt-4">
-            <ClientChecklists clientId={client.id} canEdit={canEdit} />
-          </TabsContent>
-          <TabsContent value="checklists" className="mt-4">
-            <ClientChecklists clientId={client.id} canEdit={canEdit} />
+            <ErrorBoundary level="section"><ClientChecklists clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="inspo" className="mt-4">
-            <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
+            <ErrorBoundary level="section"><InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="marketing" className="mt-4">
-            <MarketingTracking clientId={client.id} canEdit={canEdit} />
+            <ErrorBoundary level="section"><MarketingTracking clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="landing" className="mt-4">
-            <LandingPagesList clientId={client.id} canEdit={canEdit} />
+            <ErrorBoundary level="section"><LandingPagesList clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="strategy" className="mt-4">
-            <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
+            <ErrorBoundary level="section"><ClientStrategyBoards clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="activity" className="mt-4">
-            <ClientActivityTimeline clientId={client.id} />
+            <ErrorBoundary level="section"><ClientActivityTimeline clientId={client.id} /></ErrorBoundary>
           </TabsContent>
         </Tabs>
       </motion.div>
