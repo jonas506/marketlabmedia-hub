@@ -171,7 +171,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                     {dayPieces.map((piece) => (
                       <Link
                         key={piece.id}
-                        to={`/clients/${piece.client_id}`}
+                        to={`/client/${piece.client_id}`}
                         className={cn(
                           "inline-flex items-center gap-1.5 text-[11px] font-mono rounded-md border px-2 py-1 transition-all hover:scale-105",
                           TYPE_COLOR[piece.type] || "bg-muted/40 text-foreground border-border"
