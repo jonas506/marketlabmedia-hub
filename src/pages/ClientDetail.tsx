@@ -15,6 +15,7 @@ import TaskList from "@/components/client/TaskList";
 import InspirationBoard from "@/components/client/InspirationBoard";
 import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
 import StorySequences from "@/components/client/StorySequences";
+import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
