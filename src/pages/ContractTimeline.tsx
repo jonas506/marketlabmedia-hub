@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const ContractTimeline = () => {
   const { data: clients, isLoading } = useClients();
