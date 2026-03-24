@@ -86,27 +86,31 @@ const ContractTimeline = () => {
                 initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="rounded-lg border border-border bg-card p-4"
+                className="rounded-lg border border-border bg-card p-3 sm:p-4"
               >
-                <div className="flex items-center gap-3 mb-2">
-                  {client.logo_url ? (
-                    <img
-                      src={client.logo_url}
-                      alt={client.name}
-                      className="h-7 w-7 rounded-md object-contain bg-white p-0.5 ring-1 ring-border"
-                    />
-                  ) : (
-                    <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
-                      {client.name.charAt(0)}
-                    </div>
-                  )}
-                  <span className="font-medium text-sm flex-1 truncate">{client.name}</span>
-                  {getStatusBadge(client.remainingDays)}
-                  <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-                    {client.remainingDays > 0
-                      ? `${client.remainingDays} Tage übrig`
-                      : `${Math.abs(client.remainingDays)} Tage abgelaufen`}
-                  </span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 mb-2">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    {client.logo_url ? (
+                      <img
+                        src={client.logo_url}
+                        alt={client.name}
+                        className="h-7 w-7 rounded-md object-contain bg-white p-0.5 ring-1 ring-border shrink-0"
+                      />
+                    ) : (
+                      <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
+                        {client.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="font-medium text-sm truncate">{client.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 ml-9 sm:ml-0">
+                    {getStatusBadge(client.remainingDays)}
+                    <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                      {client.remainingDays > 0
+                        ? `${client.remainingDays} Tage übrig`
+                        : `${Math.abs(client.remainingDays)} Tage abgelaufen`}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Progress bar */}
@@ -115,7 +119,7 @@ const ContractTimeline = () => {
                     className={`absolute inset-y-0 left-0 rounded-full transition-all ${getBarColor(client.remainingDays)}`}
                     style={{ width: `${Math.max(client.progress * 100, 2)}%`, opacity: 0.8 }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-between px-2.5 text-[10px] font-medium">
+                  <div className="absolute inset-0 flex items-center justify-between px-2 sm:px-2.5 text-[9px] sm:text-[10px] font-medium">
                     <span className="text-foreground/70">{format(client.start, "dd.MM.yy", { locale: de })}</span>
                     <span className="text-foreground/70">{format(client.end, "dd.MM.yy", { locale: de })}</span>
                   </div>

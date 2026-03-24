@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardList, Calendar, Filter } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { cn } from "@/lib/utils";
 
 const getWeekNumber = (d: Date) => {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -80,7 +81,7 @@ const Checklists = () => {
       <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/15">
               <ClipboardList className="h-5 w-5 text-primary" />
@@ -93,7 +94,7 @@ const Checklists = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {/* Week selector */}
             <Select
               value={`${selectedWeek}-${selectedYear}`}
@@ -103,7 +104,7 @@ const Checklists = () => {
                 setSelectedYear(y);
               }}
             >
-              <SelectTrigger className="w-[160px] bg-card border-border font-body text-sm">
+              <SelectTrigger className="flex-1 sm:flex-none sm:w-[160px] bg-card border-border font-body text-sm">
                 <Calendar className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -118,7 +119,7 @@ const Checklists = () => {
 
             {/* Client filter */}
             <Select value={clientFilter} onValueChange={setClientFilter}>
-              <SelectTrigger className="w-[180px] bg-card border-border font-body text-sm">
+              <SelectTrigger className="flex-1 sm:flex-none sm:w-[180px] bg-card border-border font-body text-sm">
                 <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Alle Kunden" />
               </SelectTrigger>
@@ -180,11 +181,12 @@ const Checklists = () => {
                         className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <span
-                        className={`font-body text-sm flex-1 transition-all ${
+                        className={cn(
+                          "font-body text-sm flex-1 transition-all truncate",
                           item.is_completed
                             ? "line-through text-muted-foreground/50"
                             : "text-foreground"
-                        }`}
+                        )}
                       >
                         {item.label}
                       </span>

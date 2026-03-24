@@ -4,8 +4,6 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,6 +15,8 @@ import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileDatePicker from "@/components/MobileDatePicker";
 
 interface Task {
   id: string;
@@ -65,6 +65,7 @@ const PRIORITY_WEIGHT: Record<string, number> = { urgent: 0, high: 1, normal: 2,
 
 const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const qc = useQueryClient();
+  const isMobile = useIsMobile();
   const [newTitle, setNewTitle] = useState("");
   const [newTag, setNewTag] = useState("");
   const [filterPerson, setFilterPerson] = useState("all");
@@ -169,17 +170,17 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
-      {/* Group header - Monday style with colored left accent */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-surface-elevated border-b border-border">
+      {/* Group header */}
+      <div className="flex items-center gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
         <div className="w-1 h-5 rounded-full bg-primary" />
         <h3 className="font-display text-sm font-semibold">Aufgaben</h3>
         <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{activeTasks.length}</span>
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
-          <Filter className="h-3 w-3 text-muted-foreground" />
+          <Filter className="h-3 w-3 text-muted-foreground hidden sm:block" />
           <Select value={filterPerson} onValueChange={setFilterPerson}>
-            <SelectTrigger className="h-7 w-32 text-[11px] border-border/50 bg-background/50">
+            <SelectTrigger className="h-7 w-24 sm:w-32 text-[11px] border-border/50 bg-background/50">
               <SelectValue placeholder="Alle" />
             </SelectTrigger>
             <SelectContent>
@@ -199,8 +200,8 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         )}
       </div>
 
-      {/* Column headers */}
-      <div className="grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0 border-b border-border/50 bg-card text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider">
+      {/* Column headers - hidden on mobile */}
+      <div className="hidden md:grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0 border-b border-border/50 bg-card text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider">
         <span className="px-4 py-2">Aufgabe</span>
         <span className="px-2 py-2 text-center border-l border-border/30">Person</span>
         <span className="px-2 py-2 text-center border-l border-border/30">Status</span>
@@ -210,16 +211,17 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
       {/* Add row */}
       {canEdit && (
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/30 bg-card/50">
+        <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-border/30 bg-card/50">
           <Plus className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
           <Input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="Neue Aufgabe…"
-            className="h-8 flex-1 text-sm bg-background border-border/50 px-3 rounded-md"
+            className="h-8 flex-1 min-w-0 text-sm bg-background border-border/50 px-3 rounded-md"
             onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
           />
-          <div className="relative shrink-0">
+          {/* Tag input only on desktop */}
+          <div className="relative shrink-0 hidden sm:block">
             <Tag className="absolute left-2 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground/40 pointer-events-none" />
             <Input
               value={newTag}
@@ -235,7 +237,8 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
             disabled={!newTitle.trim() || addTask.isPending}
             onClick={() => addTask.mutate()}
           >
-            Hinzufügen
+            <Plus className="h-3 w-3 sm:hidden" />
+            <span className="hidden sm:inline">Hinzufügen</span>
           </Button>
         </div>
       )}
@@ -265,7 +268,8 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                   exit={{ opacity: 0, x: 20, transition: { duration: 0.12 } }}
                   className="monday-row"
                 >
-                  <div className="grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0">
+                  {/* Desktop: Grid layout */}
+                  <div className="hidden md:grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0">
                     {/* Title cell */}
                     <div
                       className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer group"
@@ -307,7 +311,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                       ) : null}
                     </div>
 
-                    {/* Status cell - Monday pill */}
+                    {/* Status cell */}
                     <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
                       <Select
                         value={task.status || "not_started"}
@@ -333,26 +337,18 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                     {/* Deadline cell */}
                     <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
                       {canEdit ? (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className={cn(
-                              "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded transition-colors",
-                              isOverdue ? "text-destructive font-semibold bg-destructive/10" : task.deadline ? "text-foreground/70 hover:bg-muted/50" : "text-muted-foreground/30 hover:text-muted-foreground"
-                            )}>
-                              <CalendarIcon className="h-3 w-3" />
-                              {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "—"}
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="center">
-                            <Calendar
-                              mode="single"
-                              selected={task.deadline ? new Date(task.deadline) : undefined}
-                              onSelect={(date) => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
-                              initialFocus locale={de}
-                              className={cn("p-3 pointer-events-auto")}
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <MobileDatePicker
+                          selected={task.deadline ? new Date(task.deadline) : undefined}
+                          onSelect={(date) => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
+                        >
+                          <button className={cn(
+                            "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded transition-colors",
+                            isOverdue ? "text-destructive font-semibold bg-destructive/10" : task.deadline ? "text-foreground/70 hover:bg-muted/50" : "text-muted-foreground/30 hover:text-muted-foreground"
+                          )}>
+                            <CalendarIcon className="h-3 w-3" />
+                            {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "—"}
+                          </button>
+                        </MobileDatePicker>
                       ) : task.deadline ? (
                         <span className={cn("text-[11px] font-mono", isOverdue ? "text-destructive" : "text-muted-foreground")}>
                           {format(new Date(task.deadline), "dd MMM", { locale: de })}
@@ -360,7 +356,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                       ) : null}
                     </div>
 
-                    {/* Priority cell - Monday pill */}
+                    {/* Priority cell */}
                     <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
                       <Select
                         value={task.priority || "normal"}
@@ -384,6 +380,63 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                     </div>
                   </div>
 
+                  {/* Mobile: Card layout */}
+                  <div className="md:hidden px-3 py-3" onClick={() => setExpandedTask(isExpanded ? null : task.id)}>
+                    <div className="flex items-start gap-2">
+                      {canEdit && (
+                        <div className="shrink-0 pt-0.5" onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => archiveTask(task.id)} className="h-5 w-5 rounded border border-border/50 flex items-center justify-center text-muted-foreground/30 active:bg-primary/10">
+                            <span className="text-[9px]">✓</span>
+                          </button>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          {task.tag && (
+                            <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[16px] rounded border-0 shrink-0", getTagColor(task.tag))}>
+                              {task.tag}
+                            </Badge>
+                          )}
+                          <span className="text-sm font-body truncate">{task.title}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Select
+                              value={task.status || "not_started"}
+                              onValueChange={(v) => v === "done" ? archiveTask(task.id) : updateTask(task.id, { status: v })}
+                              disabled={!canEdit}
+                            >
+                              <SelectTrigger className={cn("monday-status border-0 shadow-none h-auto cursor-pointer text-[10px] px-2 py-0.5", sc.cssClass)}>
+                                <span>{sc.label}</span>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {STATUS_CONFIG.map((s) => (
+                                  <SelectItem key={s.value} value={s.value}>
+                                    <span className="flex items-center gap-2">
+                                      <span className={cn("w-2 h-2 rounded-full", s.cssClass)} />
+                                      {s.label}
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          {task.assigned_to && (
+                            <span className="text-[10px] font-mono text-muted-foreground">
+                              {getTeamName(task.assigned_to)?.split(" ")[0]}
+                            </span>
+                          )}
+                          {task.deadline && (
+                            <span className={cn("text-[10px] font-mono", isOverdue ? "text-destructive" : "text-muted-foreground")}>
+                              {format(new Date(task.deadline), "dd. MMM", { locale: de })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className={cn("h-3 w-3 text-muted-foreground/30 transition-transform shrink-0 mt-1", isExpanded && "rotate-90 text-primary")} />
+                    </div>
+                  </div>
+
                   {/* Expanded notes */}
                   <AnimatePresence>
                     {isExpanded && (
@@ -394,7 +447,42 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                         transition={{ duration: 0.15 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-3 pt-0 ml-6">
+                        <div className="px-3 sm:px-4 pb-3 pt-0 ml-4 sm:ml-6 space-y-2">
+                          {/* Mobile: show additional controls */}
+                          {isMobile && (
+                            <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                              <Select value={task.assigned_to || "unassigned"} onValueChange={(v) => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })} disabled={!canEdit}>
+                                <SelectTrigger className="h-7 text-[11px] border-border/50 bg-background/50 w-auto min-w-[100px]">
+                                  <SelectValue placeholder="Person" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unassigned">— Keine —</SelectItem>
+                                  {team?.map((t) => (<SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                              <Select value={task.priority || "normal"} onValueChange={(v) => updateTask(task.id, { priority: v })} disabled={!canEdit}>
+                                <SelectTrigger className="h-7 text-[11px] border-border/50 bg-background/50 w-auto min-w-[90px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {PRIORITY_CONFIG.map((p) => (<SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                              <MobileDatePicker
+                                selected={task.deadline ? new Date(task.deadline) : undefined}
+                                onSelect={(date) => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
+                                disabled={!canEdit}
+                              >
+                                <button className={cn(
+                                  "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded h-7 border border-border/50 bg-background/50",
+                                  isOverdue ? "text-destructive" : task.deadline ? "text-foreground/70" : "text-muted-foreground/50"
+                                )}>
+                                  <CalendarIcon className="h-3 w-3" />
+                                  {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "Deadline"}
+                                </button>
+                              </MobileDatePicker>
+                            </div>
+                          )}
                           <Textarea
                             value={localNotes[task.id] ?? task.notes ?? ""}
                             placeholder="Notizen, Links, Kontext…"
@@ -418,20 +506,20 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         {showArchive && archivedTasks.length > 0 && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="border-t border-border">
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-surface-elevated">
+              <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-surface-elevated">
                 <div className="w-1 h-4 rounded-full bg-status-default" />
                 <span className="text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Archiv</span>
                 <span className="text-[10px] font-mono text-muted-foreground/50">{archivedTasks.length}</span>
               </div>
               {archivedTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 px-4 py-2 border-b border-border/20 opacity-40 hover:opacity-60 transition-opacity">
+                <div key={task.id} className="flex items-center gap-3 px-3 sm:px-4 py-2 border-b border-border/20 opacity-40 hover:opacity-60 transition-opacity">
                   <span className="monday-status monday-status-done text-[9px] py-0.5 px-2 min-w-0">✓</span>
-                  {task.tag && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 rounded border-0 opacity-60">{task.tag}</Badge>}
+                  {task.tag && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 rounded border-0 opacity-60 hidden sm:inline-flex">{task.tag}</Badge>}
                   <span className="flex-1 text-sm font-body line-through text-muted-foreground truncate">{task.title}</span>
                   {canEdit && (
                     <>
                       <button className="text-[10px] font-mono text-muted-foreground hover:text-foreground flex items-center gap-1" onClick={() => restoreTask(task.id)}>
-                        <Undo2 className="h-3 w-3" /> Zurück
+                        <Undo2 className="h-3 w-3" /> <span className="hidden sm:inline">Zurück</span>
                       </button>
                       <button className="text-muted-foreground hover:text-destructive" onClick={() => deleteTask(task.id)}>
                         <Trash2 className="h-3 w-3" />
