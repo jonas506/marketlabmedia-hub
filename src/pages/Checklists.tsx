@@ -119,7 +119,7 @@ const Checklists = () => {
 
             {/* Client filter */}
             <Select value={clientFilter} onValueChange={setClientFilter}>
-              <SelectTrigger className="w-[180px] bg-card border-border font-body text-sm">
+              <SelectTrigger className="flex-1 sm:flex-none sm:w-[180px] bg-card border-border font-body text-sm">
                 <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Alle Kunden" />
               </SelectTrigger>
