@@ -53,6 +53,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <span className="font-display text-sm font-semibold text-sidebar-foreground">Marketlab</span>
           </div>
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+              className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 transition-all"
+            >
+              <Search className="h-4 w-4" />
+            </button>
             <NotificationBell />
             <button
               onClick={toggleTheme}
