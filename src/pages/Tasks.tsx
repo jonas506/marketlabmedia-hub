@@ -327,6 +327,7 @@ const Tasks = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
