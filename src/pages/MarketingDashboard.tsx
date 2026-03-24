@@ -353,6 +353,7 @@ export default function MarketingDashboard() {
           </div>
         )}
       </div>
+      </ErrorBoundary>
     </AppLayout>
   );
 }

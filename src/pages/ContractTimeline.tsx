@@ -126,6 +126,8 @@ const ContractTimeline = () => {
         )}
       </motion.div>
     </AppLayout>
+  </ErrorBoundary>
+    </AppLayout>
   );
 };
 

@@ -160,6 +160,7 @@ export default function CRMSettings() {
           </div>
         </section>
       </div>
+      </ErrorBoundary>
     </CRMLayout>
   );
 }

@@ -371,6 +371,7 @@ const TeamOverview = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </ErrorBoundary>
     </AppLayout>
   );
 };

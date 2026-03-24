@@ -721,6 +721,8 @@ const Tasks = () => {
         </Sheet>
       </motion.div>
     </AppLayout>
+  </ErrorBoundary>
+    </AppLayout>
   );
 };
 

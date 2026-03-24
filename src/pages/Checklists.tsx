@@ -198,6 +198,9 @@ const Checklists = () => {
       </motion.div>
     </AppLayout>
   );
+  </ErrorBoundary>
+    </AppLayout>
+  );
 };
 
 export default Checklists;

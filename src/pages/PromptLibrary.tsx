@@ -229,6 +229,8 @@ const PromptLibrary = () => {
         </Dialog>
       </div>
     </AppLayout>
+  </ErrorBoundary>
+    </AppLayout>
   );
 };
 

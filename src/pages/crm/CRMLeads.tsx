@@ -191,6 +191,7 @@ export default function CRMLeads() {
           </div>
         </DialogContent>
       </Dialog>
+      </ErrorBoundary>
     </CRMLayout>
   );
 }

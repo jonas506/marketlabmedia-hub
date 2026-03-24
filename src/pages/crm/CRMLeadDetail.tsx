@@ -663,6 +663,7 @@ export default function CRMLeadDetail() {
           </div>
         </DialogContent>
       </Dialog>
+      </ErrorBoundary>
     </CRMLayout>
   );
 }

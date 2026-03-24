@@ -289,6 +289,7 @@ const SOPs = () => {
           </div>
         </DialogContent>
       </Dialog>
+    </ErrorBoundary>
     </AppLayout>
   );
 };

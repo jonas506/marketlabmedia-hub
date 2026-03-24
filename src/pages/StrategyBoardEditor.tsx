@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import StrategyBriefingPanel from "@/components/board/StrategyBriefingPanel";
 import BoardAIChat from "@/components/board/BoardAIChat";
 import { generateBoardFromStrategy } from "@/lib/strategy-shape-generator";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 type SaveStatus = "saved" | "saving" | "unsaved";
 
