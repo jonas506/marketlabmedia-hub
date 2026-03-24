@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import SopBoard, { type BoardData } from "@/components/sop/SopBoard";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface SopTemplate {
   id: string;
