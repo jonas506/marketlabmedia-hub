@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import QuickAddTask from "@/components/QuickAddTask";
 import NotificationBell from "@/components/NotificationBell";
+import GlobalSearch from "@/components/GlobalSearch";
 
 // roles: which roles can see this nav item (undefined = all)
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
@@ -52,6 +53,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <span className="font-display text-sm font-semibold text-sidebar-foreground">Marketlab</span>
           </div>
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+              className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 transition-all"
+            >
+              <Search className="h-4 w-4" />
+            </button>
             <NotificationBell />
             <button
               onClick={toggleTheme}
@@ -120,6 +127,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {children}
         </main>
         <QuickAddTask />
+        <GlobalSearch />
       </div>
     );
   }
@@ -154,6 +162,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           })}
         </nav>
         <div className="flex flex-col items-center gap-2 pb-2">
+          <button
+            onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+            className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all"
+            title="Suche (⌘K)"
+          >
+            <Search className="h-[18px] w-[18px]" />
+          </button>
           <NotificationBell />
           <button
             onClick={toggleTheme}
@@ -181,6 +196,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {children}
       </main>
       <QuickAddTask />
+      <GlobalSearch />
     </div>
   );
 };
