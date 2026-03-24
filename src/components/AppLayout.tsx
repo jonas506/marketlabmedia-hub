@@ -127,6 +127,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {children}
         </main>
         <QuickAddTask />
+        <GlobalSearch />
       </div>
     );
   }
