@@ -48,7 +48,27 @@ interface ContentPiece {
   tag?: string | null;
   scheduled_post_date?: string | null;
   slide_images?: string[] | null;
+  updated_at?: string | null;
+  created_at?: string | null;
 }
+
+const relativeTime = (dateStr: string | null | undefined) => {
+  if (!dateStr) return null;
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "gerade eben";
+  if (mins < 60) return `vor ${mins} Min.`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `vor ${hours} Std.`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "gestern";
+  if (days < 7) return `vor ${days} Tagen`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `vor ${weeks} Wo.`;
+  return format(new Date(dateStr), "dd. MMM", { locale: de });
+};
 
 const PRIORITY_OPTIONS = [
   { value: "low", label: "Niedrig", color: "text-muted-foreground", bg: "bg-muted/60" },
@@ -894,6 +914,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         </Button>
                       </motion.div>
                     )}
+                    {/* Timestamp — how long in current phase */}
+                    {piece.updated_at && (
+                      <span className="text-[10px] text-muted-foreground/60 font-mono hidden sm:inline" title={`Seit ${format(new Date(piece.updated_at), "dd. MMM yyyy, HH:mm", { locale: de })} Uhr`}>
+                        {relativeTime(piece.updated_at)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Script button — shown in script phase for types with script */}
@@ -1214,6 +1240,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       <MessageSquare className="h-3.5 w-3.5 text-[hsl(var(--runway-yellow))] shrink-0 mt-0.5" />
                       <span className="text-xs text-[hsl(var(--runway-yellow))] font-body bg-[hsl(var(--runway-yellow))]/10 rounded px-2 py-1">
                         Kundenfeedback: {piece.client_comment}
+                        {piece.updated_at && (
+                          <span className="ml-2 text-[10px] opacity-60">({relativeTime(piece.updated_at)})</span>
+                        )}
                       </span>
                       {canEdit && (
                         <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-muted-foreground"
