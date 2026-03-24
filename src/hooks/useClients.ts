@@ -72,7 +72,7 @@ export const useClients = () => {
       return clients.map((client) => {
         const pieces = allPieces?.filter((c) => c.client_id === client.id) ?? [];
         
-        const inPipeline = pieces.filter((c) => c.phase !== "handed_over").length;
+        const inPipeline = pieces.filter((c) => c.phase !== "handed_over" && c.phase !== "approved").length;
         const handedOver = pieces.filter((c) => c.phase === "handed_over").length;
 
         const handedOverThisMonth = pieces.filter(
