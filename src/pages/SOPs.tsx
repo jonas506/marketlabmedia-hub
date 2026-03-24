@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Plus, Trash2, Zap, GitBranch } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import SopBoard, { type BoardData } from "@/components/sop/SopBoard";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -164,16 +164,15 @@ const SOPs = () => {
               <div key={cat}>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">{cat}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <AnimatePresence>
+                  
                     {tpls.map((tpl) => {
                       const nodeCount = tpl.board_data?.nodes?.length || 0;
                       const connCount = tpl.board_data?.connections?.length || 0;
                       return (
                         <motion.div
-                          key={tpl.id} layout
+                          key={tpl.id}
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0 }}
                           className={cn(
                             "rounded-lg border border-border bg-card p-4 transition-all group",
                             "cursor-pointer hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
@@ -239,7 +238,7 @@ const SOPs = () => {
                         </motion.div>
                       );
                     })}
-                  </AnimatePresence>
+                  
                 </div>
               </div>
             ))}
