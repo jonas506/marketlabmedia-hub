@@ -34,20 +34,28 @@ const TYPE_COLOR: Record<string, string> = {
   youtube_longform: "bg-red-500/15 text-red-400 border-red-500/20",
 };
 
-export default function PostingCalendar() {
+interface PostingCalendarProps {
+  filterUserId?: string;
+}
+
+export default function PostingCalendar({ filterUserId }: PostingCalendarProps = {}) {
   const today = startOfDay(new Date());
   const endDate = addDays(today, 30);
 
   const { data: pieces, isLoading } = useQuery({
-    queryKey: ["posting-calendar"],
+    queryKey: ["posting-calendar", filterUserId],
     queryFn: async (): Promise<ScheduledPiece[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("content_pieces")
-        .select("id, title, type, phase, client_id, scheduled_post_date")
+        .select("id, title, type, phase, client_id, scheduled_post_date, assigned_to")
         .not("scheduled_post_date", "is", null)
         .gte("scheduled_post_date", format(today, "yyyy-MM-dd"))
         .lte("scheduled_post_date", format(endDate, "yyyy-MM-dd"))
         .order("scheduled_post_date", { ascending: true });
+      if (filterUserId) {
+        query = query.eq("assigned_to", filterUserId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
 
       // Fetch client names
