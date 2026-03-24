@@ -305,6 +305,13 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
                 )}
               </div>
             </div>
+
+            {/* Activity Log */}
+            {piece && (
+              <div className="border-t border-border pt-3">
+                <PieceActivityLog entityType="content_piece" entityId={piece.id} />
+              </div>
+            )}
           </div>
         </ScrollArea>
       </DialogContent>
