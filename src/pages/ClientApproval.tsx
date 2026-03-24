@@ -329,6 +329,7 @@ const ClientApproval = () => {
   const currentVideoSrc = !isCarousel && currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
   const currentPreviewLink = currentPiece?.preview_link ?? null;
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
+  const isRevisionBlocked = (currentPiece?.revision_count ?? 0) >= 2;
 
   return (
     <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
