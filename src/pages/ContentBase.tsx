@@ -97,6 +97,7 @@ const ContentBase = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <div className="max-w-5xl space-y-8">
         {/* Reel Ideas */}
         <ReelIdeas userId={userId} />
