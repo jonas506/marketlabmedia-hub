@@ -48,7 +48,28 @@ interface ContentPiece {
   tag?: string | null;
   scheduled_post_date?: string | null;
   slide_images?: string[] | null;
+  updated_at?: string | null;
+  created_at?: string | null;
 }
+
+const relativeTime = (dateStr: string | null | undefined) => {
+  if (!dateStr) return null;
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "gerade eben";
+  if (mins < 60) return `vor ${mins} Min.`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `vor ${hours} Std.`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "gestern";
+  if (days < 7) return `vor ${days} Tagen`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `vor ${weeks} Wo.`;
+  return formatDate(new Date(dateStr), "dd. MMM", { locale: de });
+};
+import { format as formatDate } from "date-fns";
 
 const PRIORITY_OPTIONS = [
   { value: "low", label: "Niedrig", color: "text-muted-foreground", bg: "bg-muted/60" },
