@@ -43,7 +43,7 @@ const KontingentBar: React.FC<{ label: string; posted: number; target: number; c
   );
 };
 
-const ClientCard: React.FC<ClientCardProps> = ({ client }) => {
+const ClientCard: React.FC<ClientCardProps> = ({ client, compact = false }) => {
   const { role } = useAuth();
   const canDelete = role === "admin";
   return (
