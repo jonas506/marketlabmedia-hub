@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
 import OnboardingOverview from "@/components/OnboardingOverview";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const Dashboard = () => {
   const { data: clients, isLoading } = useClients();
@@ -68,40 +69,40 @@ const Dashboard = () => {
 
         {role === "admin" && (
           <>
-            <WeeklyKPIs />
-            <TeamWorkloadWidget />
-            <BottleneckAlert />
-            <OnboardingOverview />
+            <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
+            <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
+            <ErrorBoundary level="widget"><BottleneckAlert /></ErrorBoundary>
+            <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>
             {clientGrid()}
             <div className="mt-6">
-              <PostingCalendar />
+              <ErrorBoundary level="section"><PostingCalendar /></ErrorBoundary>
             </div>
             <div className="mt-6">
-              <MyTasks />
+              <ErrorBoundary level="section"><MyTasks /></ErrorBoundary>
             </div>
           </>
         )}
 
         {role === "head_of_content" && (
           <>
-            <WeeklyKPIs />
-            <ReviewQueue />
-            <TeamWorkloadWidget />
-            <OnboardingOverview />
+            <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
+            <ErrorBoundary level="widget"><ReviewQueue /></ErrorBoundary>
+            <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
+            <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>
             {clientGrid()}
             <div className="mt-6">
-              <PostingCalendar />
+              <ErrorBoundary level="section"><PostingCalendar /></ErrorBoundary>
             </div>
             <div className="mt-6">
-              <MyTasks />
+              <ErrorBoundary level="section"><MyTasks /></ErrorBoundary>
             </div>
           </>
         )}
 
         {role === "cutter" && (
           <>
-            <CutterFocusBoard />
-            <PostingCalendar filterUserId={user?.id} />
+            <ErrorBoundary level="section"><CutterFocusBoard /></ErrorBoundary>
+            <ErrorBoundary level="section"><PostingCalendar filterUserId={user?.id} /></ErrorBoundary>
             <div className="mt-6">
               {clientGrid(true)}
             </div>
