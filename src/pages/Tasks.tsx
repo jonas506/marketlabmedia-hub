@@ -87,6 +87,12 @@ const GROUP_META: Record<GroupKey, { label: string; color: string; icon: any }> 
   no_deadline: { label: "Ohne Deadline", color: "text-muted-foreground/50", icon: CalendarIcon },
 };
 
+const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
+
+function sortByPriority(tasks: Task[]): Task[] {
+  return tasks.sort((a, b) => (PRIORITY_ORDER[a.priority || "normal"] ?? 2) - (PRIORITY_ORDER[b.priority || "normal"] ?? 2));
+}
+
 function groupTasks(tasks: Task[], todayStr: string): Record<GroupKey, Task[]> {
   const today = startOfDay(new Date(todayStr));
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
@@ -99,6 +105,10 @@ function groupTasks(tasks: Task[], todayStr: string): Record<GroupKey, Task[]> {
     else if (isBefore(d, weekEnd) || d.getTime() === weekEnd.getTime()) groups.week.push(t);
     else groups.later.push(t);
   });
+  // Sort each group by priority (urgent first)
+  for (const key of Object.keys(groups) as GroupKey[]) {
+    sortByPriority(groups[key]);
+  }
   return groups;
 }
 
