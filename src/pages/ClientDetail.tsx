@@ -268,6 +268,10 @@ const ClientDetail = () => {
               <ClipboardList className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Aufgaben</span>
             </TabsTrigger>
+            <TabsTrigger value="checklists" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <ClipboardList className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Checklisten</span>
+            </TabsTrigger>
             <TabsTrigger value="strategy" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <Presentation className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Strategie</span>
