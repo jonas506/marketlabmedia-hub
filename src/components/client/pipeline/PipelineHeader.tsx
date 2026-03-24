@@ -16,6 +16,7 @@ interface PipelineHeaderProps {
   onOpenCaptionStudio: () => void;
   canEdit: boolean;
   hasPieces: boolean;
+  noDeadlineCount?: number;
 }
 
 const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
