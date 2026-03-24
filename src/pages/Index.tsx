@@ -87,6 +87,7 @@ const Dashboard = () => {
             <WeeklyKPIs />
             <ReviewQueue />
             <TeamWorkloadWidget />
+            <OnboardingOverview />
             {clientGrid()}
             <div className="mt-6">
               <PostingCalendar />

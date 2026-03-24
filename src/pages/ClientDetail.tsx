@@ -293,6 +293,9 @@ const ClientDetail = () => {
           <TabsContent value="tasks" className="mt-4">
             <TaskList clientId={client.id} canEdit={canEdit} />
           </TabsContent>
+          <TabsContent value="checklists" className="mt-4">
+            <ClientChecklists clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
           <TabsContent value="inspo" className="mt-4">
             <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
           </TabsContent>
