@@ -13,6 +13,7 @@ import CutterFocusBoard from "@/components/CutterFocusBoard";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
+import OnboardingOverview from "@/components/OnboardingOverview";
 
 const Dashboard = () => {
   const { data: clients, isLoading } = useClients();
