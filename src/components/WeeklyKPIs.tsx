@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const WeeklyKPIs = () => {
   const { role } = useAuth();
-  if (role !== "admin") return null;
+  if (role !== "admin" && role !== "head_of_content") return null;
 
   const { data: kpis } = useQuery({
     queryKey: ["weekly-kpis"],
