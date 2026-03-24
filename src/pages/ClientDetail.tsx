@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -19,11 +19,13 @@ import StorySequences from "@/components/client/StorySequences";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +34,47 @@ const ClientDetail = () => {
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [copied, setCopied] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const canEdit = role === "admin" || role === "head_of_content" || role === "cutter";
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !id) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (file.type !== "application/pdf") {
+          toast.error(`${file.name} ist keine PDF-Datei`);
+          continue;
+        }
+        const filePath = `${id}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabaseClient.storage
+          .from("client-documents")
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabaseClient.storage
+          .from("client-documents")
+          .getPublicUrl(filePath);
+
+        await supabase.from("client_knowledge").insert({
+          client_id: id,
+          title: file.name.replace(/\.pdf$/i, ""),
+          content: `PDF-Dokument: ${file.name}`,
+          category: "sonstiges",
+          source_url: publicUrl,
+        });
+      }
+      toast.success("PDF(s) hochgeladen");
+    } catch (err: any) {
+      toast.error(err.message || "Upload fehlgeschlagen");
+    } finally {
+      setUploading(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = "";
+    }
+  };
 
   const { data: client, isLoading } = useQuery({
     queryKey: ["client", id],
@@ -112,6 +153,26 @@ const ClientDetail = () => {
             <h1 className="font-display text-lg font-bold tracking-tight truncate">{client.name}</h1>
           </div>
           <div className="flex items-center gap-1.5">
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf"
+              multiple
+              className="hidden"
+              onChange={handlePdfUpload}
+            />
+            {canEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
+                disabled={uploading}
+                onClick={() => pdfInputRef.current?.click()}
+              >
+                {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                PDF
+              </Button>
+            )}
             {client.website_url && (
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground" asChild>
                 <a href={client.website_url} target="_blank" rel="noopener noreferrer">
