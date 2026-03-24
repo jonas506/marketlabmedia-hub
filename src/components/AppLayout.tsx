@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
@@ -15,6 +15,7 @@ import NotificationBell from "@/components/NotificationBell";
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
+  { to: "/activity", label: "Aktivität", icon: Activity, roles: ["admin", "head_of_content"] },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },

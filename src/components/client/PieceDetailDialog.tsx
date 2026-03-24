@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, Copy, Check, Loader2, Wand2, Save, BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
+import PieceActivityLog from "@/components/client/PieceActivityLog";
 
 interface PieceDetailDialogProps {
   open: boolean;
@@ -305,6 +306,13 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
                 )}
               </div>
             </div>
+
+            {/* Activity Log */}
+            {piece && (
+              <div className="border-t border-border pt-3">
+                <PieceActivityLog entityType="content_piece" entityId={piece.id} />
+              </div>
+            )}
           </div>
         </ScrollArea>
       </DialogContent>

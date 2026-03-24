@@ -15,11 +15,12 @@ import TaskList from "@/components/client/TaskList";
 import InspirationBoard from "@/components/client/InspirationBoard";
 import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
 import StorySequences from "@/components/client/StorySequences";
+import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -278,6 +279,10 @@ const ClientDetail = () => {
               <Globe className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Landing Pages</span>
             </TabsTrigger>
+            <TabsTrigger value="activity" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Verlauf</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="mt-4">
@@ -294,6 +299,9 @@ const ClientDetail = () => {
           </TabsContent>
           <TabsContent value="strategy" className="mt-4">
             <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
+          </TabsContent>
+          <TabsContent value="activity" className="mt-4">
+            <ClientActivityTimeline clientId={client.id} />
           </TabsContent>
         </Tabs>
       </motion.div>
