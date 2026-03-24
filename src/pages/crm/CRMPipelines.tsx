@@ -10,6 +10,7 @@ import { Plus, ExternalLink, GripVertical } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 interface Pipeline { id: string; name: string; }
 interface Stage { id: string; pipeline_id: string; name: string; color: string; sort_order: number; }
