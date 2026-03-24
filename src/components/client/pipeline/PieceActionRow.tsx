@@ -77,26 +77,6 @@ const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
         </SelectContent>
       </Select>
 
-      {/* Target month — from done/approved onwards */}
-      {isLatePhase && (
-        <Select
-          value={`${piece.target_month}-${piece.target_year}`}
-          onValueChange={(v) => {
-            const [m, y] = v.split("-").map(Number);
-            onUpdatePiece(piece.id, { target_month: m, target_year: y });
-          }}
-          disabled={!canEdit}
-        >
-          <SelectTrigger className="h-6 sm:h-7 w-20 sm:w-24 text-[10px] sm:text-xs font-mono border-0 bg-muted/60 px-2 rounded-md">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {monthOptions.map((o) => (
-              <SelectItem key={`${o.month}-${o.year}`} value={`${o.month}-${o.year}`}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
 
       <div className="flex-1" />
 
