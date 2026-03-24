@@ -59,6 +59,7 @@ const ContractTimeline = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         <div className="mb-6">
           <h1 className="text-xl font-display font-bold tracking-tight">Vertragslaufzeiten</h1>
