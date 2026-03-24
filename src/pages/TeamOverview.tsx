@@ -187,68 +187,69 @@ const TeamOverview = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="rounded-xl border border-border bg-card p-5"
+              className="rounded-xl border border-border bg-card p-3 sm:p-5"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center h-9 w-9 rounded-full bg-gradient-to-br from-primary to-secondary text-[11px] font-bold text-white">
-                    {member.name?.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
-                  </div>
-                  <div>
-                    <h3 className="font-body text-sm font-medium">{member.name}</h3>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-[10px] font-mono px-2 py-0">
-                        {ROLE_LABELS[member.role] || member.role}
-                      </Badge>
-                      <span className="font-mono text-[10px] text-muted-foreground">{member.email}</span>
-                    </div>
+              {/* Name + Role */}
+              <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                <div className="flex items-center justify-center h-9 w-9 rounded-full bg-gradient-to-br from-primary to-secondary text-[11px] font-bold text-white shrink-0">
+                  {member.name?.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-body text-sm font-medium truncate">{member.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-[10px] font-mono px-2 py-0">
+                      {ROLE_LABELS[member.role] || member.role}
+                    </Badge>
+                    <span className="font-mono text-[10px] text-muted-foreground truncate hidden sm:inline">{member.email}</span>
                   </div>
                 </div>
-                  <div className="flex items-center gap-3">
-                    {member.openTasks > 0 && (
-                      <div className="text-center">
-                        <span className="font-mono text-xl font-bold text-primary">{member.openTasks}</span>
-                        <p className="text-[9px] font-mono text-muted-foreground">Aufgaben</p>
-                      </div>
-                    )}
-                    {member.editingCount > 0 && (
-                      <div className="text-center">
-                        <span className="font-mono text-xl font-bold text-status-working">{member.editingCount}</span>
-                        <p className="text-[9px] font-mono text-muted-foreground">Im Schnitt</p>
-                      </div>
-                    )}
-                  {member.reviewCount > 0 && (
-                    <div className="text-center">
-                      <span className="font-mono text-xl font-bold text-status-review">{member.reviewCount}</span>
-                      <p className="text-[9px] font-mono text-muted-foreground">Freigabe</p>
-                    </div>
-                  )}
-                  <div className="text-center">
-                    <span className="font-mono text-xl font-bold">{member.totalPieces}</span>
-                    <p className="text-[9px] font-mono text-muted-foreground">Gesamt</p>
+                {isAdmin && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => {
+                        setEditMember({ user_id: member.user_id, name: member.name || "", role: member.role });
+                        setEditRole(member.role);
+                        setEditName(member.name || "");
+                      }}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
+                      title="Bearbeiten"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(member.user_id, member.name || "Mitglied")}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                      title="Entfernen"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  {isAdmin && (
-                    <div className="flex items-center gap-1 ml-2">
-                      <button
-                        onClick={() => {
-                          setEditMember({ user_id: member.user_id, name: member.name || "", role: member.role });
-                          setEditRole(member.role);
-                          setEditName(member.name || "");
-                        }}
-                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
-                        title="Bearbeiten"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(member.user_id, member.name || "Mitglied")}
-                        className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-                        title="Entfernen"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  )}
+                )}
+              </div>
+
+              {/* Stats row */}
+              <div className="flex items-center gap-3 sm:gap-4 flex-wrap mb-3 sm:mb-4">
+                {member.openTasks > 0 && (
+                  <div className="text-center">
+                    <span className="font-mono text-lg sm:text-xl font-bold text-primary">{member.openTasks}</span>
+                    <p className="text-[9px] font-mono text-muted-foreground">Aufgaben</p>
+                  </div>
+                )}
+                {member.editingCount > 0 && (
+                  <div className="text-center">
+                    <span className="font-mono text-lg sm:text-xl font-bold text-status-working">{member.editingCount}</span>
+                    <p className="text-[9px] font-mono text-muted-foreground">Im Schnitt</p>
+                  </div>
+                )}
+                {member.reviewCount > 0 && (
+                  <div className="text-center">
+                    <span className="font-mono text-lg sm:text-xl font-bold text-status-review">{member.reviewCount}</span>
+                    <p className="text-[9px] font-mono text-muted-foreground">Freigabe</p>
+                  </div>
+                )}
+                <div className="text-center">
+                  <span className="font-mono text-lg sm:text-xl font-bold">{member.totalPieces}</span>
+                  <p className="text-[9px] font-mono text-muted-foreground">Gesamt</p>
                 </div>
               </div>
 

@@ -180,11 +180,12 @@ const Checklists = () => {
                         className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <span
-                        className={`font-body text-sm flex-1 transition-all ${
+                        className={cn(
+                          "font-body text-sm flex-1 transition-all truncate",
                           item.is_completed
                             ? "line-through text-muted-foreground/50"
                             : "text-foreground"
-                        }`}
+                        )}
                       >
                         {item.label}
                       </span>
