@@ -16,6 +16,7 @@ const lifecycleConfig: Record<LifecyclePhase, { label: string; className: string
 
 interface ClientCardProps {
   client: ClientDashboardData;
+  compact?: boolean;
 }
 
 const KontingentBar: React.FC<{ label: string; posted: number; target: number; color: string }> = ({
