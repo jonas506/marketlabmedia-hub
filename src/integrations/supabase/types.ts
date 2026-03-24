@@ -2117,16 +2117,52 @@ export type Database = {
         }
         Relationships: []
       }
+      task_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string | null
           client_id: string
           created_at: string | null
+          created_by: string | null
           deadline: string | null
+          description: string | null
+          due_time: string | null
           id: string
           is_completed: boolean | null
           notes: string | null
           priority: string | null
+          sort_order: number | null
           status: string | null
           tag: string | null
           title: string
@@ -2135,11 +2171,15 @@ export type Database = {
           assigned_to?: string | null
           client_id: string
           created_at?: string | null
+          created_by?: string | null
           deadline?: string | null
+          description?: string | null
+          due_time?: string | null
           id?: string
           is_completed?: boolean | null
           notes?: string | null
           priority?: string | null
+          sort_order?: number | null
           status?: string | null
           tag?: string | null
           title: string
@@ -2148,11 +2188,15 @@ export type Database = {
           assigned_to?: string | null
           client_id?: string
           created_at?: string | null
+          created_by?: string | null
           deadline?: string | null
+          description?: string | null
+          due_time?: string | null
           id?: string
           is_completed?: boolean | null
           notes?: string | null
           priority?: string | null
+          sort_order?: number | null
           status?: string | null
           tag?: string | null
           title?: string
