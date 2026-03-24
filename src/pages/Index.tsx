@@ -101,8 +101,8 @@ const Dashboard = () => {
 
         {role === "cutter" && (
           <>
-            <CutterFocusBoard />
-            <PostingCalendar filterUserId={user?.id} />
+            <ErrorBoundary level="section"><CutterFocusBoard /></ErrorBoundary>
+            <ErrorBoundary level="section"><PostingCalendar filterUserId={user?.id} /></ErrorBoundary>
             <div className="mt-6">
               {clientGrid(true)}
             </div>
