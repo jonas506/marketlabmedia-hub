@@ -29,6 +29,7 @@ interface Piece {
   client_comment: string | null;
   script_text?: string | null;
   slide_images?: string[] | null;
+  revision_count?: number;
 }
 
 interface ClientInfo {
