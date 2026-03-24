@@ -118,6 +118,7 @@ const ActivityPage = () => {
 
   return (
     <AppLayout>
+      <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         <div className="mb-5">
           <h1 className="text-lg font-display font-bold tracking-tight flex items-center gap-2">
