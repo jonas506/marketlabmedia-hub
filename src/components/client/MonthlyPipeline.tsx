@@ -1240,6 +1240,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       <MessageSquare className="h-3.5 w-3.5 text-[hsl(var(--runway-yellow))] shrink-0 mt-0.5" />
                       <span className="text-xs text-[hsl(var(--runway-yellow))] font-body bg-[hsl(var(--runway-yellow))]/10 rounded px-2 py-1">
                         Kundenfeedback: {piece.client_comment}
+                        {piece.updated_at && (
+                          <span className="ml-2 text-[10px] opacity-60">({relativeTime(piece.updated_at)})</span>
+                        )}
                       </span>
                       {canEdit && (
                         <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] text-muted-foreground"
