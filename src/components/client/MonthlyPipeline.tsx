@@ -223,6 +223,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     for (let i = 0; i < phases.length - 1; i++) {
       map[phases[i].key] = phases[i + 1].key;
     }
+    // Feedback loops back to review, not forward to approved
+    map["feedback"] = "review";
     return map;
   }, [config]);
 
