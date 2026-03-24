@@ -69,16 +69,16 @@ const Dashboard = () => {
 
         {role === "admin" && (
           <>
-            <WeeklyKPIs />
-            <TeamWorkloadWidget />
-            <BottleneckAlert />
-            <OnboardingOverview />
+            <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
+            <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
+            <ErrorBoundary level="widget"><BottleneckAlert /></ErrorBoundary>
+            <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>
             {clientGrid()}
             <div className="mt-6">
-              <PostingCalendar />
+              <ErrorBoundary level="section"><PostingCalendar /></ErrorBoundary>
             </div>
             <div className="mt-6">
-              <MyTasks />
+              <ErrorBoundary level="section"><MyTasks /></ErrorBoundary>
             </div>
           </>
         )}
