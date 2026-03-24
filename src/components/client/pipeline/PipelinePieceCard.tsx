@@ -194,6 +194,15 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
         />
       )}
 
+      {/* Deadline + Priority controls for non-editing active phases */}
+      {["script", "filmed", "review"].includes(activePhase) && (
+        <PieceDeadlinePriorityRow
+          piece={piece}
+          canEdit={canEdit}
+          onUpdatePiece={onUpdatePiece}
+        />
+      )}
+
       {/* Bottom action row — link + caption + posting date */}
       {isLatePhase && (
         <PieceLatePhaseRow
