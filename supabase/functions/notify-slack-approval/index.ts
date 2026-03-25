@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
 
     const { data: piece, error: pieceError } = await supabase
       .from("content_pieces")
-      .select("title, type, client_id, clients(name)")
+      .select("title, type, client_id, client_comment, clients(name)")
       .eq("id", content_piece_id)
       .single();
 
