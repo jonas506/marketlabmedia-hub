@@ -93,20 +93,26 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
   };
 
   const saveFields = async (fields: Record<string, any>) => {
-    for (const [key, val] of Object.entries(fields)) {
-      const oldVal = client[key];
-      if (String(oldVal ?? "") !== String(val ?? "")) {
-        await supabase.from("contract_changes").insert({
-          client_id: client.id, field_changed: key,
-          old_value: String(oldVal ?? ""), new_value: String(val ?? ""),
-          changed_by: user?.id,
-        });
+    try {
+      for (const [key, val] of Object.entries(fields)) {
+        const oldVal = client[key];
+        if (String(oldVal ?? "") !== String(val ?? "")) {
+          await supabase.from("contract_changes").insert({
+            client_id: client.id, field_changed: key,
+            old_value: String(oldVal ?? ""), new_value: String(val ?? ""),
+            changed_by: user?.id,
+          });
+        }
       }
+      const { error } = await supabase.from("clients").update(fields).eq("id", client.id);
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["client", client.id] });
+      qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
+      qc.invalidateQueries({ queryKey: ["contingent-extras", client.id] });
+      setEditing(null);
+    } catch (err: any) {
+      toast.error("Fehler beim Speichern: " + (err.message || "Unbekannt"));
     }
-    await supabase.from("clients").update(fields).eq("id", client.id);
-    qc.invalidateQueries({ queryKey: ["client", client.id] });
-    qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
-    setEditing(null);
   };
 
   const toggleStatus = async () => {
@@ -466,7 +472,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
 // Helper components
 const Section: React.FC<{
   title: string; editing: boolean; canEdit: boolean; children: React.ReactNode;
-  onEdit: () => void; onSave: () => void; onCancel: () => void; extra?: React.ReactNode;
+  onEdit: () => void; onSave: () => void | Promise<void>; onCancel: () => void; extra?: React.ReactNode;
 }> = ({ title, editing, canEdit, children, onEdit, onSave, onCancel, extra }) => (
   <div>
     <div className="flex items-center justify-between mb-3">
