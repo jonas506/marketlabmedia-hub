@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { content_piece_id } = await req.json();
+    const { content_piece_id, phase } = await req.json();
 
     if (!content_piece_id) {
       return new Response(JSON.stringify({ error: "content_piece_id required" }), {
@@ -42,6 +42,8 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const isFeedback = phase === "feedback";
 
     // Fetch piece + client info
     const supabase = createClient(
@@ -51,7 +53,7 @@ Deno.serve(async (req) => {
 
     const { data: piece, error: pieceError } = await supabase
       .from("content_pieces")
-      .select("title, type, client_id, clients(name)")
+      .select("title, type, client_id, client_comment, clients(name)")
       .eq("id", content_piece_id)
       .single();
 
@@ -63,23 +65,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create a posting task for Maren
-    const MAREN_USER_ID = "f2b9549d-016d-4d7e-a2f9-800f38355500";
-    const clientName_ = (piece as any).clients?.name || "Unbekannt";
-    const pieceTitle = piece.title || "Ohne Titel";
-    const typeMap: Record<string, string> = { reel: "Reel", carousel: "Karussell", ad: "Ad", youtube_longform: "YouTube" };
-    const typeName = typeMap[piece.type] || piece.type;
+    // Create a posting task for Maren (only on approval, not feedback)
+    if (!isFeedback) {
+      const MAREN_USER_ID = "f2b9549d-016d-4d7e-a2f9-800f38355500";
+      const pieceTitle = piece.title || "Ohne Titel";
+      const typeMap: Record<string, string> = { reel: "Reel", carousel: "Karussell", ad: "Ad", youtube_longform: "YouTube" };
+      const typeName = typeMap[piece.type] || piece.type;
 
-    const { error: taskError } = await supabase.from("tasks").insert({
-      client_id: piece.client_id,
-      assigned_to: MAREN_USER_ID,
-      title: `${typeName} „${pieceTitle}" posten`,
-      tag: "Posten",
-      priority: "normal",
-      status: "offen",
-    });
-    if (taskError) {
-      console.error("Failed to create posting task:", taskError);
+      const { error: taskError } = await supabase.from("tasks").insert({
+        client_id: piece.client_id,
+        assigned_to: MAREN_USER_ID,
+        title: `${typeName} „${pieceTitle}" posten`,
+        tag: "Posten",
+        priority: "normal",
+        status: "offen",
+      });
+      if (taskError) {
+        console.error("Failed to create posting task:", taskError);
+      }
     }
 
     const clientName = (piece as any).clients?.name || "Unbekannt";
@@ -91,6 +94,7 @@ Deno.serve(async (req) => {
     };
     const typeLabel = typeLabels[piece.type] || piece.type;
     const title = piece.title || "Ohne Titel";
+    const clientComment = piece.client_comment || "Keine Details";
 
     // Find channel
     const slackHeaders = {
@@ -129,18 +133,25 @@ Deno.serve(async (req) => {
     }
 
     // Post message
+    const slackText = isFeedback
+      ? `🔄 Überarbeitung nötig: ${typeLabel} „${title}" für *${clientName}*`
+      : `✅ Content freigegeben: ${typeLabel} „${title}" für *${clientName}*`;
+    const slackBlock = isFeedback
+      ? `🔄 *Überarbeitung nötig*\n\n${typeLabel} *„${title}"*\nKunde: *${clientName}*\n\n> ${clientComment}`
+      : `✅ *Content freigegeben*\n\n${typeLabel} *„${title}"*\nKunde: *${clientName}*`;
+
     const msgRes = await fetch(`${GATEWAY_URL}/chat.postMessage`, {
       method: "POST",
       headers: slackHeaders,
       body: JSON.stringify({
         channel: channelId,
-        text: `✅ Content freigegeben: ${typeLabel} „${title}" für *${clientName}*`,
+        text: slackText,
         blocks: [
           {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `✅ *Content freigegeben*\n\n${typeLabel} *„${title}"*\nKunde: *${clientName}*`,
+              text: slackBlock,
             },
           },
         ],
