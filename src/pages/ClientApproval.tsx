@@ -125,6 +125,7 @@ const ClientApproval = () => {
   const [confirmApprove, setConfirmApprove] = useState(false);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pendingCommentRef = useRef<{ pieceId: string; text: string; timestamp: number | null } | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!token || token === ":token") {
@@ -161,8 +162,29 @@ const ClientApproval = () => {
       return a.timestamp_seconds - b.timestamp_seconds;
     });
 
+  const flushPendingComment = useCallback(async () => {
+    const pending = pendingCommentRef.current;
+    if (!pending || !pending.text.trim()) return;
+    pendingCommentRef.current = null;
+    try {
+      const { data, error } = await supabase.rpc("add_client_piece_comment", {
+        _token: token,
+        _piece_id: pending.pieceId,
+        _comment: pending.text.trim(),
+        _timestamp_seconds: pending.timestamp,
+      });
+      if (error) throw error;
+      setComments((prev) => [...prev, data as unknown as TimestampComment]);
+      setCommentText("");
+      setCommentTimestamp(null);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }, [token]);
+
   const handleAddComment = async (pieceId: string) => {
     if (!commentText.trim()) return;
+    pendingCommentRef.current = null;
     setAddingComment(true);
     try {
       const { data, error } = await supabase.rpc("add_client_piece_comment", {
@@ -332,6 +354,8 @@ const ClientApproval = () => {
   const allPreviewLinks = (currentPiece?.preview_link ?? "").split("\n").map(l => l.trim()).filter(Boolean);
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
   const isRevisionBlocked = (currentPiece?.revision_count ?? 0) >= 2;
+  const isTyping = showFeedback && commentText.trim().length > 0;
+  const hasEmbedPreview = !!currentEmbed;
 
   return (
     <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -412,14 +436,14 @@ const ClientApproval = () => {
 
                 <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1">
                   <button
-                    onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
+                    onClick={() => { flushPendingComment(); setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                     disabled={currentIndex === 0}
                     className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => { setCurrentIndex(Math.min(pieces.length - 1, currentIndex + 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
+                    onClick={() => { flushPendingComment(); setCurrentIndex(Math.min(pieces.length - 1, currentIndex + 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                     disabled={currentIndex === pieces.length - 1}
                     className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
                   >
@@ -469,7 +493,7 @@ const ClientApproval = () => {
                         </div>
                       </div>
 
-                      {currentPreviewLink && (
+                      {allPreviewLinks.length > 1 && currentPreviewLink && (
                         <div className="border-t border-white/[0.05] px-3 py-3 sm:px-4">
                           <a
                             href={currentPreviewLink}
@@ -478,7 +502,7 @@ const ClientApproval = () => {
                             className="flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3 py-3 text-sm font-medium text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white/80"
                           >
                             <ExternalLink className="h-4 w-4" />
-                            {isMobile ? "Preview groß öffnen" : "Preview in neuem Tab öffnen"}
+                            Alle Varianten ansehen
                           </a>
                         </div>
                       )}
@@ -511,7 +535,7 @@ const ClientApproval = () => {
                   {pieces.map((_, i) => (
                     <button
                       key={i}
-                      onClick={() => { setCurrentIndex(i); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
+                      onClick={() => { flushPendingComment(); setCurrentIndex(i); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
                         i === currentIndex ? "w-7 bg-[#0083F7]" : "w-1.5 bg-white/10 hover:bg-white/20"
                       }`}
@@ -556,7 +580,7 @@ const ClientApproval = () => {
                     </motion.div>
                   )}
 
-                  {allPreviewLinks.length > 0 && (
+                  {allPreviewLinks.length > 1 && (
                     <div className="mb-3 space-y-1.5">
                       <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest px-1">
                         {allPreviewLinks.length === 1 ? "Preview-Link" : "Preview-Links"}
@@ -643,11 +667,23 @@ const ClientApproval = () => {
                             <div className="flex gap-2">
                               <Textarea
                                 value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
+                                onChange={(e) => {
+                                  setCommentText(e.target.value);
+                                  if (currentPiece && e.target.value.trim()) {
+                                    pendingCommentRef.current = { pieceId: currentPiece.id, text: e.target.value, timestamp: commentTimestamp };
+                                  } else {
+                                    pendingCommentRef.current = null;
+                                  }
+                                }}
                                 placeholder="Was soll geändert werden?"
                                 className="min-h-[44px] max-h-[120px] text-sm bg-transparent border-0 text-white/80 placeholder:text-white/15 resize-none p-0 focus-visible:ring-0 shadow-none"
                                 rows={2}
                                 autoFocus
+                                onBlur={() => {
+                                  if (commentText.trim() && currentPiece) {
+                                    handleAddComment(currentPiece.id);
+                                  }
+                                }}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
@@ -733,7 +769,13 @@ const ClientApproval = () => {
                   {!confirmApprove && (
                     <>
                       <div className="flex gap-2">
-                        {currentComments.length > 0 && !isRevisionBlocked ? (
+                        {isTyping ? (
+                          /* While typing: only show hint to submit */
+                          <div className="flex-1 flex items-center justify-center h-12 sm:h-[52px] rounded-[20px] border border-dashed border-white/[0.06] text-white/20 text-xs gap-2">
+                            <Send className="h-3.5 w-3.5" />
+                            Kommentar wird automatisch gespeichert
+                          </div>
+                        ) : currentComments.length > 0 && !isRevisionBlocked ? (
                           <>
                             {/* When comments exist: Überarbeiten is primary/big, Freigeben is secondary/small */}
                             <Button
