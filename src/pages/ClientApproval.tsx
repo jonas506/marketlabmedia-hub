@@ -493,7 +493,7 @@ const ClientApproval = () => {
                         </div>
                       </div>
 
-                      {currentPreviewLink && (
+                      {allPreviewLinks.length > 1 && currentPreviewLink && (
                         <div className="border-t border-white/[0.05] px-3 py-3 sm:px-4">
                           <a
                             href={currentPreviewLink}
@@ -502,7 +502,7 @@ const ClientApproval = () => {
                             className="flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3 py-3 text-sm font-medium text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white/80"
                           >
                             <ExternalLink className="h-4 w-4" />
-                            {isMobile ? "Preview groß öffnen" : "Preview in neuem Tab öffnen"}
+                            Alle Varianten ansehen
                           </a>
                         </div>
                       )}
