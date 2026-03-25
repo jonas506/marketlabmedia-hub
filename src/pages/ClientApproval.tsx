@@ -162,8 +162,29 @@ const ClientApproval = () => {
       return a.timestamp_seconds - b.timestamp_seconds;
     });
 
+  const flushPendingComment = useCallback(async () => {
+    const pending = pendingCommentRef.current;
+    if (!pending || !pending.text.trim()) return;
+    pendingCommentRef.current = null;
+    try {
+      const { data, error } = await supabase.rpc("add_client_piece_comment", {
+        _token: token,
+        _piece_id: pending.pieceId,
+        _comment: pending.text.trim(),
+        _timestamp_seconds: pending.timestamp,
+      });
+      if (error) throw error;
+      setComments((prev) => [...prev, data as unknown as TimestampComment]);
+      setCommentText("");
+      setCommentTimestamp(null);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  }, [token]);
+
   const handleAddComment = async (pieceId: string) => {
     if (!commentText.trim()) return;
+    pendingCommentRef.current = null;
     setAddingComment(true);
     try {
       const { data, error } = await supabase.rpc("add_client_piece_comment", {
