@@ -122,6 +122,7 @@ const ClientApproval = () => {
   const [approvedCount, setApprovedCount] = useState(0);
   const [bulkApproving, setBulkApproving] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [confirmApprove, setConfirmApprove] = useState(false);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -411,14 +412,14 @@ const ClientApproval = () => {
 
                 <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1">
                   <button
-                    onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
+                    onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                     disabled={currentIndex === 0}
                     className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => { setCurrentIndex(Math.min(pieces.length - 1, currentIndex + 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
+                    onClick={() => { setCurrentIndex(Math.min(pieces.length - 1, currentIndex + 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                     disabled={currentIndex === pieces.length - 1}
                     className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
                   >
@@ -510,7 +511,7 @@ const ClientApproval = () => {
                   {pieces.map((_, i) => (
                     <button
                       key={i}
-                      onClick={() => { setCurrentIndex(i); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
+                      onClick={() => { setCurrentIndex(i); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
                         i === currentIndex ? "w-7 bg-[#0083F7]" : "w-1.5 bg-white/10 hover:bg-white/20"
                       }`}
@@ -690,44 +691,100 @@ const ClientApproval = () => {
             <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
               <div className="max-w-3xl mx-auto px-4 sm:px-6">
                 <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
-                  <div className="flex gap-2">
-                    {currentComments.length > 0 && !isRevisionBlocked && (
-                      <Button
-                        variant="outline"
-                        className="min-w-[7.5rem] gap-1.5 sm:gap-2 border-white/[0.08] text-white/60 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-12 sm:h-[52px] rounded-[20px] px-3 sm:px-5 font-medium text-sm"
-                        onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
-                        disabled={isCurrentLoading}
+                  {/* Confirm approve dialog when comments exist */}
+                  <AnimatePresence>
+                    {confirmApprove && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        className="mb-2 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3"
                       >
-                        {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
-                        <span className="hidden sm:inline">Überarbeiten</span>
-                        <span className="sm:hidden">Zurück</span>
-                        <span className="text-xs opacity-50">({currentComments.length})</span>
-                      </Button>
+                        <div className="flex items-start gap-2 mb-3">
+                          <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                          <p className="text-xs text-amber-200/80">
+                            Du hast {currentComments.length} Kommentar{currentComments.length > 1 ? "e" : ""} geschrieben. Trotzdem freigeben? Kommentare werden gelöscht.
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            className="flex-1 h-10 rounded-xl border-white/10 text-white/60 text-xs"
+                            onClick={() => setConfirmApprove(false)}
+                          >
+                            Abbrechen
+                          </Button>
+                          <Button
+                            className="flex-1 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
+                            onClick={() => {
+                              setConfirmApprove(false);
+                              currentPiece && handleAction(currentPiece.id, "approve");
+                            }}
+                            disabled={isCurrentLoading}
+                          >
+                            {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                            Ja, freigeben
+                          </Button>
+                        </div>
+                      </motion.div>
                     )}
+                  </AnimatePresence>
 
-                    <Button
-                      className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-12 sm:h-[52px] rounded-[20px] shadow-xl shadow-emerald-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
-                      onClick={() => currentPiece && handleAction(currentPiece.id, "approve")}
-                      disabled={isCurrentLoading}
-                    >
-                      {isCurrentLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
-                      Freigeben
-                    </Button>
-                  </div>
+                  {!confirmApprove && (
+                    <>
+                      <div className="flex gap-2">
+                        {currentComments.length > 0 && !isRevisionBlocked ? (
+                          <>
+                            {/* When comments exist: Überarbeiten is primary/big, Freigeben is secondary/small */}
+                            <Button
+                              className="flex-1 gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold h-12 sm:h-[52px] rounded-[20px] shadow-xl shadow-amber-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
+                              onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                              disabled={isCurrentLoading}
+                            >
+                              {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                              Überarbeiten
+                              <span className="text-xs opacity-60">({currentComments.length})</span>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 h-12 sm:h-[52px] rounded-[20px] px-3 sm:px-4 font-medium text-xs sm:text-sm"
+                              onClick={() => {
+                                setConfirmApprove(true);
+                              }}
+                              disabled={isCurrentLoading}
+                            >
+                              <Check className="h-4 w-4" />
+                              Freigeben
+                            </Button>
+                          </>
+                        ) : (
+                          /* No comments: Freigeben is primary/big */
+                          <Button
+                            className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-12 sm:h-[52px] rounded-[20px] shadow-xl shadow-emerald-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
+                            onClick={() => currentPiece && handleAction(currentPiece.id, "approve")}
+                            disabled={isCurrentLoading}
+                          >
+                            {isCurrentLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
+                            Freigeben
+                          </Button>
+                        )}
+                      </div>
 
-                  {pieces.length > 1 && (
-                    <button
-                      onClick={handleBulkApprove}
-                      disabled={bulkApproving}
-                      className="w-full mt-1.5 py-2.5 text-center text-xs text-white/25 hover:text-white/45 transition-colors flex items-center justify-center gap-1.5 active:scale-[0.98]"
-                    >
-                      {bulkApproving ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <CheckCheck className="h-3.5 w-3.5" />
+                      {pieces.length > 1 && (
+                        <button
+                          onClick={handleBulkApprove}
+                          disabled={bulkApproving}
+                          className="w-full mt-1.5 py-2.5 text-center text-xs text-white/25 hover:text-white/45 transition-colors flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                        >
+                          {bulkApproving ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <CheckCheck className="h-3.5 w-3.5" />
+                          )}
+                          Alle {pieces.length} freigeben
+                        </button>
                       )}
-                      Alle {pieces.length} freigeben
-                    </button>
+                    </>
                   )}
                 </div>
               </div>
