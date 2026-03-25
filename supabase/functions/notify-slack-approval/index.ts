@@ -133,18 +133,25 @@ Deno.serve(async (req) => {
     }
 
     // Post message
+    const slackText = isFeedback
+      ? `🔄 Überarbeitung nötig: ${typeLabel} „${title}" für *${clientName}*`
+      : `✅ Content freigegeben: ${typeLabel} „${title}" für *${clientName}*`;
+    const slackBlock = isFeedback
+      ? `🔄 *Überarbeitung nötig*\n\n${typeLabel} *„${title}"*\nKunde: *${clientName}*\n\n> ${clientComment}`
+      : `✅ *Content freigegeben*\n\n${typeLabel} *„${title}"*\nKunde: *${clientName}*`;
+
     const msgRes = await fetch(`${GATEWAY_URL}/chat.postMessage`, {
       method: "POST",
       headers: slackHeaders,
       body: JSON.stringify({
         channel: channelId,
-        text: `✅ Content freigegeben: ${typeLabel} „${title}" für *${clientName}*`,
+        text: slackText,
         blocks: [
           {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `✅ *Content freigegeben*\n\n${typeLabel} *„${title}"*\nKunde: *${clientName}*`,
+              text: slackBlock,
             },
           },
         ],
