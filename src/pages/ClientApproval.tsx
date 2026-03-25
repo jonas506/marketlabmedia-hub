@@ -667,17 +667,30 @@ const ClientApproval = () => {
                             <div className="flex gap-2">
                               <Textarea
                                 value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
+                                onChange={(e) => {
+                                  setCommentText(e.target.value);
+                                  if (currentPiece && e.target.value.trim()) {
+                                    pendingCommentRef.current = { pieceId: currentPiece.id, text: e.target.value, timestamp: commentTimestamp };
+                                  } else {
+                                    pendingCommentRef.current = null;
+                                  }
+                                }}
                                 placeholder="Was soll geändert werden?"
                                 className="min-h-[44px] max-h-[120px] text-sm bg-transparent border-0 text-white/80 placeholder:text-white/15 resize-none p-0 focus-visible:ring-0 shadow-none"
                                 rows={2}
                                 autoFocus
+                                onBlur={() => {
+                                  if (commentText.trim() && currentPiece) {
+                                    handleAddComment(currentPiece.id);
+                                  }
+                                }}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
                                     handleAddComment(currentPiece.id);
                                   }
                                 }}
+                              />
                               />
                               <Button
                                 size="sm"
