@@ -511,7 +511,7 @@ const ClientApproval = () => {
                   {pieces.map((_, i) => (
                     <button
                       key={i}
-                      onClick={() => { setCurrentIndex(i); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
+                      onClick={() => { setCurrentIndex(i); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
                         i === currentIndex ? "w-7 bg-[#0083F7]" : "w-1.5 bg-white/10 hover:bg-white/20"
                       }`}
