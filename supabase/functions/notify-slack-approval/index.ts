@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { content_piece_id } = await req.json();
+    const { content_piece_id, phase } = await req.json();
 
     if (!content_piece_id) {
       return new Response(JSON.stringify({ error: "content_piece_id required" }), {
@@ -42,6 +42,8 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const isFeedback = phase === "feedback";
 
     // Fetch piece + client info
     const supabase = createClient(
