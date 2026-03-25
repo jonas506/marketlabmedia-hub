@@ -354,6 +354,8 @@ const ClientApproval = () => {
   const allPreviewLinks = (currentPiece?.preview_link ?? "").split("\n").map(l => l.trim()).filter(Boolean);
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
   const isRevisionBlocked = (currentPiece?.revision_count ?? 0) >= 2;
+  const isTyping = showFeedback && commentText.trim().length > 0;
+  const hasEmbedPreview = !!currentEmbed;
 
   return (
     <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
