@@ -412,7 +412,7 @@ const ClientApproval = () => {
 
                 <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1">
                   <button
-                    onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); }}
+                    onClick={() => { setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                     disabled={currentIndex === 0}
                     className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
                   >
