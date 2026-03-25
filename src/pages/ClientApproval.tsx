@@ -770,7 +770,13 @@ const ClientApproval = () => {
                   {!confirmApprove && (
                     <>
                       <div className="flex gap-2">
-                        {currentComments.length > 0 && !isRevisionBlocked ? (
+                        {isTyping ? (
+                          /* While typing: only show hint to submit */
+                          <div className="flex-1 flex items-center justify-center h-12 sm:h-[52px] rounded-[20px] border border-dashed border-white/[0.06] text-white/20 text-xs gap-2">
+                            <Send className="h-3.5 w-3.5" />
+                            Kommentar wird automatisch gespeichert
+                          </div>
+                        ) : currentComments.length > 0 && !isRevisionBlocked ? (
                           <>
                             {/* When comments exist: Überarbeiten is primary/big, Freigeben is secondary/small */}
                             <Button
