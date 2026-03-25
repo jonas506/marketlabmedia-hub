@@ -472,7 +472,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
 // Helper components
 const Section: React.FC<{
   title: string; editing: boolean; canEdit: boolean; children: React.ReactNode;
-  onEdit: () => void; onSave: () => void; onCancel: () => void; extra?: React.ReactNode;
+  onEdit: () => void; onSave: () => void | Promise<void>; onCancel: () => void; extra?: React.ReactNode;
 }> = ({ title, editing, canEdit, children, onEdit, onSave, onCancel, extra }) => (
   <div>
     <div className="flex items-center justify-between mb-3">
