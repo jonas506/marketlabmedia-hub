@@ -122,6 +122,7 @@ const ClientApproval = () => {
   const [approvedCount, setApprovedCount] = useState(0);
   const [bulkApproving, setBulkApproving] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [confirmApprove, setConfirmApprove] = useState(false);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
