@@ -65,23 +65,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create a posting task for Maren
-    const MAREN_USER_ID = "f2b9549d-016d-4d7e-a2f9-800f38355500";
-    const clientName_ = (piece as any).clients?.name || "Unbekannt";
-    const pieceTitle = piece.title || "Ohne Titel";
-    const typeMap: Record<string, string> = { reel: "Reel", carousel: "Karussell", ad: "Ad", youtube_longform: "YouTube" };
-    const typeName = typeMap[piece.type] || piece.type;
+    // Create a posting task for Maren (only on approval, not feedback)
+    if (!isFeedback) {
+      const MAREN_USER_ID = "f2b9549d-016d-4d7e-a2f9-800f38355500";
+      const pieceTitle = piece.title || "Ohne Titel";
+      const typeMap: Record<string, string> = { reel: "Reel", carousel: "Karussell", ad: "Ad", youtube_longform: "YouTube" };
+      const typeName = typeMap[piece.type] || piece.type;
 
-    const { error: taskError } = await supabase.from("tasks").insert({
-      client_id: piece.client_id,
-      assigned_to: MAREN_USER_ID,
-      title: `${typeName} „${pieceTitle}" posten`,
-      tag: "Posten",
-      priority: "normal",
-      status: "offen",
-    });
-    if (taskError) {
-      console.error("Failed to create posting task:", taskError);
+      const { error: taskError } = await supabase.from("tasks").insert({
+        client_id: piece.client_id,
+        assigned_to: MAREN_USER_ID,
+        title: `${typeName} „${pieceTitle}" posten`,
+        tag: "Posten",
+        priority: "normal",
+        status: "offen",
+      });
+      if (taskError) {
+        console.error("Failed to create posting task:", taskError);
+      }
     }
 
     const clientName = (piece as any).clients?.name || "Unbekannt";
@@ -93,6 +94,7 @@ Deno.serve(async (req) => {
     };
     const typeLabel = typeLabels[piece.type] || piece.type;
     const title = piece.title || "Ohne Titel";
+    const clientComment = piece.client_comment || "Keine Details";
 
     // Find channel
     const slackHeaders = {
