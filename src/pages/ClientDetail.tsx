@@ -206,20 +206,33 @@ const ClientDetail = () => {
               </SheetContent>
             </Sheet>
             {canEdit && (client as any).approval_token && (
-              <Button
-                variant={copied ? "default" : "outline"}
-                size="sm"
-                className={`gap-1.5 text-xs h-7 transition-all ${copied ? "bg-[hsl(var(--runway-green))] text-white hover:bg-[hsl(var(--runway-green))]/90" : ""}`}
-                onClick={() => {
-                  const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
-                  navigator.clipboard.writeText(url);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-              >
-                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                {copied ? "Link kopiert!" : "Freigabe-Link kopieren"}
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-7"
+                  onClick={() => {
+                    const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Freigabe öffnen
+                </Button>
+                <Button
+                  variant={copied ? "default" : "ghost"}
+                  size="sm"
+                  className={`h-7 w-7 p-0 transition-all ${copied ? "bg-[hsl(var(--runway-green))] text-white hover:bg-[hsl(var(--runway-green))]/90" : ""}`}
+                  onClick={() => {
+                    const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
+                    navigator.clipboard.writeText(url);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                </Button>
+              </div>
             )}
           </div>
         </div>
