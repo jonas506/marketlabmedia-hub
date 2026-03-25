@@ -691,7 +691,6 @@ const ClientApproval = () => {
                                   }
                                 }}
                               />
-                              />
                               <Button
                                 size="sm"
                                 onClick={() => handleAddComment(currentPiece.id)}
