@@ -90,6 +90,16 @@ export const useMonthlyChecklistTrigger = () => {
             }
           }
         }
+        // Also generate SOP tasks for monthly planning
+        for (const client of clients) {
+          try {
+            await supabase.functions.invoke("generate-sop-tasks", {
+              body: { trigger_type: "new_month", client_id: client.id },
+            });
+          } catch (e) {
+            console.error("Monthly SOP task generation failed:", e);
+          }
+        }
       } catch (err) {
         console.error("Monthly checklist trigger failed:", err);
       }
