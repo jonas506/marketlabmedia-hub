@@ -278,6 +278,10 @@ const SOPs = () => {
                     <SelectItem value="none">Kein Trigger</SelectItem>
                     <SelectItem value="new_client">Neuer Kunde</SelectItem>
                     <SelectItem value="new_month">Neuer Monat</SelectItem>
+                    <SelectItem value="shoot_day_created">Drehtag angelegt</SelectItem>
+                    <SelectItem value="piece_enters_editing">Piece im Schnitt</SelectItem>
+                    <SelectItem value="pieces_approved">Pieces freigegeben</SelectItem>
+                    <SelectItem value="weekly_monday">Wöchentlich (Montag)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
