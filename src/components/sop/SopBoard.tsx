@@ -5,16 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink,
   BreadcrumbSeparator, BreadcrumbPage
 } from "@/components/ui/breadcrumb";
 import {
-  ArrowLeft, Square, Diamond, Circle, Triangle, Hexagon, Type,
-  StickyNote, Trash2, ZoomIn, ZoomOut, Sparkles, Save, MessageSquare,
+  ArrowLeft, Square, Diamond, Type,
+  StickyNote, Trash2, ZoomIn, ZoomOut, Sparkles, MessageSquare,
   X, Send, Loader2, MousePointer, ArrowRight, PlayCircle, StopCircle,
-  CheckSquare, User, Clock, FileDown, Plus, Minus, Columns, ChevronRight,
+  CheckSquare, Clock, FileDown, Plus, Minus, Columns, ChevronRight,
   ListChecks, UserCircle
 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 
-// ─── Types ─────────────────────────────────────
+// ─── Types ─────────────────────────────────
 export interface ChecklistItem {
   id: string;
   text: string;
@@ -110,61 +109,252 @@ const SWIMLANE_COLORS = [
 ];
 
 const RESPONSIBLE_OPTIONS = [
-  "Geschäftsführer", "Head of Content", "Cutter", "Alle", "Katha", "Jonas",
+  "Geschäftsführer", "Head of Content", "Cutter", "Alle", "Katha", "Jonas", "Maren", "Moritz", "Kunde",
 ];
 
 const DEFAULT_SIZES: Record<string, { w: number; h: number }> = {
-  start: { w: 160, h: 60 },
-  end: { w: 160, h: 60 },
-  process: { w: 180, h: 80 },
-  decision: { w: 140, h: 140 },
-  parallel: { w: 180, h: 80 },
-  checklist: { w: 200, h: 100 },
-  note: { w: 180, h: 120 },
+  start: { w: 180, h: 56 },
+  end: { w: 180, h: 56 },
+  process: { w: 220, h: 80 },
+  decision: { w: 160, h: 160 },
+  parallel: { w: 220, h: 80 },
+  checklist: { w: 240, h: 110 },
+  note: { w: 200, h: 100 },
   text: { w: 200, h: 40 },
 };
 
-// ─── Shape SVG Renderers ───────────────────────
-function ShapeSvg({ type, w, h, color }: { type: string; w: number; h: number; color: string }) {
-  const fill = color + "22";
-  const stroke = color;
+// ─── Responsible color map ───────────────────
+const RESPONSIBLE_COLORS: Record<string, string> = {
+  "Jonas": "#3b82f6",
+  "Geschäftsführer": "#3b82f6",
+  "admin": "#3b82f6",
+  "Maren": "#8b5cf6",
+  "Head of Content": "#8b5cf6",
+  "head_of_content": "#8b5cf6",
+  "Moritz": "#f59e0b",
+  "Cutter": "#f59e0b",
+  "cutter": "#f59e0b",
+  "Kunde": "#6b7280",
+  "Alle": "#10b981",
+};
 
-  switch (type) {
-    case "start":
-    case "end":
-      return <rect x={2} y={2} width={w - 4} height={h - 4} rx={h / 2} fill={fill} stroke={stroke} strokeWidth={2.5} />;
-    case "process":
-      return <rect x={2} y={2} width={w - 4} height={h - 4} rx={6} fill={fill} stroke={stroke} strokeWidth={2} />;
-    case "decision":
-      return <polygon points={`${w / 2},4 ${w - 4},${h / 2} ${w / 2},${h - 4} 4,${h / 2}`} fill={fill} stroke={stroke} strokeWidth={2} />;
-    case "parallel":
-      return (
-        <>
-          <rect x={2} y={2} width={w - 4} height={h - 4} rx={6} fill={fill} stroke={stroke} strokeWidth={2} />
-          <line x1={10} y1={6} x2={10} y2={h - 6} stroke={stroke} strokeWidth={2} />
-          <line x1={16} y1={6} x2={16} y2={h - 6} stroke={stroke} strokeWidth={2} />
-        </>
-      );
-    case "checklist":
-      return (
-        <>
-          <rect x={2} y={2} width={w - 4} height={h - 4} rx={6} fill={fill} stroke={stroke} strokeWidth={2} />
-          <rect x={10} y={h / 2 - 5} width={10} height={10} rx={2} fill="none" stroke={stroke} strokeWidth={1.5} />
-          <polyline points={`12,${h / 2} 14,${h / 2 + 3} 18,${h / 2 - 3}`} fill="none" stroke={stroke} strokeWidth={1.5} />
-        </>
-      );
-    case "note":
-      return (
-        <>
-          <rect x={2} y={2} width={w - 4} height={h - 4} rx={4} fill={color + "33"} stroke={color + "66"} strokeWidth={1.5} />
-          <path d={`M${w - 20},2 L${w - 4},18`} stroke={color + "44"} strokeWidth={1} />
-        </>
-      );
-    case "text":
-      return null;
-    default:
-      return <rect x={2} y={2} width={w - 4} height={h - 4} rx={6} fill={fill} stroke={stroke} strokeWidth={2} />;
+function getResponsibleColor(name?: string) {
+  if (!name) return "#6b7280";
+  return RESPONSIBLE_COLORS[name] || "#6b7280";
+}
+
+// ─── Node Renderers (HTML-based for better styling) ──
+function NodeShape({ node, isSelected, isConnecting }: { node: SopNode; isSelected: boolean; isConnecting: boolean }) {
+  const color = node.color;
+  const respColor = getResponsibleColor(node.responsible);
+
+  if (node.type === "start" || node.type === "end") {
+    const isStart = node.type === "start";
+    return (
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{
+          borderRadius: 999,
+          background: `linear-gradient(135deg, ${color}18, ${color}30)`,
+          border: `2.5px solid ${color}`,
+          boxShadow: isSelected
+            ? `0 0 0 3px ${color}40, 0 4px 20px ${color}25`
+            : `0 2px 12px ${color}15`,
+        }}
+      >
+        <div className="flex items-center gap-2 px-4">
+          {isStart ? (
+            <PlayCircle className="h-4 w-4 shrink-0" style={{ color }} />
+          ) : (
+            <StopCircle className="h-4 w-4 shrink-0" style={{ color }} />
+          )}
+          <span className="text-[13px] font-semibold text-foreground tracking-tight">
+            {node.label || (isStart ? "Start" : "Ende")}
+          </span>
+        </div>
+      </div>
+    );
   }
+
+  if (node.type === "decision") {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div
+          className="absolute"
+          style={{
+            width: "70.7%",
+            height: "70.7%",
+            top: "14.6%",
+            left: "14.6%",
+            transform: "rotate(45deg)",
+            background: `linear-gradient(135deg, ${color}12, ${color}25)`,
+            border: `2.5px solid ${color}`,
+            borderRadius: 8,
+            boxShadow: isSelected
+              ? `0 0 0 3px ${color}40, 0 4px 20px ${color}25`
+              : `0 2px 12px ${color}12`,
+          }}
+        />
+        <div className="relative z-10 text-center px-6">
+          <span className="text-[11px] font-semibold text-foreground leading-tight">
+            {node.label || "Entscheidung?"}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (node.type === "note") {
+    return (
+      <div
+        className="absolute inset-0 flex flex-col p-3"
+        style={{
+          background: `linear-gradient(135deg, ${color}20, ${color}10)`,
+          border: `1.5px solid ${color}35`,
+          borderRadius: 6,
+          boxShadow: isSelected
+            ? `0 0 0 3px ${color}30, 3px 4px 14px ${color}15`
+            : `2px 3px 10px ${color}10`,
+          borderLeft: `4px solid ${color}80`,
+        }}
+      >
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <StickyNote className="h-3 w-3 shrink-0" style={{ color: color + "aa" }} />
+          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: color + "cc" }}>
+            Hinweis
+          </span>
+        </div>
+        <span className="text-[11px] text-foreground/80 leading-snug line-clamp-3">
+          {node.label || "..."}
+        </span>
+      </div>
+    );
+  }
+
+  if (node.type === "checklist") {
+    const items = node.checklistItems || [];
+    const done = items.filter(i => i.done).length;
+    const pct = items.length > 0 ? (done / items.length) * 100 : 0;
+    return (
+      <div
+        className="absolute inset-0 flex flex-col overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, ${color}10, ${color}06)`,
+          border: `2px solid ${color}50`,
+          borderRadius: 10,
+          boxShadow: isSelected
+            ? `0 0 0 3px ${color}30, 0 4px 16px ${color}15`
+            : `0 2px 10px ${color}08`,
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center gap-2 px-3 py-2"
+          style={{ borderBottom: `1px solid ${color}20` }}
+        >
+          <CheckSquare className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+          <span className="text-[12px] font-semibold text-foreground flex-1 truncate">
+            {node.label || "Checkliste"}
+          </span>
+          {items.length > 0 && (
+            <span className="text-[9px] font-mono font-bold" style={{ color }}>
+              {done}/{items.length}
+            </span>
+          )}
+        </div>
+        {/* Progress bar */}
+        {items.length > 0 && (
+          <div className="px-3 pt-1.5">
+            <div className="h-1 rounded-full w-full" style={{ background: `${color}15` }}>
+              <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: pct === 100 ? "#10b981" : color }} />
+            </div>
+          </div>
+        )}
+        {/* Items preview */}
+        <div className="px-3 py-1.5 flex-1 overflow-hidden">
+          {items.slice(0, 3).map(item => (
+            <div key={item.id} className="flex items-center gap-1.5 py-0.5">
+              <div
+                className="h-2.5 w-2.5 rounded-sm border shrink-0 flex items-center justify-center"
+                style={{ borderColor: item.done ? "#10b981" : color + "60", background: item.done ? "#10b98120" : "transparent" }}
+              >
+                {item.done && <span className="text-[6px]" style={{ color: "#10b981" }}>✓</span>}
+              </div>
+              <span className={cn("text-[9px] truncate", item.done ? "text-muted-foreground line-through" : "text-foreground/70")}>
+                {item.text}
+              </span>
+            </div>
+          ))}
+          {items.length > 3 && (
+            <span className="text-[8px] text-muted-foreground">+{items.length - 3} weitere</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (node.type === "parallel") {
+    return (
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{
+          background: `linear-gradient(135deg, ${color}10, ${color}06)`,
+          border: `2px solid ${color}50`,
+          borderRadius: 10,
+          boxShadow: isSelected
+            ? `0 0 0 3px ${color}30, 0 4px 16px ${color}15`
+            : `0 2px 10px ${color}08`,
+        }}
+      >
+        {/* Double-line indicator */}
+        <div
+          className="absolute left-0 top-2 bottom-2 w-1.5"
+          style={{ borderLeft: `2.5px solid ${color}60`, borderRight: `2.5px solid ${color}60`, marginLeft: 6 }}
+        />
+        <div className="text-center px-6">
+          <span className="text-[12px] font-semibold text-foreground">{node.label}</span>
+          {node.description && (
+            <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-1">{node.description}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (node.type === "text") {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-foreground/60" style={{ fontSize: node.fontSize || 14 }}>
+          {node.label}
+        </span>
+      </div>
+    );
+  }
+
+  // Default: process
+  return (
+    <div
+      className="absolute inset-0 flex flex-col items-center justify-center px-3"
+      style={{
+        background: `linear-gradient(180deg, ${color}12, ${color}06)`,
+        border: `2px solid ${color}45`,
+        borderRadius: 10,
+        boxShadow: isSelected
+          ? `0 0 0 3px ${color}30, 0 4px 20px ${color}18`
+          : `0 2px 12px ${color}10`,
+        borderTop: `3px solid ${color}90`,
+      }}
+    >
+      <span className="text-[12px] font-semibold text-foreground text-center leading-tight">
+        {node.label || "Prozess"}
+      </span>
+      {node.description && (
+        <p className="text-[9px] text-muted-foreground mt-1 text-center line-clamp-2 leading-snug">
+          {node.description}
+        </p>
+      )}
+    </div>
+  );
 }
 
 // ─── Connection Path ───────────────────────────
@@ -428,7 +618,7 @@ export default function SopBoard({
       const { jsPDF } = await import("jspdf");
 
       const canvas = await html2canvas(boardRef.current, {
-        backgroundColor: "#1a1a2e",
+        backgroundColor: "#0f1117",
         scale: 2,
         useCORS: true,
       });
@@ -475,7 +665,6 @@ export default function SopBoard({
   const selectedNode = nodes.find(n => n.id === selectedId);
 
   // Breadcrumb categories
-  const categories = [...new Set(allTemplates.map(t => t.category).filter(Boolean))] as string[];
   const sameCategoryTemplates = allTemplates.filter(t => t.category === category);
 
   return (
@@ -561,7 +750,7 @@ export default function SopBoard({
           </Button>
         </div>
 
-        {saving && <span className="text-[10px] text-muted-foreground">Speichern...</span>}
+        {saving && <span className="text-[10px] text-muted-foreground animate-pulse">Speichern...</span>}
 
         {canEdit && (
           <>
@@ -587,12 +776,12 @@ export default function SopBoard({
       <div className="flex flex-1 overflow-hidden">
         {/* ─── Shape Toolbar (Left) ─────────── */}
         {canEdit && (
-          <div className="w-12 border-r border-border bg-card/50 flex flex-col items-center py-2 gap-1 shrink-0 z-10">
+          <div className="w-12 border-r border-border bg-card/50 flex flex-col items-center py-3 gap-1.5 shrink-0 z-10">
             {NODE_TYPES.map(s => (
               <button
                 key={s.type}
                 onClick={() => addNode(s.type)}
-                className="w-9 h-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all"
                 title={s.label}
               >
                 <s.icon className="h-4 w-4" />
@@ -602,7 +791,7 @@ export default function SopBoard({
             {selectedId && (
               <button
                 onClick={deleteSelected}
-                className="w-9 h-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
                 title="Löschen (Del)"
               >
                 <Trash2 className="h-4 w-4" />
@@ -635,46 +824,70 @@ export default function SopBoard({
             style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: "0 0" }}
           >
             {/* Swimlanes */}
-            {swimlanes.map((lane, idx) => (
-              <div
-                key={lane.id}
-                className="absolute left-0 border-b border-dashed"
-                style={{
-                  top: lane.y,
-                  width: 4000,
-                  height: lane.height,
-                  backgroundColor: lane.color,
-                  borderColor: lane.color.replace("20", "50"),
-                }}
-              >
-                <div className="sticky left-0 flex items-center gap-2 px-3 py-1.5">
-                  {canEdit ? (
-                    <input
-                      className="bg-transparent text-xs font-semibold text-foreground/70 border-none outline-none w-32"
-                      value={lane.label}
-                      onChange={e => updateSwimlane(lane.id, { label: e.target.value })}
-                    />
-                  ) : (
-                    <span className="text-xs font-semibold text-foreground/70">{lane.label}</span>
-                  )}
-                  {canEdit && (
-                    <button
-                      onClick={() => removeSwimlane(lane.id)}
-                      className="text-muted-foreground hover:text-destructive"
+            {swimlanes.map((lane) => {
+              const laneColor = lane.color.replace(/20$/, "");
+              return (
+                <div
+                  key={lane.id}
+                  className="absolute left-0"
+                  style={{
+                    top: lane.y,
+                    width: 4000,
+                    height: lane.height,
+                    backgroundColor: lane.color,
+                    borderBottom: `1px dashed ${lane.color.replace("20", "40")}`,
+                  }}
+                >
+                  {/* Swimlane label — vertical bar on left */}
+                  <div
+                    className="sticky left-0 z-10 flex items-start"
+                    style={{ width: 150 }}
+                  >
+                    <div
+                      className="flex items-center gap-2 px-3 py-2 rounded-br-lg"
+                      style={{
+                        background: lane.color.replace("20", "35"),
+                        borderRight: `1px solid ${lane.color.replace("20", "50")}`,
+                        borderBottom: `1px solid ${lane.color.replace("20", "50")}`,
+                      }}
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
+                      <UserCircle className="h-3.5 w-3.5 shrink-0" style={{ color: lane.color.replace("20", "cc") }} />
+                      {canEdit ? (
+                        <input
+                          className="bg-transparent text-xs font-semibold text-foreground/80 border-none outline-none w-24"
+                          value={lane.label}
+                          onChange={e => updateSwimlane(lane.id, { label: e.target.value })}
+                        />
+                      ) : (
+                        <span className="text-xs font-semibold text-foreground/80">{lane.label}</span>
+                      )}
+                      {canEdit && (
+                        <button
+                          onClick={() => removeSwimlane(lane.id)}
+                          className="text-muted-foreground/50 hover:text-destructive ml-1"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* SVG for connections */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
               <defs>
-                <marker id="sop-arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
-                  <polygon points="0 0, 10 4, 0 8" fill="hsl(var(--muted-foreground))" />
+                <marker id="sop-arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="hsl(var(--muted-foreground))" opacity="0.6" />
                 </marker>
+                <filter id="conn-glow">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
               </defs>
               {connections.map(conn => {
                 const fromNode = nodes.find(n => n.id === conn.from);
@@ -687,14 +900,24 @@ export default function SopBoard({
                   <g key={conn.id}>
                     <path
                       d={path} fill="none" stroke="hsl(var(--muted-foreground))"
-                      strokeWidth={2} markerEnd="url(#sop-arrowhead)"
-                      className="pointer-events-auto cursor-pointer hover:stroke-destructive"
+                      strokeWidth={2} strokeOpacity={0.4} markerEnd="url(#sop-arrowhead)"
+                      className="pointer-events-auto cursor-pointer"
                       onClick={() => canEdit && setConnections(prev => prev.filter(c => c.id !== conn.id))}
                     />
                     {conn.label && (
-                      <text x={mx} y={my - 6} textAnchor="middle" fontSize={11} fill="hsl(var(--muted-foreground))">
-                        {conn.label}
-                      </text>
+                      <>
+                        <rect
+                          x={mx - 16} y={my - 12} width={32} height={16}
+                          rx={4} fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth={1}
+                        />
+                        <text
+                          x={mx} y={my - 1} textAnchor="middle"
+                          fontSize={10} fontWeight={600} fill="hsl(var(--foreground))"
+                          style={{ fontFamily: "Manrope, sans-serif" }}
+                        >
+                          {conn.label}
+                        </text>
+                      </>
                     )}
                   </g>
                 );
@@ -717,9 +940,7 @@ export default function SopBoard({
               <div
                 key={node.id}
                 className={cn(
-                  "absolute select-none group/node",
-                  selectedId === node.id && "ring-2 ring-primary ring-offset-1 ring-offset-transparent rounded-lg",
-                  connecting === node.id && "ring-2 ring-primary/50 rounded-lg",
+                  "absolute select-none group/node transition-shadow",
                   tool === "connect" ? "cursor-crosshair" : "cursor-move",
                 )}
                 style={{ left: node.x, top: node.y, width: node.w, height: node.h }}
@@ -730,68 +951,47 @@ export default function SopBoard({
                   setDetailOpen(true);
                 }}
               >
-                <svg width={node.w} height={node.h} className="absolute inset-0" style={{ overflow: "visible" }}>
-                  <ShapeSvg type={node.type} w={node.w} h={node.h} color={node.color} />
-                </svg>
-
-                {/* Label */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-2 z-10">
-                  {editingLabel === node.id ? (
-                    <textarea
-                      autoFocus
-                      value={node.label}
-                      onChange={e => updateNode(node.id, { label: e.target.value })}
-                      onBlur={() => setEditingLabel(null)}
-                      onKeyDown={e => { if (e.key === "Escape") setEditingLabel(null); }}
-                      className="w-full h-full bg-transparent text-center text-foreground text-xs resize-none outline-none border-none"
-                      style={{ fontSize: node.fontSize || 12 }}
-                    />
-                  ) : (
-                    <>
-                      <span
-                        className="text-foreground text-center leading-tight break-words w-full"
-                        style={{ fontSize: node.fontSize || 12 }}
-                        onClick={() => { if (canEdit && tool === "select") setEditingLabel(node.id); }}
-                      >
-                        {node.label || <span className="text-muted-foreground/50 italic text-[10px]">Doppelklick</span>}
-                      </span>
-                    </>
-                  )}
-                </div>
+                <NodeShape
+                  node={node}
+                  isSelected={selectedId === node.id}
+                  isConnecting={connecting === node.id}
+                />
 
                 {/* Responsible badge */}
-                {node.responsible && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-                    <Badge variant="secondary" className="text-[8px] px-1.5 py-0 h-[16px] bg-primary/20 text-primary border-0 whitespace-nowrap">
-                      <UserCircle className="h-2.5 w-2.5 mr-0.5" />
+                {node.responsible && node.type !== "note" && node.type !== "text" && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                    <div
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold whitespace-nowrap"
+                      style={{
+                        background: getResponsibleColor(node.responsible) + "20",
+                        color: getResponsibleColor(node.responsible),
+                        border: `1px solid ${getResponsibleColor(node.responsible)}30`,
+                        backdropFilter: "blur(4px)",
+                      }}
+                    >
+                      <UserCircle className="h-2.5 w-2.5" />
                       {node.responsible}
-                    </Badge>
+                    </div>
                   </div>
                 )}
 
                 {/* Timeframe badge */}
-                {node.timeframe && (
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20">
-                    <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-[16px] bg-background/80 border-border whitespace-nowrap">
-                      <Clock className="h-2.5 w-2.5 mr-0.5" />
-                      {node.timeframe}
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Checklist indicator */}
-                {node.checklistItems && node.checklistItems.length > 0 && (
-                  <div className="absolute top-1 right-1 z-20">
-                    <span className="text-[8px] font-mono text-muted-foreground bg-background/60 rounded px-1">
-                      {node.checklistItems.filter(i => i.done).length}/{node.checklistItems.length}
-                    </span>
+                {node.timeframe && node.type !== "note" && node.type !== "text" && (
+                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
+                    <div
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-mono whitespace-nowrap bg-card/90 border border-border/50"
+                      style={{ backdropFilter: "blur(4px)" }}
+                    >
+                      <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                      <span className="text-muted-foreground">{node.timeframe}</span>
+                    </div>
                   </div>
                 )}
 
                 {/* Resize handle */}
                 {canEdit && selectedId === node.id && (
                   <div
-                    className="absolute -right-1 -bottom-1 w-3 h-3 bg-primary rounded-sm cursor-se-resize z-20"
+                    className="absolute -right-1 -bottom-1 w-3 h-3 bg-primary rounded-sm cursor-se-resize z-20 opacity-80 hover:opacity-100"
                     onMouseDown={e => onResizeDown(e, node.id)}
                   />
                 )}
@@ -808,9 +1008,9 @@ export default function SopBoard({
               animate={{ width: 300, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="border-l border-border bg-card/90 backdrop-blur-sm flex flex-col shrink-0 overflow-hidden z-10"
+              className="border-l border-border bg-card/95 backdrop-blur-sm flex flex-col shrink-0 overflow-hidden z-10"
             >
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+              <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
                 <span className="text-sm font-semibold">Node-Details</span>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setDetailOpen(false)}>
                   <X className="h-3.5 w-3.5" />
@@ -819,7 +1019,7 @@ export default function SopBoard({
 
               <div className="flex-1 overflow-y-auto p-3 space-y-4">
                 {/* Title */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Titel</label>
                   <Input
                     value={selectedNode.label}
@@ -830,7 +1030,7 @@ export default function SopBoard({
                 </div>
 
                 {/* Description */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Beschreibung</label>
                   <Textarea
                     value={selectedNode.description || ""}
@@ -842,7 +1042,7 @@ export default function SopBoard({
                 </div>
 
                 {/* Responsible */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Verantwortlicher</label>
                   <Select
                     value={selectedNode.responsible || "none"}
@@ -854,14 +1054,19 @@ export default function SopBoard({
                     <SelectContent>
                       <SelectItem value="none" className="text-xs">Keiner</SelectItem>
                       {RESPONSIBLE_OPTIONS.map(r => (
-                        <SelectItem key={r} value={r} className="text-xs">{r}</SelectItem>
+                        <SelectItem key={r} value={r} className="text-xs">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full" style={{ background: getResponsibleColor(r) }} />
+                            {r}
+                          </div>
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Timeframe */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Zeitrahmen</label>
                   <Input
                     value={selectedNode.timeframe || ""}
@@ -872,15 +1077,15 @@ export default function SopBoard({
                 </div>
 
                 {/* Color */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Farbe</label>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {COLORS.map(c => (
                       <button
                         key={c}
                         className={cn(
-                          "w-5 h-5 rounded-full border-2 transition-transform",
-                          selectedNode.color === c ? "border-foreground scale-110" : "border-transparent"
+                          "w-5 h-5 rounded-full border-2 transition-all",
+                          selectedNode.color === c ? "border-foreground scale-125 shadow-lg" : "border-transparent hover:scale-110"
                         )}
                         style={{ background: c }}
                         onClick={() => updateNode(selectedNode.id, { color: c })}
@@ -961,22 +1166,22 @@ export default function SopBoard({
 
         {/* ─── Properties Mini Panel ──────────── */}
         {selectedNode && canEdit && !detailOpen && (
-          <div className="w-48 border-l border-border bg-card/50 p-3 shrink-0 space-y-2 overflow-y-auto z-10">
+          <div className="w-52 border-l border-border bg-card/80 backdrop-blur-sm p-3 shrink-0 space-y-3 overflow-y-auto z-10">
             <div className="flex items-center justify-between">
               <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quick</h4>
-              <button onClick={() => setDetailOpen(true)} className="text-primary text-[10px] hover:underline">Details →</button>
+              <button onClick={() => setDetailOpen(true)} className="text-primary text-[10px] hover:underline font-medium">Details →</button>
             </div>
             <Input
               value={selectedNode.label}
               onChange={e => updateNode(selectedNode.id, { label: e.target.value })}
               className="h-7 text-xs" placeholder="Label"
             />
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1.5">
               {COLORS.map(c => (
                 <button
                   key={c}
-                  className={cn("w-4 h-4 rounded-full border-2 transition-transform",
-                    selectedNode.color === c ? "border-foreground scale-110" : "border-transparent")}
+                  className={cn("w-4 h-4 rounded-full border-2 transition-all",
+                    selectedNode.color === c ? "border-foreground scale-125" : "border-transparent hover:scale-110")}
                   style={{ background: c }}
                   onClick={() => updateNode(selectedNode.id, { color: c })}
                 />
@@ -996,7 +1201,7 @@ export default function SopBoard({
               animate={{ width: 360, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="border-l border-border bg-card/80 backdrop-blur-sm flex flex-col shrink-0 overflow-hidden z-10"
+              className="border-l border-border bg-card/90 backdrop-blur-sm flex flex-col shrink-0 overflow-hidden z-10"
             >
               <div className="flex items-center justify-between px-3 py-2 border-b border-border">
                 <div className="flex items-center gap-2">
@@ -1018,13 +1223,12 @@ export default function SopBoard({
                         "Erstelle Prozess: Kunden-Onboarding mit Vertrag, Setup & Kick-off",
                         "Erstelle Prozess: Content-Produktion von Skript bis Freigabe",
                         "Füge Checkliste hinzu für: Kick-off Meeting",
-                        "Wer ist verantwortlich für Schnitt?",
-                        "Erstelle Swimlanes für Jonas, Katha, Head of Content",
+                        "Erstelle Swimlanes für Jonas, Maren, Moritz",
                       ].map(suggestion => (
                         <button
                           key={suggestion}
                           onClick={() => setChatInput(suggestion)}
-                          className="block w-full text-left text-[11px] px-3 py-2 rounded-md bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          className="block w-full text-left text-[11px] px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {suggestion}
                         </button>
@@ -1036,7 +1240,7 @@ export default function SopBoard({
                 {chatMessages.map((msg, i) => (
                   <div key={i} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
                     <div className={cn(
-                      "max-w-[85%] rounded-lg px-3 py-2 text-xs",
+                      "max-w-[85%] rounded-xl px-3 py-2 text-xs",
                       msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
                     )}>
                       {msg.role === "assistant" ? (
@@ -1050,7 +1254,7 @@ export default function SopBoard({
 
                 {chatLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-muted rounded-lg px-3 py-2">
+                    <div className="bg-muted rounded-xl px-3 py-2">
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     </div>
                   </div>
