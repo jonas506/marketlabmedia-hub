@@ -107,7 +107,7 @@ const MyTasks = () => {
   const { data: tasks = [] } = useQuery({
     queryKey: ["my-tasks", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("tasks" as any).select("*").eq("assigned_to", user!.id).eq("is_completed", false);
+      const { data, error } = await supabase.from("tasks" as any).select("*").eq("assigned_to", user!.id).eq("is_completed", false).is("parent_id", null);
       if (error) throw error;
       return (data as any[]) as Task[];
     },
