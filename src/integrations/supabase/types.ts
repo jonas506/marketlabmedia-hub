@@ -2366,6 +2366,10 @@ export type Database = {
       }
       cleanup_old_activity_logs: { Args: never; Returns: undefined }
       cleanup_old_notifications: { Args: never; Returns: undefined }
+      create_sop_tasks_for_trigger: {
+        Args: { p_client_id: string; p_context?: Json; p_trigger_type: string }
+        Returns: undefined
+      }
       delete_client_piece_comment: {
         Args: { _comment_id: string; _token: string }
         Returns: boolean
