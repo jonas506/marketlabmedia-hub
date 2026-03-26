@@ -12,17 +12,20 @@ import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Task, TeamMember, GroupKey, groupTasks, getInitials } from "@/components/tasks/constants";
 import { TaskCard } from "@/components/tasks";
 import TaskGroupSection from "@/components/tasks/TaskGroupSection";
 import TeamTaskColumn from "@/components/tasks/TeamTaskColumn";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
+import TaskGroupCard from "@/components/tasks/TaskGroupCard";
+import CompletedTasksView from "@/components/tasks/CompletedTasksView";
 
 const Tasks = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [viewMode, setViewMode] = useState<"team" | "mine">("team");
+  const [viewMode, setViewMode] = useState<"team" | "mine" | "done">("team");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
@@ -35,6 +38,7 @@ const Tasks = () => {
         .from("tasks" as any)
         .select("*")
         .eq("is_completed", false)
+        .is("parent_id", null)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return (data as any[]) as Task[];
@@ -73,13 +77,29 @@ const Tasks = () => {
     return m;
   }, [team]);
 
+  const teamNameMap = useMemo(() => {
+    const m: Record<string, { name: string | null }> = {};
+    team.forEach(t => m[t.user_id] = { name: t.name });
+    return m;
+  }, [team]);
+
+  // Detect group tasks (those with group_source and no content_piece_id = parent tasks)
+  const isGroupTask = useCallback((task: any) => {
+    return task.group_source && !task.content_piece_id;
+  }, []);
+
   const completeTask = useCallback(async (task: Task) => {
-    await supabase.from("tasks" as any).update({ is_completed: true, status: "done" } as any).eq("id", task.id);
+    await supabase.from("tasks" as any).update({
+      is_completed: true,
+      status: "done",
+      completed_at: new Date().toISOString(),
+      completed_by: user?.id,
+    } as any).eq("id", task.id);
     qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
     qc.invalidateQueries({ queryKey: ["tasks", task.client_id] });
     toast.success("✓ Erledigt");
-  }, [qc]);
+  }, [qc, user?.id]);
 
   const selectTask = useCallback((task: Task) => setSelectedTask(task), []);
   const closeDetail = useCallback(() => setSelectedTask(null), []);
@@ -100,18 +120,27 @@ const Tasks = () => {
   };
 
   const myTasks = useMemo(() => allTasks.filter(t => t.assigned_to === user?.id), [allTasks, user?.id]);
-  const myGrouped = useMemo(() => groupTasks(myTasks, todayStr), [myTasks, todayStr]);
+  const myGrouped = useMemo(() => groupTasks(myTasks.filter(t => !isGroupTask(t)), todayStr), [myTasks, todayStr, isGroupTask]);
+  const myGroupTasks = useMemo(() => myTasks.filter(t => isGroupTask(t)), [myTasks, isGroupTask]);
 
   const teamColumns = useMemo(() => {
     return team.map(member => {
       const tasks = allTasks.filter(t => t.assigned_to === member.user_id);
-      const grouped = groupTasks(tasks, todayStr);
-      return { member, grouped };
+      const regularTasks = tasks.filter(t => !isGroupTask(t));
+      const groupedTasks = tasks.filter(t => isGroupTask(t));
+      const grouped = groupTasks(regularTasks, todayStr);
+      return { member, grouped, groupedTasks };
     });
-  }, [team, allTasks, todayStr]);
+  }, [team, allTasks, todayStr, isGroupTask]);
 
   const unassignedTasks = useMemo(() => allTasks.filter(t => !t.assigned_to), [allTasks]);
   const unassignedGrouped = useMemo(() => groupTasks(unassignedTasks, todayStr), [unassignedTasks, todayStr]);
+
+  const VIEW_TABS = [
+    { key: "team" as const, label: "Team" },
+    { key: "mine" as const, label: "Meine" },
+    { key: "done" as const, label: "Erledigt" },
+  ];
 
   return (
     <AppLayout>
@@ -126,28 +155,24 @@ const Tasks = () => {
             </p>
           </div>
           <div className="flex items-center gap-1 bg-surface-elevated rounded-lg p-0.5 border border-border">
-            <button
-              onClick={() => setViewMode("team")}
-              className={cn(
-                "px-3 py-1.5 rounded-md text-xs font-mono transition-all",
-                viewMode === "team" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Team
-            </button>
-            <button
-              onClick={() => setViewMode("mine")}
-              className={cn(
-                "px-3 py-1.5 rounded-md text-xs font-mono transition-all",
-                viewMode === "mine" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Meine
-            </button>
+            {VIEW_TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setViewMode(tab.key)}
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs font-mono transition-all",
+                  viewMode === tab.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {viewMode === "mine" ? (
+        {viewMode === "done" ? (
+          <CompletedTasksView team={team} />
+        ) : viewMode === "mine" ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 p-3 rounded-lg bg-card border border-border">
               <Plus className="h-4 w-4 text-muted-foreground/40 shrink-0" />
@@ -159,6 +184,23 @@ const Tasks = () => {
                 onKeyDown={e => { if (e.key === "Enter" && quickTitle.trim()) quickAdd(); }}
               />
             </div>
+
+            {/* Group tasks */}
+            {myGroupTasks.length > 0 && (
+              <div className="space-y-2">
+                {myGroupTasks.map(t => (
+                  <TaskGroupCard
+                    key={t.id}
+                    task={t as any}
+                    clientMap={clientMap}
+                    teamMap={teamNameMap}
+                    todayStr={todayStr}
+                    onSelect={selectTask}
+                  />
+                ))}
+              </div>
+            )}
+
             <div className="space-y-3">
               <TaskGroupSection groupKey="overdue" tasks={myGrouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
               <TaskGroupSection groupKey="today" tasks={myGrouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
@@ -192,8 +234,21 @@ const Tasks = () => {
             </div>
 
             <div className="flex gap-4 overflow-x-auto pb-2 snap-x md:snap-none">
-              {teamColumns.map(({ member, grouped }) => (
-                <TeamTaskColumn key={member.user_id} member={member} grouped={grouped} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              {teamColumns.map(({ member, grouped, groupedTasks }) => (
+                <div key={member.user_id} className="min-w-[280px] md:min-w-0 md:flex-1 snap-start space-y-2">
+                  {/* Group tasks for this member */}
+                  {groupedTasks.map(t => (
+                    <TaskGroupCard
+                      key={t.id}
+                      task={t as any}
+                      clientMap={clientMap}
+                      teamMap={teamNameMap}
+                      todayStr={todayStr}
+                      onSelect={selectTask}
+                    />
+                  ))}
+                  <TeamTaskColumn member={member} grouped={grouped} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+                </div>
               ))}
 
               {unassignedTasks.length > 0 && (

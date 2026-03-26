@@ -2245,14 +2245,19 @@ export type Database = {
         Row: {
           assigned_to: string | null
           client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          content_piece_id: string | null
           created_at: string | null
           created_by: string | null
           deadline: string | null
           description: string | null
           due_time: string | null
+          group_source: string | null
           id: string
           is_completed: boolean | null
           notes: string | null
+          parent_id: string | null
           priority: string | null
           sort_order: number | null
           status: string | null
@@ -2262,14 +2267,19 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           client_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          content_piece_id?: string | null
           created_at?: string | null
           created_by?: string | null
           deadline?: string | null
           description?: string | null
           due_time?: string | null
+          group_source?: string | null
           id?: string
           is_completed?: boolean | null
           notes?: string | null
+          parent_id?: string | null
           priority?: string | null
           sort_order?: number | null
           status?: string | null
@@ -2279,14 +2289,19 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           client_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          content_piece_id?: string | null
           created_at?: string | null
           created_by?: string | null
           deadline?: string | null
           description?: string | null
           due_time?: string | null
+          group_source?: string | null
           id?: string
           is_completed?: boolean | null
           notes?: string | null
+          parent_id?: string | null
           priority?: string | null
           sort_order?: number | null
           status?: string | null
@@ -2299,6 +2314,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_content_piece_id_fkey"
+            columns: ["content_piece_id"]
+            isOneToOne: false
+            referencedRelation: "content_pieces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]

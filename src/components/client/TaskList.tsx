@@ -87,7 +87,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["tasks", clientId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("tasks" as any).select("*").eq("client_id", clientId).order("created_at", { ascending: true });
+      const { data, error } = await supabase.from("tasks" as any).select("*").eq("client_id", clientId).is("parent_id", null).order("created_at", { ascending: true });
       if (error) throw error;
       return (data as any[]) as Task[];
     },

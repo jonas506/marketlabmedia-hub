@@ -63,7 +63,7 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
   }, [qc]);
 
   const completeTask = useCallback(async (t: Task) => {
-    await supabase.from("tasks" as any).update({ is_completed: true, status: "done" } as any).eq("id", t.id);
+    await supabase.from("tasks" as any).update({ is_completed: true, status: "done", completed_at: new Date().toISOString(), completed_by: user?.id } as any).eq("id", t.id);
     qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
     qc.invalidateQueries({ queryKey: ["tasks", t.client_id] });
