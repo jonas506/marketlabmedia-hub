@@ -156,7 +156,9 @@ export default function NotificationBell() {
         side="right"
         align="end"
         sideOffset={12}
-        className="w-[380px] p-0 max-h-[70vh]"
+        collisionPadding={16}
+        avoidCollisions
+        className="w-[380px] p-0 max-h-[70vh] z-50"
       >
         <NotificationList />
       </PopoverContent>
