@@ -59,7 +59,7 @@ export default function CRMLeads() {
   const [importResult, setImportResult] = useState<any>(null);
   const [pdfFiles, setPdfFiles] = useState<{ name: string; text: string }[]>([]);
   const [pdfLoading, setPdfLoading] = useState(false);
-
+  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
   const fetchData = async () => {
     const [{ data: leadsData }, { data: statusData }] = await Promise.all([
       supabase.from("crm_leads").select("*").order("created_at", { ascending: false }),
