@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, ExternalLink, Link2, Upload, Sparkles, Loader2, FileText, CheckSquare, X } from "lucide-react";
+import { Plus, Search, ExternalLink, Link2, Upload, Sparkles, Loader2, FileText, CheckSquare, X, AlertTriangle } from "lucide-react";
+import * as pdfjsLib from "pdfjs-dist";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
@@ -58,7 +59,7 @@ export default function CRMLeads() {
   const [importResult, setImportResult] = useState<any>(null);
   const [pdfFiles, setPdfFiles] = useState<{ name: string; text: string }[]>([]);
   const [pdfLoading, setPdfLoading] = useState(false);
-
+  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
   const fetchData = async () => {
     const [{ data: leadsData }, { data: statusData }] = await Promise.all([
       supabase.from("crm_leads").select("*").order("created_at", { ascending: false }),
@@ -80,10 +81,21 @@ export default function CRMLeads() {
     setImportUrl("");
     setImportResult(null);
     setPdfFiles([]);
+    setShowLinkedInHint(false);
   };
+
+  const isLinkedInUrl = (url: string) => /linkedin\.com/i.test(url);
 
   const handleScrapeUrl = async () => {
     if (!importUrl.trim()) return;
+
+    // LinkedIn detection
+    if (isLinkedInUrl(importUrl)) {
+      toast.info("LinkedIn kann nicht automatisch gescrapt werden. Bitte lade das Profil als PDF herunter.", { duration: 6000 });
+      setShowLinkedInHint(true);
+      return;
+    }
+
     setImportLoading(true);
     try {
       const formatted = importUrl.startsWith("http") ? importUrl : `https://${importUrl}`;
@@ -100,7 +112,6 @@ export default function CRMLeads() {
       if (aiErr) throw new Error(aiErr.message);
 
       setImportResult(aiResult);
-      // Auto-fill fields
       const ci = aiResult.contact_info || {};
       setNewLead(p => ({
         ...p,
@@ -118,13 +129,31 @@ export default function CRMLeads() {
     }
   };
 
+  const extractPdfText = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      pages.push(content.items.map((item: any) => item.str).join(" "));
+    }
+    return pages.join("\n\n");
+  };
+
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setPdfLoading(true);
     try {
-      const text = await file.text();
-      if (!text.trim()) throw new Error("Dokument ist leer");
+      let text: string;
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        text = await extractPdfText(file);
+      } else {
+        text = await file.text();
+      }
+      if (!text.trim()) throw new Error("Dokument ist leer oder konnte nicht gelesen werden");
 
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: text, lead_name: newLead.name || file.name, source_type: "pdf" },
@@ -133,15 +162,17 @@ export default function CRMLeads() {
 
       setPdfFiles(prev => [...prev, { name: file.name, text: aiResult.summary || "" }]);
       setImportResult(aiResult);
-      // Auto-fill
       const ci = aiResult.contact_info || {};
       setNewLead(p => ({
         ...p,
-        name: p.name || ci.company || "",
+        name: p.name || ci.company || ci.name || "",
         contact_name: p.contact_name || ci.name || "",
         contact_email: p.contact_email || ci.email || "",
         contact_phone: p.contact_phone || ci.phone || "",
+        website: p.website || ci.website || "",
+        source: p.source || (showLinkedInHint ? "linkedin" : p.source),
       }));
+      setShowLinkedInHint(false);
       toast.success("Dokument analysiert!");
     } catch (err: any) {
       toast.error(err.message || "Analyse fehlgeschlagen");
@@ -297,6 +328,17 @@ export default function CRMLeads() {
                   Scrapen
                 </Button>
               </div>
+
+              {/* LinkedIn Hint */}
+              {showLinkedInHint && (
+                <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
+                  <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium">LinkedIn kann nicht gescrapt werden</p>
+                    <p className="text-amber-300/70 mt-0.5">Öffne das LinkedIn-Profil → Klicke auf "Mehr" → "Als PDF speichern" → Lade die PDF hier hoch ↓</p>
+                  </div>
+                </div>
+              )}
 
               {/* PDF Upload */}
               <div className="relative">
