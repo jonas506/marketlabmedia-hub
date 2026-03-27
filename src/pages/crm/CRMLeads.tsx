@@ -268,10 +268,85 @@ export default function CRMLeads() {
         </div>
       </div>
 
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-[#2A2A32] border-[#3A3A44] text-[#FAFBFF]">
+      <Dialog open={showCreate} onOpenChange={v => { setShowCreate(v); if (!v) resetForm(); }}>
+        <DialogContent className="bg-[#2A2A32] border-[#3A3A44] text-[#FAFBFF] max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Neuer Lead</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            {/* Smart Import Section */}
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                <Sparkles className="h-3.5 w-3.5" />
+                Smart Import
+              </div>
+
+              {/* URL Scrape */}
+              <div className="flex gap-1.5">
+                <div className="relative flex-1">
+                  <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="https://firmenwebsite.de"
+                    value={importUrl}
+                    onChange={e => setImportUrl(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && (e.preventDefault(), handleScrapeUrl())}
+                    className="pl-8 h-9 bg-[#1E1E24] border-[#3A3A44] text-sm"
+                    disabled={importLoading}
+                  />
+                </div>
+                <Button size="sm" className="h-9 px-3 gap-1.5 text-xs" onClick={handleScrapeUrl} disabled={importLoading || !importUrl.trim()}>
+                  {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  Scrapen
+                </Button>
+              </div>
+
+              {/* PDF Upload */}
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".txt,.pdf,.md,.csv"
+                  onChange={handlePdfUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={pdfLoading || importLoading}
+                />
+                <div className="flex items-center justify-center gap-2 rounded-md border border-dashed border-[#3A3A44] py-2.5 text-xs text-muted-foreground hover:bg-[#1E1E24] transition-colors">
+                  {pdfLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                  {pdfLoading ? "Wird analysiert..." : "Call-Transkript / Dokument hochladen"}
+                </div>
+              </div>
+
+              {/* Uploaded files */}
+              {pdfFiles.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {pdfFiles.map((f, i) => (
+                    <Badge key={i} variant="secondary" className="gap-1 text-[10px]">
+                      <FileText className="h-2.5 w-2.5" />
+                      {f.name}
+                      <X className="h-2.5 w-2.5 cursor-pointer" onClick={() => setPdfFiles(prev => prev.filter((_, j) => j !== i))} />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* AI Result */}
+              {importResult && (
+                <div className="rounded-md bg-[#1E1E24] p-2.5 space-y-2 border border-[#3A3A44]">
+                  <p className="text-xs text-[#FAFBFF]/80 leading-relaxed">{importResult.summary}</p>
+                  {importResult.next_steps?.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Erkannte Aufgaben</p>
+                      {importResult.next_steps.map((s: string, i: number) => (
+                        <div key={i} className="flex items-start gap-1.5 text-[11px] text-[#FAFBFF]/60">
+                          <CheckSquare className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
+                          {s}
+                        </div>
+                      ))}
+                      <p className="text-[10px] text-emerald-400/70 mt-1">↑ Werden beim Erstellen automatisch als Aufgaben angelegt</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Regular fields */}
             <Input placeholder="Firmenname *" value={newLead.name} onChange={e => setNewLead(p => ({ ...p, name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <Input placeholder="Ansprechpartner" value={newLead.contact_name} onChange={e => setNewLead(p => ({ ...p, contact_name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <div className="grid gap-3 md:grid-cols-2">
@@ -290,7 +365,9 @@ export default function CRMLeads() {
                 {statuses.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button onClick={createLead} className="w-full">Erstellen</Button>
+            <Button onClick={createLead} className="w-full" disabled={!newLead.name.trim()}>
+              {importResult?.next_steps?.length ? `Erstellen + ${importResult.next_steps.length} Aufgabe(n)` : "Erstellen"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
