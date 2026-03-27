@@ -4,10 +4,10 @@ import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ChevronRight, CheckCircle2, Mail } from "lucide-react";
+import { ChevronRight, CheckCircle2, Mail, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
 
 const TYPE_EMOJI: Record<string, string> = { reel: "🎬", carousel: "🖼️", ad: "📢", youtube_longform: "🎥" };
