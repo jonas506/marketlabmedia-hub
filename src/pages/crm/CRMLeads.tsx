@@ -129,13 +129,31 @@ export default function CRMLeads() {
     }
   };
 
+  const extractPdfText = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      pages.push(content.items.map((item: any) => item.str).join(" "));
+    }
+    return pages.join("\n\n");
+  };
+
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setPdfLoading(true);
     try {
-      const text = await file.text();
-      if (!text.trim()) throw new Error("Dokument ist leer");
+      let text: string;
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        text = await extractPdfText(file);
+      } else {
+        text = await file.text();
+      }
+      if (!text.trim()) throw new Error("Dokument ist leer oder konnte nicht gelesen werden");
 
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: text, lead_name: newLead.name || file.name, source_type: "pdf" },
@@ -144,15 +162,17 @@ export default function CRMLeads() {
 
       setPdfFiles(prev => [...prev, { name: file.name, text: aiResult.summary || "" }]);
       setImportResult(aiResult);
-      // Auto-fill
       const ci = aiResult.contact_info || {};
       setNewLead(p => ({
         ...p,
-        name: p.name || ci.company || "",
+        name: p.name || ci.company || ci.name || "",
         contact_name: p.contact_name || ci.name || "",
         contact_email: p.contact_email || ci.email || "",
         contact_phone: p.contact_phone || ci.phone || "",
+        website: p.website || ci.website || "",
+        source: p.source || (showLinkedInHint ? "linkedin" : p.source),
       }));
+      setShowLinkedInHint(false);
       toast.success("Dokument analysiert!");
     } catch (err: any) {
       toast.error(err.message || "Analyse fehlgeschlagen");
