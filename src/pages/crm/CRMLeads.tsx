@@ -81,6 +81,7 @@ export default function CRMLeads() {
     setImportUrl("");
     setImportResult(null);
     setPdfFiles([]);
+    setShowLinkedInHint(false);
   };
 
   const isLinkedInUrl = (url: string) => /linkedin\.com/i.test(url);
