@@ -24,7 +24,7 @@ import MarketingDashboard from "./pages/MarketingDashboard";
 import CRMLeads from "./pages/crm/CRMLeads";
 import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
 import CRMPipelines from "./pages/crm/CRMPipelines";
-import CRMSettings from "./pages/crm/CRMSettings";
+// CRMSettings removed — pipeline management is inline on Pipelines page
 
 import ContractTimeline from "./pages/ContractTimeline";
 import ActivityPage from "./pages/ActivityPage";
