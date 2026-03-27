@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ChevronRight, CheckCircle2, Mail, AlertTriangle, ExternalLink } from "lucide-react";
+import { ChevronRight, Mail, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatDistanceToNow, differenceInDays } from "date-fns";
@@ -51,6 +51,11 @@ const ReviewQueue = () => {
     },
   });
 
+  const overdueCount = useMemo(() => {
+    if (!data) return 0;
+    return data.groups.reduce((acc, g) => acc + g.pieces.filter(p => differenceInDays(new Date(), new Date(p.updated_at!)) >= 5).length, 0);
+  }, [data]);
+
   const sendReviewMail = async (clientId: string) => {
     try {
       const { error } = await supabase.functions.invoke("send-review-digest", {
@@ -61,6 +66,19 @@ const ReviewQueue = () => {
       qc.invalidateQueries({ queryKey: ["review-queue-widget"] });
     } catch {
       toast.error("Fehler beim Senden der Mail");
+    }
+  };
+
+  const openApprovalPage = async (clientId: string) => {
+    const { data: client } = await supabase
+      .from("clients")
+      .select("approval_token")
+      .eq("id", clientId)
+      .single();
+    if (client?.approval_token) {
+      window.open(`/approval/${client.approval_token}`, "_blank");
+    } else {
+      toast.error("Kein Freigabe-Token vorhanden");
     }
   };
 
@@ -86,11 +104,6 @@ const ReviewQueue = () => {
       </motion.div>
     );
   }
-
-  const overdueCount = useMemo(() => {
-    if (!data) return 0;
-    return data.groups.reduce((acc, g) => acc + g.pieces.filter(p => differenceInDays(new Date(), new Date(p.updated_at!)) >= 5).length, 0);
-  }, [data]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-border bg-card overflow-hidden mb-5">
@@ -138,7 +151,7 @@ const ReviewQueue = () => {
                     </span>
                   )}
                   <span className={cn(
-                    "text-[10px] font-mono",
+                    "text-[10px] font-mono whitespace-nowrap",
                     isOverdue ? "text-destructive font-semibold" : "text-status-review"
                   )}>
                     {isOverdue && "⚠️ "}seit {formatDistanceToNow(new Date(piece.updated_at!), { locale: de })}
@@ -164,17 +177,13 @@ const ReviewQueue = () => {
                 variant="ghost"
                 size="sm"
                 className="h-7 text-[10px] font-mono text-muted-foreground hover:text-primary"
-                asChild
+                onClick={(e) => {
+                  e.preventDefault();
+                  openApprovalPage(group.clientId);
+                }}
               >
-                <a
-                  href={`/approval/${group.clientId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  Freigabe-Seite öffnen
-                </a>
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Freigabe-Seite öffnen
               </Button>
             </div>
           </div>
