@@ -130,12 +130,18 @@ export default function CRMLeadDetail() {
   const [oppsOpen, setOppsOpen] = useState(true);
   const [contactOpen, setContactOpen] = useState(true);
   const [tasksOpen, setTasksOpen] = useState(true);
+  const [smartImportOpen, setSmartImportOpen] = useState(true);
 
   // Tasks state
   const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDate, setNewTaskDate] = useState<Date | undefined>();
   const [newTaskTime, setNewTaskTime] = useState("");
+
+  // Smart Import state
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
 
   const fetchLead = async () => {
     if (!id) return;
