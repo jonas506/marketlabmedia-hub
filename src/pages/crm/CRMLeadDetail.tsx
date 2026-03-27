@@ -16,8 +16,9 @@ import {
   ArrowLeft, StickyNote, Phone, Mail, Users2, Globe, Save,
   ChevronDown, ChevronRight, Plus, ExternalLink, Lightbulb,
   Search, Filter, MoreHorizontal, CheckSquare, CalendarIcon, Clock,
-  Sparkles, Upload, Link2, Loader2, FileText,
+  Sparkles, Upload, Link2, Loader2, FileText, AlertTriangle,
 } from "lucide-react";
+import * as pdfjsLib from "pdfjs-dist";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -236,13 +237,21 @@ export default function CRMLeadDetail() {
     fetchLead();
   };
 
-  // Smart Import: URL scrape
+  const isLinkedInUrl = (url: string) => /linkedin\.com/i.test(url);
+  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
+
   const handleUrlImport = async () => {
     if (!importUrl.trim() || !id || !user) return;
+
+    if (isLinkedInUrl(importUrl)) {
+      toast.info("LinkedIn kann nicht gescrapt werden. Lade das Profil als PDF herunter.", { duration: 6000 });
+      setShowLinkedInHint(true);
+      return;
+    }
+
     setImportLoading(true);
     setImportResult(null);
     try {
-      // 1. Scrape URL via Firecrawl
       const { data: scrapeData, error: scrapeErr } = await supabase.functions.invoke("firecrawl-scrape", {
         body: { url: importUrl, options: { formats: ["markdown"], onlyMainContent: true } },
       });
@@ -250,15 +259,12 @@ export default function CRMLeadDetail() {
       const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
       if (!markdown) throw new Error("Keine Inhalte gefunden");
 
-      // 2. Analyze via AI
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: markdown, lead_name: lead?.name, source_type: "url" },
       });
       if (aiErr) throw new Error(aiErr.message);
 
       setImportResult(aiResult);
-
-      // Auto-fill lead fields if empty
       if (aiResult.contact_info) {
         const ci = aiResult.contact_info;
         const updates: any = {};
@@ -272,10 +278,8 @@ export default function CRMLeadDetail() {
         }
       }
 
-      // Save as activity
       await supabase.from("crm_activities").insert({
-        lead_id: id,
-        type: "note" as any,
+        lead_id: id, type: "note" as any,
         title: `🔗 Website analysiert: ${importUrl}`,
         body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
         created_by: user.id,
@@ -291,18 +295,33 @@ export default function CRMLeadDetail() {
     }
   };
 
-  // Smart Import: PDF upload
+  const extractPdfText = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      pages.push(content.items.map((item: any) => item.str).join(" "));
+    }
+    return pages.join("\n\n");
+  };
+
   const handlePdfImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !id || !user) return;
     setImportLoading(true);
     setImportResult(null);
     try {
-      // Read file as text
-      const text = await file.text();
-      if (!text.trim()) throw new Error("Dokument ist leer");
+      let text: string;
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        text = await extractPdfText(file);
+      } else {
+        text = await file.text();
+      }
+      if (!text.trim()) throw new Error("Dokument ist leer oder konnte nicht gelesen werden");
 
-      // Analyze via AI
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: text, lead_name: lead?.name, source_type: "pdf" },
       });
@@ -310,15 +329,27 @@ export default function CRMLeadDetail() {
 
       setImportResult(aiResult);
 
-      // Save as activity
+      if (aiResult.contact_info) {
+        const ci = aiResult.contact_info;
+        const updates: any = {};
+        if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
+        if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
+        if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
+        if (ci.website && !lead?.website) updates.website = ci.website;
+        if (Object.keys(updates).length > 0) {
+          await supabase.from("crm_leads").update(updates).eq("id", id);
+          setLead(p => p ? { ...p, ...updates } : p);
+        }
+      }
+
       await supabase.from("crm_activities").insert({
-        lead_id: id,
-        type: "note" as any,
+        lead_id: id, type: "note" as any,
         title: `📄 Dokument analysiert: ${file.name}`,
         body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
         created_by: user.id,
       });
 
+      setShowLinkedInHint(false);
       toast.success("Dokument analysiert");
       fetchLead();
     } catch (err: any) {
@@ -523,7 +554,7 @@ export default function CRMLeadDetail() {
               )}
             </div>
 
-            {/* CONTACT section */}
+            {/* CONTACT – inline in About */}
             <div className="border-b border-[#3A3A44]">
               <button
                 onClick={() => setContactOpen(!contactOpen)}
@@ -534,79 +565,30 @@ export default function CRMLeadDetail() {
                 Kontakt
               </button>
               {contactOpen && (
-                <div className="px-4 pb-4 space-y-3">
-                  {/* Contact name */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center justify-center h-7 w-7 rounded-full bg-[#3A3A44] text-[10px] font-bold text-[#FAFBFF]">
-                        {(lead.contact_name || "?")[0]?.toUpperCase()}
-                      </div>
-                      {editingField === "contact_name" ? (
+                <div className="px-4 pb-4 space-y-2">
+                  {[
+                    { field: "contact_name" as const, icon: Users2, label: "Name", value: lead.contact_name },
+                    { field: "contact_email" as const, icon: Mail, label: "Email", value: lead.contact_email },
+                    { field: "contact_phone" as const, icon: Phone, label: "Telefon", value: lead.contact_phone },
+                  ].map(({ field, icon: Icon, label, value }) => (
+                    <div key={field} className="flex items-center gap-2">
+                      <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
+                      {editingField === field ? (
                         <Input
                           autoFocus
-                          value={lead.contact_name || ""}
-                          onChange={e => setLead(p => p ? { ...p, contact_name: e.target.value } : p)}
-                          onBlur={() => saveField("contact_name", lead.contact_name)}
-                          onKeyDown={e => e.key === "Enter" && saveField("contact_name", lead.contact_name)}
-                          className="h-7 bg-[#1E1E24] border-[#3A3A44] text-sm w-40"
+                          value={value || ""}
+                          onChange={e => setLead(p => p ? { ...p, [field]: e.target.value } : p)}
+                          onBlur={() => saveField(field, (lead as any)[field])}
+                          onKeyDown={e => e.key === "Enter" && saveField(field, (lead as any)[field])}
+                          className="h-6 bg-[#1E1E24] border-[#3A3A44] text-xs flex-1"
                         />
                       ) : (
-                        <button onClick={() => setEditingField("contact_name")} className="text-sm font-medium text-[#FAFBFF] hover:text-primary transition-colors">
-                          {lead.contact_name || "Name hinzufügen..."}
+                        <button onClick={() => setEditingField(field)} className="text-xs text-[#FAFBFF]/60 hover:text-[#FAFBFF] transition-colors truncate">
+                          {value || `${label} hinzufügen...`}
                         </button>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
-                      {lead.contact_email && (
-                        <a href={`mailto:${lead.contact_email}`} className="flex items-center justify-center h-7 w-7 rounded hover:bg-[#3A3A44] text-muted-foreground hover:text-[#FAFBFF] transition-colors">
-                          <Mail className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                      {lead.contact_phone && (
-                        <a href={`tel:${lead.contact_phone}`} className="flex items-center justify-center h-7 w-7 rounded hover:bg-[#3A3A44] text-muted-foreground hover:text-[#FAFBFF] transition-colors">
-                          <Phone className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex items-center gap-2 pl-9">
-                    <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
-                    {editingField === "contact_email" ? (
-                      <Input
-                        autoFocus
-                        value={lead.contact_email || ""}
-                        onChange={e => setLead(p => p ? { ...p, contact_email: e.target.value } : p)}
-                        onBlur={() => saveField("contact_email", lead.contact_email)}
-                        onKeyDown={e => e.key === "Enter" && saveField("contact_email", lead.contact_email)}
-                        className="h-6 bg-[#1E1E24] border-[#3A3A44] text-xs w-48"
-                      />
-                    ) : (
-                      <button onClick={() => setEditingField("contact_email")} className="text-xs text-[#FAFBFF]/60 hover:text-[#FAFBFF] transition-colors">
-                        {lead.contact_email || "Email hinzufügen..."}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Phone */}
-                  <div className="flex items-center gap-2 pl-9">
-                    <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
-                    {editingField === "contact_phone" ? (
-                      <Input
-                        autoFocus
-                        value={lead.contact_phone || ""}
-                        onChange={e => setLead(p => p ? { ...p, contact_phone: e.target.value } : p)}
-                        onBlur={() => saveField("contact_phone", lead.contact_phone)}
-                        onKeyDown={e => e.key === "Enter" && saveField("contact_phone", lead.contact_phone)}
-                        className="h-6 bg-[#1E1E24] border-[#3A3A44] text-xs w-48"
-                      />
-                    ) : (
-                      <button onClick={() => setEditingField("contact_phone")} className="text-xs text-[#FAFBFF]/60 hover:text-[#FAFBFF] transition-colors">
-                        {lead.contact_phone || "Telefon hinzufügen..."}
-                      </button>
-                    )}
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -645,9 +627,20 @@ export default function CRMLeadDetail() {
                     </div>
                   </div>
 
+                  {/* LinkedIn Hint */}
+                  {showLinkedInHint && (
+                    <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
+                      <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="font-medium">LinkedIn kann nicht gescrapt werden</p>
+                        <p className="text-amber-300/70 mt-0.5">Öffne das Profil → "Mehr" → "Als PDF speichern" → Lade die PDF hier hoch ↓</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* PDF Upload */}
                   <div className="space-y-1.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Call-Transkript / Dokument</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Call-Transkript / Dokument / LinkedIn PDF</p>
                     <div className="relative">
                       <input
                         type="file"
