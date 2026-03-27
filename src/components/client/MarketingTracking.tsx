@@ -279,7 +279,12 @@ export default function MarketingTracking({ clientId, canEdit }: Props) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Follower Tracker */}
+      <div className="rounded-xl border border-border bg-card p-4">
+        <FollowerTracker clientId={clientId} canEdit={canEdit} />
+      </div>
+
       {/* Summary Overview */}
       <div className="rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between p-4 border-b border-border">
