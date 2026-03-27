@@ -237,13 +237,21 @@ export default function CRMLeadDetail() {
     fetchLead();
   };
 
-  // Smart Import: URL scrape
+  const isLinkedInUrl = (url: string) => /linkedin\.com/i.test(url);
+  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
+
   const handleUrlImport = async () => {
     if (!importUrl.trim() || !id || !user) return;
+
+    if (isLinkedInUrl(importUrl)) {
+      toast.info("LinkedIn kann nicht gescrapt werden. Lade das Profil als PDF herunter.", { duration: 6000 });
+      setShowLinkedInHint(true);
+      return;
+    }
+
     setImportLoading(true);
     setImportResult(null);
     try {
-      // 1. Scrape URL via Firecrawl
       const { data: scrapeData, error: scrapeErr } = await supabase.functions.invoke("firecrawl-scrape", {
         body: { url: importUrl, options: { formats: ["markdown"], onlyMainContent: true } },
       });
@@ -251,15 +259,12 @@ export default function CRMLeadDetail() {
       const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
       if (!markdown) throw new Error("Keine Inhalte gefunden");
 
-      // 2. Analyze via AI
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: markdown, lead_name: lead?.name, source_type: "url" },
       });
       if (aiErr) throw new Error(aiErr.message);
 
       setImportResult(aiResult);
-
-      // Auto-fill lead fields if empty
       if (aiResult.contact_info) {
         const ci = aiResult.contact_info;
         const updates: any = {};
@@ -273,10 +278,8 @@ export default function CRMLeadDetail() {
         }
       }
 
-      // Save as activity
       await supabase.from("crm_activities").insert({
-        lead_id: id,
-        type: "note" as any,
+        lead_id: id, type: "note" as any,
         title: `🔗 Website analysiert: ${importUrl}`,
         body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
         created_by: user.id,
