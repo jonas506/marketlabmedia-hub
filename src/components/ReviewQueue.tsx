@@ -4,10 +4,10 @@ import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ChevronRight, CheckCircle2, Mail } from "lucide-react";
+import { ChevronRight, Mail, AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
 
 const TYPE_EMOJI: Record<string, string> = { reel: "🎬", carousel: "🖼️", ad: "📢", youtube_longform: "🎥" };
@@ -51,6 +51,11 @@ const ReviewQueue = () => {
     },
   });
 
+  const overdueCount = useMemo(() => {
+    if (!data) return 0;
+    return data.groups.reduce((acc, g) => acc + g.pieces.filter(p => differenceInDays(new Date(), new Date(p.updated_at!)) >= 5).length, 0);
+  }, [data]);
+
   const sendReviewMail = async (clientId: string) => {
     try {
       const { error } = await supabase.functions.invoke("send-review-digest", {
@@ -61,6 +66,19 @@ const ReviewQueue = () => {
       qc.invalidateQueries({ queryKey: ["review-queue-widget"] });
     } catch {
       toast.error("Fehler beim Senden der Mail");
+    }
+  };
+
+  const openApprovalPage = async (clientId: string) => {
+    const { data: client } = await supabase
+      .from("clients")
+      .select("approval_token")
+      .eq("id", clientId)
+      .single();
+    if (client?.approval_token) {
+      window.open(`/approval/${client.approval_token}`, "_blank");
+    } else {
+      toast.error("Kein Freigabe-Token vorhanden");
     }
   };
 
@@ -93,6 +111,12 @@ const ReviewQueue = () => {
         <div className="w-2 h-2 rounded-full bg-status-review" />
         <h3 className="text-sm font-display font-semibold">Zur Freigabe</h3>
         <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{data.total}</span>
+        {overdueCount > 0 && (
+          <span className="text-[10px] font-mono text-destructive bg-destructive/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <AlertTriangle className="h-3 w-3" />
+            {overdueCount} überfällig
+          </span>
+        )}
       </div>
 
       <div className="divide-y divide-border">
@@ -104,26 +128,39 @@ const ReviewQueue = () => {
               <span className="text-[10px] font-mono text-muted-foreground">{group.pieces.length}</span>
             </div>
 
-            {group.pieces.map((piece) => (
-              <Link
-                key={piece.id}
-                to={`/client/${piece.client_id}`}
-                className="flex items-center gap-2 px-4 py-2 pl-8 hover:bg-surface-hover transition-colors"
-              >
-                <span className="text-sm">{TYPE_EMOJI[piece.type] || "📄"}</span>
-                <span className="flex-1 text-sm font-body truncate">{piece.title || "Ohne Titel"}</span>
-                {piece.assigned_to && data.profiles[piece.assigned_to] && (
-                  <span className="text-[9px] font-mono text-muted-foreground hidden sm:inline">
-                    {data.profiles[piece.assigned_to]}
-                  </span>
-                )}
-                <span className="text-[10px] font-mono text-status-review">
-                  seit {formatDistanceToNow(new Date(piece.updated_at!), { locale: de })}
-                </span>
-              </Link>
-            ))}
+            {group.pieces.map((piece) => {
+              const daysWaiting = differenceInDays(new Date(), new Date(piece.updated_at!));
+              const isOverdue = daysWaiting >= 5;
 
-            <div className="px-4 py-2 pl-8">
+              return (
+                <Link
+                  key={piece.id}
+                  to={`/client/${piece.client_id}`}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 pl-8 hover:bg-surface-hover transition-colors",
+                    isOverdue && "bg-destructive/5"
+                  )}
+                >
+                  <span className="text-sm">{TYPE_EMOJI[piece.type] || "📄"}</span>
+                  <span className={cn("flex-1 text-sm font-body truncate", isOverdue && "text-destructive font-semibold")}>
+                    {piece.title || "Ohne Titel"}
+                  </span>
+                  {piece.assigned_to && data.profiles[piece.assigned_to] && (
+                    <span className="text-[9px] font-mono text-muted-foreground hidden sm:inline">
+                      {data.profiles[piece.assigned_to]}
+                    </span>
+                  )}
+                  <span className={cn(
+                    "text-[10px] font-mono whitespace-nowrap",
+                    isOverdue ? "text-destructive font-semibold" : "text-status-review"
+                  )}>
+                    {isOverdue && "⚠️ "}seit {formatDistanceToNow(new Date(piece.updated_at!), { locale: de })}
+                  </span>
+                </Link>
+              );
+            })}
+
+            <div className="flex items-center gap-2 px-4 py-2 pl-8">
               <Button
                 variant="ghost"
                 size="sm"
@@ -135,6 +172,18 @@ const ReviewQueue = () => {
               >
                 <Mail className="h-3 w-3 mr-1" />
                 Freigabe-Mail senden
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-[10px] font-mono text-muted-foreground hover:text-primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openApprovalPage(group.clientId);
+                }}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Freigabe-Seite öffnen
               </Button>
             </div>
           </div>
