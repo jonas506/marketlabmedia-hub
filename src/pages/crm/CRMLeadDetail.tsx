@@ -16,7 +16,9 @@ import {
   ArrowLeft, StickyNote, Phone, Mail, Users2, Globe, Save,
   ChevronDown, ChevronRight, Plus, ExternalLink, Lightbulb,
   Search, Filter, MoreHorizontal, CheckSquare, CalendarIcon, Clock,
+  Sparkles, Upload, Link2, Loader2, FileText,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
