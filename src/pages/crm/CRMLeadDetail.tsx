@@ -236,6 +236,114 @@ export default function CRMLeadDetail() {
     fetchLead();
   };
 
+  // Smart Import: URL scrape
+  const handleUrlImport = async () => {
+    if (!importUrl.trim() || !id || !user) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      // 1. Scrape URL via Firecrawl
+      const { data: scrapeData, error: scrapeErr } = await supabase.functions.invoke("firecrawl-scrape", {
+        body: { url: importUrl, options: { formats: ["markdown"], onlyMainContent: true } },
+      });
+      if (scrapeErr) throw new Error(scrapeErr.message);
+      const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
+      if (!markdown) throw new Error("Keine Inhalte gefunden");
+
+      // 2. Analyze via AI
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: markdown, lead_name: lead?.name, source_type: "url" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setImportResult(aiResult);
+
+      // Auto-fill lead fields if empty
+      if (aiResult.contact_info) {
+        const ci = aiResult.contact_info;
+        const updates: any = {};
+        if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
+        if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
+        if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
+        if (ci.website && !lead?.website) updates.website = ci.website;
+        if (Object.keys(updates).length > 0) {
+          await supabase.from("crm_leads").update(updates).eq("id", id);
+          setLead(p => p ? { ...p, ...updates } : p);
+        }
+      }
+
+      // Save as activity
+      await supabase.from("crm_activities").insert({
+        lead_id: id,
+        type: "note" as any,
+        title: `🔗 Website analysiert: ${importUrl}`,
+        body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
+        created_by: user.id,
+      });
+
+      toast.success("Website analysiert & importiert");
+      setImportUrl("");
+      fetchLead();
+    } catch (err: any) {
+      toast.error(err.message || "Import fehlgeschlagen");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  // Smart Import: PDF upload
+  const handlePdfImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id || !user) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      // Read file as text
+      const text = await file.text();
+      if (!text.trim()) throw new Error("Dokument ist leer");
+
+      // Analyze via AI
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: text, lead_name: lead?.name, source_type: "pdf" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setImportResult(aiResult);
+
+      // Save as activity
+      await supabase.from("crm_activities").insert({
+        lead_id: id,
+        type: "note" as any,
+        title: `📄 Dokument analysiert: ${file.name}`,
+        body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
+        created_by: user.id,
+      });
+
+      toast.success("Dokument analysiert");
+      fetchLead();
+    } catch (err: any) {
+      toast.error(err.message || "Import fehlgeschlagen");
+    } finally {
+      setImportLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  // Create tasks from AI result
+  const createTasksFromResult = async (nextSteps: string[]) => {
+    if (!id || !user) return;
+    for (const step of nextSteps) {
+      await supabase.from("crm_tasks").insert({
+        lead_id: id,
+        title: step,
+        assigned_to: user.id,
+      } as any);
+    }
+    toast.success(`${nextSteps.length} Aufgabe(n) erstellt`);
+    setImportResult(null);
+    fetchLead();
+  };
+
   const filteredActivities = activities.filter(act => {
     const typeFilter = FILTER_MAP[timelineFilter];
     if (typeFilter && act.type !== typeFilter) return false;
