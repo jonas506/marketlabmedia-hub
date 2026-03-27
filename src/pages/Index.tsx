@@ -10,6 +10,7 @@ import TeamWorkloadWidget from "@/components/TeamWorkloadWidget";
 import BottleneckAlert from "@/components/BottleneckAlert";
 import ReviewQueue from "@/components/ReviewQueue";
 import CutterFocusBoard from "@/components/CutterFocusBoard";
+import ContractRunwayWidget from "@/components/ContractRunwayWidget";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
@@ -70,6 +71,7 @@ const Dashboard = () => {
         {role === "admin" && (
           <>
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
+            <ErrorBoundary level="widget"><ContractRunwayWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><BottleneckAlert /></ErrorBoundary>
             <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>

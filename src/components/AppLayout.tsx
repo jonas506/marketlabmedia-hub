@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
@@ -16,16 +16,12 @@ import GlobalSearch from "@/components/GlobalSearch";
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
-  { to: "/activity", label: "Aktivität", icon: Activity, roles: ["admin", "head_of_content"] },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
   { to: "/content-base", label: "Content Base", icon: Database },
-  { to: "/strategy-boards", label: "Strategy Boards", icon: Presentation, roles: ["admin", "head_of_content"] },
-  { to: "/marketing", label: "Marketing", icon: BarChart3, roles: ["admin", "head_of_content"] },
   { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
-  { to: "/contracts", label: "Verträge", icon: CalendarRange, roles: ["admin"] },
-  { to: "/team", label: "Team", icon: Users, roles: ["admin"] },
+  { to: "/team", label: "Einstellungen", icon: Settings, roles: ["admin"] },
 ];
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -136,10 +132,20 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-[58px] flex-col items-center bg-sidebar border-r border-sidebar-border py-4 gap-2">
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary mb-4">
+        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary mb-2">
           <img src={logoLight} alt="Marketlab" className="h-4 w-auto brightness-200" />
         </div>
-        <nav className="flex-1 flex flex-col items-center gap-1 pt-2">
+
+        {/* Search button at top */}
+        <button
+          onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+          className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all mb-2"
+          title="Suche (⌘K)"
+        >
+          <Search className="h-[18px] w-[18px]" />
+        </button>
+
+        <nav className="flex-1 flex flex-col items-center gap-1">
           {filteredNav.map(({ to, label, icon: Icon }) => {
             const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
             return (
@@ -161,14 +167,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             );
           })}
         </nav>
-        <div className="flex flex-col items-center gap-2 pb-2">
-          <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-            className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all"
-            title="Suche (⌘K)"
-          >
-            <Search className="h-[18px] w-[18px]" />
-          </button>
+        <div className="flex flex-col items-center gap-1.5 pb-2">
           <NotificationBell />
           <button
             onClick={toggleTheme}

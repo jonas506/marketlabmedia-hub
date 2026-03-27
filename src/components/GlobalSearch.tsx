@@ -25,16 +25,12 @@ function useDebounce<T>(value: T, delay: number): T {
 const NAV_ITEMS = [
   { label: "Dashboard", to: "/", icon: LayoutDashboard },
   { label: "Aufgaben", to: "/tasks", icon: CheckSquare },
-  { label: "Aktivität", to: "/activity", icon: Activity, roles: ["admin", "head_of_content"] },
   { label: "Checklisten", to: "/checklists", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { label: "SOPs", to: "/sops", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { label: "Prompts", to: "/prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
   { label: "Content Base", to: "/content-base", icon: Database },
-  { label: "Strategy Boards", to: "/strategy-boards", icon: Presentation, roles: ["admin", "head_of_content"] },
-  { label: "Marketing", to: "/marketing", icon: BarChart3, roles: ["admin", "head_of_content"] },
   { label: "CRM", to: "/crm", icon: Briefcase, roles: ["admin"] },
-  { label: "Verträge", to: "/contracts", icon: CalendarRange, roles: ["admin"] },
-  { label: "Team", to: "/team", icon: Users, roles: ["admin"] },
+  { label: "Einstellungen", to: "/team", icon: Users, roles: ["admin"] },
 ];
 
 const PIECE_ICONS: Record<string, React.ComponentType<any>> = {
