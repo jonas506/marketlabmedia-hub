@@ -83,8 +83,18 @@ export default function CRMLeads() {
     setPdfFiles([]);
   };
 
+  const isLinkedInUrl = (url: string) => /linkedin\.com/i.test(url);
+
   const handleScrapeUrl = async () => {
     if (!importUrl.trim()) return;
+
+    // LinkedIn detection
+    if (isLinkedInUrl(importUrl)) {
+      toast.info("LinkedIn kann nicht automatisch gescrapt werden. Bitte lade das Profil als PDF herunter.", { duration: 6000 });
+      setShowLinkedInHint(true);
+      return;
+    }
+
     setImportLoading(true);
     try {
       const formatted = importUrl.startsWith("http") ? importUrl : `https://${importUrl}`;
@@ -101,7 +111,6 @@ export default function CRMLeads() {
       if (aiErr) throw new Error(aiErr.message);
 
       setImportResult(aiResult);
-      // Auto-fill fields
       const ci = aiResult.contact_info || {};
       setNewLead(p => ({
         ...p,
