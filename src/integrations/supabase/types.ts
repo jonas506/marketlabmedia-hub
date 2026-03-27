@@ -516,6 +516,7 @@ export type Database = {
           drive_styleguide_link: string | null
           id: string
           industry: string | null
+          instagram_handle: string | null
           logo_url: string | null
           monthly_carousels: number
           monthly_price: number | null
@@ -531,10 +532,12 @@ export type Database = {
           strategy_text: string | null
           summary: string | null
           target_audience: string | null
+          tiktok_handle: string | null
           tonality: string | null
           updated_at: string
           usps: string | null
           website_url: string | null
+          youtube_channel_id: string | null
         }
         Insert: {
           additional_products?: string[] | null
@@ -552,6 +555,7 @@ export type Database = {
           drive_styleguide_link?: string | null
           id?: string
           industry?: string | null
+          instagram_handle?: string | null
           logo_url?: string | null
           monthly_carousels?: number
           monthly_price?: number | null
@@ -567,10 +571,12 @@ export type Database = {
           strategy_text?: string | null
           summary?: string | null
           target_audience?: string | null
+          tiktok_handle?: string | null
           tonality?: string | null
           updated_at?: string
           usps?: string | null
           website_url?: string | null
+          youtube_channel_id?: string | null
         }
         Update: {
           additional_products?: string[] | null
@@ -588,6 +594,7 @@ export type Database = {
           drive_styleguide_link?: string | null
           id?: string
           industry?: string | null
+          instagram_handle?: string | null
           logo_url?: string | null
           monthly_carousels?: number
           monthly_price?: number | null
@@ -603,10 +610,12 @@ export type Database = {
           strategy_text?: string | null
           summary?: string | null
           target_audience?: string | null
+          tiktok_handle?: string | null
           tonality?: string | null
           updated_at?: string
           usps?: string | null
           website_url?: string | null
+          youtube_channel_id?: string | null
         }
         Relationships: []
       }
@@ -1593,6 +1602,41 @@ export type Database = {
           used_at?: string | null
         }
         Relationships: []
+      }
+      follower_snapshots: {
+        Row: {
+          client_id: string
+          created_at: string
+          follower_count: number
+          id: string
+          platform: string
+          snapshot_date: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          follower_count: number
+          id?: string
+          platform: string
+          snapshot_date?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          follower_count?: number
+          id?: string
+          platform?: string
+          snapshot_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follower_snapshots_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       landing_page_templates: {
         Row: {
