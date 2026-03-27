@@ -16,7 +16,9 @@ import {
   ArrowLeft, StickyNote, Phone, Mail, Users2, Globe, Save,
   ChevronDown, ChevronRight, Plus, ExternalLink, Lightbulb,
   Search, Filter, MoreHorizontal, CheckSquare, CalendarIcon, Clock,
+  Sparkles, Upload, Link2, Loader2, FileText,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
@@ -128,12 +130,18 @@ export default function CRMLeadDetail() {
   const [oppsOpen, setOppsOpen] = useState(true);
   const [contactOpen, setContactOpen] = useState(true);
   const [tasksOpen, setTasksOpen] = useState(true);
+  const [smartImportOpen, setSmartImportOpen] = useState(true);
 
   // Tasks state
   const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDate, setNewTaskDate] = useState<Date | undefined>();
   const [newTaskTime, setNewTaskTime] = useState("");
+
+  // Smart Import state
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
 
   const fetchLead = async () => {
     if (!id) return;
@@ -225,6 +233,114 @@ export default function CRMLeadDetail() {
       is_completed: completed,
       completed_at: completed ? new Date().toISOString() : null,
     }).eq("id", task.id);
+    fetchLead();
+  };
+
+  // Smart Import: URL scrape
+  const handleUrlImport = async () => {
+    if (!importUrl.trim() || !id || !user) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      // 1. Scrape URL via Firecrawl
+      const { data: scrapeData, error: scrapeErr } = await supabase.functions.invoke("firecrawl-scrape", {
+        body: { url: importUrl, options: { formats: ["markdown"], onlyMainContent: true } },
+      });
+      if (scrapeErr) throw new Error(scrapeErr.message);
+      const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
+      if (!markdown) throw new Error("Keine Inhalte gefunden");
+
+      // 2. Analyze via AI
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: markdown, lead_name: lead?.name, source_type: "url" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setImportResult(aiResult);
+
+      // Auto-fill lead fields if empty
+      if (aiResult.contact_info) {
+        const ci = aiResult.contact_info;
+        const updates: any = {};
+        if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
+        if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
+        if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
+        if (ci.website && !lead?.website) updates.website = ci.website;
+        if (Object.keys(updates).length > 0) {
+          await supabase.from("crm_leads").update(updates).eq("id", id);
+          setLead(p => p ? { ...p, ...updates } : p);
+        }
+      }
+
+      // Save as activity
+      await supabase.from("crm_activities").insert({
+        lead_id: id,
+        type: "note" as any,
+        title: `🔗 Website analysiert: ${importUrl}`,
+        body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
+        created_by: user.id,
+      });
+
+      toast.success("Website analysiert & importiert");
+      setImportUrl("");
+      fetchLead();
+    } catch (err: any) {
+      toast.error(err.message || "Import fehlgeschlagen");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  // Smart Import: PDF upload
+  const handlePdfImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id || !user) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      // Read file as text
+      const text = await file.text();
+      if (!text.trim()) throw new Error("Dokument ist leer");
+
+      // Analyze via AI
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: text, lead_name: lead?.name, source_type: "pdf" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setImportResult(aiResult);
+
+      // Save as activity
+      await supabase.from("crm_activities").insert({
+        lead_id: id,
+        type: "note" as any,
+        title: `📄 Dokument analysiert: ${file.name}`,
+        body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
+        created_by: user.id,
+      });
+
+      toast.success("Dokument analysiert");
+      fetchLead();
+    } catch (err: any) {
+      toast.error(err.message || "Import fehlgeschlagen");
+    } finally {
+      setImportLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  // Create tasks from AI result
+  const createTasksFromResult = async (nextSteps: string[]) => {
+    if (!id || !user) return;
+    for (const step of nextSteps) {
+      await supabase.from("crm_tasks").insert({
+        lead_id: id,
+        title: step,
+        assigned_to: user.id,
+      } as any);
+    }
+    toast.success(`${nextSteps.length} Aufgabe(n) erstellt`);
+    setImportResult(null);
     fetchLead();
   };
 
@@ -491,6 +607,117 @@ export default function CRMLeadDetail() {
                       </button>
                     )}
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* SMART IMPORT section */}
+            <div className="border-b border-[#3A3A44]">
+              <button
+                onClick={() => setSmartImportOpen(!smartImportOpen)}
+                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
+              >
+                {smartImportOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                <Sparkles className="h-3 w-3" />
+                Smart Import
+              </button>
+              {smartImportOpen && (
+                <div className="px-4 pb-4 space-y-3">
+                  {/* URL Input */}
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Website scrapen</p>
+                    <div className="flex gap-1.5">
+                      <div className="relative flex-1">
+                        <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          placeholder="https://beispiel.de"
+                          value={importUrl}
+                          onChange={e => setImportUrl(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && handleUrlImport()}
+                          className="h-8 pl-7 text-xs bg-[#1E1E24] border-[#3A3A44]"
+                          disabled={importLoading}
+                        />
+                      </div>
+                      <Button size="sm" className="h-8 px-2.5 text-xs gap-1" onClick={handleUrlImport} disabled={importLoading || !importUrl.trim()}>
+                        {importLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Analysieren
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* PDF Upload */}
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Call-Transkript / Dokument</p>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".txt,.pdf,.md,.csv"
+                        onChange={handlePdfImport}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={importLoading}
+                      />
+                      <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-[#3A3A44] py-3 text-xs text-muted-foreground hover:bg-[#2A2A32]/50 transition-colors">
+                        {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {importLoading ? "Wird analysiert..." : "Datei hochladen & analysieren"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Result */}
+                  {importResult && (
+                    <div className="space-y-2.5 rounded-lg bg-[#1E1E24] p-3 border border-primary/20">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-xs font-semibold text-primary">AI-Zusammenfassung</span>
+                      </div>
+                      <p className="text-xs text-[#FAFBFF]/80 leading-relaxed">{importResult.summary}</p>
+
+                      {importResult.key_points?.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Wichtige Punkte</p>
+                          {importResult.key_points.map((p: string, i: number) => (
+                            <div key={i} className="flex items-start gap-1.5 text-xs text-[#FAFBFF]/60">
+                              <span className="text-primary mt-0.5">•</span>
+                              {p}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {importResult.next_steps?.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Nächste Schritte</p>
+                          {importResult.next_steps.map((s: string, i: number) => (
+                            <div key={i} className="flex items-start gap-1.5 text-xs text-[#FAFBFF]/60">
+                              <CheckSquare className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
+                              {s}
+                            </div>
+                          ))}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full h-7 text-xs gap-1.5 mt-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                            onClick={() => createTasksFromResult(importResult.next_steps)}
+                          >
+                            <Plus className="h-3 w-3" />
+                            {importResult.next_steps.length} Aufgabe(n) erstellen
+                          </Button>
+                        </div>
+                      )}
+
+                      {importResult.contact_info && (importResult.contact_info.name || importResult.contact_info.email) && (
+                        <div className="flex flex-wrap gap-1">
+                          {importResult.contact_info.name && <Badge variant="secondary" className="text-[10px]">👤 {importResult.contact_info.name}</Badge>}
+                          {importResult.contact_info.email && <Badge variant="secondary" className="text-[10px]">✉️ {importResult.contact_info.email}</Badge>}
+                          {importResult.contact_info.phone && <Badge variant="secondary" className="text-[10px]">📞 {importResult.contact_info.phone}</Badge>}
+                        </div>
+                      )}
+
+                      <Button variant="ghost" size="sm" className="h-6 text-[10px] text-muted-foreground" onClick={() => setImportResult(null)}>
+                        Schließen
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
