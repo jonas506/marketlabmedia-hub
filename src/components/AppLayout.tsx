@@ -132,10 +132,20 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-[58px] flex-col items-center bg-sidebar border-r border-sidebar-border py-4 gap-2">
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary mb-4">
+        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary mb-2">
           <img src={logoLight} alt="Marketlab" className="h-4 w-auto brightness-200" />
         </div>
-        <nav className="flex-1 flex flex-col items-center gap-1 pt-2">
+
+        {/* Search button at top */}
+        <button
+          onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+          className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all mb-2"
+          title="Suche (⌘K)"
+        >
+          <Search className="h-[18px] w-[18px]" />
+        </button>
+
+        <nav className="flex-1 flex flex-col items-center gap-1">
           {filteredNav.map(({ to, label, icon: Icon }) => {
             const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
             return (
@@ -157,14 +167,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             );
           })}
         </nav>
-        <div className="flex flex-col items-center gap-2 pb-2">
-          <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-            className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all"
-            title="Suche (⌘K)"
-          >
-            <Search className="h-[18px] w-[18px]" />
-          </button>
+        <div className="flex flex-col items-center gap-1.5 pb-2">
           <NotificationBell />
           <button
             onClick={toggleTheme}

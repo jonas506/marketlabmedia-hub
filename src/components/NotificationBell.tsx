@@ -251,13 +251,13 @@ export default function NotificationBell() {
   const bellButton = (
     <button
       onClick={() => setPanelOpen(!panelOpen)}
-      className="relative flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground/50 hover:bg-surface-elevated hover:text-sidebar-foreground transition-all"
+      className="relative flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/50 hover:bg-primary/10 hover:text-primary transition-all duration-200"
       title="Benachrichtigungen"
     >
-      <Bell className="h-[18px] w-[18px]" />
+      <Bell className="h-[17px] w-[17px]" />
       {unreadCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground font-mono text-[9px] font-bold">
-          {unreadCount > 99 ? "99+" : unreadCount}
+        <span className="absolute top-0.5 right-0.5 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-primary text-primary-foreground font-mono text-[8px] font-bold ring-2 ring-sidebar">
+          {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       )}
     </button>

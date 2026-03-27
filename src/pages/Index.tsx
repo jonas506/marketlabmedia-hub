@@ -71,6 +71,7 @@ const Dashboard = () => {
         {role === "admin" && (
           <>
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
+            <ErrorBoundary level="widget"><ContractRunwayWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><BottleneckAlert /></ErrorBoundary>
             <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>
