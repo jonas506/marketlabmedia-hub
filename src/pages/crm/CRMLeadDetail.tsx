@@ -611,6 +611,117 @@ export default function CRMLeadDetail() {
               )}
             </div>
 
+            {/* SMART IMPORT section */}
+            <div className="border-b border-[#3A3A44]">
+              <button
+                onClick={() => setSmartImportOpen(!smartImportOpen)}
+                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
+              >
+                {smartImportOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                <Sparkles className="h-3 w-3" />
+                Smart Import
+              </button>
+              {smartImportOpen && (
+                <div className="px-4 pb-4 space-y-3">
+                  {/* URL Input */}
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Website scrapen</p>
+                    <div className="flex gap-1.5">
+                      <div className="relative flex-1">
+                        <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          placeholder="https://beispiel.de"
+                          value={importUrl}
+                          onChange={e => setImportUrl(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && handleUrlImport()}
+                          className="h-8 pl-7 text-xs bg-[#1E1E24] border-[#3A3A44]"
+                          disabled={importLoading}
+                        />
+                      </div>
+                      <Button size="sm" className="h-8 px-2.5 text-xs gap-1" onClick={handleUrlImport} disabled={importLoading || !importUrl.trim()}>
+                        {importLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Analysieren
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* PDF Upload */}
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Call-Transkript / Dokument</p>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".txt,.pdf,.md,.csv"
+                        onChange={handlePdfImport}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={importLoading}
+                      />
+                      <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-[#3A3A44] py-3 text-xs text-muted-foreground hover:bg-[#2A2A32]/50 transition-colors">
+                        {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {importLoading ? "Wird analysiert..." : "Datei hochladen & analysieren"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Result */}
+                  {importResult && (
+                    <div className="space-y-2.5 rounded-lg bg-[#1E1E24] p-3 border border-primary/20">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-xs font-semibold text-primary">AI-Zusammenfassung</span>
+                      </div>
+                      <p className="text-xs text-[#FAFBFF]/80 leading-relaxed">{importResult.summary}</p>
+
+                      {importResult.key_points?.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Wichtige Punkte</p>
+                          {importResult.key_points.map((p: string, i: number) => (
+                            <div key={i} className="flex items-start gap-1.5 text-xs text-[#FAFBFF]/60">
+                              <span className="text-primary mt-0.5">•</span>
+                              {p}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {importResult.next_steps?.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Nächste Schritte</p>
+                          {importResult.next_steps.map((s: string, i: number) => (
+                            <div key={i} className="flex items-start gap-1.5 text-xs text-[#FAFBFF]/60">
+                              <CheckSquare className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
+                              {s}
+                            </div>
+                          ))}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full h-7 text-xs gap-1.5 mt-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                            onClick={() => createTasksFromResult(importResult.next_steps)}
+                          >
+                            <Plus className="h-3 w-3" />
+                            {importResult.next_steps.length} Aufgabe(n) erstellen
+                          </Button>
+                        </div>
+                      )}
+
+                      {importResult.contact_info && (importResult.contact_info.name || importResult.contact_info.email) && (
+                        <div className="flex flex-wrap gap-1">
+                          {importResult.contact_info.name && <Badge variant="secondary" className="text-[10px]">👤 {importResult.contact_info.name}</Badge>}
+                          {importResult.contact_info.email && <Badge variant="secondary" className="text-[10px]">✉️ {importResult.contact_info.email}</Badge>}
+                          {importResult.contact_info.phone && <Badge variant="secondary" className="text-[10px]">📞 {importResult.contact_info.phone}</Badge>}
+                        </div>
+                      )}
+
+                      <Button variant="ghost" size="sm" className="h-6 text-[10px] text-muted-foreground" onClick={() => setImportResult(null)}>
+                        Schließen
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* TASKS section */}
             <div className="border-b border-[#3A3A44]">
               <button
