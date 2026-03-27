@@ -51,8 +51,13 @@ export default function CRMLeads() {
   const [statuses, setStatuses] = useState<LeadStatus[]>([]);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
+  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "", website: "" });
   const [loading, setLoading] = useState(true);
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
+  const [pdfFiles, setPdfFiles] = useState<{ name: string; text: string }[]>([]);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const fetchData = async () => {
     const [{ data: leadsData }, { data: statusData }] = await Promise.all([
