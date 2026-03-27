@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, Kanban, Settings, ArrowLeft } from "lucide-react";
+import { Users, Kanban, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AppLayout from "@/components/AppLayout";
 
 const crmNav = [
   { to: "/crm", label: "Kunden", icon: Users, exact: true },
   { to: "/crm/pipelines", label: "Pipelines", icon: Kanban },
-  { to: "/crm/settings", label: "Einstellungen", icon: Settings },
 ];
 
 const CRMLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {

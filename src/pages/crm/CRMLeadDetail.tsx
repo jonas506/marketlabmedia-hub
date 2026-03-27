@@ -523,7 +523,7 @@ export default function CRMLeadDetail() {
               )}
             </div>
 
-            {/* CONTACT section */}
+            {/* CONTACT – inline in About */}
             <div className="border-b border-[#3A3A44]">
               <button
                 onClick={() => setContactOpen(!contactOpen)}
@@ -534,79 +534,30 @@ export default function CRMLeadDetail() {
                 Kontakt
               </button>
               {contactOpen && (
-                <div className="px-4 pb-4 space-y-3">
-                  {/* Contact name */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center justify-center h-7 w-7 rounded-full bg-[#3A3A44] text-[10px] font-bold text-[#FAFBFF]">
-                        {(lead.contact_name || "?")[0]?.toUpperCase()}
-                      </div>
-                      {editingField === "contact_name" ? (
+                <div className="px-4 pb-4 space-y-2">
+                  {[
+                    { field: "contact_name" as const, icon: Users2, label: "Name", value: lead.contact_name },
+                    { field: "contact_email" as const, icon: Mail, label: "Email", value: lead.contact_email },
+                    { field: "contact_phone" as const, icon: Phone, label: "Telefon", value: lead.contact_phone },
+                  ].map(({ field, icon: Icon, label, value }) => (
+                    <div key={field} className="flex items-center gap-2">
+                      <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
+                      {editingField === field ? (
                         <Input
                           autoFocus
-                          value={lead.contact_name || ""}
-                          onChange={e => setLead(p => p ? { ...p, contact_name: e.target.value } : p)}
-                          onBlur={() => saveField("contact_name", lead.contact_name)}
-                          onKeyDown={e => e.key === "Enter" && saveField("contact_name", lead.contact_name)}
-                          className="h-7 bg-[#1E1E24] border-[#3A3A44] text-sm w-40"
+                          value={value || ""}
+                          onChange={e => setLead(p => p ? { ...p, [field]: e.target.value } : p)}
+                          onBlur={() => saveField(field, (lead as any)[field])}
+                          onKeyDown={e => e.key === "Enter" && saveField(field, (lead as any)[field])}
+                          className="h-6 bg-[#1E1E24] border-[#3A3A44] text-xs flex-1"
                         />
                       ) : (
-                        <button onClick={() => setEditingField("contact_name")} className="text-sm font-medium text-[#FAFBFF] hover:text-primary transition-colors">
-                          {lead.contact_name || "Name hinzufügen..."}
+                        <button onClick={() => setEditingField(field)} className="text-xs text-[#FAFBFF]/60 hover:text-[#FAFBFF] transition-colors truncate">
+                          {value || `${label} hinzufügen...`}
                         </button>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
-                      {lead.contact_email && (
-                        <a href={`mailto:${lead.contact_email}`} className="flex items-center justify-center h-7 w-7 rounded hover:bg-[#3A3A44] text-muted-foreground hover:text-[#FAFBFF] transition-colors">
-                          <Mail className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                      {lead.contact_phone && (
-                        <a href={`tel:${lead.contact_phone}`} className="flex items-center justify-center h-7 w-7 rounded hover:bg-[#3A3A44] text-muted-foreground hover:text-[#FAFBFF] transition-colors">
-                          <Phone className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex items-center gap-2 pl-9">
-                    <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
-                    {editingField === "contact_email" ? (
-                      <Input
-                        autoFocus
-                        value={lead.contact_email || ""}
-                        onChange={e => setLead(p => p ? { ...p, contact_email: e.target.value } : p)}
-                        onBlur={() => saveField("contact_email", lead.contact_email)}
-                        onKeyDown={e => e.key === "Enter" && saveField("contact_email", lead.contact_email)}
-                        className="h-6 bg-[#1E1E24] border-[#3A3A44] text-xs w-48"
-                      />
-                    ) : (
-                      <button onClick={() => setEditingField("contact_email")} className="text-xs text-[#FAFBFF]/60 hover:text-[#FAFBFF] transition-colors">
-                        {lead.contact_email || "Email hinzufügen..."}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Phone */}
-                  <div className="flex items-center gap-2 pl-9">
-                    <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
-                    {editingField === "contact_phone" ? (
-                      <Input
-                        autoFocus
-                        value={lead.contact_phone || ""}
-                        onChange={e => setLead(p => p ? { ...p, contact_phone: e.target.value } : p)}
-                        onBlur={() => saveField("contact_phone", lead.contact_phone)}
-                        onKeyDown={e => e.key === "Enter" && saveField("contact_phone", lead.contact_phone)}
-                        className="h-6 bg-[#1E1E24] border-[#3A3A44] text-xs w-48"
-                      />
-                    ) : (
-                      <button onClick={() => setEditingField("contact_phone")} className="text-xs text-[#FAFBFF]/60 hover:text-[#FAFBFF] transition-colors">
-                        {lead.contact_phone || "Telefon hinzufügen..."}
-                      </button>
-                    )}
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
