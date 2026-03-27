@@ -75,22 +75,120 @@ export default function CRMLeads() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const resetForm = () => {
+    setNewLead({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "", website: "" });
+    setImportUrl("");
+    setImportResult(null);
+    setPdfFiles([]);
+  };
+
+  const handleScrapeUrl = async () => {
+    if (!importUrl.trim()) return;
+    setImportLoading(true);
+    try {
+      const formatted = importUrl.startsWith("http") ? importUrl : `https://${importUrl}`;
+      const { data, error } = await supabase.functions.invoke("firecrawl-scrape", {
+        body: { url: formatted, options: { formats: ["markdown"], onlyMainContent: true } },
+      });
+      if (error) throw new Error(error.message);
+      const markdown = data?.data?.markdown || data?.markdown || "";
+      if (!markdown) throw new Error("Keine Inhalte gefunden");
+
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: markdown, lead_name: newLead.name || importUrl, source_type: "url" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setImportResult(aiResult);
+      // Auto-fill fields
+      const ci = aiResult.contact_info || {};
+      setNewLead(p => ({
+        ...p,
+        name: p.name || ci.company || "",
+        contact_name: p.contact_name || ci.name || "",
+        contact_email: p.contact_email || ci.email || "",
+        contact_phone: p.contact_phone || ci.phone || "",
+        website: p.website || formatted,
+      }));
+      toast.success("Website analysiert!");
+    } catch (err: any) {
+      toast.error(err.message || "Scraping fehlgeschlagen");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfLoading(true);
+    try {
+      const text = await file.text();
+      if (!text.trim()) throw new Error("Dokument ist leer");
+
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: text, lead_name: newLead.name || file.name, source_type: "pdf" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setPdfFiles(prev => [...prev, { name: file.name, text: aiResult.summary || "" }]);
+      setImportResult(aiResult);
+      // Auto-fill
+      const ci = aiResult.contact_info || {};
+      setNewLead(p => ({
+        ...p,
+        name: p.name || ci.company || "",
+        contact_name: p.contact_name || ci.name || "",
+        contact_email: p.contact_email || ci.email || "",
+        contact_phone: p.contact_phone || ci.phone || "",
+      }));
+      toast.success("Dokument analysiert!");
+    } catch (err: any) {
+      toast.error(err.message || "Analyse fehlgeschlagen");
+    } finally {
+      setPdfLoading(false);
+      e.target.value = "";
+    }
+  };
+
   const createLead = async () => {
     if (!newLead.name.trim() || !user) return;
     const defaultStatus = statuses.find(s => s.name === "Neu");
-    const { error } = await supabase.from("crm_leads").insert({
+    const { data: created, error } = await supabase.from("crm_leads").insert({
       name: newLead.name,
       contact_name: newLead.contact_name || null,
       contact_email: newLead.contact_email || null,
       contact_phone: newLead.contact_phone || null,
+      website: newLead.website || null,
       source: newLead.source || null,
       status_id: newLead.status_id || defaultStatus?.id || null,
       created_by: user.id,
-    });
+    }).select("id").single();
     if (error) { toast.error(error.message); return; }
-    toast.success("Lead erstellt");
+
+    // If we have AI results, save activity + create tasks
+    if (created && importResult) {
+      await supabase.from("crm_activities").insert({
+        lead_id: created.id,
+        type: "note" as any,
+        title: importResult.summary?.substring(0, 80) || "Smart Import",
+        body: importResult.summary + (importResult.key_points?.length ? "\n\n" + importResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
+        created_by: user.id,
+      });
+      if (importResult.next_steps?.length) {
+        for (const step of importResult.next_steps) {
+          await supabase.from("crm_tasks").insert({
+            lead_id: created.id,
+            title: step,
+            assigned_to: user.id,
+          } as any);
+        }
+      }
+    }
+
+    toast.success("Lead erstellt" + (importResult?.next_steps?.length ? ` mit ${importResult.next_steps.length} Aufgabe(n)` : ""));
     setShowCreate(false);
-    setNewLead({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
+    resetForm();
     fetchData();
   };
 
