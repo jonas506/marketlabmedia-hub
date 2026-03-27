@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, ExternalLink } from "lucide-react";
+import { Plus, Search, ExternalLink, Link2, Upload, Sparkles, Loader2, FileText, CheckSquare, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import CRMLayout from "../CRM";
@@ -51,8 +51,13 @@ export default function CRMLeads() {
   const [statuses, setStatuses] = useState<LeadStatus[]>([]);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
+  const [newLead, setNewLead] = useState({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "", website: "" });
   const [loading, setLoading] = useState(true);
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
+  const [pdfFiles, setPdfFiles] = useState<{ name: string; text: string }[]>([]);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const fetchData = async () => {
     const [{ data: leadsData }, { data: statusData }] = await Promise.all([
@@ -70,22 +75,120 @@ export default function CRMLeads() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const resetForm = () => {
+    setNewLead({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "", website: "" });
+    setImportUrl("");
+    setImportResult(null);
+    setPdfFiles([]);
+  };
+
+  const handleScrapeUrl = async () => {
+    if (!importUrl.trim()) return;
+    setImportLoading(true);
+    try {
+      const formatted = importUrl.startsWith("http") ? importUrl : `https://${importUrl}`;
+      const { data, error } = await supabase.functions.invoke("firecrawl-scrape", {
+        body: { url: formatted, options: { formats: ["markdown"], onlyMainContent: true } },
+      });
+      if (error) throw new Error(error.message);
+      const markdown = data?.data?.markdown || data?.markdown || "";
+      if (!markdown) throw new Error("Keine Inhalte gefunden");
+
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: markdown, lead_name: newLead.name || importUrl, source_type: "url" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setImportResult(aiResult);
+      // Auto-fill fields
+      const ci = aiResult.contact_info || {};
+      setNewLead(p => ({
+        ...p,
+        name: p.name || ci.company || "",
+        contact_name: p.contact_name || ci.name || "",
+        contact_email: p.contact_email || ci.email || "",
+        contact_phone: p.contact_phone || ci.phone || "",
+        website: p.website || formatted,
+      }));
+      toast.success("Website analysiert!");
+    } catch (err: any) {
+      toast.error(err.message || "Scraping fehlgeschlagen");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfLoading(true);
+    try {
+      const text = await file.text();
+      if (!text.trim()) throw new Error("Dokument ist leer");
+
+      const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
+        body: { content: text, lead_name: newLead.name || file.name, source_type: "pdf" },
+      });
+      if (aiErr) throw new Error(aiErr.message);
+
+      setPdfFiles(prev => [...prev, { name: file.name, text: aiResult.summary || "" }]);
+      setImportResult(aiResult);
+      // Auto-fill
+      const ci = aiResult.contact_info || {};
+      setNewLead(p => ({
+        ...p,
+        name: p.name || ci.company || "",
+        contact_name: p.contact_name || ci.name || "",
+        contact_email: p.contact_email || ci.email || "",
+        contact_phone: p.contact_phone || ci.phone || "",
+      }));
+      toast.success("Dokument analysiert!");
+    } catch (err: any) {
+      toast.error(err.message || "Analyse fehlgeschlagen");
+    } finally {
+      setPdfLoading(false);
+      e.target.value = "";
+    }
+  };
+
   const createLead = async () => {
     if (!newLead.name.trim() || !user) return;
     const defaultStatus = statuses.find(s => s.name === "Neu");
-    const { error } = await supabase.from("crm_leads").insert({
+    const { data: created, error } = await supabase.from("crm_leads").insert({
       name: newLead.name,
       contact_name: newLead.contact_name || null,
       contact_email: newLead.contact_email || null,
       contact_phone: newLead.contact_phone || null,
+      website: newLead.website || null,
       source: newLead.source || null,
       status_id: newLead.status_id || defaultStatus?.id || null,
       created_by: user.id,
-    });
+    }).select("id").single();
     if (error) { toast.error(error.message); return; }
-    toast.success("Lead erstellt");
+
+    // If we have AI results, save activity + create tasks
+    if (created && importResult) {
+      await supabase.from("crm_activities").insert({
+        lead_id: created.id,
+        type: "note" as any,
+        title: importResult.summary?.substring(0, 80) || "Smart Import",
+        body: importResult.summary + (importResult.key_points?.length ? "\n\n" + importResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
+        created_by: user.id,
+      });
+      if (importResult.next_steps?.length) {
+        for (const step of importResult.next_steps) {
+          await supabase.from("crm_tasks").insert({
+            lead_id: created.id,
+            title: step,
+            assigned_to: user.id,
+          } as any);
+        }
+      }
+    }
+
+    toast.success("Lead erstellt" + (importResult?.next_steps?.length ? ` mit ${importResult.next_steps.length} Aufgabe(n)` : ""));
     setShowCreate(false);
-    setNewLead({ name: "", contact_name: "", contact_email: "", contact_phone: "", source: "", status_id: "" });
+    resetForm();
     fetchData();
   };
 
@@ -165,10 +268,85 @@ export default function CRMLeads() {
         </div>
       </div>
 
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-[#2A2A32] border-[#3A3A44] text-[#FAFBFF]">
+      <Dialog open={showCreate} onOpenChange={v => { setShowCreate(v); if (!v) resetForm(); }}>
+        <DialogContent className="bg-[#2A2A32] border-[#3A3A44] text-[#FAFBFF] max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Neuer Lead</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            {/* Smart Import Section */}
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                <Sparkles className="h-3.5 w-3.5" />
+                Smart Import
+              </div>
+
+              {/* URL Scrape */}
+              <div className="flex gap-1.5">
+                <div className="relative flex-1">
+                  <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="https://firmenwebsite.de"
+                    value={importUrl}
+                    onChange={e => setImportUrl(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && (e.preventDefault(), handleScrapeUrl())}
+                    className="pl-8 h-9 bg-[#1E1E24] border-[#3A3A44] text-sm"
+                    disabled={importLoading}
+                  />
+                </div>
+                <Button size="sm" className="h-9 px-3 gap-1.5 text-xs" onClick={handleScrapeUrl} disabled={importLoading || !importUrl.trim()}>
+                  {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  Scrapen
+                </Button>
+              </div>
+
+              {/* PDF Upload */}
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".txt,.pdf,.md,.csv"
+                  onChange={handlePdfUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={pdfLoading || importLoading}
+                />
+                <div className="flex items-center justify-center gap-2 rounded-md border border-dashed border-[#3A3A44] py-2.5 text-xs text-muted-foreground hover:bg-[#1E1E24] transition-colors">
+                  {pdfLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                  {pdfLoading ? "Wird analysiert..." : "Call-Transkript / Dokument hochladen"}
+                </div>
+              </div>
+
+              {/* Uploaded files */}
+              {pdfFiles.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {pdfFiles.map((f, i) => (
+                    <Badge key={i} variant="secondary" className="gap-1 text-[10px]">
+                      <FileText className="h-2.5 w-2.5" />
+                      {f.name}
+                      <X className="h-2.5 w-2.5 cursor-pointer" onClick={() => setPdfFiles(prev => prev.filter((_, j) => j !== i))} />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* AI Result */}
+              {importResult && (
+                <div className="rounded-md bg-[#1E1E24] p-2.5 space-y-2 border border-[#3A3A44]">
+                  <p className="text-xs text-[#FAFBFF]/80 leading-relaxed">{importResult.summary}</p>
+                  {importResult.next_steps?.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Erkannte Aufgaben</p>
+                      {importResult.next_steps.map((s: string, i: number) => (
+                        <div key={i} className="flex items-start gap-1.5 text-[11px] text-[#FAFBFF]/60">
+                          <CheckSquare className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
+                          {s}
+                        </div>
+                      ))}
+                      <p className="text-[10px] text-emerald-400/70 mt-1">↑ Werden beim Erstellen automatisch als Aufgaben angelegt</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Regular fields */}
             <Input placeholder="Firmenname *" value={newLead.name} onChange={e => setNewLead(p => ({ ...p, name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <Input placeholder="Ansprechpartner" value={newLead.contact_name} onChange={e => setNewLead(p => ({ ...p, contact_name: e.target.value }))} className="bg-[#1E1E24] border-[#3A3A44]" />
             <div className="grid gap-3 md:grid-cols-2">
@@ -187,7 +365,9 @@ export default function CRMLeads() {
                 {statuses.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button onClick={createLead} className="w-full">Erstellen</Button>
+            <Button onClick={createLead} className="w-full" disabled={!newLead.name.trim()}>
+              {importResult?.next_steps?.length ? `Erstellen + ${importResult.next_steps.length} Aufgabe(n)` : "Erstellen"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
