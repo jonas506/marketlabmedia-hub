@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import FollowerTracker from "@/components/client/FollowerTracker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
