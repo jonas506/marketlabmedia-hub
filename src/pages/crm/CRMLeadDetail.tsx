@@ -627,9 +627,20 @@ export default function CRMLeadDetail() {
                     </div>
                   </div>
 
+                  {/* LinkedIn Hint */}
+                  {showLinkedInHint && (
+                    <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
+                      <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="font-medium">LinkedIn kann nicht gescrapt werden</p>
+                        <p className="text-amber-300/70 mt-0.5">Öffne das Profil → "Mehr" → "Als PDF speichern" → Lade die PDF hier hoch ↓</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* PDF Upload */}
                   <div className="space-y-1.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Call-Transkript / Dokument</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Call-Transkript / Dokument / LinkedIn PDF</p>
                     <div className="relative">
                       <input
                         type="file"
