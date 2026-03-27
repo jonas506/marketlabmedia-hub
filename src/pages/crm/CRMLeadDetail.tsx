@@ -16,8 +16,9 @@ import {
   ArrowLeft, StickyNote, Phone, Mail, Users2, Globe, Save,
   ChevronDown, ChevronRight, Plus, ExternalLink, Lightbulb,
   Search, Filter, MoreHorizontal, CheckSquare, CalendarIcon, Clock,
-  Sparkles, Upload, Link2, Loader2, FileText,
+  Sparkles, Upload, Link2, Loader2, FileText, AlertTriangle,
 } from "lucide-react";
+import * as pdfjsLib from "pdfjs-dist";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
