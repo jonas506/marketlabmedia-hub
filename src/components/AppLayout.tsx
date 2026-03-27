@@ -16,16 +16,12 @@ import GlobalSearch from "@/components/GlobalSearch";
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
-  { to: "/activity", label: "Aktivität", icon: Activity, roles: ["admin", "head_of_content"] },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
   { to: "/content-base", label: "Content Base", icon: Database },
-  { to: "/strategy-boards", label: "Strategy Boards", icon: Presentation, roles: ["admin", "head_of_content"] },
-  { to: "/marketing", label: "Marketing", icon: BarChart3, roles: ["admin", "head_of_content"] },
   { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
-  { to: "/contracts", label: "Verträge", icon: CalendarRange, roles: ["admin"] },
-  { to: "/team", label: "Team", icon: Users, roles: ["admin"] },
+  { to: "/team", label: "Einstellungen", icon: Settings, roles: ["admin"] },
 ];
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
