@@ -295,18 +295,33 @@ export default function CRMLeadDetail() {
     }
   };
 
-  // Smart Import: PDF upload
+  const extractPdfText = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      pages.push(content.items.map((item: any) => item.str).join(" "));
+    }
+    return pages.join("\n\n");
+  };
+
   const handlePdfImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !id || !user) return;
     setImportLoading(true);
     setImportResult(null);
     try {
-      // Read file as text
-      const text = await file.text();
-      if (!text.trim()) throw new Error("Dokument ist leer");
+      let text: string;
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        text = await extractPdfText(file);
+      } else {
+        text = await file.text();
+      }
+      if (!text.trim()) throw new Error("Dokument ist leer oder konnte nicht gelesen werden");
 
-      // Analyze via AI
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: text, lead_name: lead?.name, source_type: "pdf" },
       });
@@ -314,15 +329,27 @@ export default function CRMLeadDetail() {
 
       setImportResult(aiResult);
 
-      // Save as activity
+      if (aiResult.contact_info) {
+        const ci = aiResult.contact_info;
+        const updates: any = {};
+        if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
+        if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
+        if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
+        if (ci.website && !lead?.website) updates.website = ci.website;
+        if (Object.keys(updates).length > 0) {
+          await supabase.from("crm_leads").update(updates).eq("id", id);
+          setLead(p => p ? { ...p, ...updates } : p);
+        }
+      }
+
       await supabase.from("crm_activities").insert({
-        lead_id: id,
-        type: "note" as any,
+        lead_id: id, type: "note" as any,
         title: `📄 Dokument analysiert: ${file.name}`,
         body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
         created_by: user.id,
       });
 
+      setShowLinkedInHint(false);
       toast.success("Dokument analysiert");
       fetchLead();
     } catch (err: any) {
