@@ -24,7 +24,7 @@ import MarketingDashboard from "./pages/MarketingDashboard";
 import CRMLeads from "./pages/crm/CRMLeads";
 import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
 import CRMPipelines from "./pages/crm/CRMPipelines";
-// CRMSettings removed — pipeline management is inline on Pipelines page
+import CRMCampaigns from "./pages/crm/CRMCampaigns";
 
 import ContractTimeline from "./pages/ContractTimeline";
 import ActivityPage from "./pages/ActivityPage";
@@ -98,7 +98,7 @@ const App = () => (
                   <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
                   <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
-                  
+                  <Route path="/crm/campaigns" element={<ProtectedRoute><CRMCampaigns /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>

@@ -944,6 +944,89 @@ export type Database = {
           },
         ]
       }
+      crm_campaign_entries: {
+        Row: {
+          appointments: number
+          campaign_id: string
+          closings: number
+          created_at: string
+          id: string
+          messages_sent: number
+          notes: string | null
+          replies: number
+          revenue: number | null
+          second_appointments: number
+          week_start: string
+        }
+        Insert: {
+          appointments?: number
+          campaign_id: string
+          closings?: number
+          created_at?: string
+          id?: string
+          messages_sent?: number
+          notes?: string | null
+          replies?: number
+          revenue?: number | null
+          second_appointments?: number
+          week_start: string
+        }
+        Update: {
+          appointments?: number
+          campaign_id?: string
+          closings?: number
+          created_at?: string
+          id?: string
+          messages_sent?: number
+          notes?: string | null
+          replies?: number
+          revenue?: number | null
+          second_appointments?: number
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_campaign_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "crm_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_campaigns: {
+        Row: {
+          channel: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crm_contacts: {
         Row: {
           created_at: string
