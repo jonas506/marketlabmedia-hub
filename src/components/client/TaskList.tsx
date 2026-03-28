@@ -107,6 +107,48 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     });
   }, [tasks, filterPerson]);
 
+  // Group similar tasks by tag for visual collapse
+  type TaskGroup = { type: "single"; task: Task } | { type: "group"; tag: string; tasks: Task[] };
+  const groupedTasks = useMemo((): TaskGroup[] => {
+    const tagGroups: Record<string, Task[]> = {};
+    const singles: Task[] = [];
+    const tagOrder: string[] = [];
+
+    activeTasks.forEach(t => {
+      const tag = t.tag?.toLowerCase().trim();
+      // Group tasks with same tag if there are 2+ with identical tags
+      if (tag) {
+        if (!tagGroups[tag]) { tagGroups[tag] = []; tagOrder.push(tag); }
+        tagGroups[tag].push(t);
+      } else {
+        singles.push(t);
+      }
+    });
+
+    const result: TaskGroup[] = [];
+    // Add singles (no tag) first
+    singles.forEach(t => result.push({ type: "single", task: t }));
+    // Add tag groups - collapse if 3+, otherwise show individually
+    tagOrder.forEach(tag => {
+      const group = tagGroups[tag];
+      if (group.length >= 3) {
+        result.push({ type: "group", tag: group[0].tag!, tasks: group });
+      } else {
+        group.forEach(t => result.push({ type: "single", task: t }));
+      }
+    });
+    return result;
+  }, [activeTasks]);
+
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = useCallback((tag: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      next.has(tag) ? next.delete(tag) : next.add(tag);
+      return next;
+    });
+  }, []);
+
   const archivedTasks = useMemo(() => tasks.filter((t) => t.is_completed), [tasks]);
 
   const addTask = useMutation({
