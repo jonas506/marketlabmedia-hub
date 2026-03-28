@@ -295,247 +295,45 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
           <div className="py-8 text-center text-xs text-muted-foreground/40 font-mono">Keine offenen Aufgaben</div>
         ) : (
           <AnimatePresence mode="popLayout">
-            {activeTasks.map((task) => {
-              const sc = getSC(task.status);
-              const pc = getPC(task.priority);
-              const isOverdue = task.deadline && new Date(task.deadline) < new Date();
-              const isExpanded = expandedTask === task.id;
-
-              return (
-                <motion.div
-                  key={task.id}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, x: 20, transition: { duration: 0.12 } }}
-                  className="monday-row"
-                >
-                  {/* Desktop: Grid layout */}
-                  <div className="hidden md:grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0">
-                    {/* Title cell */}
+            {groupedTasks.map((item) => {
+              if (item.type === "group") {
+                const isOpen = expandedGroups.has(item.tag);
+                const assignees = [...new Set(item.tasks.map(t => t.assigned_to).filter(Boolean))];
+                return (
+                  <motion.div key={`group-${item.tag}`} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="monday-row">
                     <div
-                      className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer group"
-                      onClick={() => setExpandedTask(isExpanded ? null : task.id)}
+                      className="flex items-center gap-2.5 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                      onClick={() => toggleGroup(item.tag)}
                     >
-                      <ChevronRight className={cn("h-3 w-3 text-muted-foreground/30 transition-transform shrink-0", isExpanded && "rotate-90 text-primary")} />
-                      {task.tag && (
-                        <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0", getTagColor(task.tag))}>
-                          {task.tag}
-                        </Badge>
-                      )}
-                      <span className="text-sm font-body truncate group-hover:text-primary transition-colors">{task.title}</span>
-                    </div>
-
-                    {/* Person cell */}
-                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
-                      {canEdit ? (
-                        <Select value={task.assigned_to || "unassigned"} onValueChange={(v) => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })}>
-                          <SelectTrigger className="h-auto w-auto border-0 p-0 shadow-none bg-transparent">
-                            {task.assigned_to ? (
-                              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(task.assigned_to) || ""}>
-                                <span className="text-[9px] font-bold text-white">{getInitials(task.assigned_to)}</span>
-                              </div>
-                            ) : (
-                              <div className="h-7 w-7 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                                <span className="text-[9px] text-muted-foreground/30">+</span>
-                              </div>
-                            )}
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="unassigned">— Keine —</SelectItem>
-                            {team?.map((t) => (<SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
-                      ) : task.assigned_to ? (
-                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(task.assigned_to) || ""}>
-                          <span className="text-[9px] font-bold text-white">{getInitials(task.assigned_to)}</span>
-                        </div>
-                      ) : null}
-                    </div>
-
-                    {/* Status cell */}
-                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
-                      <Select
-                        value={task.status || "not_started"}
-                        onValueChange={(v) => v === "done" ? archiveTask(task.id) : updateTask(task.id, { status: v })}
-                        disabled={!canEdit}
-                      >
-                        <SelectTrigger className={cn("monday-status border-0 shadow-none h-auto cursor-pointer", sc.cssClass)}>
-                          <span>{sc.label}</span>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_CONFIG.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>
-                              <span className="flex items-center gap-2">
-                                <span className={cn("w-2 h-2 rounded-full", s.cssClass)} />
-                                {s.label}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Deadline cell */}
-                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
-                      {canEdit ? (
-                        <MobileDatePicker
-                          selected={task.deadline ? new Date(task.deadline) : undefined}
-                          onSelect={(date) => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
-                        >
-                          <button className={cn(
-                            "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded transition-colors",
-                            isOverdue ? "text-destructive font-semibold bg-destructive/10" : task.deadline ? "text-foreground/70 hover:bg-muted/50" : "text-muted-foreground/30 hover:text-muted-foreground"
-                          )}>
-                            <CalendarIcon className="h-3 w-3" />
-                            {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "—"}
-                          </button>
-                        </MobileDatePicker>
-                      ) : task.deadline ? (
-                        <span className={cn("text-[11px] font-mono", isOverdue ? "text-destructive" : "text-muted-foreground")}>
-                          {format(new Date(task.deadline), "dd MMM", { locale: de })}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    {/* Priority cell */}
-                    <div className="flex justify-center border-l border-border/30 py-2" onClick={(e) => e.stopPropagation()}>
-                      <Select
-                        value={task.priority || "normal"}
-                        onValueChange={(v) => updateTask(task.id, { priority: v })}
-                        disabled={!canEdit}
-                      >
-                        <SelectTrigger className={cn("monday-priority border-0 shadow-none h-auto cursor-pointer", pc.cssClass)}>
-                          <span>{pc.label}</span>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PRIORITY_CONFIG.map((p) => (
-                            <SelectItem key={p.value} value={p.value}>
-                              <span className="flex items-center gap-2">
-                                <span className={cn("w-2 h-2 rounded-full", p.cssClass)} />
-                                {p.label}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Mobile: Card layout */}
-                  <div className="md:hidden px-3 py-3" onClick={() => setExpandedTask(isExpanded ? null : task.id)}>
-                    <div className="flex items-start gap-2">
-                      {canEdit && (
-                        <div className="shrink-0 pt-0.5" onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => archiveTask(task.id)} className="h-5 w-5 rounded border border-border/50 flex items-center justify-center text-muted-foreground/30 active:bg-primary/10">
-                            <span className="text-[9px]">✓</span>
-                          </button>
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          {task.tag && (
-                            <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[16px] rounded border-0 shrink-0", getTagColor(task.tag))}>
-                              {task.tag}
-                            </Badge>
-                          )}
-                          <span className="text-sm font-body truncate">{task.title}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <Select
-                              value={task.status || "not_started"}
-                              onValueChange={(v) => v === "done" ? archiveTask(task.id) : updateTask(task.id, { status: v })}
-                              disabled={!canEdit}
-                            >
-                              <SelectTrigger className={cn("monday-status border-0 shadow-none h-auto cursor-pointer text-[10px] px-2 py-0.5", sc.cssClass)}>
-                                <span>{sc.label}</span>
-                              </SelectTrigger>
-                              <SelectContent>
-                                {STATUS_CONFIG.map((s) => (
-                                  <SelectItem key={s.value} value={s.value}>
-                                    <span className="flex items-center gap-2">
-                                      <span className={cn("w-2 h-2 rounded-full", s.cssClass)} />
-                                      {s.label}
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                      <ChevronRight className={cn("h-3.5 w-3.5 text-muted-foreground/50 transition-transform shrink-0", isOpen && "rotate-90 text-primary")} />
+                      <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0", getTagColor(item.tag))}>
+                        {item.tag}
+                      </Badge>
+                      <span className="text-sm font-display font-semibold">{item.tasks.length}× {item.tag}</span>
+                      <div className="flex-1" />
+                      <div className="flex items-center gap-1">
+                        {assignees.slice(0, 3).map(uid => (
+                          <div key={uid} className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(uid) || ""}>
+                            <span className="text-[8px] font-bold text-white">{getInitials(uid)}</span>
                           </div>
-                          {task.assigned_to && (
-                            <span className="text-[10px] font-mono text-muted-foreground">
-                              {getTeamName(task.assigned_to)?.split(" ")[0]}
-                            </span>
-                          )}
-                          {task.deadline && (
-                            <span className={cn("text-[10px] font-mono", isOverdue ? "text-destructive" : "text-muted-foreground")}>
-                              {format(new Date(task.deadline), "dd. MMM", { locale: de })}
-                            </span>
-                          )}
-                        </div>
+                        ))}
+                        {assignees.length > 3 && <span className="text-[10px] font-mono text-muted-foreground">+{assignees.length - 3}</span>}
                       </div>
-                      <ChevronRight className={cn("h-3 w-3 text-muted-foreground/30 transition-transform shrink-0 mt-1", isExpanded && "rotate-90 text-primary")} />
+                      <span className="text-[10px] font-mono text-muted-foreground/50">{item.tasks.filter(t => t.deadline).length > 0 ? format(new Date(item.tasks.filter(t => t.deadline).sort((a,b) => (a.deadline||'').localeCompare(b.deadline||''))[0].deadline!), "dd MMM", { locale: de }) : ""}</span>
                     </div>
-                  </div>
-
-                  {/* Expanded notes */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-3 sm:px-4 pb-3 pt-0 ml-4 sm:ml-6 space-y-2">
-                          {/* Mobile: show additional controls */}
-                          {isMobile && (
-                            <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
-                              <Select value={task.assigned_to || "unassigned"} onValueChange={(v) => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })} disabled={!canEdit}>
-                                <SelectTrigger className="h-7 text-[11px] border-border/50 bg-background/50 w-auto min-w-[100px]">
-                                  <SelectValue placeholder="Person" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="unassigned">— Keine —</SelectItem>
-                                  {team?.map((t) => (<SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>))}
-                                </SelectContent>
-                              </Select>
-                              <Select value={task.priority || "normal"} onValueChange={(v) => updateTask(task.id, { priority: v })} disabled={!canEdit}>
-                                <SelectTrigger className="h-7 text-[11px] border-border/50 bg-background/50 w-auto min-w-[90px]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {PRIORITY_CONFIG.map((p) => (<SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>))}
-                                </SelectContent>
-                              </Select>
-                              <MobileDatePicker
-                                selected={task.deadline ? new Date(task.deadline) : undefined}
-                                onSelect={(date) => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
-                                disabled={!canEdit}
-                              >
-                                <button className={cn(
-                                  "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded h-7 border border-border/50 bg-background/50",
-                                  isOverdue ? "text-destructive" : task.deadline ? "text-foreground/70" : "text-muted-foreground/50"
-                                )}>
-                                  <CalendarIcon className="h-3 w-3" />
-                                  {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "Deadline"}
-                                </button>
-                              </MobileDatePicker>
-                            </div>
-                          )}
-                          <Textarea
-                            value={localNotes[task.id] ?? task.notes ?? ""}
-                            placeholder="Notizen, Links, Kontext…"
-                            className="min-h-[50px] text-xs font-body bg-background/50 border-border/50 resize-none rounded"
-                            onChange={(e) => handleNotesChange(task.id, e.target.value)}
-                            disabled={!canEdit}
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden border-t border-border/20 bg-muted/10">
+                          {item.tasks.map(task => renderTaskRow(task))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              }
+              return renderTaskRow(item.task);
+            })}
+          </AnimatePresence>
                 </motion.div>
               );
             })}
