@@ -298,6 +298,22 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                               </span>
                             )}
                           </div>
+
+                          {/* Move to next phase button */}
+                          {canEdit && nextPhaseMap[piece.phase] && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="w-full mt-2 h-7 text-[10px] font-mono gap-1 text-muted-foreground hover:text-primary hover:bg-primary/5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onMovePiece(piece.id, nextPhaseMap[piece.phase]);
+                              }}
+                            >
+                              → {phases.find(p => p.key === nextPhaseMap[piece.phase])?.emoji}{" "}
+                              {phases.find(p => p.key === nextPhaseMap[piece.phase])?.label}
+                            </Button>
+                          )}
                         </div>
                       </motion.div>
                     );
