@@ -75,6 +75,7 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
   const dragItemRef = useRef<string | null>(null);
   const isMobile = useIsMobile();
   const isTouchDevice = typeof window !== "undefined" && "ontouchstart" in window;
+  const nextPhaseMap = getNextPhaseMap(phases);
 
   const handleDragStart = useCallback((e: React.DragEvent, pieceId: string) => {
     dragItemRef.current = pieceId;
