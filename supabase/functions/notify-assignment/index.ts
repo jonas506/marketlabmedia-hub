@@ -85,8 +85,10 @@ Deno.serve(async (req) => {
       title: `${typeLabel} "${title}" bearbeiten`,
       assigned_to,
       priority: "normal",
-      status: "open",
+      status: "not_started",
       tag: piece.type,
+      content_piece_id,
+      group_source: "auto_assignment",
     });
 
     if (taskError) {
