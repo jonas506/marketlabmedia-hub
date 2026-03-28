@@ -48,6 +48,13 @@ interface PipelineKanbanProps {
   onOpenScript: (piece: ContentPiece) => void;
 }
 
+const getNextPhaseMap = (phases: PhaseConfig[]) => {
+  const map: Record<string, string> = {};
+  for (let i = 0; i < phases.length - 1; i++) map[phases[i].key] = phases[i + 1].key;
+  map["feedback"] = "review";
+  return map;
+};
+
 const PRIORITY_COLORS: Record<string, string> = {
   urgent: "bg-destructive",
   high: "bg-orange-500",
@@ -68,6 +75,7 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
   const dragItemRef = useRef<string | null>(null);
   const isMobile = useIsMobile();
   const isTouchDevice = typeof window !== "undefined" && "ontouchstart" in window;
+  const nextPhaseMap = getNextPhaseMap(phases);
 
   const handleDragStart = useCallback((e: React.DragEvent, pieceId: string) => {
     dragItemRef.current = pieceId;
@@ -290,6 +298,22 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                               </span>
                             )}
                           </div>
+
+                          {/* Move to next phase button */}
+                          {canEdit && nextPhaseMap[piece.phase] && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="w-full mt-2 h-7 text-[10px] font-mono gap-1 text-muted-foreground hover:text-primary hover:bg-primary/5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onMovePiece(piece.id, nextPhaseMap[piece.phase]);
+                              }}
+                            >
+                              → {phases.find(p => p.key === nextPhaseMap[piece.phase])?.emoji}{" "}
+                              {phases.find(p => p.key === nextPhaseMap[piece.phase])?.label}
+                            </Button>
+                          )}
                         </div>
                       </motion.div>
                     );
