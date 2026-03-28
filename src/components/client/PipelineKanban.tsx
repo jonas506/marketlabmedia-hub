@@ -48,6 +48,13 @@ interface PipelineKanbanProps {
   onOpenScript: (piece: ContentPiece) => void;
 }
 
+const getNextPhaseMap = (phases: PhaseConfig[]) => {
+  const map: Record<string, string> = {};
+  for (let i = 0; i < phases.length - 1; i++) map[phases[i].key] = phases[i + 1].key;
+  map["feedback"] = "review";
+  return map;
+};
+
 const PRIORITY_COLORS: Record<string, string> = {
   urgent: "bg-destructive",
   high: "bg-orange-500",
