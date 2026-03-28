@@ -132,7 +132,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         });
       }
     }
-    await supabase.from("content_pieces").update({ phase: nextPhase }).eq("id", pieceId);
+    const { error } = await supabase.from("content_pieces").update({ phase: nextPhase }).eq("id", pieceId);
+    if (error) {
+      console.error("Move piece error:", error);
+      toast.error("Fehler beim Verschieben", { description: error.message });
+      return;
+    }
     setRecentlyMoved(prev => new Set(prev).add(pieceId));
     setTimeout(() => setRecentlyMoved(prev => { const s = new Set(prev); s.delete(pieceId); return s; }), 600);
     if (nextPhase === "handed_over") {
