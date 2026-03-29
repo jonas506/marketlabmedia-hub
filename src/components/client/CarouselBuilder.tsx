@@ -325,7 +325,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
       for (let i = 0; i < slides.length; i++) {
         const el = slideEls[i];
         if (!el) continue;
-        const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
         const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92));
         const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
         const { error: uploadErr } = await supabase.storage.from("carousel-slides").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
