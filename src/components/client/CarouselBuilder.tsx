@@ -340,6 +340,34 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
 
           {/* Right: Editor */}
           <div className="w-[340px] border-l border-border flex flex-col bg-background">
+            {/* Profile settings */}
+            <div className="p-4 border-b border-border space-y-3">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Profil & Überschrift</label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="w-10 h-10 rounded-full overflow-hidden bg-muted border border-border hover:border-primary/40 transition shrink-0 flex items-center justify-center"
+                >
+                  {avatarSrc ? (
+                    <img src={avatarSrc} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+                <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                <Input
+                  value={customHeading}
+                  onChange={e => setCustomHeading(e.target.value)}
+                  placeholder={handle || client?.name || "Name / Handle"}
+                  className="h-8 text-xs flex-1"
+                />
+                {(customAvatar || customHeading) && (
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0" onClick={() => { setCustomAvatar(null); setCustomHeading(""); }}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
             {/* AI Generate */}
             <div className="p-4 border-b border-border space-y-2">
               <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">KI-Generierung</label>
