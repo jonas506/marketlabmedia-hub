@@ -83,7 +83,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
 
   const wrapper: React.CSSProperties = {
     width: slideW, height: slideH,
-    display: isVisible ? "flex" : "none",
+    display: "flex",
     flexDirection: "column",
     position: "relative",
     overflow: "hidden",
@@ -207,7 +207,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
 
   const wrapper: React.CSSProperties = {
     width: slideW, height: slideH,
-    display: isVisible ? "flex" : "none",
+    display: "flex",
     flexDirection: "column",
     position: "relative",
     overflow: "hidden",
@@ -312,7 +312,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
 
   const wrapper: React.CSSProperties = {
     width: slideW, height: slideH,
-    display: isVisible ? "flex" : "none",
+    display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
@@ -365,7 +365,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
 
   const wrapper: React.CSSProperties = {
     width: slideW, height: slideH,
-    display: isVisible ? "flex" : "none",
+    display: "flex",
     flexDirection: "column",
     position: "relative",
     overflow: "hidden",
@@ -455,7 +455,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
 
   const wrapper: React.CSSProperties = {
     width: slideW, height: slideH,
-    display: isVisible ? "flex" : "none",
+    display: "flex",
     flexDirection: "column",
     position: "relative",
     overflow: "hidden",
@@ -528,7 +528,7 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
 
   const wrapper: React.CSSProperties = {
     width: slideW, height: slideH,
-    display: isVisible ? "flex" : "none",
+    display: "flex",
     flexDirection: "column",
     position: "relative",
     overflow: "hidden",
