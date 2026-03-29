@@ -362,6 +362,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     if (!piece) return;
     setSaving(true);
     try {
+      await ensureFontsLoaded();
       const urls: string[] = [];
       const slideEls = slides.map((_, i) => document.getElementById(`carousel-slide-${i}`));
       slideEls.forEach(el => { if (el) el.style.display = "flex"; });
@@ -370,7 +371,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
         const el = slideEls[i];
         if (!el) continue;
         const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
-        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92));
+        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.95));
         const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
         const { error: uploadErr } = await supabase.storage.from("carousel-slides").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
         if (uploadErr) throw uploadErr;
@@ -393,6 +394,29 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
       });
     } finally { setSaving(false); }
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === "s") {
+        e.preventDefault();
+        saveBrandColors();
+      } else if (mod && e.key === "e") {
+        e.preventDefault();
+        downloadAllJpgs();
+      } else if (e.key === "ArrowLeft" && !mod && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setCurrent(prev => Math.max(0, prev - 1));
+      } else if (e.key === "ArrowRight" && !mod && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setCurrent(prev => Math.min(slides.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, slides.length]);
 
   const copySlideText = (idx: number) => {
     navigator.clipboard.writeText(slides[idx].text);
