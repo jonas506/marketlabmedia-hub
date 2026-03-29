@@ -168,7 +168,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
       )}
 
       {/* Carousel slide images */}
-      {activeType === "carousel" && (activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script") && (
+      {activeType === "carousel" && (activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script" || activePhase === "feedback") && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
