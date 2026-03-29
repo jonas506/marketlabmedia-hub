@@ -9,12 +9,25 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
-  Copy, Check, FileDown, ImageIcon, Upload, Save, Palette,
+  Copy, Check, FileDown, ImageIcon, Upload, Save, Palette, Archive,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import html2canvas from "html2canvas";
+import JSZip from "jszip";
 import { renderThemedSlide, type ThemeId as CarouselThemeId, type BrandColors as ThemeBrandColors } from "./carousel-themes";
+
+const ensureFontsLoaded = async () => {
+  const fontFamilies = ['Inter', 'Playfair Display', 'Outfit', 'Source Sans 3'];
+  try {
+    await Promise.race([
+      Promise.all(fontFamilies.map(font => document.fonts.load(`400 16px "${font}"`))).then(() => document.fonts.ready),
+      new Promise(resolve => setTimeout(resolve, 3000)),
+    ]);
+  } catch {
+    // Fallback to system fonts if loading fails
+  }
+};
 
 interface Slide {
   id: string;
