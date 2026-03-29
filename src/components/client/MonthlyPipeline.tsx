@@ -379,6 +379,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         onDeletePiece={deletePiece}
                         onOpenDetail={setDetailPiece}
                         onOpenScript={setScriptPiece}
+                        onOpenCarouselBuilder={setCarouselBuilderPiece}
                         onTitleChange={handleTitleChange}
                         onPreviewLinkChange={handlePreviewLinkChange}
                         localTitle={localTitles[piece.id]}
