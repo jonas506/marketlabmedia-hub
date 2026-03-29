@@ -293,22 +293,38 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const slideH = selectedFormat === "4:5" ? 625 : 500;
   const exportScale = 1080 / 500; // ~2.16
 
+  // Helper: make all slide wrappers visible for export, restore after
+  const withAllSlidesVisible = async <T,>(fn: () => Promise<T>): Promise<T> => {
+    const wrappers = slides.map((_, i) => {
+      const el = document.getElementById(`carousel-slide-${i}`);
+      return el?.parentElement as HTMLElement | null;
+    });
+    wrappers.forEach(w => { if (w) { w.style.opacity = "1"; w.style.pointerEvents = "auto"; } });
+    try {
+      return await fn();
+    } finally {
+      wrappers.forEach((w, i) => {
+        if (w) { w.style.opacity = i === current ? "1" : "0"; w.style.pointerEvents = i === current ? "auto" : "none"; }
+      });
+    }
+  };
+
   const downloadAllJpgs = async () => {
     setExporting(true);
     try {
       await ensureFontsLoaded();
-      for (let i = 0; i < slides.length; i++) {
-        const el = document.getElementById(`carousel-slide-${i}`);
-        if (!el) continue;
-        el.style.display = "flex";
-        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
-        el.style.display = i === current ? "flex" : "none";
-        const link = document.createElement("a");
-        link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}-slide-${i + 1}.jpg`;
-        link.href = canvas.toDataURL("image/jpeg", 0.95);
-        link.click();
-        await new Promise(r => setTimeout(r, 400));
-      }
+      await withAllSlidesVisible(async () => {
+        for (let i = 0; i < slides.length; i++) {
+          const el = document.getElementById(`carousel-slide-${i}`);
+          if (!el) continue;
+          const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+          const link = document.createElement("a");
+          link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}-slide-${i + 1}.jpg`;
+          link.href = canvas.toDataURL("image/jpeg", 0.95);
+          link.click();
+          await new Promise(r => setTimeout(r, 400));
+        }
+      });
       toast.success(`${slides.length} Slides exportiert!`);
     } catch {
       toast.error("Export fehlgeschlagen — bitte Seite neu laden");
@@ -319,24 +335,24 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     setExporting(true);
     try {
       await ensureFontsLoaded();
-      const zip = new JSZip();
-      const folder = zip.folder("carousel") || zip;
-      for (let i = 0; i < slides.length; i++) {
-        const el = document.getElementById(`carousel-slide-${i}`);
-        if (!el) continue;
-        el.style.display = "flex";
-        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
-        el.style.display = i === current ? "flex" : "none";
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-        const base64 = dataUrl.split(",")[1];
-        folder.file(`slide-${i + 1}.jpg`, base64, { base64: true });
-      }
-      const blob = await zip.generateAsync({ type: "blob" });
-      const link = document.createElement("a");
-      link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}.zip`;
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      URL.revokeObjectURL(link.href);
+      await withAllSlidesVisible(async () => {
+        const zip = new JSZip();
+        const folder = zip.folder("carousel") || zip;
+        for (let i = 0; i < slides.length; i++) {
+          const el = document.getElementById(`carousel-slide-${i}`);
+          if (!el) continue;
+          const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+          const base64 = dataUrl.split(",")[1];
+          folder.file(`slide-${i + 1}.jpg`, base64, { base64: true });
+        }
+        const blob = await zip.generateAsync({ type: "blob" });
+        const link = document.createElement("a");
+        link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}.zip`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
       toast.success(`ZIP mit ${slides.length} Slides heruntergeladen!`);
     } catch {
       toast.error("Export fehlgeschlagen — bitte Seite neu laden");
