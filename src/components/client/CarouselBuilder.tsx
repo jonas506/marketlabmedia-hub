@@ -297,6 +297,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
         .eq("id", piece.id);
       if (updateErr) throw updateErr;
       toast.success(`${urls.length} Slides gespeichert & bereit zur Freigabe!`);
+      onSaved?.();
     } catch (err: any) {
       console.error(err);
       toast.error("Fehler beim Hochladen", { description: err.message });
