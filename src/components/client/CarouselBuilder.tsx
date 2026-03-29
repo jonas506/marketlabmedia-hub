@@ -46,6 +46,9 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [lastPieceId, setLastPieceId] = useState<string | null>(null);
+  const [customHeading, setCustomHeading] = useState("");
+  const [customAvatar, setCustomAvatar] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch client info for branding
   const { data: client } = useQuery({
