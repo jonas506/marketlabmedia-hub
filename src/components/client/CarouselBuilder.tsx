@@ -61,15 +61,40 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     enabled: !!clientId,
   });
 
-  // Reset when piece changes
+  const cacheKey = piece ? `carousel-draft-${piece.id}` : null;
+
+  // Restore from cache when piece changes
   if (piece && piece.id !== lastPieceId) {
     setLastPieceId(piece.id);
-    setSlides(DEFAULT_SLIDES.map(s => ({ ...s, id: genSlideId() })));
-    setCurrent(0);
-    setTopic(piece.title || "");
+    const cached = localStorage.getItem(`carousel-draft-${piece.id}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setSlides(parsed.slides || DEFAULT_SLIDES.map(s => ({ ...s, id: genSlideId() })));
+        setTopic(parsed.topic || piece.title || "");
+        setCurrent(0);
+      } catch {
+        setSlides(DEFAULT_SLIDES.map(s => ({ ...s, id: genSlideId() })));
+        setTopic(piece.title || "");
+        setCurrent(0);
+      }
+    } else {
+      setSlides(DEFAULT_SLIDES.map(s => ({ ...s, id: genSlideId() })));
+      setCurrent(0);
+      setTopic(piece.title || "");
+    }
     setCustomHeading(client?.instagram_handle || "");
     setCustomAvatar(null);
   }
+
+  // Auto-save draft to localStorage
+  useEffect(() => {
+    if (!cacheKey || !lastPieceId) return;
+    const timeout = setTimeout(() => {
+      localStorage.setItem(cacheKey, JSON.stringify({ slides, topic }));
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [slides, topic, cacheKey, lastPieceId]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
