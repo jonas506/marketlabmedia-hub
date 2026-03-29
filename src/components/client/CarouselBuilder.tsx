@@ -512,6 +512,10 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                 {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
                 Alle als JPGs
               </Button>
+              <Button size="sm" variant="secondary" className="h-8 text-xs gap-1.5" onClick={downloadAsZip} disabled={exporting || saving}>
+                {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Archive className="h-3 w-3" />}
+                Alle als ZIP
+              </Button>
               <Button size="sm" className="h-8 text-xs gap-1.5" onClick={saveAndUploadSlides} disabled={saving || exporting}>
                 {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
                 Speichern & Freigabe
