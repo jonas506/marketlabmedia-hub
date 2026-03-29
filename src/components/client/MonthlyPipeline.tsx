@@ -159,6 +159,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     if (nextPhase === "handed_over") {
       fireConfetti();
       toast.success(`${config.emoji} ${config.label.slice(0, -1)} übergeben!`, { description: "Zählt jetzt ins Kontingent 🎯" });
+      toast("✓ Verknüpfte Aufgaben erledigt", { description: "Aufgaben wurden automatisch abgehakt", position: "bottom-right", duration: 3000 });
     } else if (nextPhase === "approved") {
       fireSmallCelebration();
       toast.success(`✅ Freigegeben!`, { description: "Kunde hat freigegeben" });
@@ -169,11 +170,16 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       }
     } else if (nextPhase === "review") {
       toast.success(`👁️ Zur Freigabe`, { description: "Warte auf Kunden-Freigabe" });
+      const piece = monthPieces.find(p => p.id === pieceId);
+      if (piece?.phase === "feedback") {
+        toast("✓ Feedback-Aufgaben erledigt", { description: "Verknüpfte Aufgaben wurden abgehakt", position: "bottom-right", duration: 3000 });
+      }
     } else {
       toast.success(`→ ${getPhaseLabel(nextPhase)}`);
     }
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     qc.invalidateQueries({ queryKey: ["posting-calendar"] });
+    qc.invalidateQueries({ queryKey: ["tasks"] });
   }, [qc, clientId, config, getPhaseLabel, monthPieces, triggerTranscription]);
 
   const bulkMove = useMutation({
