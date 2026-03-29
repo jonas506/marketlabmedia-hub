@@ -4,7 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Printer, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import marketlabLogo from "@/assets/marketlab-logo.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+const getLogoBase64 = async (): Promise<string> => {
+  const response = await fetch(marketlabLogo);
+  const blob = await response.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+    reader.readAsDataURL(blob);
+  });
+};
 
 interface ScriptPiece {
   id: string;
@@ -107,31 +118,40 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     return PHASE_CONFIG.filter((ph) => phases.has(ph.key));
   }, [pieces]);
 
-  const handlePrint = () => {
-    const printContent = scriptPieces.map((piece) => {
+  const handlePrint = async () => {
+    const logoBase64 = await getLogoBase64();
+    const printContent = scriptPieces.map((piece, idx) => {
       const { hooks, body } = parseScript(piece.script_text);
       const typeLabel = TYPE_CONFIG.find((t) => t.key === piece.type)?.label ?? piece.type;
+      const num = String(idx + 1).padStart(2, "0");
 
       let html = `<div class="script-block">`;
-      html += `<h2>${escapeHtml(piece.title || "Ohne Titel")} <span class="type-badge">${typeLabel}</span>`;
-      if (piece.tag) html += ` <span class="tag-badge">${escapeHtml(piece.tag)}</span>`;
-      html += `</h2>`;
+      html += `<div class="script-header">`;
+      html += `<span class="script-number">${num}</span>`;
+      html += `<div class="script-meta">`;
+      html += `<h2>${escapeHtml(piece.title || "Ohne Titel")}</h2>`;
+      html += `<div class="badges"><span class="type-badge">${typeLabel}</span>`;
+      if (piece.tag) html += `<span class="tag-badge">${escapeHtml(piece.tag)}</span>`;
+      html += `</div></div></div>`;
 
       if (hooks.length > 0) {
         html += `<div class="hooks-section">`;
+        html += `<div class="hooks-label">HOOKS</div>`;
         hooks.forEach((hook, i) => {
-          html += `<div class="hook"><span class="hook-label">Hook ${i + 1}:</span> ${escapeHtml(hook)}</div>`;
+          html += `<div class="hook"><span class="hook-num">${i + 1}</span><span class="hook-text">${escapeHtml(hook)}</span></div>`;
         });
         html += `</div>`;
       }
 
       if (body.trim()) {
-        html += `<div class="body-section">${escapeHtml(body).replace(/\n/g, "<br/>")}</div>`;
+        html += `<div class="body-section"><div class="body-label">SKRIPT</div><div class="body-text">${escapeHtml(body).replace(/\n/g, "<br/>")}</div></div>`;
       }
 
       html += `</div>`;
       return html;
     }).join("");
+
+    const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
 
     const win = window.open("", "_blank");
     if (!win) return;
@@ -140,72 +160,174 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Skripte – Teleprompter</title>
+  <title>Skripte – Marketlab Media</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    @page { margin: 2cm; }
+    @page { margin: 0; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 18px;
-      line-height: 1.7;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #fff;
+    }
+    .page-header {
+      padding: 2.5rem 3rem 2rem;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { height: 28px; }
+    .header-right {
+      text-align: right;
+      font-size: 12px;
+      color: #888;
+    }
+    .header-right .date { margin-top: 2px; }
+    .content { padding: 2rem 3rem 3rem; }
+    .doc-title {
+      font-size: 22px;
+      font-weight: 700;
       color: #111;
-      padding: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .doc-subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 2.5rem;
     }
     .script-block {
       page-break-inside: avoid;
-      margin-bottom: 2.5rem;
-      padding-bottom: 2rem;
-      border-bottom: 2px solid #e5e5e5;
+      margin-bottom: 2rem;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      overflow: hidden;
     }
-    .script-block:last-child { border-bottom: none; }
-    h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
+    .script-header {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
     }
-    .type-badge {
-      font-size: 0.7rem;
+    .script-number {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      background: #111;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .script-meta { flex: 1; }
+    h2 {
+      font-size: 15px;
       font-weight: 600;
-      background: #f0f0f0;
-      padding: 0.15rem 0.5rem;
+      color: #111;
+      margin: 0;
+    }
+    .badges { display: flex; gap: 6px; margin-top: 4px; }
+    .type-badge {
+      font-size: 10px;
+      font-weight: 600;
+      background: #111;
+      color: #fff;
+      padding: 2px 8px;
       border-radius: 4px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .tag-badge {
-      font-size: 0.7rem;
-      font-weight: 600;
-      background: #e0e7ff;
-      color: #3730a3;
-      padding: 0.15rem 0.5rem;
+      font-size: 10px;
+      font-weight: 500;
+      background: #f0f0f0;
+      color: #555;
+      padding: 2px 8px;
       border-radius: 4px;
     }
     .hooks-section {
-      margin-bottom: 1rem;
-      padding: 0.75rem 1rem;
-      background: #f8f8f8;
-      border-radius: 6px;
-      border-left: 3px solid #0083F7;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #eee;
     }
-    .hook { margin-bottom: 0.4rem; }
-    .hook:last-child { margin-bottom: 0; }
-    .hook-label {
+    .hooks-label, .body-label {
+      font-size: 10px;
       font-weight: 700;
-      color: #0083F7;
-      font-size: 0.85em;
+      letter-spacing: 0.1em;
+      color: #aaa;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .hook {
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      margin-bottom: 0.4rem;
+    }
+    .hook:last-child { margin-bottom: 0; }
+    .hook-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      background: #0083F7;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .hook-text {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #333;
     }
     .body-section {
-      font-size: 1.15rem;
+      padding: 1rem 1.25rem 1.25rem;
+    }
+    .body-text {
+      font-size: 14px;
       line-height: 1.8;
+      color: #333;
+    }
+    .page-footer {
+      padding: 1.5rem 3rem;
+      border-top: 1px solid #eee;
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    @media print {
+      .page-footer { position: fixed; bottom: 0; }
+      .content { padding-bottom: 4rem; }
     }
   </style>
 </head>
 <body>
-  ${printContent}
+  <div class="page-header">
+    <img class="logo" src="data:image/png;base64,${logoBase64}" alt="Marketlab Media" />
+    <div class="header-right">
+      <div style="font-weight:600;color:#333;">Content Skripte</div>
+      <div class="date">${today}</div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="doc-title">${scriptPieces.length} ${scriptPieces.length === 1 ? "Skript" : "Skripte"}</div>
+    <div class="doc-subtitle">Vorbereitet von Marketlab Media</div>
+    ${printContent}
+  </div>
+  <div class="page-footer">Marketlab Media · Vertraulich</div>
   <script>window.onload = function() { window.print(); }</script>
 </body>
 </html>`);
