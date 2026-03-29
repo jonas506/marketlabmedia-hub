@@ -58,24 +58,42 @@ const TAG_LABELS: Record<string, string> = {
   carousel: "🖼️ Karussells",
   ad: "📢 Ads",
   youtube_longform: "🎥 YouTube",
+  veröffentlichen: "📤 Veröffentlichen",
+  schnitt: "✂️ Schnitt",
+  skript: "📝 Skript",
 };
 
-const MIN_GROUP_SIZE = 3;
+const TITLE_PATTERNS: { regex: RegExp; label: string; key: string }[] = [
+  { regex: /posten$/i, label: "📤 Posten", key: "action:posten" },
+  { regex: /schneiden$/i, label: "✂️ Schneiden", key: "action:schneiden" },
+  { regex: /veröffentlichen$/i, label: "📤 Veröffentlichen", key: "action:veröffentlichen" },
+];
+
+const MIN_GROUP_SIZE = 2;
 
 const getGroupSignature = (task: Task) => {
   const normalizedTag = task.tag?.trim().toLowerCase();
-  if (normalizedTag) {
+  if (normalizedTag && TAG_LABELS[normalizedTag]) {
     return {
       key: `tag:${normalizedTag}`,
-      label: TAG_LABELS[normalizedTag] || task.tag || "Gruppe",
+      label: TAG_LABELS[normalizedTag],
     };
   }
 
-  const normalizedTitle = task.title.trim().toLowerCase();
-  return {
-    key: `title:${normalizedTitle}`,
-    label: task.title,
-  };
+  // Match by title pattern (e.g. all tasks ending in "posten")
+  const title = task.title.trim();
+  for (const pattern of TITLE_PATTERNS) {
+    if (pattern.regex.test(title)) {
+      return { key: pattern.key, label: pattern.label };
+    }
+  }
+
+  // Fall back to exact tag or title
+  if (normalizedTag) {
+    return { key: `tag:${normalizedTag}`, label: task.tag || "Gruppe" };
+  }
+
+  return { key: `title:${title.toLowerCase()}`, label: title };
 };
 
 const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
