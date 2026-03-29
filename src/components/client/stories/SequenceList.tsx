@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Send } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -66,6 +66,40 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
     onError: () => toast.error("Fehler beim Erstellen"),
   });
 
+  const convertToStoryAd = useMutation({
+    mutationFn: async (seq: Sequence) => {
+      // Get slide images for this sequence
+      const { data: slides } = await supabase
+        .from("story_slides" as any)
+        .select("image_url")
+        .eq("sequence_id", seq.id)
+        .order("sort_order", { ascending: true });
+      
+      const slideImages = (slides as any[] || [])
+        .map((s: any) => s.image_url)
+        .filter(Boolean);
+
+      const now = new Date();
+      const { error } = await supabase
+        .from("content_pieces")
+        .insert({
+          client_id: clientId,
+          type: "story",
+          title: seq.title,
+          phase: "script",
+          target_month: now.getMonth() + 1,
+          target_year: now.getFullYear(),
+          slide_images: slideImages.length > 0 ? slideImages : undefined,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["content-pieces"] });
+      toast.success("Story Ad in Pipeline erstellt");
+    },
+    onError: () => toast.error("Fehler beim Konvertieren"),
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -100,17 +134,30 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
           {filtered.map((seq) => {
             const cat = categories.find(c => c.id === seq.category_id);
             return (
-              <button key={seq.id} onClick={() => onSelect(seq.id)} className="w-full flex items-center justify-between bg-muted/30 hover:bg-muted/60 rounded-lg px-3 py-2.5 text-left transition-colors group">
-                <div className="flex items-center gap-2 min-w-0">
-                  <p className="font-display font-medium text-xs truncate">{seq.title}</p>
-                  {cat && <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>{cat.name}</span>}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] text-muted-foreground font-mono">{slideCounts[seq.id] ?? 0} Stories</span>
-                  {seq.posted_at && <span className="text-[10px] text-muted-foreground hidden sm:inline">{format(new Date(seq.posted_at), "dd.MM.", { locale: de })}</span>}
-                  <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status] || STATUS_BADGES.draft)}>{STATUS_LABELS[seq.status] || seq.status}</span>
-                </div>
-              </button>
+              <div key={seq.id} className="flex items-center gap-1.5">
+                <button onClick={() => onSelect(seq.id)} className="flex-1 flex items-center justify-between bg-muted/30 hover:bg-muted/60 rounded-lg px-3 py-2.5 text-left transition-colors group">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="font-display font-medium text-xs truncate">{seq.title}</p>
+                    {cat && <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0", COLOR_CLASSES[cat.color] || "bg-muted text-muted-foreground")}>{cat.name}</span>}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] text-muted-foreground font-mono">{slideCounts[seq.id] ?? 0} Stories</span>
+                    {seq.posted_at && <span className="text-[10px] text-muted-foreground hidden sm:inline">{format(new Date(seq.posted_at), "dd.MM.", { locale: de })}</span>}
+                    <span className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", STATUS_BADGES[seq.status] || STATUS_BADGES.draft)}>{STATUS_LABELS[seq.status] || seq.status}</span>
+                  </div>
+                </button>
+                {canEdit && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-primary"
+                    title="Als Story Ad in Pipeline"
+                    onClick={(e) => { e.stopPropagation(); convertToStoryAd.mutate(seq); }}
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
             );
           })}
         </div>
