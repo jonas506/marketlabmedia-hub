@@ -305,7 +305,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     if (!el) return;
     setExporting(true);
     try {
-      const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+      const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
       const link = document.createElement("a");
       link.download = `slide-${current + 1}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.92);
