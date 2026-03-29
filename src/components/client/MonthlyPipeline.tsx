@@ -159,6 +159,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     if (nextPhase === "handed_over") {
       fireConfetti();
       toast.success(`${config.emoji} ${config.label.slice(0, -1)} übergeben!`, { description: "Zählt jetzt ins Kontingent 🎯" });
+      toast("✓ Verknüpfte Aufgaben erledigt", { description: "Aufgaben wurden automatisch abgehakt", position: "bottom-right", duration: 3000 });
     } else if (nextPhase === "approved") {
       fireSmallCelebration();
       toast.success(`✅ Freigegeben!`, { description: "Kunde hat freigegeben" });
