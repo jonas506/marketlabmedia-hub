@@ -309,8 +309,8 @@ const ClientDetail = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="tasks" className="mt-4">
-            <ErrorBoundary level="section"><TaskList clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
+          <TabsContent value="shootdays" className="mt-4">
+            <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="checklists" className="mt-4">
             <ErrorBoundary level="section"><ClientChecklists clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
