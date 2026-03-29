@@ -170,6 +170,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       }
     } else if (nextPhase === "review") {
       toast.success(`👁️ Zur Freigabe`, { description: "Warte auf Kunden-Freigabe" });
+      const piece = monthPieces.find(p => p.id === pieceId);
+      if (piece?.phase === "feedback") {
+        toast("✓ Feedback-Aufgaben erledigt", { description: "Verknüpfte Aufgaben wurden abgehakt", position: "bottom-right", duration: 3000 });
+      }
     } else {
       toast.success(`→ ${getPhaseLabel(nextPhase)}`);
     }
