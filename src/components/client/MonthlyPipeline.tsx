@@ -179,6 +179,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     }
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     qc.invalidateQueries({ queryKey: ["posting-calendar"] });
+    qc.invalidateQueries({ queryKey: ["tasks"] });
   }, [qc, clientId, config, getPhaseLabel, monthPieces, triggerTranscription]);
 
   const bulkMove = useMutation({
