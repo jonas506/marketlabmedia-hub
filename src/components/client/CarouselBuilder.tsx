@@ -389,6 +389,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                 <Input
                   value={customHeading}
                   onChange={e => setCustomHeading(e.target.value)}
+                  onBlur={handleHeadingBlur}
                   placeholder={handle || client?.name || "Name / Handle"}
                   className="h-8 text-xs flex-1"
                 />
