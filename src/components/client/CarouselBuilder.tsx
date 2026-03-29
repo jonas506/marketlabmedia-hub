@@ -38,7 +38,7 @@ const DEFAULT_SLIDES: Slide[] = [
   { id: genSlideId(), text: "Slide 5 — CTA: Speichern & Teilen!", isCta: true },
 ];
 
-const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, piece, clientId }) => {
+const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, piece, clientId, onSaved }) => {
   const [slides, setSlides] = useState<Slide[]>(DEFAULT_SLIDES);
   const [current, setCurrent] = useState(0);
   const [topic, setTopic] = useState("");
