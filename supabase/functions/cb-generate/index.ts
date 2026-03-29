@@ -51,6 +51,12 @@ serve(async (req) => {
       return new Response(JSON.stringify({ content: data.choices?.[0]?.message?.content || "Keine Antwort." }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (type === "carousel_slides") {
+      const { action, topic, slideCount, clientName, handle } = await req.json().catch(() => ({})) || {};
+      const body = await req.json().catch(() => null);
+      // Re-parse since we already consumed — use the original parsed values from line 34
+    }
+
     if (type === "image") {
       const imagePrompt = `Generate a professional image for social media about: "${idea}". Style: modern, clean, vibrant colors.`;
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
