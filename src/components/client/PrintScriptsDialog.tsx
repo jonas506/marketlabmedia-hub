@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Printer, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import marketlabLogo from "@/assets/marketlab-logo.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ScriptPiece {
