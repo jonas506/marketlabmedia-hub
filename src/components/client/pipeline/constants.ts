@@ -55,18 +55,6 @@ export const PIPELINE_CONFIG: Record<string, PipelineConfig> = {
     ],
     addLabel: "+ Karussell",
   },
-  story: {
-    label: "Story Ads",
-    emoji: "📱",
-    phases: [
-      { key: "script", label: "Skript", emoji: "📝" },
-      { key: "review", label: "Zur Freigabe", emoji: "👁️" },
-      { key: "feedback", label: "Feedback", emoji: "💬" },
-      { key: "approved", label: "Freigegeben", emoji: "✅" },
-      { key: "handed_over", label: "Übergeben", emoji: "🚀" },
-    ],
-    addLabel: "+ Story Ad",
-  },
   ad: {
     label: "Ads",
     emoji: "📢",
