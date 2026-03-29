@@ -93,82 +93,8 @@ const THEMES: { id: ThemeId; label: string; preview: (c: BrandColors) => { bg: s
   },
 ];
 
-// Render helpers for themed slides
-function getSlideStyles(theme: ThemeId, colors: BrandColors, fontStyle: FontStyle, slide: Slide, idx: number, total: number) {
-  const fonts = FONT_FAMILIES[fontStyle];
-  const base = {
-    fontFamily: fonts.body,
-    headingFont: fonts.heading,
-  };
+// (Theme rendering moved to carousel-themes.tsx)
 
-  switch (theme) {
-    case "numbered":
-      return {
-        bg: "#f8f6f3",
-        color: colors.textDark,
-        accentColor: colors.accent,
-        numberBg: colors.accent + "18",
-        numberColor: colors.accent,
-        ...base,
-      };
-    case "steps":
-      return {
-        bg: colors.accent,
-        color: colors.textLight,
-        accentColor: colors.primary,
-        numberBg: "rgba(255,255,255,0.15)",
-        numberColor: colors.textLight,
-        stepLabel: `STEP ${idx + 1}`,
-        ...base,
-      };
-    case "minimal":
-      return {
-        bg: "#ffffff",
-        color: colors.textDark,
-        accentColor: colors.accent,
-        numberBg: "transparent",
-        numberColor: colors.accent,
-        ...base,
-      };
-    case "dark":
-      return {
-        bg: `linear-gradient(145deg, ${colors.primary}, ${colors.secondary})`,
-        color: colors.textLight,
-        accentColor: colors.accent,
-        numberBg: colors.accent + "30",
-        numberColor: colors.accent,
-        ...base,
-      };
-    case "gradient":
-      return {
-        bg: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary}, ${colors.accent})`,
-        color: colors.textLight,
-        accentColor: "#ffffff",
-        numberBg: "rgba(255,255,255,0.15)",
-        numberColor: "rgba(255,255,255,0.9)",
-        ...base,
-      };
-    case "card":
-      return {
-        bg: colors.accent,
-        color: colors.textDark,
-        accentColor: colors.accent,
-        cardBg: "#ffffff",
-        numberBg: colors.accent + "15",
-        numberColor: colors.accent,
-        ...base,
-      };
-    default:
-      return {
-        bg: "#ffffff",
-        color: colors.textDark,
-        accentColor: colors.accent,
-        numberBg: "transparent",
-        numberColor: colors.accent,
-        ...base,
-      };
-  }
-}
 
 const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, piece, clientId, onSaved }) => {
   const qc = useQueryClient();
