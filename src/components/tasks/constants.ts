@@ -16,6 +16,7 @@ export interface Task {
   created_at: string;
   created_by: string | null;
   sort_order: number | null;
+  content_piece_id?: string | null;
 }
 
 export interface TeamMember {

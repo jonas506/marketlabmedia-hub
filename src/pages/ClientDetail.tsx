@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { supabase } from "@/lib/supabase";
@@ -33,6 +33,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { role } = useAuth();
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
@@ -118,7 +119,23 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
-  if (isLoading || !client) {
+  const focusPieceId = searchParams.get("piece");
+
+  const clearFocusedPiece = useCallback(() => {
+    if (!focusPieceId) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("piece");
+    setSearchParams(next, { replace: true });
+  }, [focusPieceId, searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (!focusPieceId || !contentPieces) return;
+    const targetPiece = contentPieces.find((piece: any) => piece.id === focusPieceId);
+    if (!targetPiece) return;
+    if (targetPiece.target_month !== selectedMonth) setSelectedMonth(targetPiece.target_month);
+    if (targetPiece.target_year !== selectedYear) setSelectedYear(targetPiece.target_year);
+  }, [focusPieceId, contentPieces, selectedMonth, selectedYear]);
+
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
@@ -271,7 +288,7 @@ const ClientDetail = () => {
           <div className="space-y-4">
             <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
             <TaskList clientId={client.id} canEdit={canEdit} />
-            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
           </div>
         </ErrorBoundary>
 

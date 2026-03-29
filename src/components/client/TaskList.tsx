@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +29,14 @@ interface Task {
   priority: string | null;
   status: string | null;
   created_at: string;
+  content_piece_id: string | null;
 }
 
 interface TaskGroup {
-  tag: string;
+  key: string;
+  label: string;
   tasks: Task[];
-  deadline: string | null; // earliest deadline in group
+  deadline: string | null;
 }
 
 interface TaskListProps {
@@ -59,8 +62,25 @@ const TAG_LABELS: Record<string, string> = {
 
 const MIN_GROUP_SIZE = 3;
 
+const getGroupSignature = (task: Task) => {
+  const normalizedTag = task.tag?.trim().toLowerCase();
+  if (normalizedTag) {
+    return {
+      key: `tag:${normalizedTag}`,
+      label: TAG_LABELS[normalizedTag] || task.tag || "Gruppe",
+    };
+  }
+
+  const normalizedTitle = task.title.trim().toLowerCase();
+  return {
+    key: `title:${normalizedTitle}`,
+    label: task.title,
+  };
+};
+
 const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [newTitle, setNewTitle] = useState("");
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
@@ -100,32 +120,40 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     });
   }, [tasks]);
 
-  // Group tasks by tag if ≥ MIN_GROUP_SIZE with same tag
   const { groups, ungrouped } = useMemo(() => {
-    const tagCounts: Record<string, Task[]> = {};
-    activeTasks.forEach(t => {
-      if (t.tag) {
-        if (!tagCounts[t.tag]) tagCounts[t.tag] = [];
-        tagCounts[t.tag].push(t);
+    const buckets: Record<string, { label: string; tasks: Task[] }> = {};
+
+    activeTasks.forEach((task) => {
+      const { key, label } = getGroupSignature(task);
+      if (!buckets[key]) {
+        buckets[key] = { label, tasks: [] };
       }
+      buckets[key].tasks.push(task);
     });
 
-    const groupedTags = new Set<string>();
-    const groups: TaskGroup[] = [];
-    Object.entries(tagCounts).forEach(([tag, tasks]) => {
-      if (tasks.length >= MIN_GROUP_SIZE) {
-        groupedTags.add(tag);
-        const earliestDeadline = tasks.reduce<string | null>((earliest, t) => {
-          if (!t.deadline) return earliest;
-          if (!earliest) return t.deadline;
-          return t.deadline < earliest ? t.deadline : earliest;
+    const groupedKeys = new Set<string>();
+    const groupedResults: TaskGroup[] = [];
+
+    Object.entries(buckets).forEach(([key, bucket]) => {
+      if (bucket.tasks.length >= MIN_GROUP_SIZE) {
+        groupedKeys.add(key);
+        const earliestDeadline = bucket.tasks.reduce<string | null>((earliest, task) => {
+          if (!task.deadline) return earliest;
+          if (!earliest) return task.deadline;
+          return task.deadline < earliest ? task.deadline : earliest;
         }, null);
-        groups.push({ tag, tasks, deadline: earliestDeadline });
+
+        groupedResults.push({
+          key,
+          label: bucket.label,
+          tasks: bucket.tasks,
+          deadline: earliestDeadline,
+        });
       }
     });
 
-    const ungrouped = activeTasks.filter(t => !t.tag || !groupedTags.has(t.tag));
-    return { groups, ungrouped };
+    const ungroupedTasks = activeTasks.filter((task) => !groupedKeys.has(getGroupSignature(task).key));
+    return { groups: groupedResults, ungrouped: ungroupedTasks };
   }, [activeTasks]);
 
   const archivedTasks = useMemo(() => tasks.filter((t) => t.is_completed), [tasks]);
@@ -136,12 +164,15 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
       const { error } = await supabase.from("tasks" as any).insert({ client_id: clientId, title: newTitle.trim() } as any);
       if (error) throw error;
     },
-    onSuccess: () => { setNewTitle(""); qc.invalidateQueries({ queryKey: ["tasks", clientId] }); toast.success("Aufgabe erstellt"); },
+    onSuccess: () => {
+      setNewTitle("");
+      qc.invalidateQueries({ queryKey: ["tasks", clientId] });
+      toast.success("Aufgabe erstellt");
+    },
   });
 
   const notifyTaskAssignment = useCallback(async (assignedTo: string, taskTitle: string, tag?: string | null, taskCount?: number) => {
     try {
-      // Get client name for context
       const { data: client } = await supabase.from("clients").select("name").eq("id", clientId).single();
       await supabase.functions.invoke("notify-task-assignment", {
         body: {
@@ -158,7 +189,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   }, [clientId]);
 
   const updateTask = useCallback(async (taskId: string, updates: Record<string, any>, task?: Task) => {
-    // Check if assigned_to is being changed to a new person
     const isNewAssignment = updates.assigned_to && updates.assigned_to !== "unassigned" && task && updates.assigned_to !== task.assigned_to;
 
     await supabase.from("tasks" as any).update(updates as any).eq("id", taskId);
@@ -168,22 +198,26 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     if (isNewAssignment && task) {
       notifyTaskAssignment(updates.assigned_to, task.title, task.tag);
     }
-  }, [qc, clientId]);
+  }, [qc, clientId, notifyTaskAssignment]);
 
   const setGroupDeadline = useCallback(async (group: TaskGroup, date: Date | undefined) => {
     const deadline = date ? format(date, "yyyy-MM-dd") : null;
-    await Promise.all(group.tasks.map(t =>
-      supabase.from("tasks" as any).update({ deadline } as any).eq("id", t.id)
+    await Promise.all(group.tasks.map((task) =>
+      supabase.from("tasks" as any).update({ deadline } as any).eq("id", task.id)
     ));
     qc.invalidateQueries({ queryKey: ["tasks", clientId] });
     toast.success(deadline ? `Deadline für ${group.tasks.length} Aufgaben gesetzt` : "Deadline entfernt");
   }, [qc, clientId]);
 
   const completeTask = useCallback(async (taskId: string) => {
-    setCompletingIds(prev => new Set(prev).add(taskId));
+    setCompletingIds((prev) => new Set(prev).add(taskId));
     setTimeout(async () => {
       await updateTask(taskId, { is_completed: true, status: "done" });
-      setCompletingIds(prev => { const next = new Set(prev); next.delete(taskId); return next; });
+      setCompletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
       toast.success("✓ Erledigt!");
     }, 400);
   }, [updateTask]);
@@ -204,32 +238,41 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   }, []);
 
   const handleNotesChange = useCallback((taskId: string, value: string) => {
-    setLocalNotes(prev => ({ ...prev, [taskId]: value }));
+    setLocalNotes((prev) => ({ ...prev, [taskId]: value }));
     if (notesTimerRef.current[taskId]) clearTimeout(notesTimerRef.current[taskId]);
     notesTimerRef.current[taskId] = setTimeout(() => saveNotesQuietly(taskId, value), 600);
   }, [saveNotesQuietly]);
 
   const getInitials = (userId: string | null) => {
     if (!userId) return "";
-    const m = team?.find((t) => t.user_id === userId);
-    const name = m?.name || m?.email || "?";
+    const member = team?.find((t) => t.user_id === userId);
+    const name = member?.name || member?.email || "?";
     return name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
   };
 
   const getTeamName = (userId: string | null) => {
     if (!userId) return null;
-    const m = team?.find((t) => t.user_id === userId);
-    return m?.name || m?.email || null;
+    const member = team?.find((t) => t.user_id === userId);
+    return member?.name || member?.email || null;
   };
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
-  const toggleGroup = (tag: string) => {
-    setCollapsedGroups(prev => {
+  const toggleGroup = (groupKey: string) => {
+    setCollapsedGroups((prev) => {
       const next = new Set(prev);
-      if (next.has(tag)) next.delete(tag); else next.add(tag);
+      if (next.has(groupKey)) next.delete(groupKey);
+      else next.add(groupKey);
       return next;
     });
+  };
+
+  const openTaskDestination = (task: Task, isExpanded: boolean) => {
+    if (task.content_piece_id) {
+      navigate(`/client/${task.client_id}?piece=${task.content_piece_id}`);
+      return;
+    }
+    setExpandedTask(isExpanded ? null : task.id);
   };
 
   const renderTaskRow = (task: Task) => {
@@ -249,16 +292,20 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
       >
         <div
           className={cn(
-            "flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors",
+            "flex items-center gap-2.5 rounded-lg px-2 py-2 transition-colors",
+            task.content_piece_id ? "cursor-pointer hover:bg-muted/20" : "cursor-pointer",
             isExpanded ? "bg-muted/40" : "hover:bg-muted/20"
           )}
-          onClick={() => setExpandedTask(isExpanded ? null : task.id)}
+          onClick={() => openTaskDestination(task, isExpanded)}
         >
           {canEdit && (
             <button
-              onClick={e => { e.stopPropagation(); completeTask(task.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                completeTask(task.id);
+              }}
               className={cn(
-                "h-[18px] w-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 transition-all",
+                "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border-[1.5px] transition-all",
                 isCompleting
                   ? "border-[hsl(var(--runway-green))] bg-[hsl(var(--runway-green))]"
                   : "border-muted-foreground/25 hover:border-primary/60 hover:bg-primary/5"
@@ -272,27 +319,21 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
             </button>
           )}
 
-          <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", priorityDot)} />
+          <div className={cn("h-1.5 w-1.5 shrink-0 rounded-full", priorityDot)} />
 
-          <span className={cn(
-            "text-sm font-body truncate flex-1",
-            isCompleting && "line-through text-muted-foreground"
-          )}>
+          <span className={cn("flex-1 truncate text-sm font-body", isCompleting && "text-muted-foreground line-through")}>
             {task.title}
           </span>
 
           {task.deadline && (
-            <span className={cn(
-              "text-[10px] font-mono shrink-0",
-              isOverdue ? "text-destructive font-semibold" : "text-muted-foreground/50"
-            )}>
+            <span className={cn("shrink-0 text-[10px] font-mono", isOverdue ? "font-semibold text-destructive" : "text-muted-foreground/50")}>
               {format(new Date(task.deadline), "dd. MMM", { locale: de })}
             </span>
           )}
 
           {task.assigned_to && (
             <div
-              className="h-5 w-5 rounded-full bg-gradient-to-br from-primary/80 to-secondary/80 flex items-center justify-center shrink-0"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-secondary/80"
               title={getTeamName(task.assigned_to) || ""}
             >
               <span className="text-[7px] font-bold text-primary-foreground">{getInitials(task.assigned_to)}</span>
@@ -309,20 +350,22 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
               transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
-              <div className="px-2 pb-2 pt-1 ml-7 space-y-2">
-                <div className="flex items-center gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
-                  <Select value={task.assigned_to || "unassigned"} onValueChange={v => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v }, task)} disabled={!canEdit}>
-                    <SelectTrigger className="h-7 text-[11px] border-border/40 bg-background/50 w-auto min-w-[100px] rounded-md">
+              <div className="ml-7 space-y-2 px-2 pb-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <Select value={task.assigned_to || "unassigned"} onValueChange={(value) => updateTask(task.id, { assigned_to: value === "unassigned" ? null : value }, task)} disabled={!canEdit}>
+                    <SelectTrigger className="h-7 min-w-[100px] w-auto rounded-md border-border/40 bg-background/50 text-[11px]">
                       <SelectValue placeholder="Zuweisen" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unassigned">— Keine —</SelectItem>
-                      {team?.map(t => <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>)}
+                      {team?.map((member) => (
+                        <SelectItem key={member.user_id} value={member.user_id}>{member.name || member.email}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
 
-                  <Select value={task.priority || "normal"} onValueChange={v => updateTask(task.id, { priority: v })} disabled={!canEdit}>
-                    <SelectTrigger className="h-7 text-[11px] border-border/40 bg-background/50 w-auto min-w-[80px] rounded-md">
+                  <Select value={task.priority || "normal"} onValueChange={(value) => updateTask(task.id, { priority: value })} disabled={!canEdit}>
+                    <SelectTrigger className="h-7 min-w-[80px] w-auto rounded-md border-border/40 bg-background/50 text-[11px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -335,11 +378,11 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
                   <MobileDatePicker
                     selected={task.deadline ? new Date(task.deadline) : undefined}
-                    onSelect={date => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
+                    onSelect={(date) => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
                     disabled={!canEdit}
                   >
                     <button className={cn(
-                      "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded-md h-7 border border-border/40 bg-background/50 transition-colors",
+                      "flex h-7 items-center gap-1 rounded-md border border-border/40 bg-background/50 px-2 py-1 text-[11px] font-mono transition-colors",
                       isOverdue ? "text-destructive" : task.deadline ? "text-foreground/70" : "text-muted-foreground/40"
                     )}>
                       <CalendarIcon className="h-3 w-3" />
@@ -351,7 +394,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
                   {canEdit && (
                     <button
-                      className="text-muted-foreground/30 hover:text-destructive transition-colors p-1"
+                      className="p-1 text-muted-foreground/30 transition-colors hover:text-destructive"
                       onClick={() => deleteTask(task.id)}
                     >
                       <Trash2 className="h-3 w-3" />
@@ -362,8 +405,8 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                 <Textarea
                   value={localNotes[task.id] ?? task.notes ?? ""}
                   placeholder="Notizen..."
-                  className="min-h-[40px] text-xs bg-background/30 border-border/30 resize-none rounded-md"
-                  onChange={e => handleNotesChange(task.id, e.target.value)}
+                  className="min-h-[40px] resize-none rounded-md border-border/30 bg-background/30 text-xs"
+                  onChange={(e) => handleNotesChange(task.id, e.target.value)}
                   disabled={!canEdit}
                 />
               </div>
@@ -378,11 +421,10 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
   return (
     <div className="space-y-1">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-1 mb-2">
+      <div className="mb-2 flex items-center gap-2 px-1">
         <h3 className="font-display text-sm font-semibold text-foreground">Aufgaben</h3>
         {totalActive > 0 && (
-          <span className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded-md">
+          <span className="rounded-md bg-muted/40 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/60">
             {totalActive}
           </span>
         )}
@@ -390,8 +432,8 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         {archivedTasks.length > 0 && (
           <button
             className={cn(
-              "flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded-md transition-colors",
-              showArchive ? "text-primary bg-primary/10" : "text-muted-foreground/40 hover:text-muted-foreground"
+              "flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-mono transition-colors",
+              showArchive ? "bg-primary/10 text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
             )}
             onClick={() => setShowArchive(!showArchive)}
           >
@@ -401,18 +443,19 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         )}
       </div>
 
-      {/* Add task */}
       {canEdit && (
         <div className="flex items-center gap-2 px-1">
-          <div className="h-[18px] w-[18px] rounded-[5px] border border-dashed border-muted-foreground/20 flex items-center justify-center shrink-0">
+          <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border border-dashed border-muted-foreground/20">
             <Plus className="h-2.5 w-2.5 text-muted-foreground/30" />
           </div>
           <Input
             value={newTitle}
-            onChange={e => setNewTitle(e.target.value)}
+            onChange={(e) => setNewTitle(e.target.value)}
             placeholder="Neue Aufgabe..."
-            className="h-8 flex-1 text-sm bg-transparent border-0 shadow-none px-0 placeholder:text-muted-foreground/30 focus-visible:ring-0"
-            onKeyDown={e => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
+            className="h-8 flex-1 border-0 bg-transparent px-0 text-sm shadow-none placeholder:text-muted-foreground/30 focus-visible:ring-0"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && newTitle.trim()) addTask.mutate();
+            }}
           />
           {newTitle.trim() && (
             <Button size="sm" className="h-7 px-3 text-xs" onClick={() => addTask.mutate()} disabled={addTask.isPending}>
@@ -422,52 +465,45 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         </div>
       )}
 
-      {/* Task list */}
       <div className="space-y-0.5">
         {isLoading ? (
           <div className="flex justify-center py-6">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
           </div>
         ) : totalActive === 0 && !showArchive ? (
-          <div className="py-6 text-center text-xs text-muted-foreground/30 font-mono">Alles erledigt 🎉</div>
+          <div className="py-6 text-center font-mono text-xs text-muted-foreground/30">Alles erledigt 🎉</div>
         ) : (
           <>
-            {/* Grouped tasks */}
-            {groups.map(group => {
-              const isCollapsed = !collapsedGroups.has(group.tag); // collapsed by default
-              const doneCount = group.tasks.filter(t => completingIds.has(t.id)).length;
+            {groups.map((group) => {
+              const isCollapsed = !collapsedGroups.has(group.key);
+              const doneCount = group.tasks.filter((task) => completingIds.has(task.id)).length;
               const isGroupOverdue = group.deadline && group.deadline < todayStr;
 
               return (
-                <div key={`group-${group.tag}`} className="mb-1">
-                  {/* Group header */}
+                <div key={group.key} className="mb-1">
                   <div
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => toggleGroup(group.tag)}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg bg-muted/30 px-2 py-1.5 transition-colors hover:bg-muted/50"
+                    onClick={() => toggleGroup(group.key)}
                   >
-                    {isCollapsed
-                      ? <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-                      : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-                    }
-                    <span className="text-xs font-semibold text-foreground/80">
-                      {TAG_LABELS[group.tag] || group.tag}
-                    </span>
+                    {isCollapsed ? (
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+                    )}
+                    <span className="flex-1 truncate text-xs font-semibold text-foreground/80">{group.label}</span>
                     <span className="text-[10px] font-mono text-muted-foreground/50">
                       {group.tasks.length - doneCount} offen
                     </span>
 
-                    <div className="flex-1" />
-
-                    {/* Group deadline */}
-                    <div onClick={e => e.stopPropagation()}>
+                    <div onClick={(e) => e.stopPropagation()}>
                       <MobileDatePicker
                         selected={group.deadline ? new Date(group.deadline) : undefined}
-                        onSelect={date => setGroupDeadline(group, date)}
+                        onSelect={(date) => setGroupDeadline(group, date)}
                         disabled={!canEdit}
                       >
                         <button className={cn(
-                          "text-[10px] font-mono flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors",
-                          isGroupOverdue ? "text-destructive font-semibold" : group.deadline ? "text-muted-foreground/60" : "text-muted-foreground/30 hover:text-muted-foreground/50"
+                          "flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-mono transition-colors",
+                          isGroupOverdue ? "font-semibold text-destructive" : group.deadline ? "text-muted-foreground/60" : "text-muted-foreground/30 hover:text-muted-foreground/50"
                         )}>
                           <CalendarIcon className="h-2.5 w-2.5" />
                           {group.deadline ? format(new Date(group.deadline), "dd. MMM", { locale: de }) : "Deadline"}
@@ -476,7 +512,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                     </div>
                   </div>
 
-                  {/* Group tasks */}
                   <AnimatePresence>
                     {!isCollapsed && (
                       <motion.div
@@ -484,7 +519,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="overflow-hidden ml-2 border-l border-border/20 pl-1"
+                        className="overflow-hidden border-l border-border/20 pl-1 ml-2"
                       >
                         <AnimatePresence mode="popLayout">
                           {group.tasks.map(renderTaskRow)}
@@ -496,7 +531,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
               );
             })}
 
-            {/* Ungrouped tasks */}
             <AnimatePresence mode="popLayout">
               {ungrouped.map(renderTaskRow)}
             </AnimatePresence>
@@ -504,7 +538,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         )}
       </div>
 
-      {/* Archive */}
       <AnimatePresence>
         {showArchive && archivedTasks.length > 0 && (
           <motion.div
@@ -513,20 +546,20 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="mt-2 pt-2 border-t border-border/30 space-y-0.5">
-              <span className="text-[9px] font-mono text-muted-foreground/30 uppercase tracking-wider px-2">Erledigt</span>
-              {archivedTasks.map(task => (
-                <div key={task.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg opacity-35 hover:opacity-60 transition-opacity">
-                  <div className="h-[18px] w-[18px] rounded-[5px] bg-[hsl(var(--runway-green))]/20 flex items-center justify-center shrink-0">
+            <div className="mt-2 space-y-0.5 border-t border-border/30 pt-2">
+              <span className="px-2 text-[9px] font-mono uppercase tracking-wider text-muted-foreground/30">Erledigt</span>
+              {archivedTasks.map((task) => (
+                <div key={task.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 opacity-35 transition-opacity hover:opacity-60">
+                  <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] bg-[hsl(var(--runway-green))]/20">
                     <Check className="h-2.5 w-2.5 text-[hsl(var(--runway-green))]" strokeWidth={3} />
                   </div>
-                  <span className="flex-1 text-sm font-body line-through text-muted-foreground truncate">{task.title}</span>
+                  <span className="flex-1 truncate text-sm font-body text-muted-foreground line-through">{task.title}</span>
                   {canEdit && (
                     <>
-                      <button className="text-muted-foreground hover:text-foreground p-1" onClick={() => restoreTask(task.id)}>
+                      <button className="p-1 text-muted-foreground hover:text-foreground" onClick={() => restoreTask(task.id)}>
                         <Undo2 className="h-3 w-3" />
                       </button>
-                      <button className="text-muted-foreground hover:text-destructive p-1" onClick={() => deleteTask(task.id)}>
+                      <button className="p-1 text-muted-foreground hover:text-destructive" onClick={() => deleteTask(task.id)}>
                         <Trash2 className="h-3 w-3" />
                       </button>
                     </>

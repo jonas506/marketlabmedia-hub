@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,9 +34,11 @@ interface MonthlyPipelineProps {
   month: number;
   year: number;
   canEdit: boolean;
+  focusPieceId?: string | null;
+  onFocusPieceHandled?: () => void;
 }
 
-const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit }) => {
+const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit, focusPieceId, onFocusPieceHandled }) => {
   const qc = useQueryClient();
   const [activeType, setActiveType] = useState<string>("reel");
   const [activePhase, setActivePhase] = useState<string>(PIPELINE_CONFIG["reel"].phases[0].key);
@@ -78,6 +80,18 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     contentPieces.filter((c) => c.type === activeType && c.target_month === month && c.target_year === year),
     [contentPieces, activeType, month, year]
   );
+
+  useEffect(() => {
+    if (!focusPieceId) return;
+    const targetPiece = contentPieces.find((piece) => piece.id === focusPieceId);
+    if (!targetPiece) return;
+    if (targetPiece.target_month !== month || targetPiece.target_year !== year) return;
+
+    setActiveType(targetPiece.type);
+    setActivePhase(targetPiece.phase);
+    setDetailPiece(targetPiece);
+    onFocusPieceHandled?.();
+  }, [focusPieceId, contentPieces, month, year, onFocusPieceHandled]);
 
   const phasePieces = useMemo(() => {
     let filtered = monthPieces.filter((c) => c.phase === activePhase);
