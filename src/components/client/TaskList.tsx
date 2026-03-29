@@ -5,17 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import {
-  Plus, CalendarIcon, Trash2, Filter, Tag,
-  Archive, Undo2, ChevronRight, ChevronDown,
+  Plus, CalendarIcon, Trash2, Archive, Undo2,
+  ChevronDown, Check,
 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 import MobileDatePicker from "@/components/MobileDatePicker";
 
 interface Task {
@@ -37,41 +35,22 @@ interface TaskListProps {
   canEdit: boolean;
 }
 
-const TAG_COLORS: Record<string, string> = {
-  skripte: "bg-blue-500/15 text-blue-500",
-  "bild-ads": "bg-purple-500/15 text-purple-400",
-  technik: "bg-amber-500/15 text-amber-400",
-  admin: "bg-slate-500/15 text-slate-400",
-  feedback: "bg-emerald-500/15 text-emerald-400",
-  briefing: "bg-rose-500/15 text-rose-400",
+const PRIORITY_DOT: Record<string, string> = {
+  urgent: "bg-destructive",
+  high: "bg-[hsl(var(--runway-yellow))]",
+  normal: "bg-primary/40",
+  low: "bg-muted-foreground/20",
 };
-const getTagColor = (tag: string) => TAG_COLORS[tag.toLowerCase()] || "bg-primary/15 text-primary";
-
-const STATUS_CONFIG = [
-  { value: "not_started", label: "Nicht begonnen", cssClass: "monday-status-default" },
-  { value: "in_progress", label: "Begonnen", cssClass: "monday-status-working" },
-  { value: "review", label: "Zu besprechen", cssClass: "monday-status-review" },
-  { value: "done", label: "Fertig", cssClass: "monday-status-done" },
-];
-
-const PRIORITY_CONFIG = [
-  { value: "low", label: "Niedrig", cssClass: "bg-status-default" },
-  { value: "normal", label: "Normal", cssClass: "bg-status-working" },
-  { value: "high", label: "Hoch", cssClass: "bg-status-review" },
-  { value: "urgent", label: "Dringend", cssClass: "bg-status-stuck" },
-];
 
 const PRIORITY_WEIGHT: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
 
 const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   const qc = useQueryClient();
-  const isMobile = useIsMobile();
   const [newTitle, setNewTitle] = useState("");
-  const [newTag, setNewTag] = useState("");
-  const [filterPerson, setFilterPerson] = useState("all");
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
   const [localNotes, setLocalNotes] = useState<Record<string, string>>({});
+  const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const notesTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const { data: team } = useQuery({
@@ -94,9 +73,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   });
 
   const activeTasks = useMemo(() => {
-    let filtered = tasks.filter((t) => !t.is_completed);
-    if (filterPerson !== "all") filtered = filtered.filter((t) => t.assigned_to === filterPerson);
-    return filtered.sort((a, b) => {
+    return tasks.filter((t) => !t.is_completed).sort((a, b) => {
       const pa = PRIORITY_WEIGHT[a.priority || "normal"] ?? 2;
       const pb = PRIORITY_WEIGHT[b.priority || "normal"] ?? 2;
       if (pa !== pb) return pa - pb;
@@ -105,59 +82,17 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
       if (b.deadline) return 1;
       return 0;
     });
-  }, [tasks, filterPerson]);
-
-  // Group similar tasks by tag for visual collapse
-  type TaskGroup = { type: "single"; task: Task } | { type: "group"; tag: string; tasks: Task[] };
-  const groupedTasks = useMemo((): TaskGroup[] => {
-    const tagGroups: Record<string, Task[]> = {};
-    const singles: Task[] = [];
-    const tagOrder: string[] = [];
-
-    activeTasks.forEach(t => {
-      const tag = t.tag?.toLowerCase().trim();
-      // Group tasks with same tag if there are 2+ with identical tags
-      if (tag) {
-        if (!tagGroups[tag]) { tagGroups[tag] = []; tagOrder.push(tag); }
-        tagGroups[tag].push(t);
-      } else {
-        singles.push(t);
-      }
-    });
-
-    const result: TaskGroup[] = [];
-    // Add singles (no tag) first
-    singles.forEach(t => result.push({ type: "single", task: t }));
-    // Add tag groups - collapse if 3+, otherwise show individually
-    tagOrder.forEach(tag => {
-      const group = tagGroups[tag];
-      if (group.length >= 3) {
-        result.push({ type: "group", tag: group[0].tag!, tasks: group });
-      } else {
-        group.forEach(t => result.push({ type: "single", task: t }));
-      }
-    });
-    return result;
-  }, [activeTasks]);
-
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-  const toggleGroup = useCallback((tag: string) => {
-    setExpandedGroups(prev => {
-      const next = new Set(prev);
-      next.has(tag) ? next.delete(tag) : next.add(tag);
-      return next;
-    });
-  }, []);
+  }, [tasks]);
 
   const archivedTasks = useMemo(() => tasks.filter((t) => t.is_completed), [tasks]);
 
   const addTask = useMutation({
     mutationFn: async () => {
       if (!newTitle.trim()) return;
-      const { error } = await supabase.from("tasks" as any).insert({ client_id: clientId, title: newTitle.trim(), tag: newTag.trim() || null } as any);
+      const { error } = await supabase.from("tasks" as any).insert({ client_id: clientId, title: newTitle.trim() } as any);
       if (error) throw error;
     },
-    onSuccess: () => { setNewTitle(""); setNewTag(""); qc.invalidateQueries({ queryKey: ["tasks", clientId] }); toast.success("Aufgabe erstellt"); },
+    onSuccess: () => { setNewTitle(""); qc.invalidateQueries({ queryKey: ["tasks", clientId] }); toast.success("Aufgabe erstellt"); },
   });
 
   const updateTask = useCallback(async (taskId: string, updates: Record<string, any>) => {
@@ -166,21 +101,13 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
   }, [qc, clientId]);
 
-  const saveNotesQuietly = useCallback(async (taskId: string, value: string) => {
-    await supabase.from("tasks" as any).update({ notes: value } as any).eq("id", taskId);
-  }, []);
-
-  const handleNotesChange = useCallback((taskId: string, value: string) => {
-    setLocalNotes(prev => ({ ...prev, [taskId]: value }));
-    if (notesTimerRef.current[taskId]) clearTimeout(notesTimerRef.current[taskId]);
-    notesTimerRef.current[taskId] = setTimeout(() => {
-      saveNotesQuietly(taskId, value);
-    }, 600);
-  }, [saveNotesQuietly]);
-
-  const archiveTask = useCallback(async (taskId: string) => {
-    await updateTask(taskId, { is_completed: true, status: "done" });
-    toast.success("✓ Archiviert");
+  const completeTask = useCallback(async (taskId: string) => {
+    setCompletingIds(prev => new Set(prev).add(taskId));
+    setTimeout(async () => {
+      await updateTask(taskId, { is_completed: true, status: "done" });
+      setCompletingIds(prev => { const next = new Set(prev); next.delete(taskId); return next; });
+      toast.success("✓ Erledigt!");
+    }, 400);
   }, [updateTask]);
 
   const restoreTask = useCallback(async (taskId: string) => {
@@ -194,8 +121,18 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     toast("Gelöscht");
   }, [qc, clientId]);
 
+  const saveNotesQuietly = useCallback(async (taskId: string, value: string) => {
+    await supabase.from("tasks" as any).update({ notes: value } as any).eq("id", taskId);
+  }, []);
+
+  const handleNotesChange = useCallback((taskId: string, value: string) => {
+    setLocalNotes(prev => ({ ...prev, [taskId]: value }));
+    if (notesTimerRef.current[taskId]) clearTimeout(notesTimerRef.current[taskId]);
+    notesTimerRef.current[taskId] = setTimeout(() => saveNotesQuietly(taskId, value), 600);
+  }, [saveNotesQuietly]);
+
   const getInitials = (userId: string | null) => {
-    if (!userId) return "?";
+    if (!userId) return "";
     const m = team?.find((t) => t.user_id === userId);
     const name = m?.name || m?.email || "?";
     return name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
@@ -207,257 +144,214 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     return m?.name || m?.email || null;
   };
 
-  const getSC = (s: string | null) => STATUS_CONFIG.find((c) => c.value === (s || "not_started")) || STATUS_CONFIG[0];
-  const getPC = (p: string | null) => PRIORITY_CONFIG.find((c) => c.value === (p || "normal")) || PRIORITY_CONFIG[1];
-
-  const renderTaskRow = useCallback((task: Task, indent = false) => {
-    const sc = getSC(task.status);
-    const pc = getPC(task.priority);
-    const isOverdue = task.deadline && new Date(task.deadline) < new Date();
-    const isExpanded = expandedTask === task.id;
-
-    return (
-      <motion.div
-        key={task.id}
-        layout
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0, x: 20, transition: { duration: 0.12 } }}
-        className="monday-row"
-      >
-        {/* Desktop */}
-        <div className={cn("hidden md:grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0", indent && "pl-6")}>
-          <div className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer group" onClick={() => setExpandedTask(isExpanded ? null : task.id)}>
-            <ChevronRight className={cn("h-3 w-3 text-muted-foreground/30 transition-transform shrink-0", isExpanded && "rotate-90 text-primary")} />
-            {task.tag && !indent && (
-              <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0", getTagColor(task.tag))}>
-                {task.tag}
-              </Badge>
-            )}
-            <span className="text-sm font-body truncate group-hover:text-primary transition-colors">{task.title}</span>
-          </div>
-          <div className="flex justify-center border-l border-border/30 py-2" onClick={e => e.stopPropagation()}>
-            {canEdit ? (
-              <Select value={task.assigned_to || "unassigned"} onValueChange={v => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })}>
-                <SelectTrigger className="h-auto w-auto border-0 p-0 shadow-none bg-transparent">
-                  {task.assigned_to ? (
-                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(task.assigned_to) || ""}>
-                      <span className="text-[9px] font-bold text-white">{getInitials(task.assigned_to)}</span>
-                    </div>
-                  ) : (
-                    <div className="h-7 w-7 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center">
-                      <span className="text-[9px] text-muted-foreground/30">+</span>
-                    </div>
-                  )}
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">— Keine —</SelectItem>
-                  {team?.map(t => <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            ) : task.assigned_to ? (
-              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(task.assigned_to) || ""}>
-                <span className="text-[9px] font-bold text-white">{getInitials(task.assigned_to)}</span>
-              </div>
-            ) : null}
-          </div>
-          <div className="flex justify-center border-l border-border/30 py-2" onClick={e => e.stopPropagation()}>
-            <Select value={task.status || "not_started"} onValueChange={v => v === "done" ? archiveTask(task.id) : updateTask(task.id, { status: v })} disabled={!canEdit}>
-              <SelectTrigger className={cn("monday-status border-0 shadow-none h-auto cursor-pointer", sc.cssClass)}><span>{sc.label}</span></SelectTrigger>
-              <SelectContent>
-                {STATUS_CONFIG.map(s => <SelectItem key={s.value} value={s.value}><span className="flex items-center gap-2"><span className={cn("w-2 h-2 rounded-full", s.cssClass)} />{s.label}</span></SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex justify-center border-l border-border/30 py-2" onClick={e => e.stopPropagation()}>
-            {canEdit ? (
-              <MobileDatePicker selected={task.deadline ? new Date(task.deadline) : undefined} onSelect={date => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}>
-                <button className={cn("text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded transition-colors", isOverdue ? "text-destructive font-semibold bg-destructive/10" : task.deadline ? "text-foreground/70 hover:bg-muted/50" : "text-muted-foreground/30 hover:text-muted-foreground")}>
-                  <CalendarIcon className="h-3 w-3" />
-                  {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "—"}
-                </button>
-              </MobileDatePicker>
-            ) : task.deadline ? (
-              <span className={cn("text-[11px] font-mono", isOverdue ? "text-destructive" : "text-muted-foreground")}>{format(new Date(task.deadline), "dd MMM", { locale: de })}</span>
-            ) : null}
-          </div>
-          <div className="flex justify-center border-l border-border/30 py-2" onClick={e => e.stopPropagation()}>
-            <Select value={task.priority || "normal"} onValueChange={v => updateTask(task.id, { priority: v })} disabled={!canEdit}>
-              <SelectTrigger className={cn("monday-priority border-0 shadow-none h-auto cursor-pointer", pc.cssClass)}><span>{pc.label}</span></SelectTrigger>
-              <SelectContent>
-                {PRIORITY_CONFIG.map(p => <SelectItem key={p.value} value={p.value}><span className="flex items-center gap-2"><span className={cn("w-2 h-2 rounded-full", p.cssClass)} />{p.label}</span></SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Mobile */}
-        <div className="md:hidden px-3 py-3" onClick={() => setExpandedTask(isExpanded ? null : task.id)}>
-          <div className="flex items-start gap-2">
-            {canEdit && (
-              <div className="shrink-0 pt-0.5" onClick={e => e.stopPropagation()}>
-                <button onClick={() => archiveTask(task.id)} className="h-5 w-5 rounded border border-border/50 flex items-center justify-center text-muted-foreground/30 active:bg-primary/10">
-                  <span className="text-[9px]">✓</span>
-                </button>
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-1">
-                {task.tag && !indent && <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[16px] rounded border-0 shrink-0", getTagColor(task.tag))}>{task.tag}</Badge>}
-                <span className="text-sm font-body truncate">{task.title}</span>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <div onClick={e => e.stopPropagation()}>
-                  <Select value={task.status || "not_started"} onValueChange={v => v === "done" ? archiveTask(task.id) : updateTask(task.id, { status: v })} disabled={!canEdit}>
-                    <SelectTrigger className={cn("monday-status border-0 shadow-none h-auto cursor-pointer text-[10px] px-2 py-0.5", sc.cssClass)}><span>{sc.label}</span></SelectTrigger>
-                    <SelectContent>
-                      {STATUS_CONFIG.map(s => <SelectItem key={s.value} value={s.value}><span className="flex items-center gap-2"><span className={cn("w-2 h-2 rounded-full", s.cssClass)} />{s.label}</span></SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {task.assigned_to && <span className="text-[10px] font-mono text-muted-foreground">{getTeamName(task.assigned_to)?.split(" ")[0]}</span>}
-                {task.deadline && <span className={cn("text-[10px] font-mono", isOverdue ? "text-destructive" : "text-muted-foreground")}>{format(new Date(task.deadline), "dd. MMM", { locale: de })}</span>}
-              </div>
-            </div>
-            <ChevronRight className={cn("h-3 w-3 text-muted-foreground/30 transition-transform shrink-0 mt-1", isExpanded && "rotate-90 text-primary")} />
-          </div>
-        </div>
-
-        {/* Expanded notes */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
-              <div className="px-3 sm:px-4 pb-3 pt-0 ml-4 sm:ml-6 space-y-2">
-                {isMobile && (
-                  <div className="flex items-center gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
-                    <Select value={task.assigned_to || "unassigned"} onValueChange={v => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })} disabled={!canEdit}>
-                      <SelectTrigger className="h-7 text-[11px] border-border/50 bg-background/50 w-auto min-w-[100px]"><SelectValue placeholder="Person" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="unassigned">— Keine —</SelectItem>
-                        {team?.map(t => <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Select value={task.priority || "normal"} onValueChange={v => updateTask(task.id, { priority: v })} disabled={!canEdit}>
-                      <SelectTrigger className="h-7 text-[11px] border-border/50 bg-background/50 w-auto min-w-[90px]"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {PRIORITY_CONFIG.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <MobileDatePicker selected={task.deadline ? new Date(task.deadline) : undefined} onSelect={date => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })} disabled={!canEdit}>
-                      <button className={cn("text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded h-7 border border-border/50 bg-background/50", isOverdue ? "text-destructive" : task.deadline ? "text-foreground/70" : "text-muted-foreground/50")}>
-                        <CalendarIcon className="h-3 w-3" />
-                        {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "Deadline"}
-                      </button>
-                    </MobileDatePicker>
-                  </div>
-                )}
-                <Textarea
-                  value={localNotes[task.id] ?? task.notes ?? ""}
-                  placeholder="Notizen, Links, Kontext…"
-                  className="min-h-[50px] text-xs font-body bg-background/50 border-border/50 resize-none rounded"
-                  onChange={e => handleNotesChange(task.id, e.target.value)}
-                  disabled={!canEdit}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    );
-  }, [expandedTask, canEdit, team, isMobile, localNotes, archiveTask, updateTask, handleNotesChange, getInitials, getTeamName, getSC, getPC]);
+  const todayStr = format(new Date(), "yyyy-MM-dd");
 
   return (
-    <div className="rounded-lg border border-border bg-card overflow-hidden">
-      {/* Group header */}
-      <div className="flex items-center gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
-        <div className="w-1 h-5 rounded-full bg-primary" />
-        <h3 className="font-display text-sm font-semibold">Aufgaben</h3>
-        <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{activeTasks.length}</span>
+    <div className="space-y-1">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-1 mb-2">
+        <h3 className="font-display text-sm font-semibold text-foreground">Aufgaben</h3>
+        {activeTasks.length > 0 && (
+          <span className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded-md">
+            {activeTasks.length}
+          </span>
+        )}
         <div className="flex-1" />
-        <div className="flex items-center gap-2">
-          <Filter className="h-3 w-3 text-muted-foreground hidden sm:block" />
-          <Select value={filterPerson} onValueChange={setFilterPerson}>
-            <SelectTrigger className="h-7 w-24 sm:w-32 text-[11px] border-border/50 bg-background/50"><SelectValue placeholder="Alle" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle</SelectItem>
-              {team?.map(t => <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
         {archivedTasks.length > 0 && (
-          <button className={cn("flex items-center gap-1 text-[11px] font-mono px-2 py-1 rounded transition-colors", showArchive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground")} onClick={() => setShowArchive(!showArchive)}>
-            <Archive className="h-3 w-3" /> {archivedTasks.length}
+          <button
+            className={cn(
+              "flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded-md transition-colors",
+              showArchive ? "text-primary bg-primary/10" : "text-muted-foreground/40 hover:text-muted-foreground"
+            )}
+            onClick={() => setShowArchive(!showArchive)}
+          >
+            <Archive className="h-3 w-3" />
+            {archivedTasks.length}
           </button>
         )}
       </div>
 
-      {/* Column headers */}
-      <div className="hidden md:grid grid-cols-[1fr_100px_100px_90px_100px] items-center gap-0 border-b border-border/50 bg-card text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider">
-        <span className="px-4 py-2">Aufgabe</span>
-        <span className="px-2 py-2 text-center border-l border-border/30">Person</span>
-        <span className="px-2 py-2 text-center border-l border-border/30">Status</span>
-        <span className="px-2 py-2 text-center border-l border-border/30">Deadline</span>
-        <span className="px-2 py-2 text-center border-l border-border/30">Priorität</span>
-      </div>
-
-      {/* Add row */}
+      {/* Add task — minimal */}
       {canEdit && (
-        <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 border-b border-border/30 bg-card/50">
-          <Plus className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-          <Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Neue Aufgabe…" className="h-8 flex-1 min-w-0 text-sm bg-background border-border/50 px-3 rounded-md" onKeyDown={e => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }} />
-          <div className="relative shrink-0 hidden sm:block">
-            <Tag className="absolute left-2 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-muted-foreground/40 pointer-events-none" />
-            <Input value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="Tag" className="h-8 w-20 text-[11px] bg-background border-border/50 pl-6 pr-2 rounded-md" onKeyDown={e => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }} />
+        <div className="flex items-center gap-2 px-1">
+          <div className="h-[18px] w-[18px] rounded-[5px] border border-dashed border-muted-foreground/20 flex items-center justify-center shrink-0">
+            <Plus className="h-2.5 w-2.5 text-muted-foreground/30" />
           </div>
-          <Button size="sm" className="h-8 px-3 text-xs shrink-0" disabled={!newTitle.trim() || addTask.isPending} onClick={() => addTask.mutate()}>
-            <Plus className="h-3 w-3 sm:hidden" />
-            <span className="hidden sm:inline">Hinzufügen</span>
-          </Button>
+          <Input
+            value={newTitle}
+            onChange={e => setNewTitle(e.target.value)}
+            placeholder="Neue Aufgabe..."
+            className="h-8 flex-1 text-sm bg-transparent border-0 shadow-none px-0 placeholder:text-muted-foreground/30 focus-visible:ring-0"
+            onKeyDown={e => { if (e.key === "Enter" && newTitle.trim()) addTask.mutate(); }}
+          />
+          {newTitle.trim() && (
+            <Button size="sm" className="h-7 px-3 text-xs" onClick={() => addTask.mutate()} disabled={addTask.isPending}>
+              Hinzufügen
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Task rows */}
-      <div className="min-h-[40px]">
+      {/* Task list */}
+      <div className="space-y-0.5">
         {isLoading ? (
-          <div className="flex justify-center py-8"><div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" /></div>
+          <div className="flex justify-center py-6">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+          </div>
         ) : activeTasks.length === 0 && !showArchive ? (
-          <div className="py-8 text-center text-xs text-muted-foreground/40 font-mono">Keine offenen Aufgaben</div>
+          <div className="py-6 text-center text-xs text-muted-foreground/30 font-mono">Alles erledigt 🎉</div>
         ) : (
           <AnimatePresence mode="popLayout">
-            {groupedTasks.map((item) => {
-              if (item.type === "group") {
-                const isOpen = expandedGroups.has(item.tag);
-                const assignees = [...new Set(item.tasks.map(t => t.assigned_to).filter(Boolean))] as string[];
-                const earliestDeadline = item.tasks.filter(t => t.deadline).sort((a, b) => (a.deadline || '').localeCompare(b.deadline || ''))[0]?.deadline;
-                return (
-                  <motion.div key={`group-${item.tag}`} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="monday-row">
-                    <div className="flex items-center gap-2.5 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => toggleGroup(item.tag)}>
-                      <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground/50 transition-transform shrink-0", !isOpen && "-rotate-90")} />
-                      <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0", getTagColor(item.tag))}>
-                        {item.tag}
-                      </Badge>
-                      <span className="text-sm font-display font-semibold">{item.tasks.length}× {item.tag}</span>
-                      <div className="flex-1" />
-                      <div className="flex items-center gap-1">
-                        {assignees.slice(0, 3).map(uid => (
-                          <div key={uid} className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center" title={getTeamName(uid) || ""}>
-                            <span className="text-[8px] font-bold text-white">{getInitials(uid)}</span>
-                          </div>
-                        ))}
+            {activeTasks.map((task) => {
+              const isCompleting = completingIds.has(task.id);
+              const isExpanded = expandedTask === task.id;
+              const isOverdue = task.deadline && task.deadline < todayStr;
+              const priorityDot = PRIORITY_DOT[task.priority || "normal"] || PRIORITY_DOT.normal;
+
+              return (
+                <motion.div
+                  key={task.id}
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: isCompleting ? 0.4 : 1, y: 0, scale: isCompleting ? 0.98 : 1 }}
+                  exit={{ opacity: 0, x: -30, scale: 0.95, transition: { duration: 0.2 } }}
+                  className="group"
+                >
+                  <div
+                    className={cn(
+                      "flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors",
+                      isExpanded ? "bg-muted/40" : "hover:bg-muted/20"
+                    )}
+                    onClick={() => setExpandedTask(isExpanded ? null : task.id)}
+                  >
+                    {/* Checkbox */}
+                    {canEdit && (
+                      <button
+                        onClick={e => { e.stopPropagation(); completeTask(task.id); }}
+                        className={cn(
+                          "h-[18px] w-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 transition-all",
+                          isCompleting
+                            ? "border-[hsl(var(--runway-green))] bg-[hsl(var(--runway-green))]"
+                            : "border-muted-foreground/25 hover:border-primary/60 hover:bg-primary/5"
+                        )}
+                      >
+                        {isCompleting && (
+                          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
+                            <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                          </motion.div>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Priority dot */}
+                    <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", priorityDot)} />
+
+                    {/* Title */}
+                    <span className={cn(
+                      "text-sm font-body truncate flex-1",
+                      isCompleting && "line-through text-muted-foreground"
+                    )}>
+                      {task.title}
+                    </span>
+
+                    {/* Deadline (only if set) */}
+                    {task.deadline && (
+                      <span className={cn(
+                        "text-[10px] font-mono shrink-0",
+                        isOverdue ? "text-destructive font-semibold" : "text-muted-foreground/50"
+                      )}>
+                        {format(new Date(task.deadline), "dd. MMM", { locale: de })}
+                      </span>
+                    )}
+
+                    {/* Assignee avatar */}
+                    {task.assigned_to && (
+                      <div
+                        className="h-5 w-5 rounded-full bg-gradient-to-br from-primary/80 to-secondary/80 flex items-center justify-center shrink-0"
+                        title={getTeamName(task.assigned_to) || ""}
+                      >
+                        <span className="text-[7px] font-bold text-primary-foreground">{getInitials(task.assigned_to)}</span>
                       </div>
-                      {earliestDeadline && <span className="text-[10px] font-mono text-muted-foreground/50">{format(new Date(earliestDeadline), "dd MMM", { locale: de })}</span>}
-                    </div>
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden border-t border-border/20 bg-muted/5">
-                          {item.tasks.map(task => renderTaskRow(task, true))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                );
-              }
-              return renderTaskRow(item.task);
+                    )}
+                  </div>
+
+                  {/* Expanded detail */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-2 pb-2 pt-1 ml-7 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
+                            {/* Assignee */}
+                            <Select value={task.assigned_to || "unassigned"} onValueChange={v => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })} disabled={!canEdit}>
+                              <SelectTrigger className="h-7 text-[11px] border-border/40 bg-background/50 w-auto min-w-[100px] rounded-md">
+                                <SelectValue placeholder="Zuweisen" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unassigned">— Keine —</SelectItem>
+                                {team?.map(t => <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+
+                            {/* Priority */}
+                            <Select value={task.priority || "normal"} onValueChange={v => updateTask(task.id, { priority: v })} disabled={!canEdit}>
+                              <SelectTrigger className="h-7 text-[11px] border-border/40 bg-background/50 w-auto min-w-[80px] rounded-md">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Niedrig</SelectItem>
+                                <SelectItem value="normal">Normal</SelectItem>
+                                <SelectItem value="high">Hoch</SelectItem>
+                                <SelectItem value="urgent">Dringend</SelectItem>
+                              </SelectContent>
+                            </Select>
+
+                            {/* Deadline */}
+                            <MobileDatePicker
+                              selected={task.deadline ? new Date(task.deadline) : undefined}
+                              onSelect={date => updateTask(task.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
+                              disabled={!canEdit}
+                            >
+                              <button className={cn(
+                                "text-[11px] font-mono flex items-center gap-1 px-2 py-1 rounded-md h-7 border border-border/40 bg-background/50 transition-colors",
+                                isOverdue ? "text-destructive" : task.deadline ? "text-foreground/70" : "text-muted-foreground/40"
+                              )}>
+                                <CalendarIcon className="h-3 w-3" />
+                                {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "Deadline"}
+                              </button>
+                            </MobileDatePicker>
+
+                            <div className="flex-1" />
+
+                            {canEdit && (
+                              <button
+                                className="text-muted-foreground/30 hover:text-destructive transition-colors p-1"
+                                onClick={() => deleteTask(task.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Notes */}
+                          <Textarea
+                            value={localNotes[task.id] ?? task.notes ?? ""}
+                            placeholder="Notizen..."
+                            className="min-h-[40px] text-xs bg-background/30 border-border/30 resize-none rounded-md"
+                            onChange={e => handleNotesChange(task.id, e.target.value)}
+                            disabled={!canEdit}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
             })}
           </AnimatePresence>
         )}
@@ -466,22 +360,28 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
       {/* Archive */}
       <AnimatePresence>
         {showArchive && archivedTasks.length > 0 && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="border-t border-border">
-              <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-surface-elevated">
-                <div className="w-1 h-4 rounded-full bg-status-default" />
-                <span className="text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">Archiv</span>
-                <span className="text-[10px] font-mono text-muted-foreground/50">{archivedTasks.length}</span>
-              </div>
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-2 pt-2 border-t border-border/30 space-y-0.5">
+              <span className="text-[9px] font-mono text-muted-foreground/30 uppercase tracking-wider px-2">Erledigt</span>
               {archivedTasks.map(task => (
-                <div key={task.id} className="flex items-center gap-3 px-3 sm:px-4 py-2 border-b border-border/20 opacity-40 hover:opacity-60 transition-opacity">
-                  <span className="monday-status monday-status-done text-[9px] py-0.5 px-2 min-w-0">✓</span>
-                  {task.tag && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 rounded border-0 opacity-60 hidden sm:inline-flex">{task.tag}</Badge>}
+                <div key={task.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg opacity-35 hover:opacity-60 transition-opacity">
+                  <div className="h-[18px] w-[18px] rounded-[5px] bg-[hsl(var(--runway-green))]/20 flex items-center justify-center shrink-0">
+                    <Check className="h-2.5 w-2.5 text-[hsl(var(--runway-green))]" strokeWidth={3} />
+                  </div>
                   <span className="flex-1 text-sm font-body line-through text-muted-foreground truncate">{task.title}</span>
                   {canEdit && (
                     <>
-                      <button className="text-[10px] font-mono text-muted-foreground hover:text-foreground flex items-center gap-1" onClick={() => restoreTask(task.id)}><Undo2 className="h-3 w-3" /> <span className="hidden sm:inline">Zurück</span></button>
-                      <button className="text-muted-foreground hover:text-destructive" onClick={() => deleteTask(task.id)}><Trash2 className="h-3 w-3" /></button>
+                      <button className="text-muted-foreground hover:text-foreground p-1" onClick={() => restoreTask(task.id)}>
+                        <Undo2 className="h-3 w-3" />
+                      </button>
+                      <button className="text-muted-foreground hover:text-destructive p-1" onClick={() => deleteTask(task.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </button>
                     </>
                   )}
                 </div>
