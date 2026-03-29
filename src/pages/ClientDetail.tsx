@@ -119,7 +119,23 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
-  if (isLoading || !client) {
+  const focusPieceId = searchParams.get("piece");
+
+  const clearFocusedPiece = useCallback(() => {
+    if (!focusPieceId) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("piece");
+    setSearchParams(next, { replace: true });
+  }, [focusPieceId, searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (!focusPieceId || !contentPieces) return;
+    const targetPiece = contentPieces.find((piece: any) => piece.id === focusPieceId);
+    if (!targetPiece) return;
+    if (targetPiece.target_month !== selectedMonth) setSelectedMonth(targetPiece.target_month);
+    if (targetPiece.target_year !== selectedYear) setSelectedYear(targetPiece.target_year);
+  }, [focusPieceId, contentPieces, selectedMonth, selectedYear]);
+
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
