@@ -9,12 +9,25 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
-  Copy, Check, FileDown, ImageIcon, Upload, Save, Palette,
+  Copy, Check, FileDown, ImageIcon, Upload, Save, Palette, Archive,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import html2canvas from "html2canvas";
+import JSZip from "jszip";
 import { renderThemedSlide, type ThemeId as CarouselThemeId, type BrandColors as ThemeBrandColors } from "./carousel-themes";
+
+const ensureFontsLoaded = async () => {
+  const fontFamilies = ['Inter', 'Playfair Display', 'Outfit', 'Source Sans 3'];
+  try {
+    await Promise.race([
+      Promise.all(fontFamilies.map(font => document.fonts.load(`400 16px "${font}"`))).then(() => document.fonts.ready),
+      new Promise(resolve => setTimeout(resolve, 3000)),
+    ]);
+  } catch {
+    // Fallback to system fonts if loading fails
+  }
+};
 
 interface Slide {
   id: string;
@@ -280,24 +293,70 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const slideH = selectedFormat === "4:5" ? 625 : 500;
   const exportScale = 1080 / 500; // ~2.16
 
+  // Helper: make all slide wrappers visible for export, restore after
+  const withAllSlidesVisible = async <T,>(fn: () => Promise<T>): Promise<T> => {
+    const wrappers = slides.map((_, i) => {
+      const el = document.getElementById(`carousel-slide-${i}`);
+      return el?.parentElement as HTMLElement | null;
+    });
+    wrappers.forEach(w => { if (w) { w.style.opacity = "1"; w.style.pointerEvents = "auto"; } });
+    try {
+      return await fn();
+    } finally {
+      wrappers.forEach((w, i) => {
+        if (w) { w.style.opacity = i === current ? "1" : "0"; w.style.pointerEvents = i === current ? "auto" : "none"; }
+      });
+    }
+  };
+
   const downloadAllJpgs = async () => {
     setExporting(true);
     try {
-      for (let i = 0; i < slides.length; i++) {
-        const el = document.getElementById(`carousel-slide-${i}`);
-        if (!el) continue;
-        el.style.display = "flex";
-        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
-        el.style.display = i === current ? "flex" : "none";
-        const link = document.createElement("a");
-        link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}-slide-${i + 1}.jpg`;
-        link.href = canvas.toDataURL("image/jpeg", 0.92);
-        link.click();
-        await new Promise(r => setTimeout(r, 400));
-      }
+      await ensureFontsLoaded();
+      await withAllSlidesVisible(async () => {
+        for (let i = 0; i < slides.length; i++) {
+          const el = document.getElementById(`carousel-slide-${i}`);
+          if (!el) continue;
+          const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+          const link = document.createElement("a");
+          link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}-slide-${i + 1}.jpg`;
+          link.href = canvas.toDataURL("image/jpeg", 0.95);
+          link.click();
+          await new Promise(r => setTimeout(r, 400));
+        }
+      });
       toast.success(`${slides.length} Slides exportiert!`);
-    } catch { toast.error("Export fehlgeschlagen"); }
-    finally { setExporting(false); }
+    } catch {
+      toast.error("Export fehlgeschlagen — bitte Seite neu laden");
+    } finally { setExporting(false); }
+  };
+
+  const downloadAsZip = async () => {
+    setExporting(true);
+    try {
+      await ensureFontsLoaded();
+      await withAllSlidesVisible(async () => {
+        const zip = new JSZip();
+        const folder = zip.folder("carousel") || zip;
+        for (let i = 0; i < slides.length; i++) {
+          const el = document.getElementById(`carousel-slide-${i}`);
+          if (!el) continue;
+          const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+          const base64 = dataUrl.split(",")[1];
+          folder.file(`slide-${i + 1}.jpg`, base64, { base64: true });
+        }
+        const blob = await zip.generateAsync({ type: "blob" });
+        const link = document.createElement("a");
+        link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}.zip`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+      toast.success(`ZIP mit ${slides.length} Slides heruntergeladen!`);
+    } catch {
+      toast.error("Export fehlgeschlagen — bitte Seite neu laden");
+    } finally { setExporting(false); }
   };
 
   const downloadCurrentJpg = async () => {
@@ -305,12 +364,13 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     if (!el) return;
     setExporting(true);
     try {
+      await ensureFontsLoaded();
       const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
       const link = document.createElement("a");
       link.download = `slide-${current + 1}.jpg`;
-      link.href = canvas.toDataURL("image/jpeg", 0.92);
+      link.href = canvas.toDataURL("image/jpeg", 0.95);
       link.click();
-    } catch { toast.error("Export fehlgeschlagen"); }
+    } catch { toast.error("Export fehlgeschlagen — bitte Seite neu laden"); }
     finally { setExporting(false); }
   };
 
@@ -318,24 +378,21 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     if (!piece) return;
     setSaving(true);
     try {
+      await ensureFontsLoaded();
       const urls: string[] = [];
-      const slideEls = slides.map((_, i) => document.getElementById(`carousel-slide-${i}`));
-      slideEls.forEach(el => { if (el) el.style.display = "flex"; });
-
-      for (let i = 0; i < slides.length; i++) {
-        const el = slideEls[i];
-        if (!el) continue;
-        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
-        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92));
-        const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
-        const { error: uploadErr } = await supabase.storage.from("carousel-slides").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
-        if (uploadErr) throw uploadErr;
-        const { data: urlData } = supabase.storage.from("carousel-slides").getPublicUrl(path);
-        urls.push(urlData.publicUrl + "?t=" + Date.now());
-      }
-
-      slideEls.forEach((el, i) => { if (el) el.style.display = i === current ? "flex" : "none"; });
-
+      await withAllSlidesVisible(async () => {
+        for (let i = 0; i < slides.length; i++) {
+          const el = document.getElementById(`carousel-slide-${i}`);
+          if (!el) continue;
+          const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+          const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.95));
+          const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
+          const { error: uploadErr } = await supabase.storage.from("carousel-slides").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+          if (uploadErr) throw uploadErr;
+          const { data: urlData } = supabase.storage.from("carousel-slides").getPublicUrl(path);
+          urls.push(urlData.publicUrl + "?t=" + Date.now());
+        }
+      });
       const { error: updateErr } = await supabase.from("content_pieces").update({ slide_images: urls }).eq("id", piece.id);
       if (updateErr) throw updateErr;
       toast.success(`${urls.length} Slides gespeichert & bereit zur Freigabe!`);
@@ -343,12 +400,31 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     } catch (err: any) {
       console.error(err);
       toast.error("Fehler beim Hochladen", { description: err.message });
-      slides.forEach((_, i) => {
-        const el = document.getElementById(`carousel-slide-${i}`);
-        if (el) el.style.display = i === current ? "flex" : "none";
-      });
     } finally { setSaving(false); }
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === "s") {
+        e.preventDefault();
+        saveBrandColors();
+      } else if (mod && e.key === "e") {
+        e.preventDefault();
+        downloadAllJpgs();
+      } else if (e.key === "ArrowLeft" && !mod && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setCurrent(prev => Math.max(0, prev - 1));
+      } else if (e.key === "ArrowRight" && !mod && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setCurrent(prev => Math.min(slides.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, slides.length]);
 
   const copySlideText = (idx: number) => {
     navigator.clipboard.writeText(slides[idx].text);
@@ -393,8 +469,12 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Left: Preview */}
           <div className="flex-1 flex flex-col items-center justify-center bg-[#111] p-6 min-w-0">
-            <div className="relative">
-              {slides.map((slide, idx) => renderSlide(slide, idx, idx === current))}
+            <div className="relative" style={{ width: slideW, height: slideH }}>
+              {slides.map((slide, idx) => (
+                <div key={slide.id} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', transition: 'opacity 200ms ease', opacity: idx === current ? 1 : 0, pointerEvents: idx === current ? 'auto' : 'none' }}>
+                  {renderSlide(slide, idx, true)}
+                </div>
+              ))}
             </div>
 
             {/* Navigation */}
@@ -439,6 +519,10 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
               <Button size="sm" variant="secondary" className="h-8 text-xs gap-1.5" onClick={downloadAllJpgs} disabled={exporting || saving}>
                 {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
                 Alle als JPGs
+              </Button>
+              <Button size="sm" variant="secondary" className="h-8 text-xs gap-1.5" onClick={downloadAsZip} disabled={exporting || saving}>
+                {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Archive className="h-3 w-3" />}
+                Alle als ZIP
               </Button>
               <Button size="sm" className="h-8 text-xs gap-1.5" onClick={saveAndUploadSlides} disabled={saving || exporting}>
                 {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
