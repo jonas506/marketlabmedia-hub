@@ -25,6 +25,7 @@ interface CarouselBuilderProps {
   onOpenChange: (open: boolean) => void;
   piece: { id: string; title: string | null; client_id: string; caption?: string | null } | null;
   clientId: string;
+  onSaved?: () => void;
 }
 
 const genSlideId = () => `s${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
