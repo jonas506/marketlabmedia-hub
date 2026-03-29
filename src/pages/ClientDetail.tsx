@@ -277,7 +277,7 @@ const ClientDetail = () => {
         </ErrorBoundary>
 
         {/* Tabbed secondary sections */}
-        <Tabs defaultValue="tasks" className="mt-6">
+        <Tabs defaultValue="shootdays" className="mt-6">
           <TabsList className="bg-card border border-border h-auto p-0.5 gap-0 flex flex-wrap">
             <TabsTrigger value="shootdays" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <CalendarDays className="h-3.5 w-3.5" />
