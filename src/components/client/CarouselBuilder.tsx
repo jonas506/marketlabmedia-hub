@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
-  Copy, Check, FileDown, ImageIcon,
+  Copy, Check, FileDown, ImageIcon, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
