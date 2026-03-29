@@ -33,6 +33,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { role } = useAuth();
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
