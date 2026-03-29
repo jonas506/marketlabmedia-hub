@@ -461,8 +461,12 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Left: Preview */}
           <div className="flex-1 flex flex-col items-center justify-center bg-[#111] p-6 min-w-0">
-            <div className="relative">
-              {slides.map((slide, idx) => renderSlide(slide, idx, idx === current))}
+            <div className="relative" style={{ width: slideW, height: slideH }}>
+              {slides.map((slide, idx) => (
+                <div key={slide.id} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', transition: 'opacity 200ms ease', opacity: idx === current ? 1 : 0, pointerEvents: idx === current ? 'auto' : 'none' }}>
+                  {renderSlide(slide, idx, true)}
+                </div>
+              ))}
             </div>
 
             {/* Navigation */}
