@@ -7,6 +7,16 @@ import { cn } from "@/lib/utils";
 import marketlabLogo from "@/assets/marketlab-logo.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+const getLogoBase64 = async (): Promise<string> => {
+  const response = await fetch(marketlabLogo);
+  const blob = await response.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+    reader.readAsDataURL(blob);
+  });
+};
+
 interface ScriptPiece {
   id: string;
   title: string | null;
