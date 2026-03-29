@@ -276,8 +276,12 @@ const ClientDetail = () => {
         </ErrorBoundary>
 
         {/* Tabbed secondary sections */}
-        <Tabs defaultValue="shootdays" className="mt-6">
+        <Tabs defaultValue="stories" className="mt-6">
           <TabsList className="bg-card border border-border h-auto p-0.5 gap-0 flex flex-wrap">
+            <TabsTrigger value="stories" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              📱
+              <span className="hidden sm:inline">Stories</span>
+            </TabsTrigger>
             <TabsTrigger value="shootdays" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <CalendarDays className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Drehtage</span>
@@ -308,6 +312,9 @@ const ClientDetail = () => {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="stories" className="mt-4">
+            <ErrorBoundary level="section"><StorySequences clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
+          </TabsContent>
           <TabsContent value="shootdays" className="mt-4">
             <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
