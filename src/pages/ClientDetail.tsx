@@ -279,9 +279,9 @@ const ClientDetail = () => {
         {/* Tabbed secondary sections */}
         <Tabs defaultValue="tasks" className="mt-6">
           <TabsList className="bg-card border border-border h-auto p-0.5 gap-0 flex flex-wrap">
-            <TabsTrigger value="tasks" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
-              <ClipboardList className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Aufgaben</span>
+            <TabsTrigger value="shootdays" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Drehtage</span>
             </TabsTrigger>
             <TabsTrigger value="checklists" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <ClipboardList className="h-3.5 w-3.5" />
