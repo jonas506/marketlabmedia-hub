@@ -118,7 +118,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     return PHASE_CONFIG.filter((ph) => phases.has(ph.key));
   }, [pieces]);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    const logoBase64 = await getLogoBase64();
     const printContent = scriptPieces.map((piece, idx) => {
       const { hooks, body } = parseScript(piece.script_text);
       const typeLabel = TYPE_CONFIG.find((t) => t.key === piece.type)?.label ?? piece.type;
