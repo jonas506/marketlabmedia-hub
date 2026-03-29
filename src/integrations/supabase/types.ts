@@ -762,6 +762,7 @@ export type Database = {
           tag: string | null
           target_month: number
           target_year: number
+          team_reply: string | null
           title: string | null
           transcript: string | null
           type: string
@@ -790,6 +791,7 @@ export type Database = {
           tag?: string | null
           target_month: number
           target_year: number
+          team_reply?: string | null
           title?: string | null
           transcript?: string | null
           type: string
@@ -818,6 +820,7 @@ export type Database = {
           tag?: string | null
           target_month?: number
           target_year?: number
+          team_reply?: string | null
           title?: string | null
           transcript?: string | null
           type?: string
