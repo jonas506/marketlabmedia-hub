@@ -276,8 +276,9 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   }, [topic, slides.length, client]);
 
   // Slide dimensions
-  const slideW = 420;
-  const slideH = selectedFormat === "4:5" ? 525 : 420;
+  const slideW = 500;
+  const slideH = selectedFormat === "4:5" ? 625 : 500;
+  const exportScale = 1080 / 500; // ~2.16
 
   const downloadAllJpgs = async () => {
     setExporting(true);
