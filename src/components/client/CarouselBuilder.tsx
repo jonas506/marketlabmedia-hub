@@ -389,25 +389,35 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
             </div>
 
             {/* Export buttons */}
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-4 flex-wrap justify-center">
               <Button
                 size="sm"
                 variant="secondary"
                 className="h-8 text-xs gap-1.5"
                 onClick={downloadCurrentJpg}
-                disabled={exporting}
+                disabled={exporting || saving}
               >
                 {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
                 Slide als JPG
               </Button>
               <Button
                 size="sm"
+                variant="secondary"
                 className="h-8 text-xs gap-1.5"
                 onClick={downloadAllJpgs}
-                disabled={exporting}
+                disabled={exporting || saving}
               >
                 {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
-                Alle als JPGs ({slides.length})
+                Alle als JPGs
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                onClick={saveAndUploadSlides}
+                disabled={saving || exporting}
+              >
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                Speichern & Freigabe
               </Button>
             </div>
           </div>
