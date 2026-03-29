@@ -380,23 +380,19 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     try {
       await ensureFontsLoaded();
       const urls: string[] = [];
-      const slideEls = slides.map((_, i) => document.getElementById(`carousel-slide-${i}`));
-      slideEls.forEach(el => { if (el) el.style.display = "flex"; });
-
-      for (let i = 0; i < slides.length; i++) {
-        const el = slideEls[i];
-        if (!el) continue;
-        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
-        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.95));
-        const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
-        const { error: uploadErr } = await supabase.storage.from("carousel-slides").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
-        if (uploadErr) throw uploadErr;
-        const { data: urlData } = supabase.storage.from("carousel-slides").getPublicUrl(path);
-        urls.push(urlData.publicUrl + "?t=" + Date.now());
-      }
-
-      slideEls.forEach((el, i) => { if (el) el.style.display = i === current ? "flex" : "none"; });
-
+      await withAllSlidesVisible(async () => {
+        for (let i = 0; i < slides.length; i++) {
+          const el = document.getElementById(`carousel-slide-${i}`);
+          if (!el) continue;
+          const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+          const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.95));
+          const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
+          const { error: uploadErr } = await supabase.storage.from("carousel-slides").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+          if (uploadErr) throw uploadErr;
+          const { data: urlData } = supabase.storage.from("carousel-slides").getPublicUrl(path);
+          urls.push(urlData.publicUrl + "?t=" + Date.now());
+        }
+      });
       const { error: updateErr } = await supabase.from("content_pieces").update({ slide_images: urls }).eq("id", piece.id);
       if (updateErr) throw updateErr;
       toast.success(`${urls.length} Slides gespeichert & bereit zur Freigabe!`);
@@ -404,10 +400,6 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     } catch (err: any) {
       console.error(err);
       toast.error("Fehler beim Hochladen", { description: err.message });
-      slides.forEach((_, i) => {
-        const el = document.getElementById(`carousel-slide-${i}`);
-        if (el) el.style.display = i === current ? "flex" : "none";
-      });
     } finally { setSaving(false); }
   };
 
