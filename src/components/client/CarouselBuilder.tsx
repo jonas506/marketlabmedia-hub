@@ -66,16 +66,47 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     setSlides(DEFAULT_SLIDES.map(s => ({ ...s, id: genSlideId() })));
     setCurrent(0);
     setTopic(piece.title || "");
-    setCustomHeading("");
+    setCustomHeading(client?.instagram_handle || "");
     setCustomAvatar(null);
   }
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Show preview immediately
     const reader = new FileReader();
     reader.onload = () => setCustomAvatar(reader.result as string);
     reader.readAsDataURL(file);
+
+    // Upload to storage and save on client
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${clientId}/logo.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("client-logos").upload(path, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+      const { data: urlData } = supabase.storage.from("client-logos").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl + "?t=" + Date.now();
+      await supabase.from("clients").update({ logo_url: publicUrl }).eq("id", clientId);
+      toast.success("Profilbild gespeichert");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Fehler beim Speichern des Profilbilds");
+    }
+  };
+
+  const saveCustomHeading = async (value: string) => {
+    setCustomHeading(value);
+    // Debounced save handled on blur
+  };
+
+  const handleHeadingBlur = async () => {
+    if (!customHeading.trim()) return;
+    try {
+      await supabase.from("clients").update({ instagram_handle: customHeading.trim() }).eq("id", clientId);
+      toast.success("Name gespeichert");
+    } catch {
+      toast.error("Fehler beim Speichern");
+    }
   };
 
   const updateSlide = (idx: number, text: string) => {
@@ -358,6 +389,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                 <Input
                   value={customHeading}
                   onChange={e => setCustomHeading(e.target.value)}
+                  onBlur={handleHeadingBlur}
                   placeholder={handle || client?.name || "Name / Handle"}
                   className="h-8 text-xs flex-1"
                 />
