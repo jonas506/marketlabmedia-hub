@@ -148,6 +148,25 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
         </motion.div>
       )}
 
+      {/* Carousel Builder button */}
+      {activeType === "carousel" && activePhase === "script" && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="pl-9"
+        >
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs font-mono gap-1.5 text-primary border-primary/30 bg-primary/5"
+            onClick={() => onOpenCarouselBuilder(piece)}
+          >
+            <LayoutGrid className="h-3 w-3" />
+            Carousel Builder
+          </Button>
+        </motion.div>
+      )}
+
       {/* Carousel slide images */}
       {activeType === "carousel" && (activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script") && (
         <motion.div
