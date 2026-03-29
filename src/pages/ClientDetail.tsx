@@ -270,7 +270,7 @@ const ClientDetail = () => {
         <ErrorBoundary level="section">
           <div className="space-y-4">
             <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
-            <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+            <TaskList clientId={client.id} canEdit={canEdit} />
             <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
             <StorySequences clientId={client.id} canEdit={canEdit} />
           </div>
