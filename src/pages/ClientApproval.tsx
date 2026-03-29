@@ -596,6 +596,7 @@ const ClientApproval = () => {
                     </motion.div>
                   )}
 
+                  {allPreviewLinks.length > 1 && (
                     <div className="mb-3 space-y-1.5">
                       <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest px-1">
                         {allPreviewLinks.length === 1 ? "Preview-Link" : "Preview-Links"}
