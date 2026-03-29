@@ -46,6 +46,9 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [lastPieceId, setLastPieceId] = useState<string | null>(null);
+  const [customHeading, setCustomHeading] = useState("");
+  const [customAvatar, setCustomAvatar] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch client info for branding
   const { data: client } = useQuery({
@@ -63,7 +66,17 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     setSlides(DEFAULT_SLIDES.map(s => ({ ...s, id: genSlideId() })));
     setCurrent(0);
     setTopic(piece.title || "");
+    setCustomHeading("");
+    setCustomAvatar(null);
   }
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCustomAvatar(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const updateSlide = (idx: number, text: string) => {
     setSlides(prev => prev.map((s, i) => i === idx ? { ...s, text } : s));
@@ -201,6 +214,8 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   if (!piece) return null;
 
   const handle = client?.instagram_handle ? `@${client.instagram_handle.replace("@", "")}` : "";
+  const displayName = customHeading.trim() || handle || client?.name || "";
+  const avatarSrc = customAvatar || client?.logo_url || null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -228,17 +243,21 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                   style={{ width: 420, height: 420 }}
                 >
                   {/* Profile row */}
-                  {client?.logo_url && (
+                  {(avatarSrc || displayName) && (
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                        <img src={client.logo_url} alt="" className="w-full h-full object-contain" />
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-bold text-black">{handle || client.name}</span>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="#0095f6">
-                          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                        </svg>
-                      </div>
+                      {avatarSrc && (
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 shrink-0">
+                          <img src={avatarSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                        </div>
+                      )}
+                      {displayName && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-bold text-black">{displayName}</span>
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="#0095f6">
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -321,6 +340,34 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
 
           {/* Right: Editor */}
           <div className="w-[340px] border-l border-border flex flex-col bg-background">
+            {/* Profile settings */}
+            <div className="p-4 border-b border-border space-y-3">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Profil & Überschrift</label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="w-10 h-10 rounded-full overflow-hidden bg-muted border border-border hover:border-primary/40 transition shrink-0 flex items-center justify-center"
+                >
+                  {avatarSrc ? (
+                    <img src={avatarSrc} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+                <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                <Input
+                  value={customHeading}
+                  onChange={e => setCustomHeading(e.target.value)}
+                  placeholder={handle || client?.name || "Name / Handle"}
+                  className="h-8 text-xs flex-1"
+                />
+                {(customAvatar || customHeading) && (
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0" onClick={() => { setCustomAvatar(null); setCustomHeading(""); }}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
             {/* AI Generate */}
             <div className="p-4 border-b border-border space-y-2">
               <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">KI-Generierung</label>
