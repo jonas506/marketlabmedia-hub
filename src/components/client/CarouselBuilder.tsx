@@ -287,7 +287,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
         const el = document.getElementById(`carousel-slide-${i}`);
         if (!el) continue;
         el.style.display = "flex";
-        const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
         el.style.display = i === current ? "flex" : "none";
         const link = document.createElement("a");
         link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}-slide-${i + 1}.jpg`;
