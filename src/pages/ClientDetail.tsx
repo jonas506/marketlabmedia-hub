@@ -288,7 +288,7 @@ const ClientDetail = () => {
           <div className="space-y-4">
             <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
             <TaskList clientId={client.id} canEdit={canEdit} />
-            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
           </div>
         </ErrorBoundary>
 
