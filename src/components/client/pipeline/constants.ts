@@ -66,6 +66,7 @@ export const PIPELINE_CONFIG: Record<string, PipelineConfig> = {
       { key: "handed_over", label: "Übergeben", emoji: "🚀" },
     ],
     addLabel: "+ Story Ad",
+  },
   ad: {
     label: "Ads",
     emoji: "📢",
