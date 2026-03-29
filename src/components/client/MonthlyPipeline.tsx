@@ -397,7 +397,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       <PieceDetailDialog open={!!detailPiece} onOpenChange={(open) => !open && setDetailPiece(null)} piece={detailPiece ? { ...detailPiece, client_id: clientId } : null} clientId={clientId} />
       <ScriptEditorDialog open={!!scriptPiece} onOpenChange={(open) => !open && setScriptPiece(null)} piece={scriptPiece} clientId={clientId} canEdit={canEdit} />
       <PrintScriptsDialog open={printScriptsOpen} onOpenChange={setPrintScriptsOpen} pieces={monthPieces} />
-      <CarouselBuilder open={!!carouselBuilderPiece} onOpenChange={(open) => !open && setCarouselBuilderPiece(null)} piece={carouselBuilderPiece} clientId={clientId} />
+      <CarouselBuilder open={!!carouselBuilderPiece} onOpenChange={(open) => !open && setCarouselBuilderPiece(null)} piece={carouselBuilderPiece} clientId={clientId} onSaved={() => qc.invalidateQueries({ queryKey: ["content-pieces", clientId] })} />
     </motion.div>
   );
 };

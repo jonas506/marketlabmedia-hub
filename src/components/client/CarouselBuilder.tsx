@@ -25,6 +25,7 @@ interface CarouselBuilderProps {
   onOpenChange: (open: boolean) => void;
   piece: { id: string; title: string | null; client_id: string; caption?: string | null } | null;
   clientId: string;
+  onSaved?: () => void;
 }
 
 const genSlideId = () => `s${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -37,7 +38,7 @@ const DEFAULT_SLIDES: Slide[] = [
   { id: genSlideId(), text: "Slide 5 — CTA: Speichern & Teilen!", isCta: true },
 ];
 
-const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, piece, clientId }) => {
+const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, piece, clientId, onSaved }) => {
   const [slides, setSlides] = useState<Slide[]>(DEFAULT_SLIDES);
   const [current, setCurrent] = useState(0);
   const [topic, setTopic] = useState("");
@@ -296,6 +297,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
         .eq("id", piece.id);
       if (updateErr) throw updateErr;
       toast.success(`${urls.length} Slides gespeichert & bereit zur Freigabe!`);
+      onSaved?.();
     } catch (err: any) {
       console.error(err);
       toast.error("Fehler beim Hochladen", { description: err.message });
