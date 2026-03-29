@@ -94,7 +94,20 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
 
   const saveFields = async (fields: Record<string, any>) => {
     try {
+      // Convert empty strings to null for date/number fields
+      const cleanedFields: Record<string, any> = {};
+      const dateFields = ["contract_start", "contract_end"];
+      const numberFields = ["monthly_reels", "monthly_carousels", "monthly_stories", "monthly_price", "monthly_youtube_longform"];
       for (const [key, val] of Object.entries(fields)) {
+        if (dateFields.includes(key)) {
+          cleanedFields[key] = val === "" ? null : val;
+        } else if (numberFields.includes(key)) {
+          cleanedFields[key] = val === "" ? 0 : Number(val);
+        } else {
+          cleanedFields[key] = val;
+        }
+      }
+      for (const [key, val] of Object.entries(cleanedFields)) {
         const oldVal = client[key];
         if (String(oldVal ?? "") !== String(val ?? "")) {
           await supabase.from("contract_changes").insert({
@@ -104,7 +117,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
           });
         }
       }
-      const { error } = await supabase.from("clients").update(fields).eq("id", client.id);
+      const { error } = await supabase.from("clients").update(cleanedFields).eq("id", client.id);
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["client", client.id] });
       qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
