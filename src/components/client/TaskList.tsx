@@ -139,10 +139,35 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     onSuccess: () => { setNewTitle(""); qc.invalidateQueries({ queryKey: ["tasks", clientId] }); toast.success("Aufgabe erstellt"); },
   });
 
-  const updateTask = useCallback(async (taskId: string, updates: Record<string, any>) => {
+  const notifyTaskAssignment = useCallback(async (assignedTo: string, taskTitle: string, tag?: string | null, taskCount?: number) => {
+    try {
+      // Get client name for context
+      const { data: client } = await supabase.from("clients").select("name").eq("id", clientId).single();
+      await supabase.functions.invoke("notify-task-assignment", {
+        body: {
+          assigned_to: assignedTo,
+          task_title: taskTitle,
+          task_count: taskCount || 1,
+          client_name: client?.name || null,
+          tag: tag || null,
+        },
+      });
+    } catch (e) {
+      console.error("Slack task notification failed:", e);
+    }
+  }, [clientId]);
+
+  const updateTask = useCallback(async (taskId: string, updates: Record<string, any>, task?: Task) => {
+    // Check if assigned_to is being changed to a new person
+    const isNewAssignment = updates.assigned_to && updates.assigned_to !== "unassigned" && task && updates.assigned_to !== task.assigned_to;
+
     await supabase.from("tasks" as any).update(updates as any).eq("id", taskId);
     qc.invalidateQueries({ queryKey: ["tasks", clientId] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
+
+    if (isNewAssignment && task) {
+      notifyTaskAssignment(updates.assigned_to, task.title, task.tag);
+    }
   }, [qc, clientId]);
 
   const setGroupDeadline = useCallback(async (group: TaskGroup, date: Date | undefined) => {
