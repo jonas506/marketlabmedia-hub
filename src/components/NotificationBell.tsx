@@ -1,4 +1,4 @@
-import { Bell, BellOff, Check, CheckCheck, Scissors, Eye, Send, ClipboardList, Clock, AlertTriangle, MessageSquare, ListTodo, ChevronRight, CalendarDays } from "lucide-react";
+import { Bell, BellOff, Check, CheckCheck, Scissors, Eye, ClipboardList, Clock, AlertTriangle, MessageSquare, ListTodo, ChevronRight } from "lucide-react";
 import { useNotifications, Notification } from "@/contexts/NotificationContext";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -49,21 +49,23 @@ function NotificationItem({ notif, onClick }: { notif: Notification; onClick: ()
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: 20 }}
       onClick={onClick}
-      className={`w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-accent/50 rounded-md ${
-        !notif.is_read ? "bg-primary/5" : ""
-      }`}
+      className={[
+        "w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-accent/50 rounded-md",
+        !notif.is_read ? "bg-primary/5" : "",
+      ].join(" ")}
     >
       <div className="flex items-center gap-2 mt-0.5 shrink-0">
-        <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${!notif.is_read ? "bg-primary" : "bg-transparent"}`} />
+        <div className={[
+          "h-1.5 w-1.5 rounded-full shrink-0",
+          !notif.is_read ? "bg-primary" : "bg-transparent",
+        ].join(" ")} />
         <div className="text-muted-foreground">{getNotifIcon(notif.type)}</div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-body text-sm leading-snug">{notif.title}</p>
-        {notif.body && (
-          <p className="text-xs text-muted-foreground truncate mt-0.5">{notif.body}</p>
-        )}
+      <div className="min-w-0 flex-1 pr-1">
+        <p className="font-body text-sm leading-snug break-words">{notif.title}</p>
+        {notif.body && <p className="mt-0.5 truncate text-xs text-muted-foreground">{notif.body}</p>}
       </div>
-      <span className="font-mono text-[10px] text-muted-foreground shrink-0 mt-0.5">
+      <span className="mt-0.5 shrink-0 font-mono text-[10px] text-muted-foreground">
         {getRelativeTime(notif.created_at)}
       </span>
     </motion.button>
@@ -108,13 +110,13 @@ function TasksSummary({ onClose }: { onClose: () => void }) {
     <div className="flex flex-col">
       {tasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-          <Check className="h-8 w-8 mb-2 opacity-30" />
+          <Check className="mb-2 h-8 w-8 opacity-30" />
           <p className="text-sm">Keine offenen Aufgaben</p>
         </div>
       ) : (
-        <div className="p-1.5 space-y-0.5">
+        <div className="space-y-0.5 p-1.5">
           {urgentCount > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1.5 mb-1">
+            <div className="mb-1 flex items-center gap-2 px-3 py-1.5">
               <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
               <span className="text-xs font-medium text-destructive">
                 {urgentCount} {urgentCount === 1 ? "Aufgabe" : "Aufgaben"} fällig
@@ -126,24 +128,32 @@ function TasksSummary({ onClose }: { onClose: () => void }) {
             return (
               <button
                 key={task.id}
-                onClick={() => { navigate("/tasks"); onClose(); }}
-                className="w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-accent/50 rounded-md"
+                onClick={() => {
+                  navigate("/tasks");
+                  onClose();
+                }}
+                className="flex w-full items-start gap-2.5 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-accent/50"
               >
-                <div className="flex items-center gap-2 mt-0.5 shrink-0">
-                  <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                    task.priority === "urgent" ? "bg-destructive" :
-                    task.priority === "high" ? "bg-amber-500" : "bg-primary/40"
-                  }`} />
+                <div className="mt-0.5 flex shrink-0 items-center gap-2">
+                  <div className={[
+                    "h-1.5 w-1.5 rounded-full shrink-0",
+                    task.priority === "urgent"
+                      ? "bg-destructive"
+                      : task.priority === "high"
+                        ? "bg-[hsl(var(--status-review))]"
+                        : "bg-primary/40",
+                  ].join(" ")} />
                   <ListTodo className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-body text-sm leading-snug truncate">{task.title}</p>
-                  {task.clients?.name && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{task.clients.name}</p>
-                  )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-body text-sm leading-snug">{task.title}</p>
+                  {task.clients?.name && <p className="mt-0.5 truncate text-xs text-muted-foreground">{task.clients.name}</p>}
                 </div>
                 {dl && (
-                  <span className={`font-mono text-[10px] shrink-0 mt-0.5 ${dl.urgent ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+                  <span className={[
+                    "mt-0.5 shrink-0 font-mono text-[10px]",
+                    dl.urgent ? "font-semibold text-destructive" : "text-muted-foreground",
+                  ].join(" ")}>
                     {dl.label}
                   </span>
                 )}
@@ -153,8 +163,11 @@ function TasksSummary({ onClose }: { onClose: () => void }) {
         </div>
       )}
       <button
-        onClick={() => { navigate("/tasks"); onClose(); }}
-        className="flex items-center justify-center gap-1 py-2.5 text-xs text-primary hover:text-primary/80 transition-colors border-t border-border"
+        onClick={() => {
+          navigate("/tasks");
+          onClose();
+        }}
+        className="flex items-center justify-center gap-1 border-t border-border py-2.5 text-xs text-primary transition-colors hover:text-primary/80"
       >
         Alle Aufgaben anzeigen <ChevronRight className="h-3 w-3" />
       </button>
@@ -174,53 +187,60 @@ function NotificationList() {
   };
 
   return (
-    <div className="flex flex-col h-full max-h-[70vh]">
-      {/* Tab header */}
-      <div className="border-b border-border">
-        <div className="flex items-center px-2 pt-2">
-          <button
-            onClick={() => setTab("notifs")}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-md transition-colors ${
-              tab === "notifs"
-                ? "bg-background text-foreground border border-border border-b-transparent -mb-px"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Bell className="h-3.5 w-3.5" />
-            Benachrichtigungen
-            {unreadCount > 0 && (
-              <span className="font-mono text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setTab("tasks")}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-md transition-colors ${
-              tab === "tasks"
-                ? "bg-background text-foreground border border-border border-b-transparent -mb-px"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <ListTodo className="h-3.5 w-3.5" />
-            Aufgaben
-          </button>
-          <div className="flex-1" />
+    <div className="flex h-full max-h-[70vh] min-h-0 flex-col">
+      <div className="border-b border-border px-2 py-2">
+        <div className="flex items-center gap-1.5">
+          <div className="grid min-w-0 flex-1 grid-cols-2 gap-1">
+            <button
+              onClick={() => setTab("notifs")}
+              className={[
+                "flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors",
+                tab === "notifs"
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+              ].join(" ")}
+            >
+              <Bell className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Benachrichtigungen</span>
+              {unreadCount > 0 && (
+                <span className="shrink-0 rounded-full bg-primary px-1.5 py-0.5 font-mono text-[9px] text-primary-foreground">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setTab("tasks")}
+              className={[
+                "flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors",
+                tab === "tasks"
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+              ].join(" ")}
+            >
+              <ListTodo className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Aufgaben</span>
+            </button>
+          </div>
           {tab === "notifs" && unreadCount > 0 && (
-            <Button variant="ghost" size="sm" className="text-xs h-7 gap-1 mr-1" onClick={markAllAsRead}>
-              <CheckCheck className="h-3 w-3" /> Alle gelesen
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 shrink-0 gap-1 px-2 text-[11px]"
+              onClick={markAllAsRead}
+            >
+              <CheckCheck className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Alle gelesen</span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* Content */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="min-h-0 flex-1">
         {tab === "notifs" ? (
           <div className="p-1.5">
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <BellOff className="h-8 w-8 mb-2 opacity-30" />
+                <BellOff className="mb-2 h-8 w-8 opacity-30" />
                 <p className="text-sm">Keine Benachrichtigungen</p>
               </div>
             ) : (
@@ -231,7 +251,7 @@ function NotificationList() {
               </AnimatePresence>
             )}
             {notifications.length >= 50 && (
-              <p className="text-[10px] text-muted-foreground text-center pb-3">
+              <p className="pb-3 text-center text-[10px] text-muted-foreground">
                 Ältere Benachrichtigungen werden automatisch gelöscht
               </p>
             )}
@@ -248,27 +268,29 @@ export default function NotificationBell() {
   const { unreadCount, panelOpen, setPanelOpen } = useNotifications();
   const isMobile = useIsMobile();
 
-  const bellButton = (
-    <button
-      onClick={() => setPanelOpen(!panelOpen)}
-      className="relative flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/50 hover:bg-primary/10 hover:text-primary transition-all duration-200"
-      title="Benachrichtigungen"
-    >
+  const bellIcon = (
+    <>
       <Bell className="h-[17px] w-[17px]" />
       {unreadCount > 0 && (
-        <span className="absolute top-0.5 right-0.5 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-primary text-primary-foreground font-mono text-[8px] font-bold ring-2 ring-sidebar">
+        <span className="absolute right-0.5 top-0.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-primary px-0.5 font-mono text-[8px] font-bold text-primary-foreground ring-2 ring-sidebar">
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       )}
-    </button>
+    </>
   );
 
   if (isMobile) {
     return (
       <>
-        {bellButton}
+        <button
+          onClick={() => setPanelOpen(true)}
+          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/50 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+          title="Benachrichtigungen"
+        >
+          {bellIcon}
+        </button>
         <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
-          <SheetContent side="bottom" className="h-[75vh] p-0 rounded-t-2xl">
+          <SheetContent side="bottom" className="h-[75vh] rounded-t-2xl p-0">
             <VisuallyHidden.Root><SheetTitle>Benachrichtigungen</SheetTitle></VisuallyHidden.Root>
             <NotificationList />
           </SheetContent>
@@ -279,14 +301,21 @@ export default function NotificationBell() {
 
   return (
     <Popover open={panelOpen} onOpenChange={setPanelOpen}>
-      <PopoverTrigger asChild>{bellButton}</PopoverTrigger>
+      <PopoverTrigger asChild>
+        <button
+          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/50 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
+          title="Benachrichtigungen"
+        >
+          {bellIcon}
+        </button>
+      </PopoverTrigger>
       <PopoverContent
         side="right"
         align="end"
         sideOffset={12}
         collisionPadding={16}
         avoidCollisions
-        className="w-[380px] p-0 max-h-[70vh] z-50"
+        className="z-50 max-h-[70vh] w-[min(420px,calc(100vw-96px))] overflow-hidden p-0"
       >
         <NotificationList />
       </PopoverContent>
