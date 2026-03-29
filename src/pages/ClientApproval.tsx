@@ -27,6 +27,7 @@ interface Piece {
   phase: string;
   preview_link: string | null;
   client_comment: string | null;
+  team_reply?: string | null;
   script_text?: string | null;
   slide_images?: string[] | null;
   revision_count?: number;
