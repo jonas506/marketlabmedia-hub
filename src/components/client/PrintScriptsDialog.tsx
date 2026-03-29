@@ -17,6 +17,11 @@ const getLogoBase64 = async (): Promise<string> => {
   });
 };
 
+interface ScriptLink {
+  url: string;
+  label?: string;
+}
+
 interface ScriptPiece {
   id: string;
   title: string | null;
@@ -25,6 +30,7 @@ interface ScriptPiece {
   script_text?: string | null;
   has_script?: boolean;
   tag?: string | null;
+  script_links?: ScriptLink[] | null;
 }
 
 interface PrintScriptsDialogProps {
@@ -145,6 +151,16 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 
       if (body.trim()) {
         html += `<div class="body-section"><div class="body-label">SKRIPT</div><div class="body-text">${escapeHtml(body).replace(/\n/g, "<br/>")}</div></div>`;
+      }
+
+      const links = (piece.script_links || []) as ScriptLink[];
+      if (links.length > 0) {
+        html += `<div class="links-section"><div class="links-label">LINKS</div>`;
+        links.forEach((link) => {
+          const label = link.label || link.url;
+          html += `<div class="link-item"><span class="link-icon">🔗</span><a href="${escapeHtml(link.url)}" target="_blank">${escapeHtml(label)}</a></div>`;
+        });
+        html += `</div>`;
       }
 
       html += `</div>`;
@@ -297,6 +313,32 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       line-height: 1.8;
       color: #333;
     }
+    .links-section {
+      padding: 0.75rem 1.25rem 1rem;
+      border-top: 1px solid #eee;
+    }
+    .links-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #aaa;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.3rem;
+      font-size: 13px;
+    }
+    .link-icon { font-size: 12px; }
+    .link-item a {
+      color: #0083F7;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .link-item a:hover { text-decoration: underline; }
     .page-footer {
       padding: 1.5rem 3rem;
       border-top: 1px solid #eee;
