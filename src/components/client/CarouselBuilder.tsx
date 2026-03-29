@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
-  Copy, Check, FileDown, ImageIcon,
+  Copy, Check, FileDown, ImageIcon, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -43,6 +43,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const [topic, setTopic] = useState("");
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [lastPieceId, setLastPieceId] = useState<string | null>(null);
@@ -236,6 +237,48 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     }
   };
 
+
+  const saveAndUploadSlides = async () => {
+    if (!piece) return;
+    setSaving(true);
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < slides.length; i++) {
+        const el = document.getElementById(`carousel-slide-${i}`);
+        if (!el) continue;
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+          width: 500,
+          height: 500,
+          logging: false,
+        });
+        const blob = await new Promise<Blob>((resolve) =>
+          canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92)
+        );
+        const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
+        const { error: uploadErr } = await supabase.storage
+          .from("carousel-slides")
+          .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+        if (uploadErr) throw uploadErr;
+        const { data: urlData } = supabase.storage.from("carousel-slides").getPublicUrl(path);
+        urls.push(urlData.publicUrl + "?t=" + Date.now());
+      }
+      // Save URLs to content_pieces
+      const { error: updateErr } = await supabase
+        .from("content_pieces")
+        .update({ slide_images: urls })
+        .eq("id", piece.id);
+      if (updateErr) throw updateErr;
+      toast.success(`${urls.length} Slides gespeichert & bereit zur Freigabe!`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Fehler beim Hochladen", { description: err.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const copySlideText = (idx: number) => {
     navigator.clipboard.writeText(slides[idx].text);
     setCopiedIdx(idx);
@@ -346,25 +389,35 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
             </div>
 
             {/* Export buttons */}
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-2 mt-4 flex-wrap justify-center">
               <Button
                 size="sm"
                 variant="secondary"
                 className="h-8 text-xs gap-1.5"
                 onClick={downloadCurrentJpg}
-                disabled={exporting}
+                disabled={exporting || saving}
               >
                 {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
                 Slide als JPG
               </Button>
               <Button
                 size="sm"
+                variant="secondary"
                 className="h-8 text-xs gap-1.5"
                 onClick={downloadAllJpgs}
-                disabled={exporting}
+                disabled={exporting || saving}
               >
                 {exporting ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
-                Alle als JPGs ({slides.length})
+                Alle als JPGs
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                onClick={saveAndUploadSlides}
+                disabled={saving || exporting}
+              >
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                Speichern & Freigabe
               </Button>
             </div>
           </div>
