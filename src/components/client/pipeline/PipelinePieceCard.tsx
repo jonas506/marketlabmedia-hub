@@ -33,6 +33,7 @@ interface PipelinePieceCardProps {
   onDeletePiece: (pieceId: string) => void;
   onOpenDetail: (piece: ContentPiece) => void;
   onOpenScript: (piece: ContentPiece) => void;
+  onOpenCarouselBuilder: (piece: ContentPiece) => void;
   onTitleChange: (pieceId: string, title: string) => void;
   onPreviewLinkChange: (pieceId: string, allLinks: string, currentTitle: string | null) => void;
   localTitle: string | undefined;
