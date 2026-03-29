@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, FileText, MessageSquare, LayoutGrid } from "lucide-react";
+import { Trash2, FileText, MessageSquare, LayoutGrid, Send, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { relativeTime } from "./constants";
@@ -13,6 +13,33 @@ import PieceDeadlinePriorityRow from "./PieceDeadlinePriorityRow";
 import PieceLatePhaseRow from "./PieceLatePhaseRow";
 import CarouselSlideUpload from "../CarouselSlideUpload";
 import type { ContentPiece, TeamMember, PipelineConfig, MonthOption } from "./types";
+
+const TeamReplyInput: React.FC<{ pieceId: string; currentReply: string; onSave: (reply: string) => void }> = ({ pieceId, currentReply, onSave }) => {
+  const [reply, setReply] = useState(currentReply);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = useCallback(() => {
+    onSave(reply);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  }, [reply, onSave]);
+
+  return (
+    <div className="flex items-center gap-1.5 ml-5">
+      <span className="text-[10px] text-primary shrink-0">↳</span>
+      <Input
+        value={reply}
+        onChange={(e) => setReply(e.target.value)}
+        placeholder="Auf Feedback antworten..."
+        className="h-7 text-xs flex-1 bg-primary/5 border-primary/20 placeholder:text-muted-foreground/40"
+        onKeyDown={(e) => e.key === "Enter" && handleSave()}
+      />
+      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-primary" onClick={handleSave}>
+        {saved ? <Check className="h-3 w-3" /> : <Send className="h-3 w-3" />}
+      </Button>
+    </div>
+  );
+};
 
 interface PipelinePieceCardProps {
   piece: ContentPiece;
