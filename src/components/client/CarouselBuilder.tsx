@@ -66,7 +66,17 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     setSlides(DEFAULT_SLIDES.map(s => ({ ...s, id: genSlideId() })));
     setCurrent(0);
     setTopic(piece.title || "");
+    setCustomHeading("");
+    setCustomAvatar(null);
   }
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCustomAvatar(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const updateSlide = (idx: number, text: string) => {
     setSlides(prev => prev.map((s, i) => i === idx ? { ...s, text } : s));
