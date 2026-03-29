@@ -313,6 +313,32 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       line-height: 1.8;
       color: #333;
     }
+    .links-section {
+      padding: 0.75rem 1.25rem 1rem;
+      border-top: 1px solid #eee;
+    }
+    .links-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #aaa;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.3rem;
+      font-size: 13px;
+    }
+    .link-icon { font-size: 12px; }
+    .link-item a {
+      color: #0083F7;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .link-item a:hover { text-decoration: underline; }
     .page-footer {
       padding: 1.5rem 3rem;
       border-top: 1px solid #eee;
