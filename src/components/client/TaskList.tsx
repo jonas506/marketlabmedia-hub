@@ -311,7 +311,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
             >
               <div className="px-2 pb-2 pt-1 ml-7 space-y-2">
                 <div className="flex items-center gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
-                  <Select value={task.assigned_to || "unassigned"} onValueChange={v => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v })} disabled={!canEdit}>
+                  <Select value={task.assigned_to || "unassigned"} onValueChange={v => updateTask(task.id, { assigned_to: v === "unassigned" ? null : v }, task)} disabled={!canEdit}>
                     <SelectTrigger className="h-7 text-[11px] border-border/40 bg-background/50 w-auto min-w-[100px] rounded-md">
                       <SelectValue placeholder="Zuweisen" />
                     </SelectTrigger>
