@@ -17,6 +17,11 @@ const getLogoBase64 = async (): Promise<string> => {
   });
 };
 
+interface ScriptLink {
+  url: string;
+  label?: string;
+}
+
 interface ScriptPiece {
   id: string;
   title: string | null;
@@ -25,6 +30,7 @@ interface ScriptPiece {
   script_text?: string | null;
   has_script?: boolean;
   tag?: string | null;
+  script_links?: ScriptLink[] | null;
 }
 
 interface PrintScriptsDialogProps {
