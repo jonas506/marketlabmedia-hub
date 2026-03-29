@@ -237,7 +237,6 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     }
   };
 
-  const [saving, setSaving] = useState(false);
 
   const saveAndUploadSlides = async () => {
     if (!piece) return;
