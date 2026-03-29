@@ -58,6 +58,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   onDeletePiece,
   onOpenDetail,
   onOpenScript,
+  onOpenCarouselBuilder,
   onTitleChange,
   onPreviewLinkChange,
   localTitle,
