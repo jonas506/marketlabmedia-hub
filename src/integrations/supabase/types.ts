@@ -503,6 +503,12 @@ export type Database = {
         Row: {
           additional_products: string[] | null
           approval_token: string | null
+          brand_accent: string | null
+          brand_font_style: string | null
+          brand_primary: string | null
+          brand_secondary: string | null
+          brand_text_dark: string | null
+          brand_text_light: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
@@ -542,6 +548,12 @@ export type Database = {
         Insert: {
           additional_products?: string[] | null
           approval_token?: string | null
+          brand_accent?: string | null
+          brand_font_style?: string | null
+          brand_primary?: string | null
+          brand_secondary?: string | null
+          brand_text_dark?: string | null
+          brand_text_light?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -581,6 +593,12 @@ export type Database = {
         Update: {
           additional_products?: string[] | null
           approval_token?: string | null
+          brand_accent?: string | null
+          brand_font_style?: string | null
+          brand_primary?: string | null
+          brand_secondary?: string | null
+          brand_text_dark?: string | null
+          brand_text_light?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
