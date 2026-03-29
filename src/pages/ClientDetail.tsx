@@ -312,6 +312,9 @@ const ClientDetail = () => {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="stories" className="mt-4">
+            <ErrorBoundary level="section"><StorySequences clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
+          </TabsContent>
           <TabsContent value="shootdays" className="mt-4">
             <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
