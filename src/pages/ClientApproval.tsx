@@ -346,7 +346,8 @@ const ClientApproval = () => {
   const totalPieces = pieces.length + approvedCount;
   const currentPiece = pieces[currentIndex];
   const currentComments = currentPiece ? pieceComments(currentPiece.id) : [];
-  const isCarousel = currentPiece?.type === "carousel";
+  const hasSlideImages = (currentPiece?.slide_images || []).length > 0;
+  const isCarousel = currentPiece?.type === "carousel" || (currentPiece?.type === "story" && hasSlideImages);
   const carouselSlides = currentPiece?.slide_images || [];
   const currentEmbed = !isCarousel && currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
   const currentVideoSrc = !isCarousel && currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
