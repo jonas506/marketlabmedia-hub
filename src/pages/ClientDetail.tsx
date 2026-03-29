@@ -136,6 +136,7 @@ const ClientDetail = () => {
     if (targetPiece.target_year !== selectedYear) setSelectedYear(targetPiece.target_year);
   }, [focusPieceId, contentPieces, selectedMonth, selectedYear]);
 
+  if (isLoading || !client) {
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
