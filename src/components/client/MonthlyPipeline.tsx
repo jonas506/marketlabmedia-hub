@@ -34,9 +34,11 @@ interface MonthlyPipelineProps {
   month: number;
   year: number;
   canEdit: boolean;
+  focusPieceId?: string | null;
+  onFocusPieceHandled?: () => void;
 }
 
-const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit }) => {
+const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit, focusPieceId, onFocusPieceHandled }) => {
   const qc = useQueryClient();
   const [activeType, setActiveType] = useState<string>("reel");
   const [activePhase, setActivePhase] = useState<string>(PIPELINE_CONFIG["reel"].phases[0].key);
