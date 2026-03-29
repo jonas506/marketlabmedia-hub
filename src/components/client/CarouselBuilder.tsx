@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import html2canvas from "html2canvas";
+import { renderThemedSlide, type ThemeId as CarouselThemeId, type BrandColors as ThemeBrandColors } from "./carousel-themes";
 
 interface Slide {
   id: string;
@@ -92,82 +93,8 @@ const THEMES: { id: ThemeId; label: string; preview: (c: BrandColors) => { bg: s
   },
 ];
 
-// Render helpers for themed slides
-function getSlideStyles(theme: ThemeId, colors: BrandColors, fontStyle: FontStyle, slide: Slide, idx: number, total: number) {
-  const fonts = FONT_FAMILIES[fontStyle];
-  const base = {
-    fontFamily: fonts.body,
-    headingFont: fonts.heading,
-  };
+// (Theme rendering moved to carousel-themes.tsx)
 
-  switch (theme) {
-    case "numbered":
-      return {
-        bg: "#f8f6f3",
-        color: colors.textDark,
-        accentColor: colors.accent,
-        numberBg: colors.accent + "18",
-        numberColor: colors.accent,
-        ...base,
-      };
-    case "steps":
-      return {
-        bg: colors.accent,
-        color: colors.textLight,
-        accentColor: colors.primary,
-        numberBg: "rgba(255,255,255,0.15)",
-        numberColor: colors.textLight,
-        stepLabel: `STEP ${idx + 1}`,
-        ...base,
-      };
-    case "minimal":
-      return {
-        bg: "#ffffff",
-        color: colors.textDark,
-        accentColor: colors.accent,
-        numberBg: "transparent",
-        numberColor: colors.accent,
-        ...base,
-      };
-    case "dark":
-      return {
-        bg: `linear-gradient(145deg, ${colors.primary}, ${colors.secondary})`,
-        color: colors.textLight,
-        accentColor: colors.accent,
-        numberBg: colors.accent + "30",
-        numberColor: colors.accent,
-        ...base,
-      };
-    case "gradient":
-      return {
-        bg: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary}, ${colors.accent})`,
-        color: colors.textLight,
-        accentColor: "#ffffff",
-        numberBg: "rgba(255,255,255,0.15)",
-        numberColor: "rgba(255,255,255,0.9)",
-        ...base,
-      };
-    case "card":
-      return {
-        bg: colors.accent,
-        color: colors.textDark,
-        accentColor: colors.accent,
-        cardBg: "#ffffff",
-        numberBg: colors.accent + "15",
-        numberColor: colors.accent,
-        ...base,
-      };
-    default:
-      return {
-        bg: "#ffffff",
-        color: colors.textDark,
-        accentColor: colors.accent,
-        numberBg: "transparent",
-        numberColor: colors.accent,
-        ...base,
-      };
-  }
-}
 
 const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, piece, clientId, onSaved }) => {
   const qc = useQueryClient();
@@ -349,8 +276,9 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   }, [topic, slides.length, client]);
 
   // Slide dimensions
-  const slideW = 420;
-  const slideH = selectedFormat === "4:5" ? 525 : 420;
+  const slideW = 500;
+  const slideH = selectedFormat === "4:5" ? 625 : 500;
+  const exportScale = 1080 / 500; // ~2.16
 
   const downloadAllJpgs = async () => {
     setExporting(true);
@@ -359,7 +287,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
         const el = document.getElementById(`carousel-slide-${i}`);
         if (!el) continue;
         el.style.display = "flex";
-        const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
         el.style.display = i === current ? "flex" : "none";
         const link = document.createElement("a");
         link.download = `${(piece?.title || "carousel").replace(/\s+/g, "-")}-slide-${i + 1}.jpg`;
@@ -377,7 +305,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     if (!el) return;
     setExporting(true);
     try {
-      const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+      const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
       const link = document.createElement("a");
       link.download = `slide-${current + 1}.jpg`;
       link.href = canvas.toDataURL("image/jpeg", 0.92);
@@ -397,7 +325,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
       for (let i = 0; i < slides.length; i++) {
         const el = slideEls[i];
         if (!el) continue;
-        const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
+        const canvas = await html2canvas(el, { scale: exportScale, backgroundColor: null, width: slideW, height: slideH, logging: false, useCORS: true });
         const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92));
         const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
         const { error: uploadErr } = await supabase.storage.from("carousel-slides").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
@@ -434,116 +362,22 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const displayName = customHeading.trim() || handle || client?.name || "";
   const avatarSrc = customAvatar || client?.logo_url || null;
 
-  // Render a single themed slide
+  // Render a single themed slide using the theme system
+  const fonts = FONT_FAMILIES[fontStyle];
   const renderSlide = (slide: Slide, idx: number, isVisible: boolean) => {
-    const styles = getSlideStyles(selectedTheme, brandColors, fontStyle, slide, idx, slides.length);
-    const bgIsGradient = styles.bg.includes("gradient");
-    const fontSize = slide.text.length > 200 ? 15 : slide.text.length > 100 ? 18 : 22;
-
-    const content = (
-      <>
-        {/* Profile row */}
-        {(avatarSrc || displayName) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, padding: "0 6px" }}>
-            {avatarSrc && (
-              <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", background: "rgba(255,255,255,0.1)", flexShrink: 0 }}>
-                <img src={avatarSrc} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
-              </div>
-            )}
-            {displayName && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: styles.color, fontFamily: styles.headingFont }}>{displayName}</span>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill={styles.accentColor}>
-                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                </svg>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Number / step label */}
-        {(selectedTheme === "numbered" || selectedTheme === "steps") && (
-          <div style={{ marginBottom: 8, padding: "0 6px" }}>
-            {selectedTheme === "steps" ? (
-              <span style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const,
-                color: styles.numberColor, opacity: 0.7, fontFamily: styles.headingFont,
-              }}>
-                STEP {idx + 1}
-              </span>
-            ) : (
-              <span style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 32, height: 32, borderRadius: "50%", fontSize: 15, fontWeight: 800,
-                background: styles.numberBg, color: styles.numberColor, fontFamily: styles.headingFont,
-              }}>
-                {idx + 1}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Content */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, justifyContent: "center", padding: "0 6px" }}>
-          <p style={{
-            fontSize, fontWeight: slide.isCta ? 700 : 400, lineHeight: 1.5,
-            whiteSpace: "pre-wrap" as const, color: selectedTheme === "card" ? styles.color : styles.color,
-            fontFamily: slide.isCta ? styles.headingFont : styles.fontFamily,
-          }}>
-            {slide.text}
-          </p>
-        </div>
-
-        {/* Accent line */}
-        <div style={{
-          height: 3, width: 40, borderRadius: 2,
-          background: styles.accentColor, opacity: 0.6,
-          margin: "8px 6px 0",
-        }} />
-
-        {/* Slide counter */}
-        <div style={{
-          position: "absolute" as const, bottom: 10, right: 14,
-          fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
-          color: styles.color, opacity: 0.25, fontFamily: styles.fontFamily,
-        }}>
-          {idx + 1} / {slides.length}
-        </div>
-      </>
-    );
-
-    const outerStyle: React.CSSProperties = {
-      width: slideW, height: slideH,
-      display: isVisible ? "flex" : "none",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "stretch",
-      padding: selectedTheme === "card" ? 24 : 32,
-      position: "relative",
-      ...(bgIsGradient ? { background: styles.bg } : { backgroundColor: styles.bg }),
-    };
-
-    if (selectedTheme === "card") {
-      return (
-        <div key={slide.id} id={`carousel-slide-${idx}`} style={outerStyle}>
-          <div style={{
-            background: (styles as any).cardBg || "#fff",
-            borderRadius: 16, padding: 24, flex: 1,
-            display: "flex", flexDirection: "column",
-            justifyContent: "center", position: "relative",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-          }}>
-            {content}
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div key={slide.id} id={`carousel-slide-${idx}`} style={outerStyle}>
-        {content}
-      </div>
-    );
+    return renderThemedSlide(selectedTheme, {
+      slide,
+      index: idx,
+      totalSlides: slides.length,
+      brandColors,
+      fonts,
+      avatarSrc,
+      displayName,
+      format: selectedFormat,
+      slideW,
+      slideH,
+      isVisible,
+    });
   };
 
   return (
