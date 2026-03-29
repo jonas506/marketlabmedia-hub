@@ -236,6 +236,49 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     }
   };
 
+  const [saving, setSaving] = useState(false);
+
+  const saveAndUploadSlides = async () => {
+    if (!piece) return;
+    setSaving(true);
+    try {
+      const urls: string[] = [];
+      for (let i = 0; i < slides.length; i++) {
+        const el = document.getElementById(`carousel-slide-${i}`);
+        if (!el) continue;
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+          width: 500,
+          height: 500,
+          logging: false,
+        });
+        const blob = await new Promise<Blob>((resolve) =>
+          canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92)
+        );
+        const path = `${clientId}/${piece.id}/slide-${i + 1}.jpg`;
+        const { error: uploadErr } = await supabase.storage
+          .from("carousel-slides")
+          .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+        if (uploadErr) throw uploadErr;
+        const { data: urlData } = supabase.storage.from("carousel-slides").getPublicUrl(path);
+        urls.push(urlData.publicUrl + "?t=" + Date.now());
+      }
+      // Save URLs to content_pieces
+      const { error: updateErr } = await supabase
+        .from("content_pieces")
+        .update({ slide_images: urls })
+        .eq("id", piece.id);
+      if (updateErr) throw updateErr;
+      toast.success(`${urls.length} Slides gespeichert & bereit zur Freigabe!`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Fehler beim Hochladen", { description: err.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const copySlideText = (idx: number) => {
     navigator.clipboard.writeText(slides[idx].text);
     setCopiedIdx(idx);
