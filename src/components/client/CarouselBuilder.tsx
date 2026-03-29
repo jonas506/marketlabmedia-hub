@@ -214,6 +214,8 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   if (!piece) return null;
 
   const handle = client?.instagram_handle ? `@${client.instagram_handle.replace("@", "")}` : "";
+  const displayName = customHeading.trim() || handle || client?.name || "";
+  const avatarSrc = customAvatar || client?.logo_url || null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -241,17 +243,21 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                   style={{ width: 420, height: 420 }}
                 >
                   {/* Profile row */}
-                  {client?.logo_url && (
+                  {(avatarSrc || displayName) && (
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                        <img src={client.logo_url} alt="" className="w-full h-full object-contain" />
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-bold text-black">{handle || client.name}</span>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="#0095f6">
-                          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                        </svg>
-                      </div>
+                      {avatarSrc && (
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 shrink-0">
+                          <img src={avatarSrc} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                        </div>
+                      )}
+                      {displayName && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-bold text-black">{displayName}</span>
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="#0095f6">
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   )}
 
