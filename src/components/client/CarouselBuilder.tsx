@@ -43,6 +43,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const [topic, setTopic] = useState("");
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [lastPieceId, setLastPieceId] = useState<string | null>(null);
