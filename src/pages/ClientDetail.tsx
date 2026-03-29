@@ -270,18 +270,18 @@ const ClientDetail = () => {
         <ErrorBoundary level="section">
           <div className="space-y-4">
             <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
-            <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
+            <TaskList clientId={client.id} canEdit={canEdit} />
             <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} />
             <StorySequences clientId={client.id} canEdit={canEdit} />
           </div>
         </ErrorBoundary>
 
         {/* Tabbed secondary sections */}
-        <Tabs defaultValue="tasks" className="mt-6">
+        <Tabs defaultValue="shootdays" className="mt-6">
           <TabsList className="bg-card border border-border h-auto p-0.5 gap-0 flex flex-wrap">
-            <TabsTrigger value="tasks" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
-              <ClipboardList className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Aufgaben</span>
+            <TabsTrigger value="shootdays" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Drehtage</span>
             </TabsTrigger>
             <TabsTrigger value="checklists" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
               <ClipboardList className="h-3.5 w-3.5" />
@@ -309,8 +309,8 @@ const ClientDetail = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="tasks" className="mt-4">
-            <ErrorBoundary level="section"><TaskList clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
+          <TabsContent value="shootdays" className="mt-4">
+            <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="checklists" className="mt-4">
             <ErrorBoundary level="section"><ClientChecklists clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
