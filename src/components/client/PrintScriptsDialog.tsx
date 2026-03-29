@@ -153,6 +153,16 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
         html += `<div class="body-section"><div class="body-label">SKRIPT</div><div class="body-text">${escapeHtml(body).replace(/\n/g, "<br/>")}</div></div>`;
       }
 
+      const links = (piece.script_links || []) as ScriptLink[];
+      if (links.length > 0) {
+        html += `<div class="links-section"><div class="links-label">LINKS</div>`;
+        links.forEach((link) => {
+          const label = link.label || link.url;
+          html += `<div class="link-item"><span class="link-icon">🔗</span><a href="${escapeHtml(link.url)}" target="_blank">${escapeHtml(label)}</a></div>`;
+        });
+        html += `</div>`;
+      }
+
       html += `</div>`;
       return html;
     }).join("");
