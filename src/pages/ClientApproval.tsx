@@ -27,6 +27,7 @@ interface Piece {
   phase: string;
   preview_link: string | null;
   client_comment: string | null;
+  team_reply?: string | null;
   script_text?: string | null;
   slide_images?: string[] | null;
   revision_count?: number;
@@ -578,6 +579,20 @@ const ClientApproval = () => {
                           </button>
                         </motion.div>
                       ))}
+                    </motion.div>
+                  )}
+
+                  {/* Team reply to previous feedback */}
+                  {currentPiece.team_reply && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="mb-3 rounded-2xl bg-[#0083F7]/5 border border-[#0083F7]/10 p-3"
+                    >
+                      <span className="text-[11px] font-semibold text-[#0083F7]/50 uppercase tracking-widest block mb-1.5">
+                        Antwort vom Team
+                      </span>
+                      <p className="text-sm text-white/70 leading-snug">{currentPiece.team_reply}</p>
                     </motion.div>
                   )}
 

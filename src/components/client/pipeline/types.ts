@@ -21,6 +21,7 @@ export interface ContentPiece {
   tag?: string | null;
   scheduled_post_date?: string | null;
   slide_images?: string[] | null;
+  team_reply?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 }
