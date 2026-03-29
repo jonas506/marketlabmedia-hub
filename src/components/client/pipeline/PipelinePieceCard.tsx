@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, FileText, MessageSquare } from "lucide-react";
+import { Trash2, FileText, MessageSquare, LayoutGrid } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { relativeTime } from "./constants";
@@ -33,6 +33,7 @@ interface PipelinePieceCardProps {
   onDeletePiece: (pieceId: string) => void;
   onOpenDetail: (piece: ContentPiece) => void;
   onOpenScript: (piece: ContentPiece) => void;
+  onOpenCarouselBuilder: (piece: ContentPiece) => void;
   onTitleChange: (pieceId: string, title: string) => void;
   onPreviewLinkChange: (pieceId: string, allLinks: string, currentTitle: string | null) => void;
   localTitle: string | undefined;
@@ -57,6 +58,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   onDeletePiece,
   onOpenDetail,
   onOpenScript,
+  onOpenCarouselBuilder,
   onTitleChange,
   onPreviewLinkChange,
   localTitle,
@@ -142,6 +144,25 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           >
             <FileText className="h-3 w-3" />
             {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
+          </Button>
+        </motion.div>
+      )}
+
+      {/* Carousel Builder button */}
+      {activeType === "carousel" && activePhase === "script" && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="pl-9"
+        >
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs font-mono gap-1.5 text-primary border-primary/30 bg-primary/5"
+            onClick={() => onOpenCarouselBuilder(piece)}
+          >
+            <LayoutGrid className="h-3 w-3" />
+            Carousel Builder
           </Button>
         </motion.div>
       )}

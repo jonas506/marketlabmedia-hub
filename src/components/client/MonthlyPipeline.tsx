@@ -13,6 +13,7 @@ import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
 import PrintScriptsDialog from "./PrintScriptsDialog";
+import CarouselBuilder from "./CarouselBuilder";
 import {
   PipelineHeader,
   PipelineTypeTabs,
@@ -50,6 +51,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [printScriptsOpen, setPrintScriptsOpen] = useState(false);
+  const [carouselBuilderPiece, setCarouselBuilderPiece] = useState<ContentPiece | null>(null);
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const config = PIPELINE_CONFIG[activeType];
@@ -377,6 +379,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         onDeletePiece={deletePiece}
                         onOpenDetail={setDetailPiece}
                         onOpenScript={setScriptPiece}
+                        onOpenCarouselBuilder={setCarouselBuilderPiece}
                         onTitleChange={handleTitleChange}
                         onPreviewLinkChange={handlePreviewLinkChange}
                         localTitle={localTitles[piece.id]}
@@ -394,6 +397,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       <PieceDetailDialog open={!!detailPiece} onOpenChange={(open) => !open && setDetailPiece(null)} piece={detailPiece ? { ...detailPiece, client_id: clientId } : null} clientId={clientId} />
       <ScriptEditorDialog open={!!scriptPiece} onOpenChange={(open) => !open && setScriptPiece(null)} piece={scriptPiece} clientId={clientId} canEdit={canEdit} />
       <PrintScriptsDialog open={printScriptsOpen} onOpenChange={setPrintScriptsOpen} pieces={monthPieces} />
+      <CarouselBuilder open={!!carouselBuilderPiece} onOpenChange={(open) => !open && setCarouselBuilderPiece(null)} piece={carouselBuilderPiece} clientId={clientId} />
     </motion.div>
   );
 };
