@@ -341,6 +341,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
             task.content_piece_id ? "cursor-pointer hover:bg-muted/20" : "cursor-pointer",
             isExpanded ? "bg-muted/40" : "hover:bg-muted/20"
           )}
+          title={task.content_piece_id ? "Verknüpftes Video öffnen" : undefined}
           onClick={() => openTaskDestination(task, isExpanded)}
         >
           {canEdit && (
