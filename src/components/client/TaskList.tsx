@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, CalendarIcon, Trash2, Archive, Undo2,
-  ChevronDown, ChevronRight, Check,
+  ChevronDown, ChevronRight, Check, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
