@@ -65,15 +65,21 @@ const CarouselSlideUpload: React.FC<CarouselSlideUploadProps> = ({
     onUpdate(pieceId, updated);
   }, [pieceId, slideImages, onUpdate]);
 
-  const downloadSingle = (url: string, idx: number) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `slide-${idx + 1}.jpg`;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const downloadSingle = async (url: string, idx: number) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `slide-${idx + 1}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
   };
 
   const downloadAll = async () => {
