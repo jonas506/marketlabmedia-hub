@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings } from "lucide-react";
-import logoLight from "@/assets/logo-light.png";
+import marketlabLogo from "@/assets/marketlab-logo.jpg";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -43,8 +43,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {/* Mobile top bar */}
         <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-sidebar border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary">
-              <img src={logoLight} alt="Marketlab" className="h-3.5 w-auto brightness-200" />
+            <div className="flex items-center justify-center h-8 w-8 rounded-lg overflow-hidden">
+              <img src={marketlabLogo} alt="Marketlab" className="h-8 w-8 object-cover" />
             </div>
             <span className="font-display text-sm font-semibold text-sidebar-foreground">Marketlab</span>
           </div>
@@ -132,8 +132,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-[58px] flex-col items-center bg-sidebar border-r border-sidebar-border py-4 gap-2">
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary mb-2">
-          <img src={logoLight} alt="Marketlab" className="h-4 w-auto brightness-200" />
+        <div className="flex items-center justify-center h-10 w-10 rounded-lg overflow-hidden mb-2">
+          <img src={marketlabLogo} alt="Marketlab" className="h-10 w-10 object-cover" />
         </div>
 
         {/* Search button at top */}
