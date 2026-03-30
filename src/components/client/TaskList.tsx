@@ -32,6 +32,12 @@ interface Task {
   content_piece_id: string | null;
 }
 
+interface LinkedPiece {
+  id: string;
+  preview_link: string | null;
+  video_path: string | null;
+}
+
 interface TaskGroup {
   key: string;
   label: string;
