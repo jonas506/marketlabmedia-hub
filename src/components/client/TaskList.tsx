@@ -304,16 +304,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
   const openTaskDestination = (task: Task, isExpanded: boolean) => {
     if (task.content_piece_id) {
-      const linkedPiece = linkedPieces.find((piece) => piece.id === task.content_piece_id);
-      const previewUrl = linkedPiece?.preview_link?.split("\n").find((link) => link.trim());
-      const videoUrl = linkedPiece?.video_path?.trim();
-      const directUrl = previewUrl || videoUrl;
-
-      if (directUrl) {
-        window.open(directUrl, "_blank", "noopener,noreferrer");
-        return;
-      }
-
       navigate(`/client/${task.client_id}?piece=${task.content_piece_id}`);
       return;
     }
