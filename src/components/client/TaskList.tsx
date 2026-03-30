@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, CalendarIcon, Trash2, Archive, Undo2,
-  ChevronDown, ChevronRight, Check,
+  ChevronDown, ChevronRight, Check, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -303,10 +303,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   };
 
   const openTaskDestination = (task: Task, isExpanded: boolean) => {
-    if (task.content_piece_id) {
-      navigate(`/client/${task.client_id}?piece=${task.content_piece_id}`);
-      return;
-    }
     setExpandedTask(isExpanded ? null : task.id);
   };
 
@@ -425,6 +421,17 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                       {task.deadline ? format(new Date(task.deadline), "dd MMM", { locale: de }) : "Deadline"}
                     </button>
                   </MobileDatePicker>
+
+                  {task.content_piece_id && (
+                    <button
+                      className="flex h-7 items-center gap-1 rounded-md border border-border/40 bg-background/50 px-2 py-1 text-[11px] font-mono text-primary hover:bg-primary/10 transition-colors"
+                      onClick={() => navigate(`/client/${task.client_id}?piece=${task.content_piece_id}`)}
+                      title="Zum Content-Piece"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Piece
+                    </button>
+                  )}
 
                   <div className="flex-1" />
 
