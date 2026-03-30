@@ -492,7 +492,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
         ) : (
           <>
             {groups.map((group) => {
-              const isCollapsed = !collapsedGroups.has(group.key);
+              const isCollapsed = collapsedGroups.has(group.key);
               const doneCount = group.tasks.filter((task) => completingIds.has(task.id)).length;
               const isGroupOverdue = group.deadline && group.deadline < todayStr;
 
