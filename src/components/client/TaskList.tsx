@@ -32,6 +32,12 @@ interface Task {
   content_piece_id: string | null;
 }
 
+interface LinkedPiece {
+  id: string;
+  preview_link: string | null;
+  video_path: string | null;
+}
+
 interface TaskGroup {
   key: string;
   label: string;
@@ -122,6 +128,18 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
       const { data, error } = await supabase.from("tasks" as any).select("*").eq("client_id", clientId).is("parent_id", null).order("created_at", { ascending: true });
       if (error) throw error;
       return (data as any[]) as Task[];
+    },
+  });
+
+  const { data: linkedPieces = [] } = useQuery({
+    queryKey: ["task-linked-pieces", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("content_pieces")
+        .select("id, preview_link, video_path")
+        .eq("client_id", clientId);
+      if (error) throw error;
+      return (data ?? []) as LinkedPiece[];
     },
   });
 
@@ -286,6 +304,16 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
 
   const openTaskDestination = (task: Task, isExpanded: boolean) => {
     if (task.content_piece_id) {
+      const linkedPiece = linkedPieces.find((piece) => piece.id === task.content_piece_id);
+      const previewUrl = linkedPiece?.preview_link?.split("\n").find((link) => link.trim());
+      const videoUrl = linkedPiece?.video_path?.trim();
+      const directUrl = previewUrl || videoUrl;
+
+      if (directUrl) {
+        window.open(directUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+
       navigate(`/client/${task.client_id}?piece=${task.content_piece_id}`);
       return;
     }
@@ -313,6 +341,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
             task.content_piece_id ? "cursor-pointer hover:bg-muted/20" : "cursor-pointer",
             isExpanded ? "bg-muted/40" : "hover:bg-muted/20"
           )}
+          title={task.content_piece_id ? "Verknüpftes Video öffnen" : undefined}
           onClick={() => openTaskDestination(task, isExpanded)}
         >
           {canEdit && (
