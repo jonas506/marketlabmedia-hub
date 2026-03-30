@@ -131,6 +131,18 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     },
   });
 
+  const { data: linkedPieces = [] } = useQuery({
+    queryKey: ["task-linked-pieces", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("content_pieces")
+        .select("id, preview_link, video_path")
+        .eq("client_id", clientId);
+      if (error) throw error;
+      return (data ?? []) as LinkedPiece[];
+    },
+  });
+
   const activeTasks = useMemo(() => {
     return tasks.filter((t) => !t.is_completed).sort((a, b) => {
       const pa = PRIORITY_WEIGHT[a.priority || "normal"] ?? 2;
