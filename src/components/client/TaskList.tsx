@@ -303,10 +303,6 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
   };
 
   const openTaskDestination = (task: Task, isExpanded: boolean) => {
-    if (task.content_piece_id) {
-      navigate(`/client/${task.client_id}?piece=${task.content_piece_id}`);
-      return;
-    }
     setExpandedTask(isExpanded ? null : task.id);
   };
 
