@@ -132,8 +132,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-[58px] flex-col items-center bg-sidebar border-r border-sidebar-border py-4 gap-2">
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary mb-2">
-          <img src={logoLight} alt="Marketlab" className="h-4 w-auto brightness-200" />
+        <div className="flex items-center justify-center h-10 w-10 rounded-lg overflow-hidden mb-2">
+          <img src={marketlabLogo} alt="Marketlab" className="h-10 w-10 object-cover" />
         </div>
 
         {/* Search button at top */}
