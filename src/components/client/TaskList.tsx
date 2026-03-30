@@ -422,6 +422,17 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
                     </button>
                   </MobileDatePicker>
 
+                  {task.content_piece_id && (
+                    <button
+                      className="flex h-7 items-center gap-1 rounded-md border border-border/40 bg-background/50 px-2 py-1 text-[11px] font-mono text-primary hover:bg-primary/10 transition-colors"
+                      onClick={() => navigate(`/client/${task.client_id}?piece=${task.content_piece_id}`)}
+                      title="Zum Content-Piece"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Piece
+                    </button>
+                  )}
+
                   <div className="flex-1" />
 
                   {canEdit && (
