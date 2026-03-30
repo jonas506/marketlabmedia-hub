@@ -64,9 +64,8 @@ const TAG_LABELS: Record<string, string> = {
 };
 
 const TITLE_PATTERNS: { regex: RegExp; label: string; key: string }[] = [
-  { regex: /posten$/i, label: "📤 Posten", key: "action:posten" },
+  { regex: /(posten|veröffentlichen)$/i, label: "📤 Veröffentlichen", key: "action:publish" },
   { regex: /schneiden$/i, label: "✂️ Schneiden", key: "action:schneiden" },
-  { regex: /veröffentlichen$/i, label: "📤 Veröffentlichen", key: "action:veröffentlichen" },
 ];
 
 const MIN_GROUP_SIZE = 2;
