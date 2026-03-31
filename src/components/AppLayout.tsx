@@ -132,67 +132,84 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
-      <aside className="fixed left-0 top-0 z-40 flex h-screen w-[58px] flex-col items-center bg-sidebar border-r border-sidebar-border py-4 gap-2">
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg overflow-hidden mb-2">
-          <img src={marketlabLogo} alt="Marketlab" className="h-10 w-10 object-cover" />
+      <aside className="fixed left-0 top-0 z-40 flex h-screen w-[220px] flex-col bg-sidebar border-r border-sidebar-border">
+        {/* Logo & brand */}
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
+          <div className="flex items-center justify-center h-8 w-8 rounded-lg overflow-hidden flex-shrink-0">
+            <img src={marketlabLogo} alt="Marketlab" className="h-8 w-8 object-cover" />
+          </div>
+          <span className="font-display text-sm font-semibold text-sidebar-foreground tracking-tight">Marketlab</span>
         </div>
 
-        {/* Search button at top */}
-        <button
-          onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-          className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all mb-2"
-          title="Suche (⌘K)"
-        >
-          <Search className="h-[18px] w-[18px]" />
-        </button>
+        {/* Search */}
+        <div className="px-3 pt-4 pb-2">
+          <button
+            onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+            className="flex items-center gap-2.5 w-full h-9 px-3 rounded-lg bg-surface-hover/50 text-sidebar-foreground/40 hover:text-sidebar-foreground/70 hover:bg-surface-hover transition-all text-xs"
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span>Suchen…</span>
+            <kbd className="ml-auto text-[10px] font-mono bg-sidebar-border/50 px-1.5 py-0.5 rounded">⌘K</kbd>
+          </button>
+        </div>
 
-        <nav className="flex-1 flex flex-col items-center gap-1">
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
           {filteredNav.map(({ to, label, icon: Icon }) => {
             const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
             return (
               <Link
                 key={to}
                 to={to}
-                title={label}
-                className={`relative flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200 group ${
+                className={`relative flex items-center gap-3 h-9 px-3 rounded-lg text-[13px] font-medium transition-all duration-150 ${
                   active
-                    ? "bg-primary/15 text-primary"
-                    : "text-sidebar-foreground/50 hover:bg-surface-elevated hover:text-sidebar-foreground"
+                    ? "bg-primary/12 text-primary font-semibold"
+                    : "text-sidebar-foreground/60 hover:bg-surface-hover hover:text-sidebar-foreground"
                 }`}
               >
                 {active && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-[3px] w-[3px] h-5 bg-primary rounded-r-full" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
                 )}
-                <Icon className="h-[18px] w-[18px]" />
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <span>{label}</span>
               </Link>
             );
           })}
         </nav>
-        <div className="flex flex-col items-center gap-1.5 pb-2">
-          <NotificationBell />
-          <button
-            onClick={toggleTheme}
-            className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 hover:bg-surface-elevated transition-all"
-            title={theme === "dark" ? "Heller Modus" : "Dunkler Modus"}
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
-          <div
-            className="flex items-center justify-center h-9 w-9 rounded-full bg-gradient-to-br from-primary to-secondary text-[11px] font-bold text-white cursor-default"
-            title={`${profile?.name} · ${role === "admin" ? "Admin" : role === "head_of_content" ? "HoC" : "Cutter"}`}
-          >
-            {initials}
+
+        {/* Bottom section */}
+        <div className="px-3 py-3 border-t border-sidebar-border space-y-1">
+          <div className="flex items-center gap-2 px-3 py-2">
+            <div
+              className="flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary text-[10px] font-bold text-white flex-shrink-0"
+            >
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-medium text-sidebar-foreground truncate">{profile?.name}</p>
+              <p className="text-[10px] text-sidebar-foreground/40">{role === "admin" ? "Admin" : role === "head_of_content" ? "Head of Content" : "Mitglied"}</p>
+            </div>
+            <NotificationBell />
           </div>
-          <button
-            onClick={signOut}
-            className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/30 hover:text-sidebar-foreground/60 hover:bg-surface-elevated transition-all"
-            title="Abmelden"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1 px-2">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center justify-center h-8 w-8 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/70 hover:bg-surface-hover transition-all"
+              title={theme === "dark" ? "Heller Modus" : "Dunkler Modus"}
+            >
+              {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            </button>
+            <button
+              onClick={signOut}
+              className="flex items-center justify-center h-8 w-8 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/70 hover:bg-surface-hover transition-all"
+              title="Abmelden"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </aside>
-      <main className="ml-[58px] flex-1 p-6">
+      <main className="ml-[220px] flex-1 p-6">
         {children}
       </main>
       <QuickAddTask />
