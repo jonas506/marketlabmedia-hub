@@ -18,11 +18,11 @@ const Greeting: React.FC<GreetingProps> = ({ name }) => {
   const dateStr = format(new Date(), "EEEE, dd. MMMM yyyy", { locale: de });
 
   return (
-    <div className="mb-5">
-      <h1 className="font-display text-lg font-bold tracking-tight">
+    <div className="mb-8">
+      <h1 className="text-xl font-bold tracking-tight">
         {greeting}{name ? `, ${name}` : ""}
       </h1>
-      <p className="font-mono text-xs text-muted-foreground mt-0.5">{dateStr}</p>
+      <p className="text-sm text-muted-foreground mt-0.5">{dateStr}</p>
     </div>
   );
 };
