@@ -173,8 +173,8 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
             return (
               <div key={t.type} className="space-y-2">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-base w-6">{t.emoji}</span>
-                  <span className="w-16 sm:w-20 font-mono text-xs text-muted-foreground">{t.label}</span>
+                  <span className="w-6 flex items-center justify-center">{typeIcons[t.type]}</span>
+                  <span className="w-16 sm:w-20 font-body text-xs text-muted-foreground">{t.label}</span>
                   <div className="flex-1 relative">
                     <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                       <motion.div
