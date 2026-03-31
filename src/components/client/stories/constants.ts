@@ -53,11 +53,11 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 export const SLIDE_TYPES = [
-  { value: "text", label: "Text", icon: "📝" },
-  { value: "poll", label: "Poll", icon: "📊" },
-  { value: "cta", label: "CTA", icon: "🔗" },
-  { value: "video", label: "Video", icon: "🎬" },
-  { value: "image", label: "Bild", icon: "🖼️" },
+  { value: "text", label: "Text", icon: "FileText" },
+  { value: "poll", label: "Poll", icon: "BarChart3" },
+  { value: "cta", label: "CTA", icon: "Link" },
+  { value: "video", label: "Video", icon: "Video" },
+  { value: "image", label: "Bild", icon: "Image" },
 ];
 
 export const CATEGORY_COLORS = ["blue", "emerald", "amber", "purple", "pink", "orange", "red", "cyan", "teal"];
