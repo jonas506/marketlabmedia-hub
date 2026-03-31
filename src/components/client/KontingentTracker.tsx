@@ -83,11 +83,18 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const bereitsGeplantCount = getExtra("bereits_geplant");
   const reelTotalCurrent = reelPipelineDone + reelGenericExtra + opusProCount + overlayCount + bereitsGeplantCount;
 
+  const typeIcons: Record<string, React.ReactNode> = {
+    reel: <Clapperboard size={16} className="text-muted-foreground" />,
+    carousel: <LayoutGrid size={16} className="text-muted-foreground" />,
+    youtube_longform: <Youtube size={16} className="text-muted-foreground" />,
+    ad: <Megaphone size={16} className="text-muted-foreground" />,
+  };
+
   const types = [
-    { label: "Reels", emoji: "🎬", type: "reel", target: client.monthly_reels, current: reelTotalCurrent },
-    { label: "Karussells", emoji: "🖼️", type: "carousel", target: client.monthly_carousels, current: countByType("carousel") + getExtra("carousel") },
-    ...(ytTarget > 0 ? [{ label: "YouTube", emoji: "🎥", type: "youtube_longform", target: ytTarget, current: ytDone + getExtra("youtube_longform") }] : []),
-    ...(adsDone > 0 ? [{ label: "Ads", emoji: "📢", type: "ad", target: 0, current: adsDone }] : []),
+    { label: "Reels", type: "reel", target: client.monthly_reels, current: reelTotalCurrent },
+    { label: "Karussells", type: "carousel", target: client.monthly_carousels, current: countByType("carousel") + getExtra("carousel") },
+    ...(ytTarget > 0 ? [{ label: "YouTube", type: "youtube_longform", target: ytTarget, current: ytDone + getExtra("youtube_longform") }] : []),
+    ...(adsDone > 0 ? [{ label: "Ads", type: "ad", target: 0, current: adsDone }] : []),
   ];
 
   const reelTarget = client.monthly_reels;
