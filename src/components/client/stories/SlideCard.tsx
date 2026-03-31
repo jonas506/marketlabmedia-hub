@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUp, ArrowDown, X, Image, Check, Copy } from "lucide-react";
+import { ArrowUp, ArrowDown, X, Image, Check, Copy, icons } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { SLIDE_TYPES } from "./constants";
@@ -111,10 +111,10 @@ const SlideCard: React.FC<SlideCardProps> = React.memo(({
           {canEdit ? (
             <Select value={slide.slide_type} onValueChange={(v) => onUpdateSlide({ slide_type: v })}>
               <SelectTrigger className="h-6 text-[10px] w-[80px] bg-transparent border-border"><SelectValue /></SelectTrigger>
-              <SelectContent>{SLIDE_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>)}</SelectContent>
+              <SelectContent>{SLIDE_TYPES.map((t) => { const I = icons[t.icon as keyof typeof icons]; return <SelectItem key={t.value} value={t.value}><span className="inline-flex items-center gap-1">{I && <I size={11} />} {t.label}</span></SelectItem>; })}</SelectContent>
             </Select>
           ) : (
-            <span className="text-[10px] text-muted-foreground">{SLIDE_TYPES.find((t) => t.value === slide.slide_type)?.icon} {SLIDE_TYPES.find((t) => t.value === slide.slide_type)?.label}</span>
+            <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">{(() => { const found = SLIDE_TYPES.find((t) => t.value === slide.slide_type); if (!found) return null; const I = icons[found.icon as keyof typeof icons]; return <>{I && <I size={11} />} {found.label}</>; })()}</span>
           )}
           {canEdit && <button onClick={onDeleteSlide} className="ml-auto text-muted-foreground hover:text-destructive transition-colors"><X className="h-3 w-3" /></button>}
         </div>
