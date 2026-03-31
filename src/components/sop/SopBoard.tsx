@@ -913,7 +913,7 @@ export default function SopBoard({
                         <text
                           x={mx} y={my - 1} textAnchor="middle"
                           fontSize={10} fontWeight={600} fill="hsl(var(--foreground))"
-                          style={{ fontFamily: "Manrope, sans-serif" }}
+                          style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {conn.label}
                         </text>

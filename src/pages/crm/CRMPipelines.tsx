@@ -84,7 +84,7 @@ export default function CRMPipelines() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-[#FAFBFF] font-[Manrope]">Pipelines</h1>
+            <h1 className="text-xl font-bold text-[#FAFBFF] font-body">Pipelines</h1>
             <Select value={selectedPipeline} onValueChange={setSelectedPipeline}>
               <SelectTrigger className="w-[200px] bg-[#2A2A32] border-[#3A3A44]">
                 <SelectValue placeholder="Pipeline wählen" />

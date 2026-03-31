@@ -333,7 +333,7 @@ const ClientApproval = () => {
           <div className="w-20 h-20 rounded-3xl bg-red-500/10 border border-red-500/10 flex items-center justify-center mx-auto mb-6">
             <X className="h-9 w-9 text-red-400" />
           </div>
-          <h1 className="text-xl font-semibold text-white mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
+          <h1 className="text-xl font-semibold text-white mb-2" style={{ fontFamily: "Inter, sans-serif" }}>
             Link ungültig
           </h1>
           <p className="text-white/40 text-sm leading-relaxed">
@@ -360,7 +360,7 @@ const ClientApproval = () => {
   const hasEmbedPreview = !!currentEmbed;
 
   return (
-    <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Poppins, sans-serif" }}>
+    <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Inter, sans-serif" }}>
       <Sonner />
 
       {/* Header - slim & clean */}

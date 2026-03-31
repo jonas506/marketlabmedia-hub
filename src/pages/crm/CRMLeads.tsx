@@ -234,7 +234,7 @@ export default function CRMLeads() {
       <ErrorBoundary level="section">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-[#FAFBFF] font-[Manrope]">Kunden</h1>
+          <h1 className="text-xl font-bold text-[#FAFBFF] font-body">Kunden</h1>
           <Button onClick={() => setShowCreate(true)} size="sm" className="gap-1.5">
             <Plus className="h-4 w-4" /> Neuer Lead
           </Button>

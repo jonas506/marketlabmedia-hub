@@ -399,7 +399,7 @@ export default function CRMLeadDetail() {
             <Link to="/crm" className="text-muted-foreground hover:text-[#FAFBFF] transition-colors">
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <h1 className="text-lg font-bold text-[#FAFBFF] font-[Manrope]">{lead.name}</h1>
+            <h1 className="text-lg font-bold text-[#FAFBFF] font-body">{lead.name}</h1>
             {/* Status dropdown */}
             <Select
               value={lead.status_id || ""}
