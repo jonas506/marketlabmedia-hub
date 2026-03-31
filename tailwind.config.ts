@@ -12,8 +12,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Poppins', 'sans-serif'],
-        body: ['Poppins', 'sans-serif'],
+        display: ['Inter', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {

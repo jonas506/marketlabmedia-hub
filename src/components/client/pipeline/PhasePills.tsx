@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { icons } from "lucide-react";
 import type { ContentPiece } from "./types";
 
 interface PhasePillsProps {
@@ -21,6 +22,7 @@ const PhasePills: React.FC<PhasePillsProps> = React.memo(({
         const count = monthPieces.filter((c) => c.phase === p.key).length;
         const isActive = activePhase === p.key;
         const isHandedOver = p.key === "handed_over";
+        const Icon = icons[p.emoji as keyof typeof icons];
         return (
           <motion.button
             key={p.key}
@@ -34,7 +36,7 @@ const PhasePills: React.FC<PhasePillsProps> = React.memo(({
                   : "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                 : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}>
-            <span className="text-sm sm:text-base">{p.emoji}</span>
+            {Icon && <Icon size={14} />}
             <span className="hidden sm:inline">{p.label}</span>
             <motion.span
               key={count}
