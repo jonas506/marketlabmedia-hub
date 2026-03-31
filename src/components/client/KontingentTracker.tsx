@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import RunwayBadge from "@/components/RunwayBadge";
 import { motion } from "framer-motion";
-import { TrendingUp, Plus, Minus } from "lucide-react";
+import { TrendingUp, Plus, Minus, Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, icons } from "lucide-react";
 
 interface ContentPiece {
   phase: string;
@@ -83,11 +83,18 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const bereitsGeplantCount = getExtra("bereits_geplant");
   const reelTotalCurrent = reelPipelineDone + reelGenericExtra + opusProCount + overlayCount + bereitsGeplantCount;
 
+  const typeIcons: Record<string, React.ReactNode> = {
+    reel: <Clapperboard size={16} className="text-muted-foreground" />,
+    carousel: <LayoutGrid size={16} className="text-muted-foreground" />,
+    youtube_longform: <Youtube size={16} className="text-muted-foreground" />,
+    ad: <Megaphone size={16} className="text-muted-foreground" />,
+  };
+
   const types = [
-    { label: "Reels", emoji: "🎬", type: "reel", target: client.monthly_reels, current: reelTotalCurrent },
-    { label: "Karussells", emoji: "🖼️", type: "carousel", target: client.monthly_carousels, current: countByType("carousel") + getExtra("carousel") },
-    ...(ytTarget > 0 ? [{ label: "YouTube", emoji: "🎥", type: "youtube_longform", target: ytTarget, current: ytDone + getExtra("youtube_longform") }] : []),
-    ...(adsDone > 0 ? [{ label: "Ads", emoji: "📢", type: "ad", target: 0, current: adsDone }] : []),
+    { label: "Reels", type: "reel", target: client.monthly_reels, current: reelTotalCurrent },
+    { label: "Karussells", type: "carousel", target: client.monthly_carousels, current: countByType("carousel") + getExtra("carousel") },
+    ...(ytTarget > 0 ? [{ label: "YouTube", type: "youtube_longform", target: ytTarget, current: ytDone + getExtra("youtube_longform") }] : []),
+    ...(adsDone > 0 ? [{ label: "Ads", type: "ad", target: 0, current: adsDone }] : []),
   ];
 
   const reelTarget = client.monthly_reels;
@@ -166,8 +173,8 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
             return (
               <div key={t.type} className="space-y-2">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-base w-6">{t.emoji}</span>
-                  <span className="w-16 sm:w-20 font-mono text-xs text-muted-foreground">{t.label}</span>
+                  <span className="w-6 flex items-center justify-center">{typeIcons[t.type]}</span>
+                  <span className="w-16 sm:w-20 font-body text-xs text-muted-foreground">{t.label}</span>
                   <div className="flex-1 relative">
                     <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                       <motion.div
@@ -194,7 +201,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   >
                     {isAd ? t.current : `${t.current}/${t.target}`}
                   </motion.span>
-                  {isComplete && <span className="text-sm hidden sm:inline">✅</span>}
+                  {isComplete && <CheckCircle size={14} className="text-[hsl(var(--runway-green))] hidden sm:inline" />}
                   {canEdit && !isAd && !isReel && (
                     <div className="hidden sm:flex items-center gap-1 ml-1" title="Extras (nicht in Pipeline)">
                       <Plus className="h-3 w-3 text-muted-foreground" />
