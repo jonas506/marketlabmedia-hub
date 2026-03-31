@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import RunwayBadge from "@/components/RunwayBadge";
 import { motion } from "framer-motion";
-import { TrendingUp, Plus, Minus } from "lucide-react";
+import { TrendingUp, Plus, Minus, Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, icons } from "lucide-react";
 
 interface ContentPiece {
   phase: string;
