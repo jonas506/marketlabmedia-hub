@@ -375,7 +375,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-3 px-3 py-1.5">
                     <Checkbox checked={selected.size === phasePieces.length && phasePieces.length > 0} onCheckedChange={toggleAll} />
-                    <span className="text-[11px] font-mono text-muted-foreground">{phasePieces.length} PIECES</span>
+                    <span className="text-[11px] text-muted-foreground font-medium">{phasePieces.length} Pieces</span>
                   </div>
                   <AnimatePresence mode="popLayout">
                     {phasePieces.map((piece, index) => (

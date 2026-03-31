@@ -23,7 +23,7 @@ import OnboardingBanner from "@/components/OnboardingBanner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, CalendarDays, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2, Clock, ExternalLink } from "lucide-react";
+import { ArrowLeft, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2, Clock, ExternalLink, Smartphone, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -160,19 +160,19 @@ const ClientDetail = () => {
     <AppLayout>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-[1200px] mx-auto">
         {/* Top bar: Back + Approval link */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-body transition-colors group">
+            <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors group">
               <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
             </Link>
             {client.logo_url ? (
               <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 font-display text-sm font-bold text-primary">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">
                 {client.name.charAt(0)}
               </div>
             )}
-            <h1 className="font-display text-lg font-bold tracking-tight truncate">{client.name}</h1>
+            <h1 className="text-lg font-semibold truncate">{client.name}</h1>
           </div>
            <div className="flex items-center gap-1.5">
             {client.website_url && (
@@ -226,9 +226,9 @@ const ClientDetail = () => {
             {canEdit && (client as any).approval_token && (
               <div className="flex items-center gap-1">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="gap-1.5 text-xs h-7"
+                  className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
                   onClick={() => {
                     const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
                     window.open(url, '_blank', 'noopener,noreferrer');
@@ -264,11 +264,8 @@ const ClientDetail = () => {
         <OnboardingBanner clientId={client.id} />
 
         {/* Month selector – compact inline */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 mb-4 gap-2">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-primary" />
-            <h2 className="font-display text-sm font-semibold tracking-tight">Monatszyklus</h2>
-          </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-8 mb-5 gap-2">
+          <h2 className="text-sm font-semibold">Monatszyklus</h2>
           <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
             const [m, y] = v.split("-").map(Number);
             setSelectedMonth(m);
@@ -286,7 +283,7 @@ const ClientDetail = () => {
         </div>
 
         <ErrorBoundary level="section">
-          <div className="space-y-4">
+          <div className="space-y-5">
             <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
             <TaskList clientId={client.id} canEdit={canEdit} />
             <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
@@ -294,37 +291,37 @@ const ClientDetail = () => {
         </ErrorBoundary>
 
         {/* Tabbed secondary sections */}
-        <Tabs defaultValue="stories" className="mt-6">
-          <TabsList className="bg-card border border-border h-auto p-0.5 gap-0 flex flex-wrap">
-            <TabsTrigger value="stories" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
-              📱
+        <Tabs defaultValue="stories" className="mt-8">
+          <TabsList className="bg-transparent border-b border-border rounded-none h-auto p-0 gap-0 flex flex-wrap w-full justify-start">
+            <TabsTrigger value="stories" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
+              <Smartphone className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Stories</span>
             </TabsTrigger>
-            <TabsTrigger value="shootdays" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+            <TabsTrigger value="shootdays" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
               <CalendarDays className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Drehtage</span>
             </TabsTrigger>
-            <TabsTrigger value="checklists" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+            <TabsTrigger value="checklists" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
               <ClipboardList className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Checklisten</span>
             </TabsTrigger>
-            <TabsTrigger value="strategy" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+            <TabsTrigger value="strategy" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
               <Presentation className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Strategie</span>
             </TabsTrigger>
-            <TabsTrigger value="inspo" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+            <TabsTrigger value="inspo" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Inspirationen</span>
             </TabsTrigger>
-            <TabsTrigger value="marketing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+            <TabsTrigger value="marketing" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Marketing</span>
             </TabsTrigger>
-            <TabsTrigger value="landing" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+            <TabsTrigger value="landing" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
               <Globe className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Landing Pages</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="text-xs h-8 gap-1.5 px-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md">
+            <TabsTrigger value="activity" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Verlauf</span>
             </TabsTrigger>

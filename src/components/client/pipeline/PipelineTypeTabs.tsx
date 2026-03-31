@@ -1,8 +1,8 @@
 import React from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { icons } from "lucide-react";
 import { PIPELINE_CONFIG } from "./constants";
 import type { ContentPiece } from "./types";
+import { cn } from "@/lib/utils";
 
 interface PipelineTypeTabsProps {
   activeType: string;
@@ -20,21 +20,34 @@ const PipelineTypeTabs: React.FC<PipelineTypeTabsProps> = React.memo(({
   year,
 }) => {
   return (
-    <Tabs value={activeType} onValueChange={onTypeChange} className="mb-4">
-      <TabsList className="h-auto flex-wrap bg-muted/50 gap-0.5 p-1">
-        {Object.entries(PIPELINE_CONFIG).map(([key, cfg]) => {
-          const typeCount = contentPieces.filter((c) => c.type === key && c.target_month === month && c.target_year === year).length;
-          const Icon = icons[cfg.emoji as keyof typeof icons];
-          return (
-            <TabsTrigger key={key} value={key} className="text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              {Icon && <Icon size={15} />}
-              <span className="hidden sm:inline">{cfg.label}</span>
-              <span className="rounded-full bg-background/50 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-mono">{typeCount}</span>
-            </TabsTrigger>
-          );
-        })}
-      </TabsList>
-    </Tabs>
+    <div className="flex flex-wrap gap-2 mb-4">
+      {Object.entries(PIPELINE_CONFIG).map(([key, cfg]) => {
+        const typeCount = contentPieces.filter((c) => c.type === key && c.target_month === month && c.target_year === year).length;
+        const Icon = icons[cfg.emoji as keyof typeof icons];
+        const isActive = activeType === key;
+        return (
+          <button
+            key={key}
+            onClick={() => onTypeChange(key)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-colors",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {Icon && <Icon size={14} />}
+            <span>{cfg.label}</span>
+            <span className={cn(
+              "rounded-full px-1.5 py-0.5 text-[10px] tabular-nums",
+              isActive ? "bg-primary-foreground/20" : "bg-background/60"
+            )}>
+              {typeCount}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 });
 

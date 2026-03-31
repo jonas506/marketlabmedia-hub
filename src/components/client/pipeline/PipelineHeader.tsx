@@ -32,9 +32,8 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   noDeadlineCount = 0,
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
-      <div className="w-1 h-5 rounded-full bg-primary" />
-      <h3 className="font-display text-sm font-semibold">Material-Pipeline</h3>
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-3 border-b border-border">
+      <h3 className="text-sm font-semibold">Material-Pipeline</h3>
       {totalPieces > 0 && (
         <div className="flex items-center gap-2">
           <div className="w-20 h-[5px] rounded-full bg-muted/50 overflow-hidden">
@@ -45,11 +44,11 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
               transition={{ duration: 0.8, ease: "easeOut" }}
             />
           </div>
-          <span className="font-mono text-[10px] text-muted-foreground">{progress}%</span>
+          <span className="text-[11px] text-muted-foreground tabular-nums">{progress}%</span>
         </div>
       )}
       {noDeadlineCount > 0 && (
-        <span className="flex items-center gap-1.5 text-[10px] font-mono text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md">
+        <span className="flex items-center gap-1.5 text-[11px] text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md">
           <AlertTriangle className="h-3 w-3" />
           {noDeadlineCount} ohne Deadline
         </span>
@@ -60,7 +59,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs font-mono gap-1.5"
+            className="h-7 text-xs gap-1.5"
             onClick={onOpenPrintScripts}
           >
             <Printer className="h-3 w-3" />
@@ -71,7 +70,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs font-mono gap-1.5"
+            className="h-7 text-xs gap-1.5"
             onClick={onOpenCaptionStudio}
           >
             <FileText className="h-3 w-3" />
@@ -82,7 +81,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           <button
             onClick={() => onViewModeChange("list")}
             className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[11px] transition-all",
               viewMode === "list"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -94,7 +93,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           <button
             onClick={() => onViewModeChange("kanban")}
             className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-mono transition-all",
+              "flex items-center gap-1 px-2 py-1 rounded-md text-[11px] transition-all",
               viewMode === "kanban"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -105,11 +104,11 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           </button>
         </div>
       </div>
-      <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground w-full sm:w-auto mt-1 sm:mt-0">
+      <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-muted-foreground w-full sm:w-auto mt-1 sm:mt-0">
         {phaseSummary.map((p, i) => (
           <span key={p.key} className="flex items-center gap-1">
             {i > 0 && <span className="text-border mx-0.5">·</span>}
-            <span className={p.count > 0 ? "text-foreground font-semibold" : ""}>{p.count}</span>
+            <span className={p.count > 0 ? "text-foreground font-semibold tabular-nums" : "tabular-nums"}>{p.count}</span>
             <span>{p.label}</span>
           </span>
         ))}

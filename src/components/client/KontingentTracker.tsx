@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import RunwayBadge from "@/components/RunwayBadge";
 import { motion } from "framer-motion";
-import { TrendingUp, Plus, Minus, Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, icons } from "lucide-react";
+import { TrendingUp, Plus, Minus, Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle } from "lucide-react";
 
 interface ContentPiece {
   phase: string;
@@ -25,7 +25,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const qc = useQueryClient();
   const monthPieces = (contentPieces ?? []).filter((c) => c.target_month === month && c.target_year === year);
 
-  // Fetch extra counts
   const { data: extras } = useQuery({
     queryKey: ["contingent-extras", client.id, month, year],
     queryFn: async () => {
@@ -45,7 +44,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
     const count = Math.max(0, value);
     const queryKey = ["contingent-extras", client.id, month, year];
 
-    // Optimistic update – instant UI
     qc.setQueryData(queryKey, (old: any[] | undefined) => {
       const arr = old ?? [];
       const existing = arr.find((e: any) => e.type === type);
@@ -55,7 +53,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
       return [...arr, { type, extra_count: count }];
     });
 
-    // Fire-and-forget DB save
     supabase
       .from("contingent_extras")
       .upsert(
@@ -67,7 +64,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
       });
   }, [client.id, month, year, qc]);
 
-  // "Ist" = pieces with phase "approved" or "handed_over"
   const countByType = (type: string) =>
     monthPieces.filter((c) => c.type === type && (c.phase === "approved" || c.phase === "handed_over")).length;
 
@@ -75,7 +71,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const ytTarget = client.monthly_youtube_longform ?? 0;
   const ytDone = countByType("youtube_longform");
 
-  // Reel extras: pipeline pieces + generic extra + opus_pro + overlay
   const reelPipelineDone = countByType("reel");
   const reelGenericExtra = getExtra("reel");
   const opusProCount = getExtra("opus_pro");
@@ -114,7 +109,6 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
   const totalDone = types.filter(t => t.type !== "ad").reduce((acc, t) => acc + t.current, 0);
   const overallPct = totalTarget > 0 ? Math.round((totalDone / totalTarget) * 100) : 0;
 
-  // Stepper component for opus/overlay
   const Stepper = ({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) => (
     <div className="flex items-center rounded-lg border border-border bg-muted/20 overflow-hidden">
       <button
@@ -128,11 +122,11 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
           key={value}
           initial={{ scale: 1.3 }}
           animate={{ scale: 1 }}
-          className="text-sm font-bold font-mono tabular-nums text-foreground w-4 text-center"
+          className="text-sm font-bold tabular-nums text-foreground w-4 text-center"
         >
           {value}
         </motion.span>
-        <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">{label}</span>
+        <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">{label}</span>
       </div>
       <button
         onClick={() => onChange(value + 1)}
@@ -147,17 +141,17 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-border bg-card p-5 shadow-lg"
+      className="rounded-lg border border-border bg-card p-5"
     >
       <div className="flex items-center gap-2 mb-5">
-        <TrendingUp className="h-4 w-4 text-primary" />
-        <h3 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground">KONTINGENT</h3>
+        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        <h3 className="text-sm font-semibold text-foreground">Kontingent</h3>
         <div className="flex-1" />
         <motion.span
           key={overallPct}
           initial={{ scale: 1.2 }}
           animate={{ scale: 1 }}
-          className={`font-mono text-sm font-bold ${overallPct >= 100 ? "text-[hsl(var(--runway-green))]" : "text-foreground"}`}
+          className={`text-sm font-bold tabular-nums ${overallPct >= 100 ? "text-[hsl(var(--runway-green))]" : "text-foreground"}`}
         >
           {overallPct}%
         </motion.span>
@@ -174,16 +168,16 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
               <div key={t.type} className="space-y-2">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <span className="w-6 flex items-center justify-center">{typeIcons[t.type]}</span>
-                  <span className="w-16 sm:w-20 font-body text-xs text-muted-foreground">{t.label}</span>
+                  <span className="w-16 sm:w-20 text-xs text-muted-foreground">{t.label}</span>
                   <div className="flex-1 relative">
                     <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                       <motion.div
                         className={`h-full rounded-full ${
                           isAd
-                            ? "bg-gradient-to-r from-violet-500 to-violet-400"
+                            ? "bg-violet-500"
                             : isComplete
-                            ? "bg-gradient-to-r from-[hsl(var(--runway-green))] to-[hsl(145,63%,50%)]"
-                            : "bg-gradient-to-r from-primary to-primary/70"
+                            ? "bg-[hsl(var(--runway-green))]"
+                            : "bg-primary"
                         }`}
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
@@ -195,7 +189,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                     key={t.current}
                     initial={{ scale: 1.3 }}
                     animate={{ scale: 1 }}
-                    className={`font-mono text-sm font-bold w-14 text-right ${
+                    className={`text-sm font-bold tabular-nums w-14 text-right ${
                       isAd ? "text-violet-400" : isComplete ? "text-[hsl(var(--runway-green))]" : "text-foreground"
                     }`}
                   >
@@ -210,7 +204,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                         min={0}
                         value={getExtra(t.type)}
                         onChange={(e) => updateExtra(t.type, parseInt(e.target.value) || 0)}
-                        className="w-12 h-7 text-xs font-mono text-center px-1 bg-muted/50 border-border"
+                        className="w-12 h-7 text-xs text-center px-1 bg-muted/50 border-border tabular-nums"
                         title="Zusätzliche Pieces außerhalb der Pipeline"
                       />
                     </div>
@@ -230,7 +224,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                           min={0}
                           value={reelGenericExtra}
                           onChange={(e) => updateExtra("reel", parseInt(e.target.value) || 0)}
-                          className="w-12 h-7 text-xs font-mono text-center px-1 bg-muted/50 border-border"
+                          className="w-12 h-7 text-xs text-center px-1 bg-muted/50 border-border tabular-nums"
                           title="Sonstige Reel-Extras"
                         />
                       </div>
@@ -244,11 +238,11 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
 
         <div className="flex gap-5 border-t lg:border-t-0 lg:border-l border-border pt-4 lg:pt-0 lg:pl-5">
           <div className="text-center flex-1 lg:flex-initial">
-            <span className="font-mono text-[10px] text-muted-foreground block mb-1.5 tracking-wider">GESICHERT</span>
+            <span className="text-[11px] text-muted-foreground font-medium block mb-1.5">Gesichert</span>
             <RunwayBadge days={conservativeDays} />
           </div>
           <div className="text-center flex-1 lg:flex-initial">
-            <span className="font-mono text-[10px] text-muted-foreground block mb-1.5 tracking-wider">PROGNOSE</span>
+            <span className="text-[11px] text-muted-foreground font-medium block mb-1.5">Prognose</span>
             <RunwayBadge days={prognoseDays} />
           </div>
         </div>
