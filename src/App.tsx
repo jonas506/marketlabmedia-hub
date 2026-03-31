@@ -29,6 +29,7 @@ import CRMCampaigns from "./pages/crm/CRMCampaigns";
 import ContractTimeline from "./pages/ContractTimeline";
 import ActivityPage from "./pages/ActivityPage";
 import Tasks from "./pages/Tasks";
+import MyTodos from "./pages/MyTodos";
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
