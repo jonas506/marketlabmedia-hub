@@ -80,7 +80,7 @@ export default function CRMSettings() {
     <CRMLayout>
       <ErrorBoundary level="section">
       <div className="space-y-8 max-w-3xl">
-        <h1 className="text-xl font-bold text-[#FAFBFF] font-[Manrope]">Einstellungen</h1>
+        <h1 className="text-xl font-bold text-[#FAFBFF] font-body">Einstellungen</h1>
 
         {/* Lead Statuses */}
         <section className="space-y-3">
