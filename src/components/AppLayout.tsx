@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Database, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings, ListTodo } from "lucide-react";
 import marketlabLogo from "@/assets/marketlab-logo.jpg";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
@@ -15,6 +15,7 @@ import GlobalSearch from "@/components/GlobalSearch";
 // roles: which roles can see this nav item (undefined = all)
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/my-todos", label: "Meine To-Dos", icon: ListTodo },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },

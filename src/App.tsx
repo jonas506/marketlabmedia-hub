@@ -29,6 +29,7 @@ import CRMCampaigns from "./pages/crm/CRMCampaigns";
 import ContractTimeline from "./pages/ContractTimeline";
 import ActivityPage from "./pages/ActivityPage";
 import Tasks from "./pages/Tasks";
+import MyTodos from "./pages/MyTodos";
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
@@ -83,6 +84,7 @@ const App = () => (
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
                   <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+                  <Route path="/my-todos" element={<ProtectedRoute><MyTodos /></ProtectedRoute>} />
                   <Route path="/activity" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
                   
                   <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
