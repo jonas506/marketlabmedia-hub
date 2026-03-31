@@ -6,13 +6,13 @@
 
 @layer base {
   :root {
-    --background: 230 15% 11%;
+    --background: 228 14% 10%;
     --foreground: 220 20% 96%;
 
-    --card: 230 13% 14%;
+    --card: 228 12% 13%;
     --card-foreground: 220 20% 96%;
 
-    --popover: 230 13% 16%;
+    --popover: 228 12% 15%;
     --popover-foreground: 220 20% 96%;
 
     --primary: 211 100% 50%;
@@ -21,8 +21,8 @@
     --secondary: 260 70% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 230 10% 20%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 228 10% 18%;
+    --muted-foreground: 220 8% 48%;
 
     --accent: 260 70% 55%;
     --accent-foreground: 0 0% 100%;
@@ -30,24 +30,24 @@
     --destructive: 0 72% 56%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 230 10% 18%;
-    --input: 230 10% 20%;
+    --border: 228 8% 16%;
+    --input: 228 10% 18%;
     --ring: 211 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
     /* Monday-style status colors */
     --status-done: 154 60% 48%;
     --status-working: 211 100% 50%;
     --status-review: 35 95% 55%;
     --status-stuck: 0 72% 56%;
-    --status-default: 230 10% 35%;
+    --status-default: 228 10% 35%;
 
     /* Monday-style priority */
     --prio-critical: 0 72% 56%;
     --prio-high: 25 95% 55%;
     --prio-medium: 211 100% 50%;
-    --prio-low: 230 10% 45%;
+    --prio-low: 228 10% 45%;
 
     /* Runway */
     --runway-green: 154 60% 48%;
@@ -55,19 +55,19 @@
     --runway-red: 0 72% 56%;
 
     /* Surface levels */
-    --surface: 230 13% 14%;
-    --surface-elevated: 230 13% 17%;
-    --surface-hover: 230 13% 19%;
-    --glass: 230 13% 14% / 0.7;
+    --surface: 228 12% 13%;
+    --surface-elevated: 228 12% 15%;
+    --surface-hover: 228 10% 17%;
+    --glass: 228 12% 13% / 0.8;
 
-    /* Sidebar - darker */
-    --sidebar-background: 230 20% 7%;
-    --sidebar-foreground: 220 15% 85%;
+    /* Sidebar */
+    --sidebar-background: 228 16% 8%;
+    --sidebar-foreground: 220 12% 82%;
     --sidebar-primary: 211 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 260 70% 55%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 230 15% 13%;
+    --sidebar-border: 228 12% 13%;
     --sidebar-ring: 211 100% 50%;
 
     /* Monday-style group colors */
@@ -77,7 +77,7 @@
     --group-orange: 25 95% 55%;
 
     /* Canvas dot grid color */
-    --cb-dot: 230 10% 18%;
+    --cb-dot: 228 10% 16%;
   }
 
   .light {
