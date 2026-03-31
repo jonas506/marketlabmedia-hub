@@ -201,7 +201,7 @@ const KontingentTracker: React.FC<KontingentTrackerProps> = ({ client, contentPi
                   >
                     {isAd ? t.current : `${t.current}/${t.target}`}
                   </motion.span>
-                  {isComplete && <span className="text-sm hidden sm:inline">✅</span>}
+                  {isComplete && <CheckCircle size={14} className="text-[hsl(var(--runway-green))] hidden sm:inline" />}
                   {canEdit && !isAd && !isReel && (
                     <div className="hidden sm:flex items-center gap-1 ml-1" title="Extras (nicht in Pipeline)">
                       <Plus className="h-3 w-3 text-muted-foreground" />
