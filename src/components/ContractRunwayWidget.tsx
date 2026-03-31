@@ -78,18 +78,18 @@ export default function ContractRunwayWidget() {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-6 rounded-xl border border-border bg-card p-4"
+      className="rounded-lg border border-border bg-card p-4"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <CalendarRange className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-display font-semibold">Vertragslaufzeiten</h3>
+          <h3 className="text-sm font-semibold">Vertragslaufzeiten</h3>
           {urgent.some((c) => c.remainingDays <= 30) && (
             <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
           )}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground">
             Nächstes Ende: <span className="font-medium text-foreground">{nextEnd.name}</span> am{" "}
             <span className={`font-medium ${nextEnd.remainingDays <= 30 ? "text-orange-500" : "text-foreground"}`}>
               {format(nextEnd.endDate, "dd. MMM yyyy", { locale: de })}
@@ -109,7 +109,7 @@ export default function ContractRunwayWidget() {
             <Link to={`/clients/${client.id}`} className="w-24 truncate text-xs font-medium hover:text-primary transition-colors">
               {client.name}
             </Link>
-            <div className="flex-1 h-2 rounded-full bg-muted/50 overflow-hidden">
+            <div className="flex-1 h-2.5 rounded-full bg-muted/50 overflow-hidden">
               <div
                 className={`h-full rounded-full ${getColor(client.remainingDays)} transition-all`}
                 style={{ width: `${Math.max(client.progress * 100, 4)}%`, opacity: 0.8 }}
@@ -139,7 +139,7 @@ export default function ContractRunwayWidget() {
                 </motion.div>
               ) : (
                 <motion.div key="display" className="flex items-center gap-1">
-                  <span className={`text-[10px] font-mono tabular-nums text-right ${
+                  <span className={`text-[11px] tabular-nums text-right ${
                     client.remainingDays <= 0 ? "text-destructive font-semibold" :
                     client.remainingDays <= 30 ? "text-orange-500" : "text-muted-foreground"
                   }`}>

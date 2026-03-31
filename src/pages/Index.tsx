@@ -27,10 +27,10 @@ const Dashboard = () => {
 
   const clientGrid = (compact = false) => (
     <>
-      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-display font-bold tracking-tight">Kunden</h2>
-          <p className="font-body text-xs text-muted-foreground mt-0.5">
+          <h2 className="text-base font-semibold">Kunden</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {compact ? "Deine Kunden im Überblick" : "Sortiert nach Content-Runway — dringendste Kunden zuerst"}
           </p>
         </div>
@@ -44,7 +44,7 @@ const Dashboard = () => {
         </div>
       ) : clients?.length === 0 ? (
         <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card">
-          <p className="text-sm text-muted-foreground font-body">Noch keine Kunden angelegt</p>
+          <p className="text-sm text-muted-foreground">Noch keine Kunden angelegt</p>
         </div>
       ) : (
         <div className={`grid grid-cols-1 gap-4 ${compact ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}`}>
@@ -69,56 +69,44 @@ const Dashboard = () => {
         <Greeting name={profile?.name} />
 
         {role === "admin" && (
-          <>
+          <div className="space-y-6">
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
             <ErrorBoundary level="widget"><ContractRunwayWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><BottleneckAlert /></ErrorBoundary>
             <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>
             {clientGrid()}
-            <div className="mt-6">
-              <ErrorBoundary level="section"><PostingCalendar /></ErrorBoundary>
-            </div>
-            <div className="mt-6">
-              <ErrorBoundary level="section"><MyTasks /></ErrorBoundary>
-            </div>
-          </>
+            <ErrorBoundary level="section"><PostingCalendar /></ErrorBoundary>
+            <ErrorBoundary level="section"><MyTasks /></ErrorBoundary>
+          </div>
         )}
 
         {role === "head_of_content" && (
-          <>
+          <div className="space-y-6">
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
             <ErrorBoundary level="widget"><ReviewQueue /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>
             {clientGrid()}
-            <div className="mt-6">
-              <ErrorBoundary level="section"><PostingCalendar /></ErrorBoundary>
-            </div>
-            <div className="mt-6">
-              <ErrorBoundary level="section"><MyTasks /></ErrorBoundary>
-            </div>
-          </>
+            <ErrorBoundary level="section"><PostingCalendar /></ErrorBoundary>
+            <ErrorBoundary level="section"><MyTasks /></ErrorBoundary>
+          </div>
         )}
 
         {role === "cutter" && (
-          <>
+          <div className="space-y-6">
             <ErrorBoundary level="section"><CutterFocusBoard /></ErrorBoundary>
             <ErrorBoundary level="section"><PostingCalendar filterUserId={user?.id} /></ErrorBoundary>
-            <div className="mt-6">
-              {clientGrid(true)}
-            </div>
-          </>
+            {clientGrid(true)}
+          </div>
         )}
 
         {/* Fallback for unknown roles */}
         {!role && !isCutter && role !== "admin" && role !== "head_of_content" && (
-          <>
+          <div className="space-y-6">
             {clientGrid()}
-            <div className="mt-6">
-              <PostingCalendar />
-            </div>
-          </>
+            <PostingCalendar />
+          </div>
         )}
       </motion.div>
     </AppLayout>

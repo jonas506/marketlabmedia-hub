@@ -12,10 +12,10 @@ interface Alert {
   link?: string;
 }
 
-const SEVERITY_STYLES = {
-  critical: "bg-destructive/10 border-destructive/20 text-destructive",
-  warning: "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400",
-  info: "bg-primary/10 border-primary/20 text-primary",
+const SEVERITY_BORDER = {
+  critical: "border-l-destructive",
+  warning: "border-l-amber-500",
+  info: "border-l-primary",
 };
 
 const BottleneckAlert = () => {
@@ -37,7 +37,6 @@ const BottleneckAlert = () => {
       const allProfiles = profiles ?? [];
       const result: Alert[] = [];
 
-      // 1. Overdue pieces
       const overdue = allPieces.filter(
         (p) => p.deadline && p.deadline < todayStr && !["approved", "handed_over"].includes(p.phase)
       );
@@ -45,14 +44,12 @@ const BottleneckAlert = () => {
         result.push({
           severity: "critical",
           icon: <AlertTriangle className="h-4 w-4 shrink-0" />,
-          text: `🚨 ${overdue.length} Piece${overdue.length > 1 ? "s" : ""} ${overdue.length > 1 ? "sind" : "ist"} überfällig`,
+          text: `${overdue.length} Piece${overdue.length > 1 ? "s" : ""} ${overdue.length > 1 ? "sind" : "ist"} überfällig`,
           link: "/tasks",
         });
       }
 
-      // 2. Clients with runway < 3 days
       const month = now.getMonth() + 1;
-      const year = now.getFullYear();
       activeClients.forEach((client) => {
         const reelTarget = client.monthly_reels;
         const dailyFreq = reelTarget / 30;
@@ -65,13 +62,12 @@ const BottleneckAlert = () => {
           result.push({
             severity: "critical",
             icon: <AlertCircle className="h-4 w-4 shrink-0" />,
-            text: `⚠️ ${client.name} hat nur noch ${runway} Tage Runway`,
+            text: `${client.name} hat nur noch ${runway} Tage Runway`,
             link: `/client/${client.id}`,
           });
         }
       });
 
-      // 3. Pieces in review > 5 days
       const staleReview = allPieces.filter(
         (p) => p.phase === "review" && p.updated_at && p.updated_at < fiveDaysAgo
       );
@@ -79,11 +75,10 @@ const BottleneckAlert = () => {
         result.push({
           severity: "warning",
           icon: <Clock className="h-4 w-4 shrink-0" />,
-          text: `⏳ ${staleReview.length} Piece${staleReview.length > 1 ? "s warten" : " wartet"} seit über 5 Tagen auf Freigabe`,
+          text: `${staleReview.length} Piece${staleReview.length > 1 ? "s warten" : " wartet"} seit über 5 Tagen auf Freigabe`,
         });
       }
 
-      // 4. Cutter with > 8 pieces in editing
       const editingByUser: Record<string, number> = {};
       allPieces.filter((p) => p.phase === "editing" && p.assigned_to).forEach((p) => {
         editingByUser[p.assigned_to!] = (editingByUser[p.assigned_to!] || 0) + 1;
@@ -94,13 +89,12 @@ const BottleneckAlert = () => {
           result.push({
             severity: "warning",
             icon: <Flame className="h-4 w-4 shrink-0" />,
-            text: `🔥 ${profileMap.get(userId) || "Unbekannt"} hat ${count} Pieces im Schnitt — Überlastung?`,
+            text: `${profileMap.get(userId) || "Unbekannt"} hat ${count} Pieces im Schnitt — Überlastung?`,
             link: "/team",
           });
         }
       });
 
-      // Sort by severity, take top 3
       const order = { critical: 0, warning: 1, info: 2 };
       return result.sort((a, b) => order[a.severity] - order[b.severity]).slice(0, 3);
     },
@@ -109,7 +103,7 @@ const BottleneckAlert = () => {
   if (alerts.length === 0) return null;
 
   return (
-    <div className="space-y-2 mb-5">
+    <div className="space-y-2">
       {alerts.map((alert, i) => {
         const content = (
           <motion.div
@@ -117,12 +111,20 @@ const BottleneckAlert = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className={cn("rounded-lg border px-4 py-3 flex items-center gap-3 text-sm font-body", SEVERITY_STYLES[alert.severity])}
+            className={cn(
+              "rounded-lg border border-border bg-card border-l-[3px] px-4 py-2.5 flex items-center gap-3 text-xs",
+              SEVERITY_BORDER[alert.severity]
+            )}
           >
-            {alert.icon}
-            <span className="flex-1">{alert.text}</span>
+            <span className={cn(
+              alert.severity === "critical" ? "text-destructive" :
+              alert.severity === "warning" ? "text-amber-500" : "text-primary"
+            )}>
+              {alert.icon}
+            </span>
+            <span className="flex-1 text-foreground">{alert.text}</span>
             {alert.link && (
-              <span className="text-xs font-mono opacity-70">Anzeigen →</span>
+              <span className="text-xs text-muted-foreground">Anzeigen →</span>
             )}
           </motion.div>
         );

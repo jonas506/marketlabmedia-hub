@@ -24,28 +24,17 @@ const WeeklyKPIs = () => {
       const allPieces = pieces ?? [];
       const activeClients = clients ?? [];
 
-      // Overdue pieces (have deadline, deadline < today, not handed_over/approved)
       const overdue = allPieces.filter(
         (p) => p.deadline && p.deadline < todayStr && !["approved", "handed_over"].includes(p.phase)
       );
-
-      // Awaiting review
       const awaitingReview = allPieces.filter((p) => p.phase === "review");
-
-      // Currently in editing
       const inEditing = allPieces.filter((p) => p.phase === "editing");
-
-      // Handed over this month
       const handedOver = allPieces.filter(
         (p) => p.phase === "handed_over" && p.target_month === month && p.target_year === year
       );
-
-      // Total target this month
       const totalTarget = activeClients.reduce(
         (sum, c) => sum + c.monthly_reels + c.monthly_carousels, 0
       );
-
-      // Clients with low runway (< 7 days worth)
       const lowRunwayClients = activeClients.filter((client) => {
         const clientPieces = allPieces.filter((p) => p.client_id === client.id);
         const reelTarget = client.monthly_reels;
@@ -57,8 +46,6 @@ const WeeklyKPIs = () => {
         const runway = dailyFreq > 0 ? Math.round(readyPieces / dailyFreq) : 999;
         return runway < 7;
       });
-
-      // Pieces without deadline in active phases
       const noDeadline = allPieces.filter(
         (p) => !p.deadline && !["approved", "handed_over"].includes(p.phase)
       );
@@ -84,59 +71,62 @@ const WeeklyKPIs = () => {
       value: kpis.overdue,
       icon: AlertTriangle,
       color: kpis.overdue > 0 ? "text-destructive" : "text-muted-foreground",
-      bg: kpis.overdue > 0 ? "bg-destructive/10 border-destructive/20" : "bg-muted/30 border-border",
+      alert: kpis.overdue > 0,
     },
     {
       label: "Zur Freigabe",
       value: kpis.awaitingReview,
       icon: Eye,
       color: kpis.awaitingReview > 0 ? "text-status-review" : "text-muted-foreground",
-      bg: kpis.awaitingReview > 0 ? "bg-status-review/10 border-status-review/20" : "bg-muted/30 border-border",
+      alert: false,
     },
     {
       label: "Im Schnitt",
       value: kpis.inEditing,
       icon: Clock,
       color: "text-status-working",
-      bg: "bg-status-working/10 border-status-working/20",
+      alert: false,
     },
     {
       label: "Übergeben",
       value: `${kpis.handedOver}/${kpis.totalTarget}`,
       icon: CheckCircle2,
       color: "text-status-done",
-      bg: "bg-status-done/10 border-status-done/20",
+      alert: false,
     },
     {
       label: "Niedriger Runway",
       value: `${kpis.lowRunwayClients}/${kpis.activeClients}`,
       icon: TrendingUp,
-      color: kpis.lowRunwayClients > 0 ? "text-destructive" : "text-status-done",
-      bg: kpis.lowRunwayClients > 0 ? "bg-destructive/10 border-destructive/20" : "bg-status-done/10 border-status-done/20",
+      color: kpis.lowRunwayClients > 0 ? "text-destructive" : "text-muted-foreground",
+      alert: kpis.lowRunwayClients > 0,
     },
     {
       label: "Ohne Deadline",
       value: kpis.noDeadline,
       icon: CalendarOff,
       color: kpis.noDeadline > 0 ? "text-amber-500" : "text-muted-foreground",
-      bg: kpis.noDeadline > 0 ? "bg-amber-500/10 border-amber-500/20" : "bg-muted/30 border-border",
+      alert: false,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3">
       {cards.map((card, i) => (
         <motion.div
           key={card.label}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.04 }}
-          className={cn("rounded-lg border px-3 py-2.5 flex items-center gap-3", card.bg)}
+          className={cn(
+            "rounded-lg border bg-card px-4 py-3 flex items-center gap-3",
+            card.alert ? "border-l-2 border-l-destructive" : "border-border"
+          )}
         >
-          <card.icon className={cn("h-4 w-4 shrink-0", card.color)} />
+          <card.icon className={cn("h-4 w-4 shrink-0 opacity-70", card.color)} />
           <div>
-            <span className={cn("font-mono text-lg font-bold block leading-tight", card.color)}>{card.value}</span>
-            <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{card.label}</span>
+            <span className={cn("text-lg font-semibold block leading-tight", card.color)}>{card.value}</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{card.label}</span>
           </div>
         </motion.div>
       ))}
