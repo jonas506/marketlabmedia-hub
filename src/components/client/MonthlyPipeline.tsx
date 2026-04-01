@@ -86,13 +86,12 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     if (!focusPieceId) return;
     const targetPiece = contentPieces.find((piece) => piece.id === focusPieceId);
     if (!targetPiece) return;
-    if (targetPiece.target_month !== month || targetPiece.target_year !== year) return;
 
     setActiveType(targetPiece.type);
     setActivePhase(targetPiece.phase);
     setDetailPiece(targetPiece);
     onFocusPieceHandled?.();
-  }, [focusPieceId, contentPieces, month, year, onFocusPieceHandled]);
+  }, [focusPieceId, contentPieces, onFocusPieceHandled]);
 
   const phasePieces = useMemo(() => {
     let filtered = monthPieces.filter((c) => c.phase === activePhase);
