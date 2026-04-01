@@ -104,6 +104,29 @@ const ClientDetail = () => {
   });
 
   const { data: shootDays } = useQuery({
+    queryKey: ["shoot-days", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("shoot_days")
+        .select("*")
+        .eq("client_id", id!)
+        .order("date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const focusPieceId = searchParams.get("piece");
+
+  const clearFocusedPiece = useCallback(() => {
+    if (!focusPieceId) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("piece");
+    setSearchParams(next, { replace: true });
+  }, [focusPieceId, searchParams, setSearchParams]);
+
+  if (isLoading || !client) {
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
@@ -112,16 +135,6 @@ const ClientDetail = () => {
       </AppLayout>
     );
   }
-
-  const monthOptions = Array.from({ length: 13 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - 6 + i);
-    return {
-      month: d.getMonth() + 1,
-      year: d.getFullYear(),
-      label: format(d, "MMMM yyyy", { locale: de }),
-      value: `${d.getMonth() + 1}-${d.getFullYear()}`,
-    };
-  });
 
   return (
     <AppLayout>
@@ -230,30 +243,16 @@ const ClientDetail = () => {
         {/* Onboarding Banner */}
         <OnboardingBanner clientId={client.id} />
 
-        {/* Month selector – compact inline */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-8 mb-5 gap-2">
-          <h2 className="text-sm font-semibold">Monatszyklus</h2>
-          <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
-            const [m, y] = v.split("-").map(Number);
-            setSelectedMonth(m);
-            setSelectedYear(y);
-          }}>
-            <SelectTrigger className="w-full sm:w-48 h-9 text-xs bg-card border-border">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {monthOptions.map((o) => (
-                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Content Pipeline */}
+        <div className="mt-8 mb-5">
+          <h2 className="text-sm font-semibold">Content Pipeline</h2>
         </div>
 
         <ErrorBoundary level="section">
           <div className="space-y-5">
             <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
             <TaskList clientId={client.id} canEdit={canEdit} />
-            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
+            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
           </div>
         </ErrorBoundary>
 
