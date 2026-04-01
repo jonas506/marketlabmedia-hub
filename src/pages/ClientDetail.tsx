@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -105,6 +105,26 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
+  const latestContentMonth = useMemo(() => {
+    if (!contentPieces?.length) return null;
+
+    return contentPieces.reduce<{ month: number; year: number } | null>((latest, piece: any) => {
+      if (!latest) {
+        return { month: piece.target_month, year: piece.target_year };
+      }
+
+      if (piece.target_year > latest.year) {
+        return { month: piece.target_month, year: piece.target_year };
+      }
+
+      if (piece.target_year === latest.year && piece.target_month > latest.month) {
+        return { month: piece.target_month, year: piece.target_year };
+      }
+
+      return latest;
+    }, null);
+  }, [contentPieces]);
+
   const { data: shootDays } = useQuery({
     queryKey: ["shoot-days", id],
     queryFn: async () => {
@@ -135,6 +155,19 @@ const ClientDetail = () => {
     if (targetPiece.target_month !== selectedMonth) setSelectedMonth(targetPiece.target_month);
     if (targetPiece.target_year !== selectedYear) setSelectedYear(targetPiece.target_year);
   }, [focusPieceId, contentPieces, selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    if (!latestContentMonth || focusPieceId) return;
+
+    const hasPiecesInSelectedMonth = (contentPieces ?? []).some(
+      (piece: any) => piece.target_month === selectedMonth && piece.target_year === selectedYear
+    );
+
+    if (!hasPiecesInSelectedMonth) {
+      setSelectedMonth(latestContentMonth.month);
+      setSelectedYear(latestContentMonth.year);
+    }
+  }, [contentPieces, focusPieceId, latestContentMonth, selectedMonth, selectedYear]);
 
   if (isLoading || !client) {
     return (
