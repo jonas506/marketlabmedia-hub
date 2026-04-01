@@ -297,7 +297,7 @@ const ClientDetail = () => {
             <ErrorBoundary level="section"><StorySequences clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="shootdays" className="mt-4">
-            <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} /></ErrorBoundary>
+            <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="checklists" className="mt-4">
             <ErrorBoundary level="section"><ClientChecklists clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
