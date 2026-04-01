@@ -36,8 +36,6 @@ const ClientDetail = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { role } = useAuth();
   const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [copied, setCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement>(null);

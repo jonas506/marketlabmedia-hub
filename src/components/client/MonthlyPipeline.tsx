@@ -31,8 +31,6 @@ import type { ContentPiece } from "./pipeline/types";
 interface MonthlyPipelineProps {
   clientId: string;
   contentPieces: ContentPiece[];
-  month: number;
-  year: number;
   canEdit: boolean;
   focusPieceId?: string | null;
   onFocusPieceHandled?: () => void;
