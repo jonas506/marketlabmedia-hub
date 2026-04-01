@@ -274,9 +274,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   }, [selected.size, phasePieces]);
 
   const monthOptions = useMemo(() => Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(year, month - 1 + i);
+    const d = new Date(currentYear, currentMonth - 1 + i);
     return { month: d.getMonth() + 1, year: d.getFullYear(), label: format(d, "MM/yyyy", { locale: de }) };
-  }), [year, month]);
+  }), [currentYear, currentMonth]);
 
   const phaseSummary = useMemo(() => config.phases.map((p) => ({
     ...p, count: monthPieces.filter((c) => c.phase === p.key).length,
