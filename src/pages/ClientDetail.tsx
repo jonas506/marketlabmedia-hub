@@ -20,7 +20,7 @@ import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
 import OnboardingBanner from "@/components/OnboardingBanner";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ArrowLeft, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2, Clock, ExternalLink, Smartphone, CalendarDays } from "lucide-react";
