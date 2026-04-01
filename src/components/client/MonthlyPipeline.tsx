@@ -321,7 +321,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       />
 
       <div className="p-4">
-        <PipelineTypeTabs activeType={activeType} onTypeChange={handleTypeChange} contentPieces={contentPieces} month={month} year={year} />
+        <PipelineTypeTabs activeType={activeType} onTypeChange={handleTypeChange} contentPieces={contentPieces} />
 
         {viewMode === "kanban" ? (
           <PipelineKanban

@@ -8,21 +8,17 @@ interface PipelineTypeTabsProps {
   activeType: string;
   onTypeChange: (type: string) => void;
   contentPieces: ContentPiece[];
-  month: number;
-  year: number;
 }
 
 const PipelineTypeTabs: React.FC<PipelineTypeTabsProps> = React.memo(({
   activeType,
   onTypeChange,
   contentPieces,
-  month,
-  year,
 }) => {
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       {Object.entries(PIPELINE_CONFIG).map(([key, cfg]) => {
-        const typeCount = contentPieces.filter((c) => c.type === key && c.target_month === month && c.target_year === year).length;
+        const typeCount = contentPieces.filter((c) => c.type === key).length;
         const Icon = icons[cfg.emoji as keyof typeof icons];
         const isActive = activeType === key;
         return (
