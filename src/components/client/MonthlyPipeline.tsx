@@ -212,7 +212,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const bulkAddPieces = useMutation({
     mutationFn: async (titles: string[]) => {
-      const rows = titles.map((title) => ({ client_id: clientId, type: activeType, phase: config.phases[0].key, target_month: month, target_year: year, title: title.trim() || null }));
+      const rows = titles.map((title) => ({ client_id: clientId, type: activeType, phase: config.phases[0].key, target_month: currentMonth, target_year: currentYear, title: title.trim() || null }));
       await supabase.from("content_pieces").insert(rows);
       return rows.length;
     },
