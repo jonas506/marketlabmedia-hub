@@ -31,14 +31,15 @@ import type { ContentPiece } from "./pipeline/types";
 interface MonthlyPipelineProps {
   clientId: string;
   contentPieces: ContentPiece[];
-  month: number;
-  year: number;
   canEdit: boolean;
   focusPieceId?: string | null;
   onFocusPieceHandled?: () => void;
 }
 
-const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, month, year, canEdit, focusPieceId, onFocusPieceHandled }) => {
+const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPieces, canEdit, focusPieceId, onFocusPieceHandled }) => {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
   const qc = useQueryClient();
   const [activeType, setActiveType] = useState<string>("reel");
   const [activePhase, setActivePhase] = useState<string>(PIPELINE_CONFIG["reel"].phases[0].key);
@@ -77,21 +78,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   });
 
   const monthPieces = useMemo(() =>
-    contentPieces.filter((c) => c.type === activeType && c.target_month === month && c.target_year === year),
-    [contentPieces, activeType, month, year]
+    contentPieces.filter((c) => c.type === activeType),
+    [contentPieces, activeType]
   );
 
   useEffect(() => {
     if (!focusPieceId) return;
     const targetPiece = contentPieces.find((piece) => piece.id === focusPieceId);
     if (!targetPiece) return;
-    if (targetPiece.target_month !== month || targetPiece.target_year !== year) return;
 
     setActiveType(targetPiece.type);
     setActivePhase(targetPiece.phase);
     setDetailPiece(targetPiece);
     onFocusPieceHandled?.();
-  }, [focusPieceId, contentPieces, month, year, onFocusPieceHandled]);
+  }, [focusPieceId, contentPieces, onFocusPieceHandled]);
 
   const phasePieces = useMemo(() => {
     let filtered = monthPieces.filter((c) => c.phase === activePhase);
@@ -203,7 +203,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const addPiece = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("content_pieces").insert({ client_id: clientId, type: activeType, phase: activePhase, target_month: month, target_year: year });
+      const { error } = await supabase.from("content_pieces").insert({ client_id: clientId, type: activeType, phase: activePhase, target_month: currentMonth, target_year: currentYear });
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["content-pieces", clientId] }); toast.success(`${config.emoji} Neues Piece erstellt`, { description: `In "${getPhaseLabel(activePhase)}"` }); },
@@ -212,7 +212,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const bulkAddPieces = useMutation({
     mutationFn: async (titles: string[]) => {
-      const rows = titles.map((title) => ({ client_id: clientId, type: activeType, phase: config.phases[0].key, target_month: month, target_year: year, title: title.trim() || null }));
+      const rows = titles.map((title) => ({ client_id: clientId, type: activeType, phase: config.phases[0].key, target_month: currentMonth, target_year: currentYear, title: title.trim() || null }));
       await supabase.from("content_pieces").insert(rows);
       return rows.length;
     },
@@ -274,9 +274,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   }, [selected.size, phasePieces]);
 
   const monthOptions = useMemo(() => Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(year, month - 1 + i);
+    const d = new Date(currentYear, currentMonth - 1 + i);
     return { month: d.getMonth() + 1, year: d.getFullYear(), label: format(d, "MM/yyyy", { locale: de }) };
-  }), [year, month]);
+  }), [currentYear, currentMonth]);
 
   const phaseSummary = useMemo(() => config.phases.map((p) => ({
     ...p, count: monthPieces.filter((c) => c.phase === p.key).length,
@@ -321,7 +321,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       />
 
       <div className="p-4">
-        <PipelineTypeTabs activeType={activeType} onTypeChange={handleTypeChange} contentPieces={contentPieces} month={month} year={year} />
+        <PipelineTypeTabs activeType={activeType} onTypeChange={handleTypeChange} contentPieces={contentPieces} />
 
         {viewMode === "kanban" ? (
           <PipelineKanban

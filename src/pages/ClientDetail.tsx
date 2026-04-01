@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -20,13 +20,11 @@ import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
 import OnboardingBanner from "@/components/OnboardingBanner";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ArrowLeft, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2, Clock, ExternalLink, Smartphone, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
@@ -36,8 +34,6 @@ const ClientDetail = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { role } = useAuth();
   const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [copied, setCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -105,26 +101,6 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
-  const latestContentMonth = useMemo(() => {
-    if (!contentPieces?.length) return null;
-
-    return contentPieces.reduce<{ month: number; year: number } | null>((latest, piece: any) => {
-      if (!latest) {
-        return { month: piece.target_month, year: piece.target_year };
-      }
-
-      if (piece.target_year > latest.year) {
-        return { month: piece.target_month, year: piece.target_year };
-      }
-
-      if (piece.target_year === latest.year && piece.target_month > latest.month) {
-        return { month: piece.target_month, year: piece.target_year };
-      }
-
-      return latest;
-    }, null);
-  }, [contentPieces]);
-
   const { data: shootDays } = useQuery({
     queryKey: ["shoot-days", id],
     queryFn: async () => {
@@ -148,27 +124,6 @@ const ClientDetail = () => {
     setSearchParams(next, { replace: true });
   }, [focusPieceId, searchParams, setSearchParams]);
 
-  useEffect(() => {
-    if (!focusPieceId || !contentPieces) return;
-    const targetPiece = contentPieces.find((piece: any) => piece.id === focusPieceId);
-    if (!targetPiece) return;
-    if (targetPiece.target_month !== selectedMonth) setSelectedMonth(targetPiece.target_month);
-    if (targetPiece.target_year !== selectedYear) setSelectedYear(targetPiece.target_year);
-  }, [focusPieceId, contentPieces, selectedMonth, selectedYear]);
-
-  useEffect(() => {
-    if (!latestContentMonth || focusPieceId) return;
-
-    const hasPiecesInSelectedMonth = (contentPieces ?? []).some(
-      (piece: any) => piece.target_month === selectedMonth && piece.target_year === selectedYear
-    );
-
-    if (!hasPiecesInSelectedMonth) {
-      setSelectedMonth(latestContentMonth.month);
-      setSelectedYear(latestContentMonth.year);
-    }
-  }, [contentPieces, focusPieceId, latestContentMonth, selectedMonth, selectedYear]);
-
   if (isLoading || !client) {
     return (
       <AppLayout>
@@ -178,16 +133,6 @@ const ClientDetail = () => {
       </AppLayout>
     );
   }
-
-  const monthOptions = Array.from({ length: 13 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - 6 + i);
-    return {
-      month: d.getMonth() + 1,
-      year: d.getFullYear(),
-      label: format(d, "MMMM yyyy", { locale: de }),
-      value: `${d.getMonth() + 1}-${d.getFullYear()}`,
-    };
-  });
 
   return (
     <AppLayout>
@@ -296,30 +241,16 @@ const ClientDetail = () => {
         {/* Onboarding Banner */}
         <OnboardingBanner clientId={client.id} />
 
-        {/* Month selector – compact inline */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-8 mb-5 gap-2">
-          <h2 className="text-sm font-semibold">Monatszyklus</h2>
-          <Select value={`${selectedMonth}-${selectedYear}`} onValueChange={(v) => {
-            const [m, y] = v.split("-").map(Number);
-            setSelectedMonth(m);
-            setSelectedYear(y);
-          }}>
-            <SelectTrigger className="w-full sm:w-48 h-9 text-xs bg-card border-border">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {monthOptions.map((o) => (
-                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Content Pipeline */}
+        <div className="mt-8 mb-5">
+          <h2 className="text-sm font-semibold">Content Pipeline</h2>
         </div>
 
         <ErrorBoundary level="section">
           <div className="space-y-5">
             <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
             <TaskList clientId={client.id} canEdit={canEdit} />
-            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
+            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
           </div>
         </ErrorBoundary>
 
@@ -364,7 +295,7 @@ const ClientDetail = () => {
             <ErrorBoundary level="section"><StorySequences clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="shootdays" className="mt-4">
-            <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={selectedMonth} year={selectedYear} canEdit={canEdit} /></ErrorBoundary>
+            <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} /></ErrorBoundary>
           </TabsContent>
           <TabsContent value="checklists" className="mt-4">
             <ErrorBoundary level="section"><ClientChecklists clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
