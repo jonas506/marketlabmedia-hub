@@ -103,71 +103,7 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
-  const latestContentMonth = useMemo(() => {
-    if (!contentPieces?.length) return null;
-
-    return contentPieces.reduce<{ month: number; year: number } | null>((latest, piece: any) => {
-      if (!latest) {
-        return { month: piece.target_month, year: piece.target_year };
-      }
-
-      if (piece.target_year > latest.year) {
-        return { month: piece.target_month, year: piece.target_year };
-      }
-
-      if (piece.target_year === latest.year && piece.target_month > latest.month) {
-        return { month: piece.target_month, year: piece.target_year };
-      }
-
-      return latest;
-    }, null);
-  }, [contentPieces]);
-
   const { data: shootDays } = useQuery({
-    queryKey: ["shoot-days", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("shoot_days")
-        .select("*")
-        .eq("client_id", id!)
-        .order("date", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id,
-  });
-
-  const focusPieceId = searchParams.get("piece");
-
-  const clearFocusedPiece = useCallback(() => {
-    if (!focusPieceId) return;
-    const next = new URLSearchParams(searchParams);
-    next.delete("piece");
-    setSearchParams(next, { replace: true });
-  }, [focusPieceId, searchParams, setSearchParams]);
-
-  useEffect(() => {
-    if (!focusPieceId || !contentPieces) return;
-    const targetPiece = contentPieces.find((piece: any) => piece.id === focusPieceId);
-    if (!targetPiece) return;
-    if (targetPiece.target_month !== selectedMonth) setSelectedMonth(targetPiece.target_month);
-    if (targetPiece.target_year !== selectedYear) setSelectedYear(targetPiece.target_year);
-  }, [focusPieceId, contentPieces, selectedMonth, selectedYear]);
-
-  useEffect(() => {
-    if (!latestContentMonth || focusPieceId) return;
-
-    const hasPiecesInSelectedMonth = (contentPieces ?? []).some(
-      (piece: any) => piece.target_month === selectedMonth && piece.target_year === selectedYear
-    );
-
-    if (!hasPiecesInSelectedMonth) {
-      setSelectedMonth(latestContentMonth.month);
-      setSelectedYear(latestContentMonth.year);
-    }
-  }, [contentPieces, focusPieceId, latestContentMonth, selectedMonth, selectedYear]);
-
-  if (isLoading || !client) {
     return (
       <AppLayout>
         <div className="flex h-64 items-center justify-center">
