@@ -25,8 +25,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ArrowLeft, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2, Clock, ExternalLink, Smartphone, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
