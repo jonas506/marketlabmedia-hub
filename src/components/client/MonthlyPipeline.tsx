@@ -78,8 +78,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   });
 
   const monthPieces = useMemo(() =>
-    contentPieces.filter((c) => c.type === activeType && c.target_month === month && c.target_year === year),
-    [contentPieces, activeType, month, year]
+    contentPieces.filter((c) => c.type === activeType),
+    [contentPieces, activeType]
   );
 
   useEffect(() => {
