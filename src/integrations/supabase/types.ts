@@ -2176,9 +2176,11 @@ export type Database = {
           created_at: string | null
           id: string
           notes: string | null
+          parent_sequence_id: string | null
           posted_at: string | null
           status: string
           title: string
+          version: number
         }
         Insert: {
           category_id?: string | null
@@ -2186,9 +2188,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           notes?: string | null
+          parent_sequence_id?: string | null
           posted_at?: string | null
           status?: string
           title: string
+          version?: number
         }
         Update: {
           category_id?: string | null
@@ -2196,9 +2200,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           notes?: string | null
+          parent_sequence_id?: string | null
           posted_at?: string | null
           status?: string
           title?: string
+          version?: number
         }
         Relationships: [
           {
@@ -2213,6 +2219,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_sequences_parent_sequence_id_fkey"
+            columns: ["parent_sequence_id"]
+            isOneToOne: false
+            referencedRelation: "story_sequences"
             referencedColumns: ["id"]
           },
         ]

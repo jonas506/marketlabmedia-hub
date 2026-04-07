@@ -15,6 +15,8 @@ export interface Sequence {
   notes: string | null;
   created_at: string;
   category_id: string | null;
+  version: number;
+  parent_sequence_id: string | null;
 }
 
 export interface Slide {

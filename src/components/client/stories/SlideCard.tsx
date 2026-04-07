@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUp, ArrowDown, X, Image, Check, Copy, icons } from "lucide-react";
+import { ArrowUp, ArrowDown, X, Image, Check, Copy, Download, icons } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { SLIDE_TYPES } from "./constants";
@@ -122,11 +122,14 @@ const SlideCard: React.FC<SlideCardProps> = React.memo(({
           {slide.image_url ? (
             <div className="relative group shrink-0">
               <img src={slide.image_url} alt="" className="h-20 w-20 object-cover rounded-md border border-border" />
-              {canEdit && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center gap-1">
+                {canEdit && (
                   <SlideImageUpload clientId={clientId} sequenceId={sequenceId} slideId={slide.id} onUploaded={(url) => onUpdateSlide({ image_url: url })} />
-                </div>
-              )}
+                )}
+                <a href={slide.image_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] text-white hover:text-primary transition-colors">
+                  <Download className="h-3 w-3" />
+                </a>
+              </div>
             </div>
           ) : canEdit ? (
             <SlideImageUploadBox clientId={clientId} sequenceId={sequenceId} slideId={slide.id} onUploaded={(url) => onUpdateSlide({ image_url: url })} />
