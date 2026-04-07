@@ -45,7 +45,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const filteredNav = navItems.filter(item => !item.roles || (role && item.roles.includes(role)));
 
   const isNavActive = (to: string) => {
-    if (to === "/clients") return location.pathname.startsWith("/client/");
+    if (to === "/clients") return location.pathname === "/clients" || location.pathname.startsWith("/client/");
     if (to === "/") return location.pathname === "/";
     return location.pathname === to || location.pathname.startsWith(to);
   };
