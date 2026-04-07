@@ -1,0 +1,1 @@
+UPDATE public.sop_templates SET trigger_type = NULL WHERE id = 'a2000000-0000-0000-0000-000000000002';
