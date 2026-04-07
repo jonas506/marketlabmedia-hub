@@ -492,15 +492,13 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
 
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Left: Preview */}
-          <div className="flex-1 flex flex-col items-center bg-[#111] p-4 min-w-0 overflow-auto">
-            <div className="relative shrink-0" style={{ width: slideW, height: slideH, maxWidth: '100%', maxHeight: 'calc(100% - 120px)' }}>
-              <div className="absolute inset-0" style={{ transformOrigin: 'top center' }}>
-                {slides.map((slide, idx) => (
-                  <div key={slide.id} style={{ position: 'absolute', top: 0, left: 0, width: slideW, height: slideH, transition: 'opacity 200ms ease', opacity: idx === current ? 1 : 0, pointerEvents: idx === current ? 'auto' : 'none', transform: `scale(var(--slide-scale, 1))`, transformOrigin: 'top left' }}>
-                    {renderSlide(slide, idx, true)}
-                  </div>
-                ))}
-              </div>
+          <div ref={previewContainerRef} className="flex-1 flex flex-col items-center bg-[#111] p-4 min-w-0 overflow-hidden">
+            <div className="relative shrink-0" style={{ width: slideW * previewScale, height: slideH * previewScale }}>
+              {slides.map((slide, idx) => (
+                <div key={slide.id} style={{ position: 'absolute', top: 0, left: 0, width: slideW, height: slideH, transition: 'opacity 200ms ease', opacity: idx === current ? 1 : 0, pointerEvents: idx === current ? 'auto' : 'none', transform: `scale(${previewScale})`, transformOrigin: 'top left' }}>
+                  {renderSlide(slide, idx, true)}
+                </div>
+              ))}
             </div>
 
             {/* Navigation */}
