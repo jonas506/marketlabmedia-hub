@@ -136,7 +136,12 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
         isMobile && "snap-x snap-mandatory -mx-3 px-3"
       )}>
         {phases.map((phase) => {
-          const phasePieces = pieces.filter((p) => p.phase === phase.key);
+          let phasePieces = pieces.filter((p) => p.phase === phase.key);
+          // In "Übergeben" only show future pieces
+          if (phase.key === "handed_over") {
+            const today = new Date().toISOString().split("T")[0];
+            phasePieces = phasePieces.filter((p) => !p.scheduled_post_date || p.scheduled_post_date >= today);
+          }
           const isOver = dragOverPhase === phase.key;
 
           return (
