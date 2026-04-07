@@ -6,6 +6,8 @@ export const ACTIVITY_TYPES = [
   { value: 'publishing', label: 'Publishing' },
   { value: 'admin', label: 'Admin' },
   { value: 'meeting', label: 'Meeting' },
+  { value: 'research', label: 'Research' },
+  { value: 'content_creation', label: 'Contenterstellung (Slides)' },
   { value: 'other', label: 'Sonstige' },
 ] as const;
 

@@ -118,7 +118,7 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
       {/* Hours */}
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">Stunden</label>
-        <Input type="number" min="0.25" max="24" step="0.25" value={hours} onChange={e => setHours(e.target.value)} />
+        <Input type="number" min="0.17" max="24" step="0.17" value={hours} onChange={e => setHours(e.target.value)} />
       </div>
 
       {/* Note */}
