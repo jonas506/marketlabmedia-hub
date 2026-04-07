@@ -23,6 +23,7 @@ const MyTodos = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "focus">("list");
+  const [lastCreatedTaskId, setLastCreatedTaskId] = useState<string | null>(null);
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const { data: myTasks = [] } = useQuery({
@@ -107,17 +108,21 @@ const MyTodos = () => {
 
   const quickAdd = async () => {
     if (!quickTitle.trim() || !user) return;
-    await supabase.from("tasks" as any).insert({
+    const { data } = await supabase.from("tasks" as any).insert({
       title: quickTitle.trim(),
       client_id: clients[0]?.id || "",
       assigned_to: user.id,
       created_by: user.id,
       status: "not_started",
-    } as any);
+    } as any).select("id").single();
     setQuickTitle("");
     qc.invalidateQueries({ queryKey: ["my-todos-page"] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
-    toast.success("Aufgabe erstellt");
+    if (viewMode === "focus" && data) {
+      setLastCreatedTaskId((data as any).id);
+    } else {
+      toast.success("Aufgabe erstellt");
+    }
   };
 
   const totalCount = myTasks.length;
@@ -198,7 +203,7 @@ const MyTodos = () => {
               )}
             </div>
           ) : (
-            <FocusMode tasks={myTasks} clientMap={clientMap} todayStr={todayStr} />
+            <FocusMode tasks={myTasks} clientMap={clientMap} todayStr={todayStr} lastCreatedTaskId={lastCreatedTaskId} />
           )}
 
           <TaskDetailSheet task={selectedTask} onClose={closeDetail} team={team} clients={clients} teamMap={teamMap} />
