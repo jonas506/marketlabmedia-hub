@@ -182,15 +182,44 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
                       </div>
                     </button>
                     {canEdit && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-primary"
-                        title="Als Story Ad in Pipeline"
-                        onClick={(e) => { e.stopPropagation(); convertToStoryAd.mutate(seq); }}
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex items-center shrink-0">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                          title="Als Story Ad in Pipeline"
+                          onClick={(e) => { e.stopPropagation(); convertToStoryAd.mutate(seq); }}
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              title="Version löschen"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Version V{seq.version} löschen?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Diese Version und alle zugehörigen Slides werden unwiderruflich gelöscht.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteVersion.mutate(seq.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Löschen
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     )}
                   </div>
                 ))}
