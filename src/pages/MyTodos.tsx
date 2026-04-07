@@ -22,6 +22,7 @@ const MyTodos = () => {
   const qc = useQueryClient();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "focus">("list");
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const { data: myTasks = [] } = useQuery({
