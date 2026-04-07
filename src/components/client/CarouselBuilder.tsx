@@ -693,7 +693,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
             </div>
 
             {/* Slide list */}
-            <ScrollArea className="flex-1 min-h-0">
+            <div>
               <div className="p-3 space-y-2">
                 {slides.map((slide, idx) => (
                   <div
@@ -749,8 +749,8 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                   </button>
                 )}
               </div>
-            </ScrollArea>
-          </div>
+            </div>
+          </ScrollArea>
         </div>
       </DialogContent>
     </Dialog>
