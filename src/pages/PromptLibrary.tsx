@@ -15,9 +15,12 @@ import { cn } from "@/lib/utils";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const CATEGORIES = [
-  { value: "caption", label: "Caption" },
-  { value: "refine", label: "Anpassung" },
-  { value: "transcript", label: "Transkript" },
+  { value: "youtube", label: "YouTube" },
+  { value: "hooks", label: "Hooks" },
+  { value: "story_ad", label: "Story Ad" },
+  { value: "slides", label: "Slides" },
+  { value: "skripte", label: "Skripte" },
+  { value: "overlay", label: "Overlay" },
   { value: "other", label: "Sonstiges" },
 ];
 
