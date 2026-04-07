@@ -203,14 +203,15 @@ const Tasks = () => {
               />
             </div>
 
-            {/* Group tasks */}
-            {myGroupTasks.length > 0 && (
+            {/* Merged group tasks by client */}
+            {myMergedGroups.length > 0 && (
               <div className="space-y-2">
-                {myGroupTasks.map(t => (
-                  <TaskGroupCard
-                    key={t.id}
-                    task={t as any}
-                    clientMap={clientMap}
+                {myMergedGroups.map(mg => (
+                  <MergedGroupCard
+                    key={mg.clientId}
+                    clientId={mg.clientId}
+                    clientName={mg.clientName}
+                    parentTasks={mg.parentTasks as any}
                     teamMap={teamNameMap}
                     todayStr={todayStr}
                     onSelect={selectTask}
