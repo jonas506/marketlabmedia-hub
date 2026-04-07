@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2, List, Target } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -15,12 +15,14 @@ import { TaskCard } from "@/components/tasks";
 import TaskGroupSection from "@/components/tasks/TaskGroupSection";
 import TaskGroupCard from "@/components/tasks/TaskGroupCard";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
+import FocusMode from "@/components/todos/FocusMode";
 
 const MyTodos = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "focus">("list");
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const { data: myTasks = [] } = useQuery({
@@ -125,11 +127,31 @@ const MyTodos = () => {
       <ErrorBoundary level="section">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-xl font-display font-bold tracking-tight">Meine To-Dos</h1>
-            <p className="font-body text-xs text-muted-foreground mt-0.5">
-              {totalCount === 0 ? "Alles erledigt 🎉" : `${totalCount} offene Aufgabe${totalCount !== 1 ? "n" : ""}`}
-            </p>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-display font-bold tracking-tight">Meine To-Dos</h1>
+              <p className="font-body text-xs text-muted-foreground mt-0.5">
+                {totalCount === 0 ? "Alles erledigt 🎉" : `${totalCount} offene Aufgabe${totalCount !== 1 ? "n" : ""}`}
+              </p>
+            </div>
+            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <List className="h-3.5 w-3.5" /> Liste
+              </button>
+              <button
+                onClick={() => setViewMode("focus")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "focus" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Target className="h-3.5 w-3.5" /> Fokus
+              </button>
+            </div>
           </div>
 
           {/* Quick Add */}
@@ -144,36 +166,40 @@ const MyTodos = () => {
             />
           </div>
 
-          <div className="space-y-4">
-            {/* Group tasks */}
-            {groupTasks_.length > 0 && (
-              <div className="space-y-2">
-                {groupTasks_.map(t => (
-                  <TaskGroupCard
-                    key={t.id}
-                    task={t as any}
-                    clientMap={clientMap}
-                    teamMap={teamNameMap}
-                    todayStr={todayStr}
-                    onSelect={selectTask}
-                  />
-                ))}
-              </div>
-            )}
+          {viewMode === "list" ? (
+            <div className="space-y-4">
+              {/* Group tasks */}
+              {groupTasks_.length > 0 && (
+                <div className="space-y-2">
+                  {groupTasks_.map(t => (
+                    <TaskGroupCard
+                      key={t.id}
+                      task={t as any}
+                      clientMap={clientMap}
+                      teamMap={teamNameMap}
+                      todayStr={todayStr}
+                      onSelect={selectTask}
+                    />
+                  ))}
+                </div>
+              )}
 
-            <TaskGroupSection groupKey="overdue" tasks={grouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="today" tasks={grouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="week" tasks={grouped.week} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="later" tasks={grouped.later} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="no_deadline" tasks={grouped.no_deadline} defaultOpen={false} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="overdue" tasks={grouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="today" tasks={grouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="week" tasks={grouped.week} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="later" tasks={grouped.later} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="no_deadline" tasks={grouped.no_deadline} defaultOpen={false} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
 
-            {totalCount === 0 && (
-              <div className="py-16 text-center">
-                <CheckCircle2 className="h-10 w-10 text-primary/20 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground/50 font-mono">Keine offenen Aufgaben</p>
-              </div>
-            )}
-          </div>
+              {totalCount === 0 && (
+                <div className="py-16 text-center">
+                  <CheckCircle2 className="h-10 w-10 text-primary/20 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground/50 font-mono">Keine offenen Aufgaben</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <FocusMode tasks={myTasks} clientMap={clientMap} todayStr={todayStr} />
+          )}
 
           <TaskDetailSheet task={selectedTask} onClose={closeDetail} team={team} clients={clients} teamMap={teamMap} />
         </motion.div>
