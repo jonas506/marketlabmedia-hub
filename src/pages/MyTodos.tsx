@@ -127,11 +127,31 @@ const MyTodos = () => {
       <ErrorBoundary level="section">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-xl font-display font-bold tracking-tight">Meine To-Dos</h1>
-            <p className="font-body text-xs text-muted-foreground mt-0.5">
-              {totalCount === 0 ? "Alles erledigt 🎉" : `${totalCount} offene Aufgabe${totalCount !== 1 ? "n" : ""}`}
-            </p>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-display font-bold tracking-tight">Meine To-Dos</h1>
+              <p className="font-body text-xs text-muted-foreground mt-0.5">
+                {totalCount === 0 ? "Alles erledigt 🎉" : `${totalCount} offene Aufgabe${totalCount !== 1 ? "n" : ""}`}
+              </p>
+            </div>
+            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <List className="h-3.5 w-3.5" /> Liste
+              </button>
+              <button
+                onClick={() => setViewMode("focus")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  viewMode === "focus" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Target className="h-3.5 w-3.5" /> Fokus
+              </button>
+            </div>
           </div>
 
           {/* Quick Add */}
