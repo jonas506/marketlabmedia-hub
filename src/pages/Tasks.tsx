@@ -124,15 +124,31 @@ const Tasks = () => {
   const myGrouped = useMemo(() => groupTasks(myTasks.filter(t => !isGroupTask(t)), todayStr), [myTasks, todayStr, isGroupTask]);
   const myGroupTasks = useMemo(() => myTasks.filter(t => isGroupTask(t)), [myTasks, isGroupTask]);
 
+  // Merge group tasks by client per team member
+  const mergeByClient = useCallback((groupTasks: Task[]) => {
+    const byClient: Record<string, Task[]> = {};
+    groupTasks.forEach(t => {
+      const key = t.client_id || "unknown";
+      if (!byClient[key]) byClient[key] = [];
+      byClient[key].push(t);
+    });
+    return Object.entries(byClient).map(([cid, tasks]) => ({
+      clientId: cid,
+      clientName: clientMap[cid] || "Unbekannt",
+      parentTasks: tasks,
+    }));
+  }, [clientMap]);
+
   const teamColumns = useMemo(() => {
     return team.map(member => {
       const tasks = allTasks.filter(t => t.assigned_to === member.user_id);
       const regularTasks = tasks.filter(t => !isGroupTask(t));
       const groupedTasks = tasks.filter(t => isGroupTask(t));
       const grouped = groupTasks(regularTasks, todayStr);
-      return { member, grouped, groupedTasks };
+      const mergedGroups = mergeByClient(groupedTasks);
+      return { member, grouped, mergedGroups };
     });
-  }, [team, allTasks, todayStr, isGroupTask]);
+  }, [team, allTasks, todayStr, isGroupTask, mergeByClient]);
 
   const unassignedTasks = useMemo(() => allTasks.filter(t => !t.assigned_to), [allTasks]);
   const unassignedGrouped = useMemo(() => groupTasks(unassignedTasks, todayStr), [unassignedTasks, todayStr]);
