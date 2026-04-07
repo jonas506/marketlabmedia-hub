@@ -434,29 +434,29 @@ export default function FocusMode({ tasks, clientMap, todayStr, onQuickAddedTask
   return (
     <div className="space-y-4">
       {/* Date navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button onClick={goYesterday} className="text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="h-4 w-4" />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+          <button onClick={goYesterday} className="text-muted-foreground hover:text-foreground transition-colors p-2 -ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
+            <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
           </button>
           <button
             onClick={goToday}
-            className={`text-sm font-medium transition-colors ${isCurrentDay ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            className={`text-sm font-medium transition-colors truncate ${isCurrentDay ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
             {isCurrentDay ? "Heute" : isToday(addDays(new Date(selectedDate), 1)) ? "Gestern" : ""}: <span className="capitalize">{dateFormatted}</span>
           </button>
-          <button onClick={goTomorrow} className="text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronRight className="h-4 w-4" />
+          <button onClick={goTomorrow} className="text-muted-foreground hover:text-foreground transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
+            <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" />
           </button>
           {!isCurrentDay && (
-            <button onClick={goToday} className="text-xs text-primary hover:underline ml-2">
-              Zurück zu Heute
+            <button onClick={goToday} className="text-xs text-primary hover:underline ml-1 sm:ml-2 shrink-0">
+              Heute
             </button>
           )}
         </div>
         {!isReadonly && (
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowAddBlock(true)}>
-            <Plus className="h-3 w-3 mr-1" /> Block
+          <Button size="sm" variant="outline" className="h-9 sm:h-7 text-xs px-3 shrink-0" onClick={() => setShowAddBlock(true)}>
+            <Plus className="h-4 w-4 sm:h-3 sm:w-3 mr-1" /> Block
           </Button>
         )}
       </div>
@@ -514,14 +514,14 @@ export default function FocusMode({ tasks, clientMap, todayStr, onQuickAddedTask
                 <button
                   key={bt.value}
                   onClick={() => setSelectedType(bt.value)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-muted/50 transition-colors text-sm"
+                  className="flex items-center gap-2 px-4 py-3 sm:px-3 sm:py-2 rounded-lg border hover:bg-muted/50 transition-colors text-sm min-h-[44px]"
                   style={{ borderColor: bt.color + "40" }}
                 >
                   <span>{bt.icon}</span>
                   <span className="font-medium">{bt.label}</span>
                 </button>
               ))}
-              <button onClick={() => setShowAddBlock(false)} className="text-xs text-muted-foreground px-2">
+              <button onClick={() => setShowAddBlock(false)} className="text-xs text-muted-foreground px-3 py-2 min-h-[44px]">
                 Abbrechen
               </button>
             </div>
@@ -535,12 +535,12 @@ export default function FocusMode({ tasks, clientMap, todayStr, onQuickAddedTask
                   <button
                     key={dp.value}
                     onClick={() => createBlock(selectedType, dp.value)}
-                    className="px-3 py-1.5 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors text-sm font-mono"
+                    className="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors text-sm font-mono min-h-[44px]"
                   >
                     {dp.label}
                   </button>
                 ))}
-                <button onClick={() => setSelectedType(null)} className="text-xs text-muted-foreground px-2">
+                <button onClick={() => setSelectedType(null)} className="text-xs text-muted-foreground px-3 py-2 min-h-[44px]">
                   Zurück
                 </button>
               </div>
@@ -559,7 +559,7 @@ export default function FocusMode({ tasks, clientMap, todayStr, onQuickAddedTask
               { type: "admin" as BlockType, dur: 60, label: "📋 Admin 1h", cls: "bg-muted text-muted-foreground hover:bg-muted/80" },
               { type: "content" as BlockType, dur: 90, label: "✏️ Content 1.5h", cls: "bg-green-500/10 text-green-400 hover:bg-green-500/20" },
             ].map(q => (
-              <button key={q.type} onClick={() => createBlock(q.type, q.dur)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${q.cls}`}>
+              <button key={q.type} onClick={() => createBlock(q.type, q.dur)} className={`px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] ${q.cls}`}>
                 {q.label}
               </button>
             ))}
@@ -630,7 +630,7 @@ export default function FocusMode({ tasks, clientMap, todayStr, onQuickAddedTask
             <div className="md:hidden">
               <button
                 onClick={() => setMobileBacklogOpen(!mobileBacklogOpen)}
-                className="w-full text-sm text-muted-foreground font-medium py-2 flex items-center justify-center gap-1"
+                className="w-full text-sm text-muted-foreground font-medium py-3 flex items-center justify-center gap-1 min-h-[44px] rounded-lg border border-dashed"
               >
                 Backlog {mobileBacklogOpen ? "▲" : "▼"}
               </button>

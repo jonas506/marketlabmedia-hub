@@ -130,43 +130,43 @@ const MyTodos = () => {
   return (
     <AppLayout>
       <ErrorBoundary level="section">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-2xl mx-auto">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-2xl mx-auto px-1 sm:px-0">
           {/* Header */}
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-display font-bold tracking-tight">Meine To-Dos</h1>
+          <div className="mb-4 sm:mb-6 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-display font-bold tracking-tight">Meine To-Dos</h1>
               <p className="font-body text-xs text-muted-foreground mt-0.5">
                 {totalCount === 0 ? "Alles erledigt 🎉" : `${totalCount} offene Aufgabe${totalCount !== 1 ? "n" : ""}`}
               </p>
             </div>
-            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+            <div className="flex gap-1 bg-muted rounded-lg p-0.5 shrink-0">
               <button
                 onClick={() => setViewMode("list")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] sm:min-h-0 ${
                   viewMode === "list" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <List className="h-3.5 w-3.5" /> Liste
+                <List className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Liste
               </button>
               <button
                 onClick={() => setViewMode("focus")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-colors min-h-[36px] sm:min-h-0 ${
                   viewMode === "focus" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Target className="h-3.5 w-3.5" /> Fokus
+                <Target className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> Fokus
               </button>
             </div>
           </div>
 
           {/* Quick Add */}
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-card border border-border mb-5 shadow-sm">
-            <Plus className="h-4 w-4 text-primary shrink-0" />
+          <div className="flex items-center gap-2 p-3 sm:p-3 rounded-xl bg-card border border-border mb-4 sm:mb-5 shadow-sm">
+            <Plus className="h-5 w-5 sm:h-4 sm:w-4 text-primary shrink-0" />
             <Input
               value={quickTitle}
               onChange={e => setQuickTitle(e.target.value)}
               placeholder="Neue Aufgabe… (Enter)"
-              className="h-8 flex-1 text-sm bg-transparent border-0 shadow-none focus-visible:ring-0 px-0"
+              className="h-10 sm:h-8 flex-1 text-base sm:text-sm bg-transparent border-0 shadow-none focus-visible:ring-0 px-0"
               onKeyDown={e => { if (e.key === "Enter" && quickTitle.trim()) quickAdd(); }}
             />
           </div>

@@ -119,46 +119,48 @@ export default function TimeBlock({
       onDrop={readonly ? undefined : onDrop}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 p-3">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 p-3">
         {!readonly && dragHandleProps && (
-          <div {...dragHandleProps} className="cursor-grab text-muted-foreground/40 hover:text-muted-foreground">
+          <div {...dragHandleProps} className="cursor-grab text-muted-foreground/40 hover:text-muted-foreground hidden sm:block">
             <GripVertical className="h-4 w-4" />
           </div>
         )}
-        <button onClick={() => setExpanded(!expanded)} className="shrink-0">
+        <button onClick={() => setExpanded(!expanded)} className="shrink-0 p-1 -ml-1 min-h-[32px] min-w-[32px] flex items-center justify-center">
           {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </button>
         {isCompleted && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
-        <span className="text-base mr-1">{bt.icon}</span>
-        <span className="font-semibold text-sm flex-1">{bt.label}</span>
-        <span className="text-xs text-muted-foreground font-mono">
+        <span className="text-base mr-0.5">{bt.icon}</span>
+        <span className="font-semibold text-sm flex-1 min-w-0 truncate">{bt.label}</span>
+        <span className="text-xs text-muted-foreground font-mono shrink-0">
           {block.duration_minutes >= 60
             ? `${block.duration_minutes / 60}h`
             : `${block.duration_minutes}min`}
         </span>
         {totalCount > 0 && (
-          <Badge variant="secondary" className="text-xs font-mono">
+          <Badge variant="secondary" className="text-xs font-mono shrink-0">
             {completedCount}/{totalCount}
           </Badge>
         )}
         {isActive && (
-          <span className={`text-xs font-mono font-bold animate-pulse ${timerColor}`}>{remaining}</span>
+          <span className={`text-xs font-mono font-bold animate-pulse shrink-0 ${timerColor}`}>{remaining}</span>
         )}
-        {!readonly && !isActive && !isCompleted && (
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={onStart} disabled={hasActiveBlock}>
-            <Play className="h-3 w-3 mr-1" /> Starten
-          </Button>
-        )}
-        {!readonly && isActive && (
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive" onClick={onStop}>
-            <Square className="h-3 w-3 mr-1" /> Stop
-          </Button>
-        )}
-        {!readonly && !isActive && !isCompleted && (
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={onDelete}>
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {!readonly && !isActive && !isCompleted && (
+            <Button size="sm" variant="ghost" className="h-9 sm:h-7 px-3 sm:px-2 text-xs" onClick={onStart} disabled={hasActiveBlock}>
+              <Play className="h-4 w-4 sm:h-3 sm:w-3 sm:mr-1" /> <span className="hidden sm:inline">Starten</span>
+            </Button>
+          )}
+          {!readonly && isActive && (
+            <Button size="sm" variant="ghost" className="h-9 sm:h-7 px-3 sm:px-2 text-xs text-destructive" onClick={onStop}>
+              <Square className="h-4 w-4 sm:h-3 sm:w-3 sm:mr-1" /> <span className="hidden sm:inline">Stop</span>
+            </Button>
+          )}
+          {!readonly && !isActive && !isCompleted && (
+            <Button size="sm" variant="ghost" className="h-9 sm:h-7 px-3 sm:px-2 text-xs text-muted-foreground" onClick={onDelete}>
+              <Trash2 className="h-4 w-4 sm:h-3 sm:w-3" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {totalCount > 0 && <Progress value={progress} className="h-1 mx-3 mb-1" />}
@@ -185,7 +187,7 @@ export default function TimeBlock({
                 onDragStart={readonly ? undefined : e => handleInternalDragStart(e, idx)}
                 onDragOver={readonly ? undefined : e => { e.preventDefault(); e.stopPropagation(); }}
                 onDrop={readonly ? undefined : e => handleInternalDrop(e, idx)}
-                className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all ${
+                className={`flex items-center gap-2 rounded-lg px-2 py-2.5 sm:py-1.5 text-sm transition-all ${
                   isFirstUncompleted ? "bg-primary/10 ring-1 ring-primary/30" : ""
                 } ${task.is_completed ? "opacity-40 line-through" : ""}`}
               >
@@ -196,11 +198,11 @@ export default function TimeBlock({
                     confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
                   }}
                   disabled={task.is_completed || readonly}
-                  className={`h-4 w-4 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                  className={`h-6 w-6 sm:h-4 sm:w-4 rounded border shrink-0 flex items-center justify-center transition-colors ${
                     task.is_completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 hover:border-primary"
                   }`}
                 >
-                  {task.is_completed && <span className="text-[10px]">✓</span>}
+                  {task.is_completed && <span className="text-xs sm:text-[10px]">✓</span>}
                 </button>
                 <span className="flex-1 truncate">{task.title}</span>
                 {task.client_id && clientMap[task.client_id] && (
