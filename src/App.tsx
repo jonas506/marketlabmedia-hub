@@ -83,6 +83,7 @@ const App = () => (
                   <Route path="/accept-invite" element={<AcceptInvite />} />
                   <Route path="/approve/:token" element={<ClientApproval />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/clients" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
                   <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
                   <Route path="/my-todos" element={<ProtectedRoute><MyTodos /></ProtectedRoute>} />
