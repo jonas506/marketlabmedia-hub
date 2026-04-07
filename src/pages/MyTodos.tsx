@@ -203,7 +203,7 @@ const MyTodos = () => {
               )}
             </div>
           ) : (
-            <FocusMode tasks={myTasks} clientMap={clientMap} todayStr={todayStr} />
+            <FocusMode tasks={myTasks} clientMap={clientMap} todayStr={todayStr} lastCreatedTaskId={lastCreatedTaskId} />
           )}
 
           <TaskDetailSheet task={selectedTask} onClose={closeDetail} team={team} clients={clients} teamMap={teamMap} />
