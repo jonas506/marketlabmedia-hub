@@ -152,7 +152,6 @@ export default function VacationTab() {
               link: "/time-tracking",
             });
           }
-          }
         }
       }
     } catch { /* silent */ }
