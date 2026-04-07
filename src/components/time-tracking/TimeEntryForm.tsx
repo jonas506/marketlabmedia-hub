@@ -29,6 +29,7 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
   const [clientId, setClientId] = useState<string>("__intern__");
   const [activityType, setActivityType] = useState<string>("");
   const [hours, setHours] = useState<string>("1");
+  const [minutes, setMinutes] = useState<string>("0");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -43,9 +44,11 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
       toast.error("Bitte alle Pflichtfelder ausfüllen");
       return;
     }
-    const h = parseFloat(hours);
-    if (isNaN(h) || h <= 0 || h > 24) {
-      toast.error("Stunden müssen zwischen 0.25 und 24 liegen");
+    const h = parseInt(hours) || 0;
+    const m = parseInt(minutes) || 0;
+    const total = h + m / 60;
+    if (total <= 0 || total > 24) {
+      toast.error("Bitte eine gültige Zeit eingeben");
       return;
     }
     setSaving(true);
@@ -53,7 +56,7 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
       user_id: user.id,
       client_id: clientId === "__intern__" ? null : clientId,
       date: format(date, "yyyy-MM-dd"),
-      hours: h,
+      hours: total,
       activity_type: activityType,
       note: note.trim() || null,
     });
@@ -62,10 +65,13 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
       toast.error("Fehler beim Speichern");
       return;
     }
-    toast.success(`${h}h erfasst`);
+    const displayH = Math.floor(total);
+    const displayM = Math.round((total - displayH) * 60);
+    toast.success(`${displayH}h ${displayM > 0 ? displayM + 'min ' : ''}erfasst`);
     setClientId("__intern__");
     setActivityType("");
     setHours("1");
+    setMinutes("0");
     setNote("");
     onEntryAdded();
   };
@@ -115,10 +121,21 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
         </Select>
       </div>
 
-      {/* Hours */}
+      {/* Hours + Minutes */}
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">Stunden</label>
-        <Input type="number" min="0.17" max="24" step="0.17" value={hours} onChange={e => setHours(e.target.value)} />
+        <label className="text-xs font-medium text-muted-foreground mb-1 block">Dauer</label>
+        <div className="flex gap-2 items-center">
+          <Input type="number" min="0" max="24" step="1" value={hours} onChange={e => setHours(e.target.value)} className="w-16" />
+          <span className="text-xs text-muted-foreground">h</span>
+          <Select value={minutes} onValueChange={setMinutes}>
+            <SelectTrigger className="w-20"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["0","10","20","30","40","50"].map(m => (
+                <SelectItem key={m} value={m}>{m} min</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Note */}
