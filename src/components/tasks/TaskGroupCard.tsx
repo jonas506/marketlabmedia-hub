@@ -2,7 +2,8 @@ import React, { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus, CheckCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,6 +86,34 @@ const TaskGroupCard: React.FC<TaskGroupCardProps> = ({ task, clientMap, teamMap,
     qc.invalidateQueries({ queryKey: ["subtasks", task.id] });
   }, [task.id, user?.id, qc]);
 
+  const completeAllSubtasks = useCallback(async () => {
+    const openIds = subtasks.filter(s => !s.is_completed).map(s => s.id);
+    if (openIds.length === 0) return;
+
+    for (const id of openIds) {
+      await supabase.from("tasks" as any).update({
+        is_completed: true,
+        status: "done",
+        completed_at: new Date().toISOString(),
+        completed_by: user?.id,
+      } as any).eq("id", id);
+    }
+
+    await supabase.from("tasks" as any).update({
+      is_completed: true,
+      status: "done",
+      completed_at: new Date().toISOString(),
+      completed_by: user?.id,
+    } as any).eq("id", task.id);
+
+    toast.success("🎉 Alle Aufgaben der Gruppe erledigt!");
+    confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 }, colors: ["#0083F7", "#21089B", "#10B981"] });
+
+    qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
+    qc.invalidateQueries({ queryKey: ["my-tasks"] });
+    qc.invalidateQueries({ queryKey: ["subtasks", task.id] });
+  }, [subtasks, task.id, user?.id, qc]);
+
   const addSubtask = async () => {
     if (!quickTitle.trim()) return;
     await supabase.from("tasks" as any).insert({
@@ -140,6 +169,17 @@ const TaskGroupCard: React.FC<TaskGroupCardProps> = ({ task, clientMap, teamMap,
           <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full shrink-0">
             {completedCount}/{totalCount}
           </span>
+        )}
+        {expanded && totalCount > 0 && completedCount < totalCount && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-[10px] px-2 text-primary hover:text-primary shrink-0"
+            onClick={(e) => { e.stopPropagation(); completeAllSubtasks(); }}
+          >
+            <CheckCheck className="h-3 w-3 mr-1" />
+            Alle erledigen
+          </Button>
         )}
         {assigneeName && (
           <span className="text-[10px] font-mono text-muted-foreground shrink-0 hidden sm:inline">
