@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, Trash2, Send, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, Send, Check, Download } from "lucide-react";
 import { toast } from "sonner";
 import {
   calculateMeals,
@@ -20,6 +20,7 @@ import {
   OVERNIGHT_RATE,
   TRANSPORT_LABELS,
 } from "@/lib/travel-expense-utils";
+import { generateTravelExpensePdf } from "@/lib/generate-travel-expense-pdf";
 
 interface Props {
   isAdmin: boolean;
@@ -411,8 +412,28 @@ export default function TravelExpensesTab({ isAdmin, profiles, memberFilter }: P
             </div>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
-            <Button variant="outline" size="sm" disabled>
-              PDF herunterladen (demnächst)
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  const viewUserId = isAdmin && memberFilter !== "__all__" ? memberFilter : user?.id;
+                  const profile = profiles.find((p) => p.user_id === viewUserId);
+                  const name = profile?.name || "Mitarbeiter";
+                  const blob = await generateTravelExpensePdf(name, month, year, expenses as any);
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `Reisekostenabrechnung_${name.replace(/\s/g, "_")}_${year}_${String(month).padStart(2, "0")}.pdf`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch (err: any) {
+                  toast.error("PDF-Fehler: " + err.message);
+                }
+              }}
+            >
+              <Download className="h-3.5 w-3.5 mr-1" />
+              PDF herunterladen
             </Button>
             <Button size="sm" onClick={() => submitAllDrafts.mutate()} disabled={submitAllDrafts.isPending || !expenses.some((e: any) => e.status === "draft")}>
               Abrechnung einreichen
