@@ -125,6 +125,8 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const [customHeading, setCustomHeading] = useState("");
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(1);
 
   // Branding state
   const [brandColors, setBrandColors] = useState<BrandColors>(DEFAULT_BRAND);
@@ -296,6 +298,23 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   // Slide dimensions
   const slideW = 500;
   const slideH = selectedFormat === "4:5" ? 625 : 500;
+
+  // Auto-scale preview to fit container
+  useEffect(() => {
+    const container = previewContainerRef.current;
+    if (!container) return;
+    const calcScale = () => {
+      const rect = container.getBoundingClientRect();
+      const availW = rect.width - 32;
+      const availH = rect.height - 140; // space for nav + buttons
+      const s = Math.min(availW / slideW, availH / slideH, 1);
+      setPreviewScale(Math.max(0.3, s));
+    };
+    calcScale();
+    const ro = new ResizeObserver(calcScale);
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [slideW, slideH, open]);
   const exportScale = 1080 / 500; // ~2.16
 
   // Helper: make all slide wrappers visible for export, restore after
@@ -473,10 +492,10 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
 
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Left: Preview */}
-          <div className="flex-1 flex flex-col items-center justify-center bg-[#111] p-6 min-w-0">
-            <div className="relative" style={{ width: slideW, height: slideH }}>
+          <div ref={previewContainerRef} className="flex-1 flex flex-col items-center bg-[#111] p-4 min-w-0 overflow-hidden">
+            <div className="relative shrink-0" style={{ width: slideW * previewScale, height: slideH * previewScale }}>
               {slides.map((slide, idx) => (
-                <div key={slide.id} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', transition: 'opacity 200ms ease', opacity: idx === current ? 1 : 0, pointerEvents: idx === current ? 'auto' : 'none' }}>
+                <div key={slide.id} style={{ position: 'absolute', top: 0, left: 0, width: slideW, height: slideH, transition: 'opacity 200ms ease', opacity: idx === current ? 1 : 0, pointerEvents: idx === current ? 'auto' : 'none', transform: `scale(${previewScale})`, transformOrigin: 'top left' }}>
                   {renderSlide(slide, idx, true)}
                 </div>
               ))}
