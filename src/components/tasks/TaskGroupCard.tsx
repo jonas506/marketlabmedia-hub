@@ -170,6 +170,17 @@ const TaskGroupCard: React.FC<TaskGroupCardProps> = ({ task, clientMap, teamMap,
             {completedCount}/{totalCount}
           </span>
         )}
+        {expanded && totalCount > 0 && completedCount < totalCount && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 text-[10px] px-2 text-primary hover:text-primary shrink-0"
+            onClick={(e) => { e.stopPropagation(); completeAllSubtasks(); }}
+          >
+            <CheckCheck className="h-3 w-3 mr-1" />
+            Alle erledigen
+          </Button>
+        )}
         {assigneeName && (
           <span className="text-[10px] font-mono text-muted-foreground shrink-0 hidden sm:inline">
             {assigneeName}
