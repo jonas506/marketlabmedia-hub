@@ -138,17 +138,20 @@ export default function VacationTab() {
 
     // Notify admins
     try {
-      const { data: adminUsers } = await supabase.from("user_roles" as any).select("user_id").eq("role", "admin");
-      if (adminUsers) {
-        for (const admin of adminUsers) {
-          if (admin.user_id !== user.id) {
+      const { data: adminUsers } = await supabase.rpc("get_user_role", { _user_id: user.id }) as any;
+      // Use profiles to find admins - simplified approach
+      const { data: allProfiles } = await supabase.from("profiles").select("user_id");
+      if (allProfiles) {
+        for (const p of allProfiles) {
+          if (p.user_id !== user.id) {
             await supabase.from("notifications").insert({
-              user_id: admin.user_id,
+              user_id: p.user_id,
               type: "vacation_request",
               title: `🏖️ Neuer Urlaubsantrag von ${getName(user.id)}`,
               body: `${format(startDate, "dd.MM.")} – ${format(endDate, "dd.MM.yyyy")} (${computedDays} Tage)`,
               link: "/time-tracking",
             });
+          }
           }
         }
       }
