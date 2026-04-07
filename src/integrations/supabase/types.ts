@@ -2543,6 +2543,132 @@ export type Database = {
           },
         ]
       }
+      travel_expense_reports: {
+        Row: {
+          created_at: string
+          grand_total: number | null
+          id: string
+          month: number
+          pdf_url: string | null
+          sent_at: string | null
+          status: string
+          total_extras: number | null
+          total_km: number | null
+          total_meals: number | null
+          total_overnight: number | null
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          grand_total?: number | null
+          id?: string
+          month: number
+          pdf_url?: string | null
+          sent_at?: string | null
+          status?: string
+          total_extras?: number | null
+          total_km?: number | null
+          total_meals?: number | null
+          total_overnight?: number | null
+          user_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          grand_total?: number | null
+          id?: string
+          month?: number
+          pdf_url?: string | null
+          sent_at?: string | null
+          status?: string
+          total_extras?: number | null
+          total_km?: number | null
+          total_meals?: number | null
+          total_overnight?: number | null
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      travel_expenses: {
+        Row: {
+          created_at: string
+          departure_date: string
+          departure_time: string
+          destination: string
+          extras_amount: number | null
+          extras_description: string | null
+          id: string
+          km_driven: number | null
+          km_rate: number | null
+          meals_total: number | null
+          month: number
+          note: string | null
+          overnight_count: number | null
+          overnight_rate: number | null
+          purpose: string
+          return_date: string
+          return_time: string
+          status: string
+          total_amount: number | null
+          transport: string
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          departure_date: string
+          departure_time: string
+          destination: string
+          extras_amount?: number | null
+          extras_description?: string | null
+          id?: string
+          km_driven?: number | null
+          km_rate?: number | null
+          meals_total?: number | null
+          month: number
+          note?: string | null
+          overnight_count?: number | null
+          overnight_rate?: number | null
+          purpose: string
+          return_date: string
+          return_time: string
+          status?: string
+          total_amount?: number | null
+          transport: string
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          departure_date?: string
+          departure_time?: string
+          destination?: string
+          extras_amount?: number | null
+          extras_description?: string | null
+          id?: string
+          km_driven?: number | null
+          km_rate?: number | null
+          meals_total?: number | null
+          month?: number
+          note?: string | null
+          overnight_count?: number | null
+          overnight_rate?: number | null
+          purpose?: string
+          return_date?: string
+          return_time?: string
+          status?: string
+          total_amount?: number | null
+          transport?: string
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

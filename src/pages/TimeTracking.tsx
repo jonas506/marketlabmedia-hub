@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Clock } from "lucide-react";
+import { Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import TimeEntryForm from "@/components/time-tracking/TimeEntryForm";
 import WeeklyView from "@/components/time-tracking/WeeklyView";
 import MonthlyStats from "@/components/time-tracking/MonthlyStats";
 import VacationTab from "@/components/time-tracking/VacationTab";
+import TravelExpensesTab from "@/components/time-tracking/TravelExpensesTab";
 
 export default function TimeTracking() {
   const { user, role } = useAuth();
@@ -56,8 +57,8 @@ export default function TimeTracking() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-primary" />
-            <h1 className="text-xl font-bold">Zeiterfassung</h1>
+            <Users className="h-5 w-5 text-primary" />
+            <h1 className="text-xl font-bold">Crew</h1>
           </div>
         </div>
 
@@ -65,6 +66,7 @@ export default function TimeTracking() {
           <TabsList>
             <TabsTrigger value="zeiten">Zeiten</TabsTrigger>
             <TabsTrigger value="urlaub">Urlaub</TabsTrigger>
+            <TabsTrigger value="reisekosten">Reisekosten</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zeiten" className="space-y-6 mt-4">
@@ -99,6 +101,10 @@ export default function TimeTracking() {
 
           <TabsContent value="urlaub" className="mt-4">
             <VacationTab />
+          </TabsContent>
+
+          <TabsContent value="reisekosten" className="mt-4">
+            <TravelExpensesTab isAdmin={isAdmin} profiles={profiles} memberFilter={memberFilter} />
           </TabsContent>
         </Tabs>
       </div>

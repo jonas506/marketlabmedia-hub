@@ -100,7 +100,8 @@ const App = () => (
                   <Route path="/strategy-boards/:id" element={<ProtectedRoute><StrategyBoardEditor /></ProtectedRoute>} />
                   <Route path="/shared/boards/:token" element={<SharedBoard />} />
                   <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
-                  <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
+                  <Route path="/crew" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
+                  <Route path="/time-tracking" element={<Navigate to="/crew" replace />} />
                   <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
                   <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
