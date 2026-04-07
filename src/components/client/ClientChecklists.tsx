@@ -280,6 +280,30 @@ const ClientChecklists = ({ clientId, canEdit }: Props) => {
     },
   });
 
+  const completeAll = useMutation({
+    mutationFn: async (checklistId: string) => {
+      const clSteps = stepsMap[checklistId] || [];
+      const incompleteIds = clSteps.filter(s => !s.is_completed).map(s => s.id);
+      if (incompleteIds.length === 0) return;
+      const { error } = await supabase
+        .from("checklist_steps")
+        .update({ is_completed: true, completed_at: new Date().toISOString() })
+        .in("id", incompleteIds);
+      if (error) throw error;
+      await supabase.from("checklists").update({ status: "completed" }).eq("id", checklistId);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["checklists", clientId] });
+      qc.invalidateQueries({ queryKey: ["checklist-steps", clientId] });
+      qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
+      qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-progress"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-overview"] });
+      toast.success("Alle Schritte erledigt ✓");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const toggleExpanded = (id: string) => {
     setExpandedChecklists((prev) => {
       const next = new Set(prev);
@@ -372,6 +396,20 @@ const ClientChecklists = ({ clientId, canEdit }: Props) => {
                 {/* Expanded steps */}
                 {isExpanded && (
                   <div className="border-t border-border/20 bg-background/30">
+                    {canEdit && !isCompleted && clSteps.some(s => !s.is_completed) && (
+                      <div className="px-4 py-2 border-b border-border/10 flex justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                          onClick={(e) => { e.stopPropagation(); completeAll.mutate(cl.id); }}
+                          disabled={completeAll.isPending}
+                        >
+                          <ClipboardCheck className="h-3 w-3 mr-1.5" />
+                          Alle erledigen
+                        </Button>
+                      </div>
+                    )}
                     {clSteps.map((step) => (
                       <div
                         key={step.id}
