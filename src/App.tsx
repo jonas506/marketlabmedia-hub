@@ -100,10 +100,10 @@ const App = () => (
                   <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
                   <Route path="/crew" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/time-tracking" element={<Navigate to="/crew" replace />} />
-                  <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
+                  <Route path="/crm" element={<ProtectedRoute><CRMHome /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
-                  <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
-                  <Route path="/crm/campaigns" element={<ProtectedRoute><CRMCampaigns /></ProtectedRoute>} />
+                  <Route path="/crm/pipelines" element={<Navigate to="/crm" replace />} />
+                  <Route path="/crm/campaigns" element={<Navigate to="/crm?tab=kampagnen" replace />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
