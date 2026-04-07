@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Send, Copy, Trash2 } from "lucide-react";
+import { Plus, Send, Copy, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -17,8 +16,82 @@ interface SequenceListProps {
   onSelect: (id: string) => void;
 }
 
+const UNDO_DELAY = 5000;
+
 const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdit, onSelect }) => {
   const qc = useQueryClient();
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingDeleteRef = useRef<string | null>(null);
+
+  // Keep ref in sync for keyboard handler
+  useEffect(() => { pendingDeleteRef.current = pendingDelete; }, [pendingDelete]);
+
+  const cancelPendingDelete = useCallback(() => {
+    if (deleteTimerRef.current) {
+      clearTimeout(deleteTimerRef.current);
+      deleteTimerRef.current = null;
+    }
+    setPendingDelete(null);
+    toast.dismiss("undo-delete");
+  }, []);
+
+  const executeDelete = useCallback(async (seqId: string) => {
+    try {
+      await supabase.from("story_slides" as any).delete().eq("sequence_id", seqId);
+      const { error } = await supabase.from("story_sequences" as any).delete().eq("id", seqId);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["story-sequences", clientId] });
+    } catch {
+      toast.error("Fehler beim Löschen");
+      qc.invalidateQueries({ queryKey: ["story-sequences", clientId] });
+    }
+  }, [qc, clientId]);
+
+  const handleDelete = useCallback((seqId: string, versionLabel: string) => {
+    // Cancel any existing pending delete
+    if (deleteTimerRef.current) {
+      clearTimeout(deleteTimerRef.current);
+    }
+
+    setPendingDelete(seqId);
+
+    toast("Version " + versionLabel + " gelöscht", {
+      id: "undo-delete",
+      duration: UNDO_DELAY,
+      action: {
+        label: "Rückgängig (Strg+Z)",
+        onClick: () => cancelPendingDelete(),
+      },
+      icon: <Undo2 className="h-4 w-4" />,
+    });
+
+    deleteTimerRef.current = setTimeout(() => {
+      executeDelete(seqId);
+      setPendingDelete(null);
+      deleteTimerRef.current = null;
+    }, UNDO_DELAY);
+  }, [cancelPendingDelete, executeDelete]);
+
+  // Ctrl+Z listener
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && pendingDeleteRef.current) {
+        e.preventDefault();
+        cancelPendingDelete();
+        toast.success("Löschung rückgängig gemacht");
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [cancelPendingDelete]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+    };
+  }, []);
 
   const { data: sequences = [], isLoading } = useQuery({
     queryKey: ["story-sequences", clientId],
@@ -50,14 +123,16 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
 
   // Group sequences: top-level (no parent) with their versions
   const grouped = useMemo(() => {
-    const topLevel = sequences.filter(s => !s.parent_sequence_id);
+    // Filter out pending delete from display
+    const visible = sequences.filter(s => s.id !== pendingDelete);
+    const topLevel = visible.filter(s => !s.parent_sequence_id || s.parent_sequence_id === pendingDelete);
     return topLevel.map(parent => {
-      const versions = sequences
+      const versions = visible
         .filter(s => s.parent_sequence_id === parent.id || s.id === parent.id)
         .sort((a, b) => a.version - b.version);
       return { parent, versions };
-    });
-  }, [sequences]);
+    }).filter(g => g.versions.length > 0);
+  }, [sequences, pendingDelete]);
 
   const createSequence = useMutation({
     mutationFn: async () => {
@@ -76,7 +151,6 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
   const createVersion = useMutation({
     mutationFn: async (parentSeq: Sequence) => {
       const parentId = parentSeq.parent_sequence_id || parentSeq.id;
-      // Find max version for this group
       const siblings = sequences.filter(s => s.id === parentId || s.parent_sequence_id === parentId);
       const maxVersion = Math.max(...siblings.map(s => s.version), 0);
       const { data, error } = await supabase
@@ -95,17 +169,6 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
     },
     onSuccess: (data) => { qc.invalidateQueries({ queryKey: ["story-sequences", clientId] }); onSelect(data.id); toast.success(`Version ${data.version} erstellt`); },
     onError: () => toast.error("Fehler beim Erstellen"),
-  });
-
-  const deleteVersion = useMutation({
-    mutationFn: async (seqId: string) => {
-      // Delete slides first, then the sequence
-      await supabase.from("story_slides" as any).delete().eq("sequence_id", seqId);
-      const { error } = await supabase.from("story_sequences" as any).delete().eq("id", seqId);
-      if (error) throw error;
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["story-sequences", clientId] }); toast.success("Version gelöscht"); },
-    onError: () => toast.error("Fehler beim Löschen"),
   });
 
   const convertToStoryAd = useMutation({
@@ -192,33 +255,15 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
                         >
                           <Send className="h-3.5 w-3.5" />
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                              title="Version löschen"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Version V{seq.version} löschen?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Diese Version und alle zugehörigen Slides werden unwiderruflich gelöscht.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => deleteVersion.mutate(seq.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                Löschen
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                          title="Version löschen"
+                          onClick={(e) => { e.stopPropagation(); handleDelete(seq.id, `V${seq.version}`); }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     )}
                   </div>
