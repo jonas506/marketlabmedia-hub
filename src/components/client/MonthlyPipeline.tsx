@@ -363,7 +363,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             <div className="min-h-[280px]">
               {phasePieces.length === 0 ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
-                  <span className="text-4xl block mb-3">{config.phases.find(p => p.key === activePhase)?.emoji}</span>
+                  {(() => {
+                    const phaseEmoji = config.phases.find(p => p.key === activePhase)?.emoji;
+                    const EmptyIcon = phaseEmoji ? icons[phaseEmoji as keyof typeof icons] : null;
+                    return EmptyIcon ? <EmptyIcon className="h-10 w-10 mx-auto mb-3 text-muted-foreground/40" /> : null;
+                  })()}
                   <p className="text-sm text-muted-foreground font-body">Keine Pieces in „{getPhaseLabel(activePhase)}"</p>
                   {canEdit && (
                     <Button variant="ghost" className="mt-3 text-primary gap-1.5" onClick={handleAddPiece}>
