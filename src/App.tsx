@@ -21,10 +21,8 @@ import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
 import ContentBase from "./pages/ContentBase";
 import MarketingDashboard from "./pages/MarketingDashboard";
-import CRMLeads from "./pages/crm/CRMLeads";
+import CRMHome from "./pages/crm/CRMHome";
 import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
-import CRMPipelines from "./pages/crm/CRMPipelines";
-import CRMCampaigns from "./pages/crm/CRMCampaigns";
 
 import ContractTimeline from "./pages/ContractTimeline";
 import ActivityPage from "./pages/ActivityPage";
@@ -102,10 +100,10 @@ const App = () => (
                   <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
                   <Route path="/crew" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/time-tracking" element={<Navigate to="/crew" replace />} />
-                  <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
+                  <Route path="/crm" element={<ProtectedRoute><CRMHome /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
-                  <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />
-                  <Route path="/crm/campaigns" element={<ProtectedRoute><CRMCampaigns /></ProtectedRoute>} />
+                  <Route path="/crm/pipelines" element={<Navigate to="/crm" replace />} />
+                  <Route path="/crm/campaigns" element={<Navigate to="/crm?tab=kampagnen" replace />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
