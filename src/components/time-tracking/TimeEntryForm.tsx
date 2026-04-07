@@ -121,10 +121,21 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
         </Select>
       </div>
 
-      {/* Hours */}
+      {/* Hours + Minutes */}
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">Stunden</label>
-        <Input type="number" min="0.17" max="24" step="0.17" value={hours} onChange={e => setHours(e.target.value)} />
+        <label className="text-xs font-medium text-muted-foreground mb-1 block">Dauer</label>
+        <div className="flex gap-2 items-center">
+          <Input type="number" min="0" max="24" step="1" value={hours} onChange={e => setHours(e.target.value)} className="w-16" />
+          <span className="text-xs text-muted-foreground">h</span>
+          <Select value={minutes} onValueChange={setMinutes}>
+            <SelectTrigger className="w-20"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {["0","10","20","30","40","50"].map(m => (
+                <SelectItem key={m} value={m}>{m} min</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Note */}
