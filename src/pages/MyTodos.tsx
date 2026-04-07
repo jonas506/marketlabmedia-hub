@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { Input } from "@/components/ui/input";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle2, List, Target } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import { TaskCard } from "@/components/tasks";
 import TaskGroupSection from "@/components/tasks/TaskGroupSection";
 import TaskGroupCard from "@/components/tasks/TaskGroupCard";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
+import FocusMode from "@/components/todos/FocusMode";
 
 const MyTodos = () => {
   const { user } = useAuth();
