@@ -2,7 +2,8 @@ import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Plus, Send, Copy } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Plus, Send, Copy, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -96,6 +97,17 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
     onError: () => toast.error("Fehler beim Erstellen"),
   });
 
+  const deleteVersion = useMutation({
+    mutationFn: async (seqId: string) => {
+      // Delete slides first, then the sequence
+      await supabase.from("story_slides" as any).delete().eq("sequence_id", seqId);
+      const { error } = await supabase.from("story_sequences" as any).delete().eq("id", seqId);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["story-sequences", clientId] }); toast.success("Version gelöscht"); },
+    onError: () => toast.error("Fehler beim Löschen"),
+  });
+
   const convertToStoryAd = useMutation({
     mutationFn: async (seq: Sequence) => {
       const { data: slides } = await supabase
@@ -170,15 +182,44 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
                       </div>
                     </button>
                     {canEdit && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-primary"
-                        title="Als Story Ad in Pipeline"
-                        onClick={(e) => { e.stopPropagation(); convertToStoryAd.mutate(seq); }}
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex items-center shrink-0">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                          title="Als Story Ad in Pipeline"
+                          onClick={(e) => { e.stopPropagation(); convertToStoryAd.mutate(seq); }}
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              title="Version löschen"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Version V{seq.version} löschen?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Diese Version und alle zugehörigen Slides werden unwiderruflich gelöscht.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteVersion.mutate(seq.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Löschen
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     )}
                   </div>
                 ))}
