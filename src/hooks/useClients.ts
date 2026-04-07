@@ -48,7 +48,7 @@ export const useClients = () => {
 
       const { data: allPieces } = await supabase
         .from("content_pieces")
-        .select("client_id, phase, type, target_month, target_year")
+        .select("client_id, phase, type, target_month, target_year, scheduled_post_date")
         .in("client_id", clientIds);
 
       const today = new Date().toISOString().split("T")[0];
