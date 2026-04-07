@@ -126,9 +126,27 @@ const SlideCard: React.FC<SlideCardProps> = React.memo(({
                 {canEdit && (
                   <SlideImageUpload clientId={clientId} sequenceId={sequenceId} slideId={slide.id} onUploaded={(url) => onUpdateSlide({ image_url: url })} />
                 )}
-                <a href={slide.image_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] text-white hover:text-primary transition-colors">
+                <button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    try {
+                      const res = await fetch(slide.image_url!);
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `slide-${slide.sort_order + 1}.${blob.type.split("/")[1] || "jpg"}`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    } catch { toast.error("Download fehlgeschlagen"); }
+                  }}
+                  className="inline-flex items-center gap-1 text-[10px] text-white hover:text-primary transition-colors"
+                  title="Herunterladen"
+                >
                   <Download className="h-3 w-3" />
-                </a>
+                </button>
               </div>
             </div>
           ) : canEdit ? (
