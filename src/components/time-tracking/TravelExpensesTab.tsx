@@ -346,27 +346,25 @@ export default function TravelExpensesTab({ isAdmin, profiles, memberFilter }: P
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {e.status === "draft" && (
-                        <>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => submitMutation.mutate(e.id)} title="Einreichen">
-                            <Send className="h-3.5 w-3.5" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Reise löschen?</AlertDialogTitle>
-                                <AlertDialogDescription>Diese Aktion kann nicht rückgängig gemacht werden.</AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteMutation.mutate(e.id)}>Löschen</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => submitMutation.mutate(e.id)} title="Einreichen">
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
                       )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Reise löschen?</AlertDialogTitle>
+                            <AlertDialogDescription>Diese Aktion kann nicht rückgängig gemacht werden.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate(e.id)}>Löschen</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                       {isAdmin && e.status === "submitted" && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600" onClick={() => approveMutation.mutate(e.id)} title="Genehmigen">
                           <Check className="h-3.5 w-3.5" />
