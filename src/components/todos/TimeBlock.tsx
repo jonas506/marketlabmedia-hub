@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Play, Square, Trash2, GripVertical, ChevronDown, ChevronRight } from "lucide-react";
+import { Play, Square, Trash2, GripVertical, ChevronDown, ChevronRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ interface Props {
   clientMap: Record<string, string>;
   isActive: boolean;
   hasActiveBlock: boolean;
+  readonly?: boolean;
   onStart: () => void;
   onStop: () => void;
   onDelete: () => void;
@@ -29,7 +30,7 @@ interface Props {
 }
 
 export default function TimeBlock({
-  block, tasks, clientMap, isActive, hasActiveBlock,
+  block, tasks, clientMap, isActive, hasActiveBlock, readonly,
   onStart, onStop, onDelete, onCompleteTask, onRemoveTask,
   onDragOver, onDrop, onReorder, dragHandleProps,
 }: Props) {
@@ -43,8 +44,8 @@ export default function TimeBlock({
   const isCompleted = !!block.completed_at;
   const [expanded, setExpanded] = useState(true);
   const [remaining, setRemaining] = useState("");
+  const [remainingMs, setRemainingMs] = useState<number>(Infinity);
   const [earlyFinish, setEarlyFinish] = useState<number | null>(null);
-  const dragItemIdx = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isActive || !block.started_at) return;
@@ -53,10 +54,8 @@ export default function TimeBlock({
       const end = start + block.duration_minutes * 60 * 1000;
       const now = Date.now();
       const diff = Math.max(0, end - now);
-      if (diff <= 0) {
-        setRemaining("00:00:00");
-        return;
-      }
+      setRemainingMs(diff);
+      if (diff <= 0) { setRemaining("00:00:00"); return; }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
@@ -67,7 +66,6 @@ export default function TimeBlock({
     return () => clearInterval(interval);
   }, [isActive, block.started_at, block.duration_minutes]);
 
-  // Check if all tasks completed early
   useEffect(() => {
     if (isActive && totalCount > 0 && completedCount === totalCount && !isCompleted) {
       const start = new Date(block.started_at!).getTime();
@@ -80,8 +78,12 @@ export default function TimeBlock({
 
   const dimmed = hasActiveBlock && !isActive && !isCompleted;
 
+  // Timer color
+  const timerColor = isActive
+    ? remainingMs < 120000 ? "text-destructive" : remainingMs < 600000 ? "text-orange-500" : "text-primary"
+    : "text-primary";
+
   const handleInternalDragStart = (e: React.DragEvent, idx: number) => {
-    dragItemIdx.current = idx;
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", `reorder:${idx}`);
   };
@@ -96,19 +98,29 @@ export default function TimeBlock({
     }
   };
 
+  // Active glow style
+  const activeStyle = isActive ? {
+    borderLeftWidth: 6,
+    borderLeftColor: bt.color,
+    boxShadow: `0 0 20px ${bt.color}30`,
+  } : {
+    borderLeftWidth: 4,
+    borderLeftColor: bt.color,
+  };
+
   return (
     <motion.div
       layout
       className={`rounded-xl border bg-card shadow-sm transition-all ${
         isActive ? "ring-2 ring-primary shadow-lg" : ""
       } ${isCompleted ? "opacity-60" : ""} ${dimmed ? "opacity-40" : ""}`}
-      style={{ borderLeftWidth: 4, borderLeftColor: bt.color }}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
+      style={activeStyle}
+      onDragOver={readonly ? undefined : onDragOver}
+      onDrop={readonly ? undefined : onDrop}
     >
       {/* Header */}
       <div className="flex items-center gap-2 p-3">
-        {dragHandleProps && (
+        {!readonly && dragHandleProps && (
           <div {...dragHandleProps} className="cursor-grab text-muted-foreground/40 hover:text-muted-foreground">
             <GripVertical className="h-4 w-4" />
           </div>
@@ -116,6 +128,7 @@ export default function TimeBlock({
         <button onClick={() => setExpanded(!expanded)} className="shrink-0">
           {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </button>
+        {isCompleted && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
         <span className="text-base mr-1">{bt.icon}</span>
         <span className="font-semibold text-sm flex-1">{bt.label}</span>
         <span className="text-xs text-muted-foreground font-mono">
@@ -129,39 +142,36 @@ export default function TimeBlock({
           </Badge>
         )}
         {isActive && (
-          <span className="text-xs font-mono font-bold text-primary animate-pulse">{remaining}</span>
+          <span className={`text-xs font-mono font-bold animate-pulse ${timerColor}`}>{remaining}</span>
         )}
-        {!isActive && !isCompleted && (
+        {!readonly && !isActive && !isCompleted && (
           <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={onStart} disabled={hasActiveBlock}>
             <Play className="h-3 w-3 mr-1" /> Starten
           </Button>
         )}
-        {isActive && (
+        {!readonly && isActive && (
           <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-destructive" onClick={onStop}>
             <Square className="h-3 w-3 mr-1" /> Stop
           </Button>
         )}
-        {!isActive && !isCompleted && (
+        {!readonly && !isActive && !isCompleted && (
           <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={onDelete}>
             <Trash2 className="h-3 w-3" />
           </Button>
         )}
       </div>
 
-      {/* Progress */}
       {totalCount > 0 && <Progress value={progress} className="h-1 mx-3 mb-1" />}
 
-      {/* Early finish message */}
       {earlyFinish && isCompleted && (
         <div className="mx-3 mb-2 text-xs text-center text-primary font-medium">
           Block erledigt! {earlyFinish} Minuten früher fertig 🎉
         </div>
       )}
 
-      {/* Tasks */}
       {expanded && (
         <div className="px-3 pb-3 space-y-1">
-          {blockTasks.length === 0 && (
+          {blockTasks.length === 0 && !readonly && (
             <p className="text-xs text-muted-foreground/50 py-3 text-center">
               Aufgaben hierher ziehen oder [→] im Backlog nutzen
             </p>
@@ -171,20 +181,21 @@ export default function TimeBlock({
             return (
               <div
                 key={task.id}
-                draggable
-                onDragStart={e => handleInternalDragStart(e, idx)}
-                onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={e => handleInternalDrop(e, idx)}
+                draggable={!readonly}
+                onDragStart={readonly ? undefined : e => handleInternalDragStart(e, idx)}
+                onDragOver={readonly ? undefined : e => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={readonly ? undefined : e => handleInternalDrop(e, idx)}
                 className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all ${
                   isFirstUncompleted ? "bg-primary/10 ring-1 ring-primary/30" : ""
                 } ${task.is_completed ? "opacity-40 line-through" : ""}`}
               >
                 <button
                   onClick={() => {
+                    if (readonly) return;
                     onCompleteTask(task);
                     confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
                   }}
-                  disabled={task.is_completed}
+                  disabled={task.is_completed || readonly}
                   className={`h-4 w-4 rounded border shrink-0 flex items-center justify-center transition-colors ${
                     task.is_completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 hover:border-primary"
                   }`}
@@ -197,7 +208,7 @@ export default function TimeBlock({
                     {clientMap[task.client_id]}
                   </span>
                 )}
-                {!task.is_completed && !isCompleted && (
+                {!readonly && !task.is_completed && !isCompleted && (
                   <button onClick={() => onRemoveTask(task.id)} className="text-muted-foreground/30 hover:text-destructive text-xs shrink-0">
                     ✕
                   </button>
