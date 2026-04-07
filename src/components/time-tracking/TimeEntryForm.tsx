@@ -44,9 +44,11 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
       toast.error("Bitte alle Pflichtfelder ausfüllen");
       return;
     }
-    const h = parseFloat(hours);
-    if (isNaN(h) || h <= 0 || h > 24) {
-      toast.error("Stunden müssen zwischen 0.25 und 24 liegen");
+    const h = parseInt(hours) || 0;
+    const m = parseInt(minutes) || 0;
+    const total = h + m / 60;
+    if (total <= 0 || total > 24) {
+      toast.error("Bitte eine gültige Zeit eingeben");
       return;
     }
     setSaving(true);
