@@ -108,17 +108,21 @@ const MyTodos = () => {
 
   const quickAdd = async () => {
     if (!quickTitle.trim() || !user) return;
-    await supabase.from("tasks" as any).insert({
+    const { data } = await supabase.from("tasks" as any).insert({
       title: quickTitle.trim(),
       client_id: clients[0]?.id || "",
       assigned_to: user.id,
       created_by: user.id,
       status: "not_started",
-    } as any);
+    } as any).select("id").single();
     setQuickTitle("");
     qc.invalidateQueries({ queryKey: ["my-todos-page"] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
-    toast.success("Aufgabe erstellt");
+    if (viewMode === "focus" && data) {
+      setLastCreatedTaskId((data as any).id);
+    } else {
+      toast.success("Aufgabe erstellt");
+    }
   };
 
   const totalCount = myTasks.length;
