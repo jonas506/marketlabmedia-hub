@@ -86,6 +86,34 @@ const TaskGroupCard: React.FC<TaskGroupCardProps> = ({ task, clientMap, teamMap,
     qc.invalidateQueries({ queryKey: ["subtasks", task.id] });
   }, [task.id, user?.id, qc]);
 
+  const completeAllSubtasks = useCallback(async () => {
+    const openIds = subtasks.filter(s => !s.is_completed).map(s => s.id);
+    if (openIds.length === 0) return;
+
+    for (const id of openIds) {
+      await supabase.from("tasks" as any).update({
+        is_completed: true,
+        status: "done",
+        completed_at: new Date().toISOString(),
+        completed_by: user?.id,
+      } as any).eq("id", id);
+    }
+
+    await supabase.from("tasks" as any).update({
+      is_completed: true,
+      status: "done",
+      completed_at: new Date().toISOString(),
+      completed_by: user?.id,
+    } as any).eq("id", task.id);
+
+    toast.success("🎉 Alle Aufgaben der Gruppe erledigt!");
+    confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 }, colors: ["#0083F7", "#21089B", "#10B981"] });
+
+    qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
+    qc.invalidateQueries({ queryKey: ["my-tasks"] });
+    qc.invalidateQueries({ queryKey: ["subtasks", task.id] });
+  }, [subtasks, task.id, user?.id, qc]);
+
   const addSubtask = async () => {
     if (!quickTitle.trim()) return;
     await supabase.from("tasks" as any).insert({
