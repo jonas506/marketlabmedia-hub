@@ -29,6 +29,7 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
   const [clientId, setClientId] = useState<string>("__intern__");
   const [activityType, setActivityType] = useState<string>("");
   const [hours, setHours] = useState<string>("1");
+  const [minutes, setMinutes] = useState<string>("0");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
