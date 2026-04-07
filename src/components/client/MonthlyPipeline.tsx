@@ -95,6 +95,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const phasePieces = useMemo(() => {
     let filtered = monthPieces.filter((c) => c.phase === activePhase);
+    // In "Übergeben" only show pieces with a future scheduled_post_date (or no date yet)
+    if (activePhase === "handed_over") {
+      const today = new Date().toISOString().split("T")[0];
+      filtered = filtered.filter((c) => !c.scheduled_post_date || c.scheduled_post_date >= today);
+    }
     if (filterPerson !== "all") filtered = filtered.filter((c) => c.assigned_to === filterPerson);
     return [...filtered].sort((a, b) => {
       const pa = PRIORITY_WEIGHT[a.priority || "normal"] ?? 2;
