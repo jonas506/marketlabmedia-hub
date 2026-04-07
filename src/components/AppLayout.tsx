@@ -34,11 +34,20 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const isClientRoute = location.pathname.startsWith("/client/");
+  const collapsed = isClientRoute && !isMobile;
+
   const initials = profile?.name
     ? profile.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
   const filteredNav = navItems.filter(item => !item.roles || (role && item.roles.includes(role)));
+
+  const isNavActive = (to: string) => {
+    if (to === "/clients") return location.pathname.startsWith("/client/");
+    if (to === "/") return location.pathname === "/";
+    return location.pathname === to || location.pathname.startsWith(to);
+  };
 
   if (isMobile) {
     return (
