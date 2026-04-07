@@ -17,7 +17,7 @@ interface TaskGroupSectionProps {
 }
 
 const TaskGroupSection: React.FC<TaskGroupSectionProps> = ({ groupKey, tasks, defaultOpen = true, clientMap, todayStr, onComplete, onSelect }) => {
-  if (tasks.length === 0) return null;
+  if (tasks.length === 0 && groupKey !== "no_deadline") return null;
   const meta = GROUP_META[groupKey];
   const Icon = meta.icon;
   return (
