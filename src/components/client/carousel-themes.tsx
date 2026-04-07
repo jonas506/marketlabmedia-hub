@@ -11,6 +11,7 @@ export interface BrandColors {
 export interface SlideData {
   id: string;
   text: string;
+  body?: string;
   isCta?: boolean;
 }
 
@@ -183,6 +184,14 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.35, whiteSpace: "pre-wrap" as const,
         }}>{slide.text}</p>
+        {slide.body && (
+          <p style={{
+            fontSize: 14, fontWeight: 400,
+            color: brandColors.textDark, fontFamily: fonts.body,
+            lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
+            marginTop: 12, opacity: 0.7,
+          }}>{slide.body}</p>
+        )}
       </div>
       {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
@@ -294,6 +303,14 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           lineHeight: 1.3, fontStyle: "italic",
           whiteSpace: "pre-wrap" as const,
         }}>{slide.text}</p>
+        {slide.body && (
+          <p style={{
+            fontSize: 14, fontWeight: 400,
+            color: textColor, fontFamily: fonts.body,
+            lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
+            marginTop: 12, opacity: 0.6, fontStyle: "normal",
+          }}>{slide.body}</p>
+        )}
       </div>
       {/* Deko circles */}
       <div style={{ position: "absolute", bottom: 30, right: 30, width: 40, height: 40, borderRadius: "50%", border: `2px solid ${textColor}20` }} />
@@ -349,6 +366,15 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
         textAlign: "center", lineHeight: 1.4,
         whiteSpace: "pre-wrap" as const,
       }}>{slide.text}</p>
+      {slide.body && (
+        <p style={{
+          fontSize: 13, fontWeight: 400,
+          color: brandColors.textDark, fontFamily: fonts.body,
+          textAlign: "center", lineHeight: 1.5,
+          whiteSpace: "pre-wrap" as const,
+          marginTop: 12, opacity: 0.6,
+        }}>{slide.body}</p>
+      )}
       <div style={{ width: 50, height: 2, background: brandColors.accent, borderRadius: 1, marginTop: 28, opacity: 0.6 }} />
       <SlideCounter index={index} total={totalSlides} color={brandColors.textDark} font={fonts.body} />
     </div>
@@ -439,6 +465,14 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.4, whiteSpace: "pre-wrap" as const,
         }}>{slide.text}</p>
+        {slide.body && (
+          <p style={{
+            fontSize: 14, fontWeight: 400,
+            color: brandColors.textLight, fontFamily: fonts.body,
+            lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
+            marginTop: 12, opacity: 0.5,
+          }}>{slide.body}</p>
+        )}
       </div>
       <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
     </div>
@@ -513,6 +547,15 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
         lineHeight: 1.4, textAlign: "center",
         whiteSpace: "pre-wrap" as const,
       }}>{slide.text}</p>
+      {slide.body && (
+        <p style={{
+          fontSize: 14, fontWeight: 400,
+          color: brandColors.textLight, fontFamily: fonts.body,
+          textAlign: "center", lineHeight: 1.5,
+          whiteSpace: "pre-wrap" as const,
+          marginTop: 12, opacity: 0.5,
+        }}>{slide.body}</p>
+      )}
       <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
     </div>
   );
@@ -602,6 +645,14 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.45, whiteSpace: "pre-wrap" as const,
         }}>{slide.text}</p>
+        {slide.body && (
+          <p style={{
+            fontSize: 13, fontWeight: 400,
+            color: brandColors.textDark, fontFamily: fonts.body,
+            lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
+            marginTop: 10, opacity: 0.6,
+          }}>{slide.body}</p>
+        )}
         <div style={{ width: 30, height: 2, background: brandColors.accent, borderRadius: 1, marginTop: 14, opacity: 0.6 }} />
       </div>
       <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
