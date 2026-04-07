@@ -97,6 +97,17 @@ const SequenceList: React.FC<SequenceListProps> = React.memo(({ clientId, canEdi
     onError: () => toast.error("Fehler beim Erstellen"),
   });
 
+  const deleteVersion = useMutation({
+    mutationFn: async (seqId: string) => {
+      // Delete slides first, then the sequence
+      await supabase.from("story_slides" as any).delete().eq("sequence_id", seqId);
+      const { error } = await supabase.from("story_sequences" as any).delete().eq("id", seqId);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["story-sequences", clientId] }); toast.success("Version gelöscht"); },
+    onError: () => toast.error("Fehler beim Löschen"),
+  });
+
   const convertToStoryAd = useMutation({
     mutationFn: async (seq: Sequence) => {
       const { data: slides } = await supabase
