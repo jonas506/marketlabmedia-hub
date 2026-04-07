@@ -32,6 +32,23 @@ const MergedGroupCard: React.FC<MergedGroupCardProps> = ({
 
   const parentIds = parentTasks.map(t => t.id);
 
+  // Always fetch count; fetch full data when expanded
+  const { data: subtaskCount } = useQuery({
+    queryKey: ["merged-subtask-count", ...parentIds],
+    queryFn: async () => {
+      const { count: total } = await supabase
+        .from("tasks" as any)
+        .select("id", { count: "exact", head: true })
+        .in("parent_id", parentIds);
+      const { count: done } = await supabase
+        .from("tasks" as any)
+        .select("id", { count: "exact", head: true })
+        .in("parent_id", parentIds)
+        .eq("is_completed", true);
+      return { total: total ?? 0, done: done ?? 0 };
+    },
+  });
+
   const { data: allSubtasks = [] } = useQuery({
     queryKey: ["merged-subtasks", ...parentIds],
     queryFn: async () => {
@@ -46,8 +63,8 @@ const MergedGroupCard: React.FC<MergedGroupCardProps> = ({
     enabled: expanded,
   });
 
-  const completedCount = allSubtasks.filter(s => s.is_completed).length;
-  const totalCount = allSubtasks.length;
+  const completedCount = expanded ? allSubtasks.filter(s => s.is_completed).length : (subtaskCount?.done ?? 0);
+  const totalCount = expanded ? allSubtasks.length : (subtaskCount?.total ?? 0);
   const progressPct = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const allDone = totalCount > 0 && completedCount === totalCount;
 
@@ -80,6 +97,7 @@ const MergedGroupCard: React.FC<MergedGroupCardProps> = ({
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
     parentIds.forEach(pid => qc.invalidateQueries({ queryKey: ["subtasks", pid] }));
     qc.invalidateQueries({ queryKey: ["merged-subtasks", ...parentIds] });
+    qc.invalidateQueries({ queryKey: ["merged-subtask-count", ...parentIds] });
   }, [allSubtasks, user?.id, qc, parentIds]);
 
   const completeAll = useCallback(async () => {
@@ -101,6 +119,7 @@ const MergedGroupCard: React.FC<MergedGroupCardProps> = ({
     qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
     qc.invalidateQueries({ queryKey: ["merged-subtasks", ...parentIds] });
+    qc.invalidateQueries({ queryKey: ["merged-subtask-count", ...parentIds] });
   }, [allSubtasks, parentTasks, user?.id, qc, parentIds]);
 
   const addSubtask = async () => {
