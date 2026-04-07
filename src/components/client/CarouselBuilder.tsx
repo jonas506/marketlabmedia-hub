@@ -298,6 +298,23 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   // Slide dimensions
   const slideW = 500;
   const slideH = selectedFormat === "4:5" ? 625 : 500;
+
+  // Auto-scale preview to fit container
+  useEffect(() => {
+    const container = previewContainerRef.current;
+    if (!container) return;
+    const calcScale = () => {
+      const rect = container.getBoundingClientRect();
+      const availW = rect.width - 32;
+      const availH = rect.height - 140; // space for nav + buttons
+      const s = Math.min(availW / slideW, availH / slideH, 1);
+      setPreviewScale(Math.max(0.3, s));
+    };
+    calcScale();
+    const ro = new ResizeObserver(calcScale);
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [slideW, slideH, open]);
   const exportScale = 1080 / 500; // ~2.16
 
   // Helper: make all slide wrappers visible for export, restore after
