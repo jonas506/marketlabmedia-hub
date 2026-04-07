@@ -166,36 +166,40 @@ const MyTodos = () => {
             />
           </div>
 
-          <div className="space-y-4">
-            {/* Group tasks */}
-            {groupTasks_.length > 0 && (
-              <div className="space-y-2">
-                {groupTasks_.map(t => (
-                  <TaskGroupCard
-                    key={t.id}
-                    task={t as any}
-                    clientMap={clientMap}
-                    teamMap={teamNameMap}
-                    todayStr={todayStr}
-                    onSelect={selectTask}
-                  />
-                ))}
-              </div>
-            )}
+          {viewMode === "list" ? (
+            <div className="space-y-4">
+              {/* Group tasks */}
+              {groupTasks_.length > 0 && (
+                <div className="space-y-2">
+                  {groupTasks_.map(t => (
+                    <TaskGroupCard
+                      key={t.id}
+                      task={t as any}
+                      clientMap={clientMap}
+                      teamMap={teamNameMap}
+                      todayStr={todayStr}
+                      onSelect={selectTask}
+                    />
+                  ))}
+                </div>
+              )}
 
-            <TaskGroupSection groupKey="overdue" tasks={grouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="today" tasks={grouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="week" tasks={grouped.week} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="later" tasks={grouped.later} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-            <TaskGroupSection groupKey="no_deadline" tasks={grouped.no_deadline} defaultOpen={false} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="overdue" tasks={grouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="today" tasks={grouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="week" tasks={grouped.week} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="later" tasks={grouped.later} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
+              <TaskGroupSection groupKey="no_deadline" tasks={grouped.no_deadline} defaultOpen={false} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
 
-            {totalCount === 0 && (
-              <div className="py-16 text-center">
-                <CheckCircle2 className="h-10 w-10 text-primary/20 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground/50 font-mono">Keine offenen Aufgaben</p>
-              </div>
-            )}
-          </div>
+              {totalCount === 0 && (
+                <div className="py-16 text-center">
+                  <CheckCircle2 className="h-10 w-10 text-primary/20 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground/50 font-mono">Keine offenen Aufgaben</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <FocusMode tasks={myTasks} clientMap={clientMap} todayStr={todayStr} />
+          )}
 
           <TaskDetailSheet task={selectedTask} onClose={closeDetail} team={team} clients={clients} teamMap={teamMap} />
         </motion.div>
