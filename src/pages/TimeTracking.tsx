@@ -56,8 +56,8 @@ export default function TimeTracking() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-primary" />
-            <h1 className="text-xl font-bold">Zeiterfassung</h1>
+            <Users className="h-5 w-5 text-primary" />
+            <h1 className="text-xl font-bold">Crew</h1>
           </div>
         </div>
 
