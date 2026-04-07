@@ -121,8 +121,8 @@ const Tasks = () => {
   };
 
   const myTasks = useMemo(() => allTasks.filter(t => t.assigned_to === user?.id), [allTasks, user?.id]);
-  const myGrouped = useMemo(() => groupTasks(myTasks.filter(t => !isGroupTask(t)), todayStr), [myTasks, todayStr, isGroupTask]);
   const myGroupTasks = useMemo(() => myTasks.filter(t => isGroupTask(t)), [myTasks, isGroupTask]);
+  const myMergedGroups = useMemo(() => mergeByClient(myGroupTasks), [myGroupTasks, mergeByClient]);
 
   // Merge group tasks by client per team member
   const mergeByClient = useCallback((groupTasks: Task[]) => {
