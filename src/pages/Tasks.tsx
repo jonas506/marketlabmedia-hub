@@ -20,6 +20,7 @@ import TaskGroupSection from "@/components/tasks/TaskGroupSection";
 import TeamTaskColumn from "@/components/tasks/TeamTaskColumn";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
 import TaskGroupCard from "@/components/tasks/TaskGroupCard";
+import MergedGroupCard from "@/components/tasks/MergedGroupCard";
 import CompletedTasksView from "@/components/tasks/CompletedTasksView";
 
 const Tasks = () => {
@@ -119,9 +120,25 @@ const Tasks = () => {
     toast.success("Aufgabe erstellt");
   };
 
+  // Merge group tasks by client
+  const mergeByClient = useCallback((gTasks: Task[]) => {
+    const byClient: Record<string, Task[]> = {};
+    gTasks.forEach(t => {
+      const key = t.client_id || "unknown";
+      if (!byClient[key]) byClient[key] = [];
+      byClient[key].push(t);
+    });
+    return Object.entries(byClient).map(([cid, tasks]) => ({
+      clientId: cid,
+      clientName: clientMap[cid] || "Unbekannt",
+      parentTasks: tasks,
+    }));
+  }, [clientMap]);
+
   const myTasks = useMemo(() => allTasks.filter(t => t.assigned_to === user?.id), [allTasks, user?.id]);
   const myGrouped = useMemo(() => groupTasks(myTasks.filter(t => !isGroupTask(t)), todayStr), [myTasks, todayStr, isGroupTask]);
   const myGroupTasks = useMemo(() => myTasks.filter(t => isGroupTask(t)), [myTasks, isGroupTask]);
+  const myMergedGroups = useMemo(() => mergeByClient(myGroupTasks), [myGroupTasks, mergeByClient]);
 
   const teamColumns = useMemo(() => {
     return team.map(member => {
@@ -129,9 +146,10 @@ const Tasks = () => {
       const regularTasks = tasks.filter(t => !isGroupTask(t));
       const groupedTasks = tasks.filter(t => isGroupTask(t));
       const grouped = groupTasks(regularTasks, todayStr);
-      return { member, grouped, groupedTasks };
+      const mergedGroups = mergeByClient(groupedTasks);
+      return { member, grouped, mergedGroups };
     });
-  }, [team, allTasks, todayStr, isGroupTask]);
+  }, [team, allTasks, todayStr, isGroupTask, mergeByClient]);
 
   const unassignedTasks = useMemo(() => allTasks.filter(t => !t.assigned_to), [allTasks]);
   const unassignedGrouped = useMemo(() => groupTasks(unassignedTasks, todayStr), [unassignedTasks, todayStr]);
@@ -185,14 +203,15 @@ const Tasks = () => {
               />
             </div>
 
-            {/* Group tasks */}
-            {myGroupTasks.length > 0 && (
+            {/* Merged group tasks by client */}
+            {myMergedGroups.length > 0 && (
               <div className="space-y-2">
-                {myGroupTasks.map(t => (
-                  <TaskGroupCard
-                    key={t.id}
-                    task={t as any}
-                    clientMap={clientMap}
+                {myMergedGroups.map(mg => (
+                  <MergedGroupCard
+                    key={mg.clientId}
+                    clientId={mg.clientId}
+                    clientName={mg.clientName}
+                    parentTasks={mg.parentTasks as any}
                     teamMap={teamNameMap}
                     todayStr={todayStr}
                     onSelect={selectTask}
@@ -234,14 +253,15 @@ const Tasks = () => {
             </div>
 
             <div className="flex gap-4 overflow-x-auto pb-2 snap-x md:snap-none">
-              {teamColumns.map(({ member, grouped, groupedTasks }) => (
+              {teamColumns.map(({ member, grouped, mergedGroups }) => (
                 <div key={member.user_id} className="min-w-[280px] md:min-w-0 md:flex-1 snap-start space-y-2">
-                  {/* Group tasks for this member */}
-                  {groupedTasks.map(t => (
-                    <TaskGroupCard
-                      key={t.id}
-                      task={t as any}
-                      clientMap={clientMap}
+                  {/* Merged group tasks by client */}
+                  {mergedGroups.map(mg => (
+                    <MergedGroupCard
+                      key={mg.clientId}
+                      clientId={mg.clientId}
+                      clientName={mg.clientName}
+                      parentTasks={mg.parentTasks as any}
                       teamMap={teamNameMap}
                       todayStr={todayStr}
                       onSelect={selectTask}
