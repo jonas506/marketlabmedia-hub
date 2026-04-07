@@ -97,6 +97,7 @@ const MergedGroupCard: React.FC<MergedGroupCardProps> = ({
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
     parentIds.forEach(pid => qc.invalidateQueries({ queryKey: ["subtasks", pid] }));
     qc.invalidateQueries({ queryKey: ["merged-subtasks", ...parentIds] });
+    qc.invalidateQueries({ queryKey: ["merged-subtask-count", ...parentIds] });
   }, [allSubtasks, user?.id, qc, parentIds]);
 
   const completeAll = useCallback(async () => {
