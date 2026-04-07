@@ -537,7 +537,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
           </div>
 
           {/* Right: Editor */}
-          <div className="w-[340px] border-l border-border flex flex-col bg-background">
+          <ScrollArea className="w-[340px] border-l border-border bg-background">
             {/* Profile settings */}
             <div className="p-4 border-b border-border space-y-3">
               <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Profil & Überschrift</label>
