@@ -101,7 +101,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <nav className="flex-1 p-2 space-y-0.5">
                 {filteredNav.map(({ to, label, icon: Icon }) => {
                   const active = isNavActive(to);
-                  const linkTo = to === "/clients" ? "/" : to;
+                  const linkTo = to;
                   return (
                     <Link
                       key={to}
@@ -185,7 +185,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <nav className={`flex-1 ${collapsed ? "px-1.5" : "px-3"} py-2 space-y-0.5 overflow-y-auto`}>
           {filteredNav.map(({ to, label, icon: Icon }) => {
             const active = isNavActive(to);
-            const linkTo = to === "/clients" ? "/" : to;
+            const linkTo = to;
             return (
               <Link
                 key={to}
