@@ -40,7 +40,7 @@ export default function FocusBacklog({ tasks, blocks, clientMap, todayStr, onAss
       <h3 className="text-sm font-semibold text-muted-foreground">Backlog</h3>
       {groupKeys.map(key => {
         const items = grouped[key];
-        if (!items.length) return null;
+        if (!items.length && key !== "no_deadline") return null;
         const meta = GROUP_META[key];
         return (
           <div key={key}>
