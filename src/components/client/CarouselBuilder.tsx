@@ -125,6 +125,8 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
   const [customHeading, setCustomHeading] = useState("");
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(1);
 
   // Branding state
   const [brandColors, setBrandColors] = useState<BrandColors>(DEFAULT_BRAND);
