@@ -63,7 +63,7 @@ const TaskGroupCard: React.FC<TaskGroupCardProps> = ({ task, clientMap, teamMap,
       .eq("parent_id", task.id)
       .eq("is_completed", false);
 
-    if (!remaining || remaining.length <= 1) {
+    if (!remaining || remaining.length === 0) {
       // Complete parent too
       await supabase.from("tasks" as any).update({
         is_completed: true,
