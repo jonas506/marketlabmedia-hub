@@ -56,7 +56,7 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
       user_id: user.id,
       client_id: clientId === "__intern__" ? null : clientId,
       date: format(date, "yyyy-MM-dd"),
-      hours: h,
+      hours: total,
       activity_type: activityType,
       note: note.trim() || null,
     });
