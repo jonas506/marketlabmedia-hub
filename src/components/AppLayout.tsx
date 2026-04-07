@@ -99,11 +99,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
               <nav className="flex-1 p-2 space-y-0.5">
                 {filteredNav.map(({ to, label, icon: Icon }) => {
-                  const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
+                  const active = isNavActive(to);
+                  const linkTo = to === "/clients" ? "/" : to;
                   return (
                     <Link
                       key={to}
-                      to={to}
+                      to={linkTo}
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                         active
