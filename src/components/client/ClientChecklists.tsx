@@ -280,6 +280,30 @@ const ClientChecklists = ({ clientId, canEdit }: Props) => {
     },
   });
 
+  const completeAll = useMutation({
+    mutationFn: async (checklistId: string) => {
+      const clSteps = stepsMap[checklistId] || [];
+      const incompleteIds = clSteps.filter(s => !s.is_completed).map(s => s.id);
+      if (incompleteIds.length === 0) return;
+      const { error } = await supabase
+        .from("checklist_steps")
+        .update({ is_completed: true, completed_at: new Date().toISOString() })
+        .in("id", incompleteIds);
+      if (error) throw error;
+      await supabase.from("checklists").update({ status: "completed" }).eq("id", checklistId);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["checklists", clientId] });
+      qc.invalidateQueries({ queryKey: ["checklist-steps", clientId] });
+      qc.invalidateQueries({ queryKey: ["my-checklist-steps"] });
+      qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-progress"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-overview"] });
+      toast.success("Alle Schritte erledigt ✓");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const toggleExpanded = (id: string) => {
     setExpandedChecklists((prev) => {
       const next = new Set(prev);
