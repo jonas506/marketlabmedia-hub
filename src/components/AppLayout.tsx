@@ -15,6 +15,7 @@ import GlobalSearch from "@/components/GlobalSearch";
 // roles: which roles can see this nav item (undefined = all)
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/clients", label: "Kunden", icon: Users },
   { to: "/my-todos", label: "Meine To-Dos", icon: ListTodo },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
   { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
@@ -33,11 +34,20 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const isClientRoute = location.pathname.startsWith("/client/");
+  const collapsed = isClientRoute && !isMobile;
+
   const initials = profile?.name
     ? profile.name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
   const filteredNav = navItems.filter(item => !item.roles || (role && item.roles.includes(role)));
+
+  const isNavActive = (to: string) => {
+    if (to === "/clients") return location.pathname.startsWith("/client/");
+    if (to === "/") return location.pathname === "/";
+    return location.pathname === to || location.pathname.startsWith(to);
+  };
 
   if (isMobile) {
     return (
@@ -89,11 +99,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
               <nav className="flex-1 p-2 space-y-0.5">
                 {filteredNav.map(({ to, label, icon: Icon }) => {
-                  const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
+                  const active = isNavActive(to);
+                  const linkTo = to === "/clients" ? "/" : to;
                   return (
                     <Link
                       key={to}
-                      to={to}
+                      to={linkTo}
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                         active
@@ -130,69 +141,89 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     );
   }
 
+  const sidebarWidth = collapsed ? "w-[60px]" : "w-[220px]";
+  const mainMargin = collapsed ? "ml-[60px]" : "ml-[220px]";
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
-      <aside className="fixed left-0 top-0 z-40 flex h-screen w-[220px] flex-col bg-sidebar border-r border-sidebar-border">
+      <aside className={`fixed left-0 top-0 z-40 flex h-screen ${sidebarWidth} flex-col bg-sidebar border-r border-sidebar-border transition-all duration-200`}>
         {/* Logo & brand */}
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-sidebar-border">
+        <Link to="/" className="flex items-center gap-3 px-3 h-16 border-b border-sidebar-border justify-center">
           <div className="flex items-center justify-center h-8 w-8 rounded-lg overflow-hidden flex-shrink-0">
             <img src={marketlabLogo} alt="Marketlab" className="h-8 w-8 object-cover" />
           </div>
-          <span className="font-display text-sm font-semibold text-sidebar-foreground tracking-tight">Marketlab</span>
-        </div>
+          {!collapsed && <span className="font-display text-sm font-semibold text-sidebar-foreground tracking-tight">Marketlab</span>}
+        </Link>
 
         {/* Search */}
-        <div className="px-3 pt-4 pb-2">
-          <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-            className="flex items-center gap-2.5 w-full h-9 px-3 rounded-lg bg-surface-hover/50 text-sidebar-foreground/40 hover:text-sidebar-foreground/70 hover:bg-surface-hover transition-all text-xs"
-          >
-            <Search className="h-3.5 w-3.5" />
-            <span>Suchen…</span>
-            <kbd className="ml-auto text-[10px] font-mono bg-sidebar-border/50 px-1.5 py-0.5 rounded">⌘K</kbd>
-          </button>
-        </div>
+        {!collapsed ? (
+          <div className="px-3 pt-4 pb-2">
+            <button
+              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+              className="flex items-center gap-2.5 w-full h-9 px-3 rounded-lg bg-surface-hover/50 text-sidebar-foreground/40 hover:text-sidebar-foreground/70 hover:bg-surface-hover transition-all text-xs"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span>Suchen…</span>
+              <kbd className="ml-auto text-[10px] font-mono bg-sidebar-border/50 px-1.5 py-0.5 rounded">⌘K</kbd>
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-center pt-4 pb-2">
+            <button
+              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+              className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/70 hover:bg-surface-hover transition-all"
+              title="Suchen (⌘K)"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
+        <nav className={`flex-1 ${collapsed ? "px-1.5" : "px-3"} py-2 space-y-0.5 overflow-y-auto`}>
           {filteredNav.map(({ to, label, icon: Icon }) => {
-            const active = location.pathname === to || (to !== "/" && location.pathname.startsWith(to));
+            const active = isNavActive(to);
+            const linkTo = to === "/clients" ? "/" : to;
             return (
               <Link
                 key={to}
-                to={to}
-                className={`relative flex items-center gap-3 h-9 px-3 rounded-lg text-[13px] font-medium transition-all duration-150 ${
+                to={linkTo}
+                title={collapsed ? label : undefined}
+                className={`relative flex items-center ${collapsed ? "justify-center" : "gap-3"} h-9 ${collapsed ? "px-0" : "px-3"} rounded-lg text-[13px] font-medium transition-all duration-150 ${
                   active
                     ? "bg-primary/12 text-primary font-semibold"
                     : "text-sidebar-foreground/60 hover:bg-surface-hover hover:text-sidebar-foreground"
                 }`}
               >
-                {active && (
+                {active && !collapsed && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
                 )}
                 <Icon className="h-4 w-4 flex-shrink-0" />
-                <span>{label}</span>
+                {!collapsed && <span>{label}</span>}
               </Link>
             );
           })}
         </nav>
 
         {/* Bottom section */}
-        <div className="px-3 py-3 border-t border-sidebar-border space-y-1">
-          <div className="flex items-center gap-2 px-3 py-2">
+        <div className={`${collapsed ? "px-1.5" : "px-3"} py-3 border-t border-sidebar-border space-y-1`}>
+          <div className={`flex items-center ${collapsed ? "justify-center" : "gap-2 px-3"} py-2`}>
             <div
               className="flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary text-[10px] font-bold text-white flex-shrink-0"
             >
               {initials}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium text-sidebar-foreground truncate">{profile?.name}</p>
-              <p className="text-[10px] text-sidebar-foreground/40">{role === "admin" ? "Admin" : role === "head_of_content" ? "Head of Content" : "Mitglied"}</p>
-            </div>
-            <NotificationBell />
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium text-sidebar-foreground truncate">{profile?.name}</p>
+                <p className="text-[10px] text-sidebar-foreground/40">{role === "admin" ? "Admin" : role === "head_of_content" ? "Head of Content" : "Mitglied"}</p>
+              </div>
+            )}
+            {!collapsed && <NotificationBell />}
           </div>
-          <div className="flex items-center gap-1 px-2">
+          <div className={`flex items-center ${collapsed ? "flex-col" : ""} gap-1 ${collapsed ? "" : "px-2"} justify-center`}>
+            {collapsed && <NotificationBell />}
             <button
               onClick={toggleTheme}
               className="flex items-center justify-center h-8 w-8 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/70 hover:bg-surface-hover transition-all"
@@ -210,7 +241,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </div>
       </aside>
-      <main className="ml-[220px] flex-1 p-6">
+      <main className={`${mainMargin} flex-1 p-6 transition-all duration-200`}>
         {children}
       </main>
       <QuickAddTask />
