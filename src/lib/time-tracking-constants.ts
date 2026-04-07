@@ -8,6 +8,7 @@ export const ACTIVITY_TYPES = [
   { value: 'meeting', label: 'Meeting' },
   { value: 'research', label: 'Research' },
   { value: 'content_creation', label: 'Contenterstellung (Slides)' },
+  { value: 'reporting', label: 'Reporting' },
   { value: 'other', label: 'Sonstige' },
 ] as const;
 
