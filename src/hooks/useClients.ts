@@ -48,7 +48,7 @@ export const useClients = () => {
 
       const { data: allPieces } = await supabase
         .from("content_pieces")
-        .select("client_id, phase, type, target_month, target_year")
+        .select("client_id, phase, type, target_month, target_year, scheduled_post_date")
         .in("client_id", clientIds);
 
       const today = new Date().toISOString().split("T")[0];
@@ -73,7 +73,7 @@ export const useClients = () => {
         const pieces = allPieces?.filter((c) => c.client_id === client.id) ?? [];
         
         const inPipeline = pieces.filter((c) => c.phase !== "handed_over" && c.phase !== "approved").length;
-        const handedOver = pieces.filter((c) => c.phase === "handed_over").length;
+        const handedOver = pieces.filter((c) => c.phase === "handed_over" && (c as any).scheduled_post_date && (c as any).scheduled_post_date >= today).length;
 
         const handedOverThisMonth = pieces.filter(
           (c) => (c.phase === "approved" || c.phase === "handed_over") && Number(c.target_month) === month && Number(c.target_year) === year
