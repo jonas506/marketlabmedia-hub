@@ -925,10 +925,12 @@ export type Database = {
       }
       crm_activities: {
         Row: {
+          ai_extracted: boolean | null
           body: string | null
           contact_id: string | null
           created_at: string
           created_by: string
+          file_urls: string[] | null
           id: string
           lead_id: string
           metadata: Json | null
@@ -936,10 +938,12 @@ export type Database = {
           type: Database["public"]["Enums"]["crm_activity_type"]
         }
         Insert: {
+          ai_extracted?: boolean | null
           body?: string | null
           contact_id?: string | null
           created_at?: string
           created_by: string
+          file_urls?: string[] | null
           id?: string
           lead_id: string
           metadata?: Json | null
@@ -947,10 +951,12 @@ export type Database = {
           type: Database["public"]["Enums"]["crm_activity_type"]
         }
         Update: {
+          ai_extracted?: boolean | null
           body?: string | null
           contact_id?: string | null
           created_at?: string
           created_by?: string
+          file_urls?: string[] | null
           id?: string
           lead_id?: string
           metadata?: Json | null
@@ -1234,46 +1240,70 @@ export type Database = {
       }
       crm_leads: {
         Row: {
+          ai_summary: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
           created_at: string
           created_by: string
+          deal_value: number | null
           description: string | null
           id: string
+          instagram_handle: string | null
+          last_activity_at: string | null
+          linkedin_url: string | null
           name: string
+          next_step: string | null
+          next_step_date: string | null
           notes: string | null
           source: string | null
+          stage: string
           status_id: string | null
           updated_at: string
           website: string | null
         }
         Insert: {
+          ai_summary?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by: string
+          deal_value?: number | null
           description?: string | null
           id?: string
+          instagram_handle?: string | null
+          last_activity_at?: string | null
+          linkedin_url?: string | null
           name: string
+          next_step?: string | null
+          next_step_date?: string | null
           notes?: string | null
           source?: string | null
+          stage?: string
           status_id?: string | null
           updated_at?: string
           website?: string | null
         }
         Update: {
+          ai_summary?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by?: string
+          deal_value?: number | null
           description?: string | null
           id?: string
+          instagram_handle?: string | null
+          last_activity_at?: string | null
+          linkedin_url?: string | null
           name?: string
+          next_step?: string | null
+          next_step_date?: string | null
           notes?: string | null
           source?: string | null
+          stage?: string
           status_id?: string | null
           updated_at?: string
           website?: string | null
