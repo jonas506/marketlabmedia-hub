@@ -172,7 +172,7 @@ export default function CRMLeadDetail() {
 
   const saveField = async (field: string, value: any) => {
     if (!id) return;
-    await supabase.from("crm_leads").update({ [field]: value }).eq("id", id);
+    await supabase.from("crm_leads").update({ [field]: value } as any).eq("id", id);
     setEditingField(null);
   };
 

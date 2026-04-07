@@ -230,7 +230,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   }, [bulkTitles, bulkAddPieces]);
 
   const updatePiece = useCallback(async (pieceId: string, updates: Record<string, any>) => {
-    await supabase.from("content_pieces").update(updates).eq("id", pieceId);
+    await supabase.from("content_pieces").update(updates as any).eq("id", pieceId);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
   }, [qc, clientId]);
 
