@@ -396,6 +396,20 @@ const ClientChecklists = ({ clientId, canEdit }: Props) => {
                 {/* Expanded steps */}
                 {isExpanded && (
                   <div className="border-t border-border/20 bg-background/30">
+                    {canEdit && !isCompleted && clSteps.some(s => !s.is_completed) && (
+                      <div className="px-4 py-2 border-b border-border/10 flex justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                          onClick={(e) => { e.stopPropagation(); completeAll.mutate(cl.id); }}
+                          disabled={completeAll.isPending}
+                        >
+                          <ClipboardCheck className="h-3 w-3 mr-1.5" />
+                          Alle erledigen
+                        </Button>
+                      </div>
+                    )}
                     {clSteps.map((step) => (
                       <div
                         key={step.id}
