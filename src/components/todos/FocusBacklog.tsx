@@ -51,7 +51,7 @@ export default function FocusBacklog({ tasks, blocks, clientMap, todayStr, onAss
                   key={task.id}
                   draggable
                   onDragStart={e => handleDragStart(e, task.id)}
-                  className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50 cursor-grab group"
+                  className="flex items-center gap-1.5 rounded-lg px-2 py-2.5 sm:py-1.5 text-sm hover:bg-muted/50 cursor-grab group"
                 >
                   <span className="flex-1 truncate">{task.title}</span>
                   {task.client_id && clientMap[task.client_id] && (
@@ -62,15 +62,15 @@ export default function FocusBacklog({ tasks, blocks, clientMap, todayStr, onAss
                   {activeBlocks.length > 0 && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground hover:text-primary transition-opacity shrink-0 px-1">
+                        <button className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-sm sm:text-xs text-muted-foreground hover:text-primary transition-opacity shrink-0 px-2 py-1 min-h-[32px] min-w-[32px] flex items-center justify-center">
                           →
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-[140px]">
+                      <DropdownMenuContent align="end" className="min-w-[160px]">
                         {activeBlocks.map(b => {
                           const bt = BLOCK_TYPES.find(t => t.value === b.type) || BLOCK_TYPES[0];
                           return (
-                            <DropdownMenuItem key={b.id} onClick={() => onAssignToBlock(task.id, b.id)}>
+                            <DropdownMenuItem key={b.id} onClick={() => onAssignToBlock(task.id, b.id)} className="py-2.5 sm:py-1.5">
                               {bt.icon} {bt.label}
                             </DropdownMenuItem>
                           );
