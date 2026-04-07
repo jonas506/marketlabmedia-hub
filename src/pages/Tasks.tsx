@@ -20,6 +20,7 @@ import TaskGroupSection from "@/components/tasks/TaskGroupSection";
 import TeamTaskColumn from "@/components/tasks/TeamTaskColumn";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
 import TaskGroupCard from "@/components/tasks/TaskGroupCard";
+import MergedGroupCard from "@/components/tasks/MergedGroupCard";
 import CompletedTasksView from "@/components/tasks/CompletedTasksView";
 
 const Tasks = () => {
