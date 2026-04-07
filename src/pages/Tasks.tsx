@@ -251,14 +251,15 @@ const Tasks = () => {
             </div>
 
             <div className="flex gap-4 overflow-x-auto pb-2 snap-x md:snap-none">
-              {teamColumns.map(({ member, grouped, groupedTasks }) => (
+              {teamColumns.map(({ member, grouped, mergedGroups }) => (
                 <div key={member.user_id} className="min-w-[280px] md:min-w-0 md:flex-1 snap-start space-y-2">
-                  {/* Group tasks for this member */}
-                  {groupedTasks.map(t => (
-                    <TaskGroupCard
-                      key={t.id}
-                      task={t as any}
-                      clientMap={clientMap}
+                  {/* Merged group tasks by client */}
+                  {mergedGroups.map(mg => (
+                    <MergedGroupCard
+                      key={mg.clientId}
+                      clientId={mg.clientId}
+                      clientName={mg.clientName}
+                      parentTasks={mg.parentTasks as any}
                       teamMap={teamNameMap}
                       todayStr={todayStr}
                       onSelect={selectTask}
