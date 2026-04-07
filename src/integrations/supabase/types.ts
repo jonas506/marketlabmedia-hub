@@ -2480,6 +2480,47 @@ export type Database = {
           },
         ]
       }
+      time_entries: {
+        Row: {
+          activity_type: string
+          client_id: string | null
+          created_at: string
+          date: string
+          hours: number
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          client_id?: string | null
+          created_at?: string
+          date: string
+          hours: number
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          client_id?: string | null
+          created_at?: string
+          date?: string
+          hours?: number
+          id?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -2494,6 +2535,72 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vacation_budgets: {
+        Row: {
+          carry_over_days: number
+          id: string
+          total_days: number
+          user_id: string
+          year: number
+        }
+        Insert: {
+          carry_over_days?: number
+          id?: string
+          total_days: number
+          user_id: string
+          year: number
+        }
+        Update: {
+          carry_over_days?: number
+          id?: string
+          total_days?: number
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      vacation_requests: {
+        Row: {
+          created_at: string
+          days: number
+          end_date: string
+          id: string
+          note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days: number
+          end_date: string
+          id?: string
+          note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          status?: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          end_date?: string
+          id?: string
+          note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          status?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
