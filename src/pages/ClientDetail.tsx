@@ -18,16 +18,36 @@ import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
 import StorySequences from "@/components/client/StorySequences";
 import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
+import ClientDashboard from "@/components/client/ClientDashboard";
 import OnboardingBanner from "@/components/OnboardingBanner";
 
-
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, Link as LinkIcon, Copy, Check, ClipboardList, TrendingUp, Globe, FileText, Sparkles, Presentation, Upload, Loader2, Clock, ExternalLink, Smartphone, CalendarDays } from "lucide-react";
+import {
+  ArrowLeft, Globe, FileText, Copy, Check, ExternalLink,
+  Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
+  CalendarDays, Smartphone, ClipboardList, Presentation, Sparkles,
+  TrendingUp, Clock, Info, Menu,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
+
+const MODULE_ITEMS = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "pipeline", label: "Pipeline", icon: Clapperboard },
+  { key: "tasks", label: "Aufgaben", icon: ListChecks },
+  { key: "stories", label: "Stories", icon: Smartphone },
+  { key: "shootdays", label: "Drehtage", icon: CalendarDays },
+  { key: "checklists", label: "Checklisten", icon: ClipboardList },
+  { key: "strategy", label: "Strategie", icon: Presentation },
+  { key: "inspo", label: "Inspirationen", icon: Sparkles },
+  { key: "marketing", label: "Marketing", icon: TrendingUp },
+  { key: "landing", label: "Landing Pages", icon: Globe },
+  { key: "activity", label: "Verlauf", icon: Clock },
+  { key: "info", label: "Info", icon: Info },
+];
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +56,8 @@ const ClientDetail = () => {
   const now = new Date();
   const [copied, setCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [activeModule, setActiveModule] = useState("dashboard");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const canEdit = role === "admin" || role === "head_of_content" || role === "cutter";
@@ -124,6 +146,11 @@ const ClientDetail = () => {
     setSearchParams(next, { replace: true });
   }, [focusPieceId, searchParams, setSearchParams]);
 
+  const handleNavigate = useCallback((module: string) => {
+    setActiveModule(module);
+    setMobileNavOpen(false);
+  }, []);
+
   if (isLoading || !client) {
     return (
       <AppLayout>
@@ -134,73 +161,158 @@ const ClientDetail = () => {
     );
   }
 
+  const renderModule = () => {
+    switch (activeModule) {
+      case "dashboard":
+        return (
+          <ErrorBoundary level="section">
+            <ClientDashboard client={client} contentPieces={contentPieces ?? []} canEdit={canEdit} onNavigate={handleNavigate} />
+          </ErrorBoundary>
+        );
+      case "pipeline":
+        return (
+          <ErrorBoundary level="section">
+            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
+          </ErrorBoundary>
+        );
+      case "tasks":
+        return (
+          <ErrorBoundary level="section">
+            <TaskList clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "stories":
+        return (
+          <ErrorBoundary level="section">
+            <StorySequences clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "shootdays":
+        return (
+          <ErrorBoundary level="section">
+            <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "checklists":
+        return (
+          <ErrorBoundary level="section">
+            <ClientChecklists clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "strategy":
+        return (
+          <ErrorBoundary level="section">
+            <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "inspo":
+        return (
+          <ErrorBoundary level="section">
+            <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "marketing":
+        return (
+          <ErrorBoundary level="section">
+            <MarketingTracking clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "landing":
+        return (
+          <ErrorBoundary level="section">
+            <LandingPagesList clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "activity":
+        return (
+          <ErrorBoundary level="section">
+            <ClientActivityTimeline clientId={client.id} />
+          </ErrorBoundary>
+        );
+      case "info":
+        return (
+          <ErrorBoundary level="section">
+            <ClientInfoPanel client={client} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "documents":
+        return (
+          <ErrorBoundary level="section">
+            <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
+          </ErrorBoundary>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <AppLayout>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="max-w-[1200px] mx-auto">
-        {/* Top bar: Back + Approval link */}
-        <div className="flex items-center justify-between mb-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
           <div className="flex items-center gap-3">
-            <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors group">
-              <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <Link to="/" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-4 w-4" />
             </Link>
             {client.logo_url ? (
-              <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
+              <img src={client.logo_url} alt={client.name} className="h-7 w-7 rounded-lg object-contain bg-white p-0.5 ring-1 ring-border" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15 text-xs font-bold text-primary">
                 {client.name.charAt(0)}
               </div>
             )}
-            <h1 className="text-lg font-semibold truncate">{client.name}</h1>
+            <h1 className="text-sm font-semibold truncate">{client.name}</h1>
+            {/* Mobile nav toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden h-7 w-7 p-0 text-muted-foreground"
+              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
           </div>
-           <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             {client.website_url && (
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground" asChild>
                 <a href={client.website_url} target="_blank" rel="noopener noreferrer">
                   <Globe className="h-3 w-3" />
-                  Website
+                  <span className="hidden sm:inline">Website</span>
                 </a>
               </Button>
             )}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground">
-                  <FileText className="h-3 w-3" />
-                  Dokumente
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
+              onClick={() => handleNavigate("documents")}
+            >
+              <FileText className="h-3 w-3" />
+              <span className="hidden sm:inline">Dokumente</span>
+            </Button>
+            {canEdit && (
+              <>
+                <input
+                  ref={pdfInputRef}
+                  type="file"
+                  accept=".pdf"
+                  multiple
+                  className="hidden"
+                  onChange={handlePdfUpload}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                  disabled={uploading}
+                  onClick={() => pdfInputRef.current?.click()}
+                  title="PDF hochladen"
+                >
+                  {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
                 </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-               <SheetHeader>
-                  <SheetTitle className="flex items-center justify-between pr-4">
-                    Dokumente
-                    {canEdit && (
-                      <>
-                        <input
-                          ref={pdfInputRef}
-                          type="file"
-                          accept=".pdf"
-                          multiple
-                          className="hidden"
-                          onChange={handlePdfUpload}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-xs h-7"
-                          disabled={uploading}
-                          onClick={() => pdfInputRef.current?.click()}
-                        >
-                          {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
-                          PDF hochladen
-                        </Button>
-                      </>
-                    )}
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="mt-4">
-                  <ClientDocuments clientId={client.id} canEdit={canEdit} websiteUrl={client.website_url} />
-                </div>
-              </SheetContent>
-            </Sheet>
+              </>
+            )}
             {canEdit && (client as any).approval_token && (
               <div className="flex items-center gap-1">
                 <Button
@@ -213,12 +325,12 @@ const ClientDetail = () => {
                   }}
                 >
                   <ExternalLink className="h-3 w-3" />
-                  Freigabe öffnen
+                  <span className="hidden sm:inline">Freigabe</span>
                 </Button>
                 <Button
                   variant={copied ? "default" : "ghost"}
                   size="sm"
-                  className={`h-7 w-7 p-0 transition-all ${copied ? "bg-[hsl(var(--runway-green))] text-white hover:bg-[hsl(var(--runway-green))]/90" : ""}`}
+                  className={cn("h-7 w-7 p-0 transition-all", copied && "bg-primary text-primary-foreground")}
                   onClick={() => {
                     const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
                     navigator.clipboard.writeText(url);
@@ -233,89 +345,71 @@ const ClientDetail = () => {
           </div>
         </div>
 
-        {/* Client Info Panel – directly visible */}
-        <div className="mt-4">
-          <ClientInfoPanel client={client} canEdit={canEdit} />
-        </div>
-
         {/* Onboarding Banner */}
         <OnboardingBanner clientId={client.id} />
 
-        {/* Content Pipeline */}
-        <div className="mt-8 mb-5">
-          <h2 className="text-sm font-semibold">Content Pipeline</h2>
+        {/* Main layout: Sidebar + Content */}
+        <div className="flex min-h-[calc(100vh-120px)]">
+          {/* Module Sidebar - desktop */}
+          <nav className="hidden lg:flex flex-col w-[200px] shrink-0 border-r border-border bg-card/30 py-2">
+            {MODULE_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeModule === item.key;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => handleNavigate(item.key)}
+                  className={cn(
+                    "flex items-center gap-2.5 px-4 py-2 text-xs transition-colors text-left",
+                    isActive
+                      ? "text-primary bg-primary/8 border-r-2 border-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Module Sidebar - mobile (collapsible) */}
+          {mobileNavOpen && (
+            <motion.nav
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="lg:hidden absolute left-0 right-0 z-30 bg-card border-b border-border shadow-lg"
+            >
+              <div className="grid grid-cols-3 gap-1 p-2">
+                {MODULE_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeModule === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => handleNavigate(item.key)}
+                      className={cn(
+                        "flex flex-col items-center gap-1 rounded-lg py-2.5 px-1 text-[10px] transition-colors",
+                        isActive
+                          ? "text-primary bg-primary/10 font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.nav>
+          )}
+
+          {/* Content area */}
+          <main className="flex-1 min-w-0 p-4 lg:p-6">
+            {renderModule()}
+          </main>
         </div>
-
-        <ErrorBoundary level="section">
-          <div className="space-y-5">
-            <KontingentTracker client={client} contentPieces={contentPieces ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
-            <TaskList clientId={client.id} canEdit={canEdit} />
-            <MonthlyPipeline clientId={client.id} contentPieces={contentPieces ?? []} canEdit={canEdit} focusPieceId={focusPieceId} onFocusPieceHandled={clearFocusedPiece} />
-          </div>
-        </ErrorBoundary>
-
-        {/* Tabbed secondary sections */}
-        <Tabs defaultValue="stories" className="mt-8">
-          <TabsList className="bg-transparent border-b border-border rounded-none h-auto p-0 gap-0 flex flex-wrap w-full justify-start">
-            <TabsTrigger value="stories" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <Smartphone className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Stories</span>
-            </TabsTrigger>
-            <TabsTrigger value="shootdays" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <CalendarDays className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Drehtage</span>
-            </TabsTrigger>
-            <TabsTrigger value="checklists" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <ClipboardList className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Checklisten</span>
-            </TabsTrigger>
-            <TabsTrigger value="strategy" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <Presentation className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Strategie</span>
-            </TabsTrigger>
-            <TabsTrigger value="inspo" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Inspirationen</span>
-            </TabsTrigger>
-            <TabsTrigger value="marketing" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Marketing</span>
-            </TabsTrigger>
-            <TabsTrigger value="landing" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <Globe className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Landing Pages</span>
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="text-[13px] h-auto gap-1.5 px-4 pb-2.5 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Verlauf</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="stories" className="mt-4">
-            <ErrorBoundary level="section"><StorySequences clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
-          </TabsContent>
-          <TabsContent value="shootdays" className="mt-4">
-            <ErrorBoundary level="section"><MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} /></ErrorBoundary>
-          </TabsContent>
-          <TabsContent value="checklists" className="mt-4">
-            <ErrorBoundary level="section"><ClientChecklists clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
-          </TabsContent>
-          <TabsContent value="inspo" className="mt-4">
-            <ErrorBoundary level="section"><InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} /></ErrorBoundary>
-          </TabsContent>
-          <TabsContent value="marketing" className="mt-4">
-            <ErrorBoundary level="section"><MarketingTracking clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
-          </TabsContent>
-          <TabsContent value="landing" className="mt-4">
-            <ErrorBoundary level="section"><LandingPagesList clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
-          </TabsContent>
-          <TabsContent value="strategy" className="mt-4">
-            <ErrorBoundary level="section"><ClientStrategyBoards clientId={client.id} canEdit={canEdit} /></ErrorBoundary>
-          </TabsContent>
-          <TabsContent value="activity" className="mt-4">
-            <ErrorBoundary level="section"><ClientActivityTimeline clientId={client.id} /></ErrorBoundary>
-          </TabsContent>
-        </Tabs>
       </motion.div>
     </AppLayout>
   );
