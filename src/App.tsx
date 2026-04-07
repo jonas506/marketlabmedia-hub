@@ -33,6 +33,7 @@ import MyTodos from "./pages/MyTodos";
 import Login from "./pages/Login";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
+import TimeTracking from "./pages/TimeTracking";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +98,7 @@ const App = () => (
                   <Route path="/strategy-boards/:id" element={<ProtectedRoute><StrategyBoardEditor /></ProtectedRoute>} />
                   <Route path="/shared/boards/:token" element={<SharedBoard />} />
                   <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
+                  <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/crm" element={<ProtectedRoute><CRMLeads /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
                   <Route path="/crm/pipelines" element={<ProtectedRoute><CRMPipelines /></ProtectedRoute>} />

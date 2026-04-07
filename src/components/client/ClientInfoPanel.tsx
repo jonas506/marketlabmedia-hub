@@ -117,7 +117,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
           });
         }
       }
-      const { error } = await supabase.from("clients").update(cleanedFields).eq("id", client.id);
+      const { error } = await supabase.from("clients").update(cleanedFields as any).eq("id", client.id);
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["client", client.id] });
       qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
