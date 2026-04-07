@@ -11,6 +11,7 @@ export interface BrandColors {
 export interface SlideData {
   id: string;
   text: string;
+  body?: string;
   isCta?: boolean;
 }
 

@@ -32,6 +32,7 @@ const ensureFontsLoaded = async () => {
 interface Slide {
   id: string;
   text: string;
+  body?: string;
   isCta?: boolean;
 }
 
@@ -246,6 +247,10 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
 
   const updateSlide = (idx: number, text: string) => {
     setSlides(prev => prev.map((s, i) => i === idx ? { ...s, text } : s));
+  };
+
+  const updateSlideBody = (idx: number, body: string) => {
+    setSlides(prev => prev.map((s, i) => i === idx ? { ...s, body } : s));
   };
 
   const addSlide = () => {
@@ -720,7 +725,16 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       value={slide.text}
                       onChange={e => updateSlide(idx, e.target.value)}
                       onClick={e => e.stopPropagation()}
-                      className="text-xs bg-transparent border-0 p-0 min-h-[48px] resize-none focus-visible:ring-0"
+                      placeholder="Überschrift…"
+                      className="text-xs bg-transparent border-0 p-0 min-h-[36px] resize-none focus-visible:ring-0 font-semibold"
+                      rows={1}
+                    />
+                    <Textarea
+                      value={slide.body || ""}
+                      onChange={e => updateSlideBody(idx, e.target.value)}
+                      onClick={e => e.stopPropagation()}
+                      placeholder="Fließtext (optional)…"
+                      className="text-[11px] bg-transparent border-0 p-0 min-h-[32px] resize-none focus-visible:ring-0 text-muted-foreground"
                       rows={2}
                     />
                   </div>
