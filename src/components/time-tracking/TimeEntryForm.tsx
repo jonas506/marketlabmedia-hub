@@ -65,10 +65,13 @@ export default function TimeEntryForm({ clients, onEntryAdded }: TimeEntryFormPr
       toast.error("Fehler beim Speichern");
       return;
     }
-    toast.success(`${h}h erfasst`);
+    const displayH = Math.floor(total);
+    const displayM = Math.round((total - displayH) * 60);
+    toast.success(`${displayH}h ${displayM > 0 ? displayM + 'min ' : ''}erfasst`);
     setClientId("__intern__");
     setActivityType("");
     setHours("1");
+    setMinutes("0");
     setNote("");
     onEntryAdded();
   };
