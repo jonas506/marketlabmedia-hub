@@ -68,6 +68,7 @@ export default function ContractRunwayWidget() {
     } else {
       toast.success("Vertragsdatum aktualisiert");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["clients-dashboard"] });
     }
     setEditingId(null);
   };
