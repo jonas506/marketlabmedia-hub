@@ -4,7 +4,8 @@ import { de } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Download, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ACTIVITY_TYPES } from "@/lib/time-tracking-constants";
+import { cn } from "@/lib/utils";
+import { ACTIVITY_TYPES, ACTIVITY_BAR_COLORS } from "@/lib/time-tracking-constants";
 
 interface TimeEntry {
   id: string;
@@ -98,11 +99,11 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
     URL.revokeObjectURL(url);
   };
 
-  const Bar = ({ value, max, label, hours }: { value: number; max: number; label: string; hours: number }) => (
+  const Bar = ({ value, max, label, hours, barColor }: { value: number; max: number; label: string; hours: number; barColor?: string }) => (
     <div className="flex items-center gap-3 text-sm">
       <span className="w-28 truncate text-muted-foreground">{label}</span>
       <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
-        <div className="h-full bg-primary/70 rounded-full transition-all" style={{ width: `${max > 0 ? (value / max) * 100 : 0}%` }} />
+        <div className={cn("h-full rounded-full transition-all", barColor || "bg-primary/70")} style={{ width: `${max > 0 ? (value / max) * 100 : 0}%` }} />
       </div>
       <span className="w-16 text-right font-medium">{hours.toFixed(1)}h</span>
       <span className="w-12 text-right text-muted-foreground">{totalHours > 0 ? ((hours / totalHours) * 100).toFixed(0) : 0}%</span>
@@ -141,7 +142,7 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
         {/* By Activity */}
         <div className="space-y-2">
           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nach Tätigkeit</h4>
-          {byActivity.map(a => <Bar key={a.key} value={a.hours} max={Math.max(...byActivity.map(x => x.hours))} label={a.label} hours={a.hours} />)}
+          {byActivity.map(a => <Bar key={a.key} value={a.hours} max={Math.max(...byActivity.map(x => x.hours))} label={a.label} hours={a.hours} barColor={ACTIVITY_BAR_COLORS[a.key]} />)}
         </div>
 
         {/* By Member (Admin) */}
