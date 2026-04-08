@@ -259,6 +259,21 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
     setSlides(prev => prev.map((s, i) => i === idx ? { ...s, body } : s));
   };
 
+  const updateSlideProp = (idx: number, prop: Partial<Slide>) => {
+    setSlides(prev => prev.map((s, i) => i === idx ? { ...s, ...prop } : s));
+  };
+
+  const moveSlide = (idx: number, dir: -1 | 1) => {
+    const target = idx + dir;
+    if (target < 0 || target >= slides.length) return;
+    setSlides(prev => {
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+    setCurrent(target);
+  };
+
   const addSlide = () => {
     if (slides.length >= 10) return;
     setSlides(prev => [...prev, { id: genSlideId(), text: `Slide ${prev.length + 1}` }]);
