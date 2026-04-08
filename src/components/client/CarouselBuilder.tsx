@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
   Copy, Check, FileDown, ImageIcon, Upload, Save, Palette, Archive,
+  ArrowUp, ArrowDown, AlignLeft, AlignCenter, AlignRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,9 @@ interface Slide {
   text: string;
   body?: string;
   isCta?: boolean;
+  headingSize?: number;
+  bodySize?: number;
+  textAlign?: "left" | "center" | "right";
 }
 
 interface BrandColors {
@@ -253,6 +257,21 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
 
   const updateSlideBody = (idx: number, body: string) => {
     setSlides(prev => prev.map((s, i) => i === idx ? { ...s, body } : s));
+  };
+
+  const updateSlideProp = (idx: number, prop: Partial<Slide>) => {
+    setSlides(prev => prev.map((s, i) => i === idx ? { ...s, ...prop } : s));
+  };
+
+  const moveSlide = (idx: number, dir: -1 | 1) => {
+    const target = idx + dir;
+    if (target < 0 || target >= slides.length) return;
+    setSlides(prev => {
+      const next = [...prev];
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+    setCurrent(target);
   };
 
   const addSlide = () => {
@@ -651,7 +670,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
               {/* Color pickers */}
               <div className="space-y-1.5">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Farben</span>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {([
                     { key: "primary" as const, label: "Primär" },
                     { key: "secondary" as const, label: "Sekundär" },
@@ -660,12 +679,26 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                   ]).map(({ key, label }) => (
                     <div key={key} className="space-y-1">
                       <span className="text-[9px] text-muted-foreground block truncate">{label}</span>
-                      <input
-                        type="color"
-                        value={brandColors[key]}
-                        onChange={e => setBrandColors(prev => ({ ...prev, [key]: e.target.value }))}
-                        className="w-full h-7 rounded border border-border cursor-pointer"
-                      />
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="color"
+                          value={brandColors[key]}
+                          onChange={e => setBrandColors(prev => ({ ...prev, [key]: e.target.value }))}
+                          className="w-7 h-7 rounded border border-border cursor-pointer shrink-0"
+                        />
+                        <Input
+                          value={brandColors[key]}
+                          onChange={e => {
+                            let v = e.target.value;
+                            if (!v.startsWith("#")) v = "#" + v;
+                            if (/^#[0-9a-fA-F]{0,6}$/.test(v)) {
+                              setBrandColors(prev => ({ ...prev, [key]: v }));
+                            }
+                          }}
+                          className="h-7 text-[10px] font-mono px-1.5 flex-1"
+                          maxLength={7}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -730,6 +763,12 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                         {idx + 1}{slide.isCta ? " — CTA" : ""}
                       </span>
                       <div className="flex gap-1">
+                        <button onClick={e => { e.stopPropagation(); moveSlide(idx, -1); }} disabled={idx === 0} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition disabled:opacity-20">
+                          <ArrowUp className="h-3 w-3" />
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); moveSlide(idx, 1); }} disabled={idx === slides.length - 1} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition disabled:opacity-20">
+                          <ArrowDown className="h-3 w-3" />
+                        </button>
                         <button onClick={e => { e.stopPropagation(); copySlideText(idx); }} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition">
                           {copiedIdx === idx ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                         </button>
@@ -756,6 +795,49 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       className="text-[11px] bg-transparent border-0 p-0 min-h-[32px] resize-none focus-visible:ring-0 text-muted-foreground"
                       rows={2}
                     />
+                    {/* Font size & alignment controls */}
+                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 flex-1">
+                        <span className="text-[9px] text-muted-foreground shrink-0">H:</span>
+                        <Input
+                          type="number"
+                          value={slide.headingSize || ""}
+                          onChange={e => updateSlideProp(idx, { headingSize: e.target.value ? Number(e.target.value) : undefined })}
+                          placeholder="auto"
+                          className="h-6 text-[10px] w-14 px-1"
+                          min={12}
+                          max={72}
+                        />
+                        <span className="text-[9px] text-muted-foreground shrink-0 ml-1">B:</span>
+                        <Input
+                          type="number"
+                          value={slide.bodySize || ""}
+                          onChange={e => updateSlideProp(idx, { bodySize: e.target.value ? Number(e.target.value) : undefined })}
+                          placeholder="auto"
+                          className="h-6 text-[10px] w-14 px-1"
+                          min={10}
+                          max={48}
+                        />
+                      </div>
+                      <div className="flex gap-0.5">
+                        {(["left", "center", "right"] as const).map(align => (
+                          <button
+                            key={align}
+                            onClick={() => updateSlideProp(idx, { textAlign: align })}
+                            className={cn(
+                              "p-1 rounded transition",
+                              (slide.textAlign || "left") === align
+                                ? "bg-primary/10 text-primary"
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {align === "left" && <AlignLeft className="h-3 w-3" />}
+                            {align === "center" && <AlignCenter className="h-3 w-3" />}
+                            {align === "right" && <AlignRight className="h-3 w-3" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 ))}
 
