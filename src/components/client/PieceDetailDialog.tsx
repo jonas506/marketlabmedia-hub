@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -42,7 +42,6 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedPromptId, setSelectedPromptId] = useState("");
   
-  const autoTriggeredRef = useRef<string | null>(null);
 
   const { data: savedPrompts = [] } = useQuery({
     queryKey: ["saved-prompts"],
@@ -63,50 +62,30 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     
   }
 
-  // Auto-generate: when dialog opens, transcribe if missing, then caption if missing
-  useEffect(() => {
-    if (!open || !piece) return;
-    if (autoTriggeredRef.current === piece.id) return;
-
-    const hasTranscript = !!piece.transcript;
-    const hasCaption = !!piece.caption;
-    const canTranscribe = !!piece.preview_link || !!piece.video_path;
-
-    if ((!hasTranscript || !hasCaption) && canTranscribe) {
-      autoTriggeredRef.current = piece.id;
-      runAutoGenerate(piece.id, hasTranscript, hasCaption);
-    }
-  }, [open, piece?.id]);
-
-  const runAutoGenerate = async (pieceId: string, alreadyHasTranscript: boolean, alreadyHasCaption: boolean) => {
+  const runAutoGenerate = async (pieceId: string) => {
     setAutoGenerating(true);
     try {
-      // Step 1: Transcribe (if missing)
-      if (!alreadyHasTranscript) {
+      const hasTranscript = !!transcript;
+      if (!hasTranscript) {
         const { data: tData, error: tErr } = await supabase.functions.invoke("transcribe-caption", {
           body: { action: "transcribe", piece_id: pieceId },
         });
         if (tErr) throw tErr;
-        if (tData?.transcript) {
-          setTranscript(tData.transcript);
-        }
+        if (tData?.transcript) setTranscript(tData.transcript);
       }
 
-      // Step 2: Generate caption (if missing)
-      if (!alreadyHasCaption) {
-        const { data: cData, error: cErr } = await supabase.functions.invoke("transcribe-caption", {
-          body: { action: "generate", piece_id: pieceId },
-        });
-        if (cErr) throw cErr;
-        if (cData?.caption) {
-          setCaption(cData.caption);
-          toast.success("Caption automatisch erstellt!");
-        }
+      const { data: cData, error: cErr } = await supabase.functions.invoke("transcribe-caption", {
+        body: { action: "generate", piece_id: pieceId },
+      });
+      if (cErr) throw cErr;
+      if (cData?.caption) {
+        setCaption(cData.caption);
+        toast.success("Caption erstellt!");
       }
 
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     } catch (err: any) {
-      toast.error("Auto-Generierung fehlgeschlagen", { description: err.message });
+      toast.error("Generierung fehlgeschlagen", { description: err.message });
     } finally {
       setAutoGenerating(false);
     }
@@ -216,6 +195,16 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
                 rows={6}
                 disabled={autoGenerating}
               />
+              {!caption && !autoGenerating && piece && (piece.preview_link || piece.video_path) && (
+                <Button
+                  className="w-full mt-2 h-9 text-xs font-mono gap-2"
+                  onClick={() => runAutoGenerate(piece.id)}
+                  disabled={isLoading}
+                >
+                  {autoGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  Caption aus Video generieren
+                </Button>
+              )}
               <div className="flex items-center gap-2 mt-2">
                 <Button size="sm" className="h-7 text-xs font-mono gap-1" onClick={saveAll} disabled={isLoading}>
                   <Save className="h-3 w-3" /> Speichern
