@@ -145,7 +145,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(44, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textDark, fontFamily: fonts.heading,
-          lineHeight: 1.15, marginTop: 16,
+          lineHeight: 1.15, marginTop: 16, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textDark} font={fonts.body} />
       </div>
@@ -269,7 +269,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          lineHeight: 1.2, fontStyle: "italic", marginTop: 16,
+          lineHeight: 1.2, fontStyle: "italic", marginTop: 16, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         <p style={{
           fontSize: 14, color: brandColors.textLight, opacity: 0.5,
@@ -445,7 +445,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(44, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          lineHeight: 1.15,
+          lineHeight: 1.15, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
@@ -534,7 +534,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          lineHeight: 1.2, marginTop: 16,
+          lineHeight: 1.2, marginTop: 16, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
@@ -627,7 +627,7 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
           <p style={{
             fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
             color: brandColors.textDark, fontFamily: fonts.heading,
-            lineHeight: 1.2,
+            lineHeight: 1.2, textAlign: slide.textAlign || "left",
           }}>{slide.text}</p>
           <div style={{ width: 40, height: 3, background: brandColors.accent, borderRadius: 2, marginTop: 16 }} />
         </div>
