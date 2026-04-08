@@ -4,6 +4,7 @@ import { de } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Download, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { ACTIVITY_TYPES, ACTIVITY_BAR_COLORS } from "@/lib/time-tracking-constants";
 
 interface TimeEntry {
