@@ -29,6 +29,7 @@ interface Piece {
   client_comment: string | null;
   team_reply?: string | null;
   script_text?: string | null;
+  caption?: string | null;
   slide_images?: string[] | null;
   revision_count?: number;
 }
@@ -544,6 +545,19 @@ const ClientApproval = () => {
                     />
                   ))}
                 </div>
+              )}
+
+              {currentPiece && currentPiece.caption && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-3.5"
+                >
+                  <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest block mb-2">
+                    Caption
+                  </span>
+                  <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{currentPiece.caption}</p>
+                </motion.div>
               )}
 
               {currentPiece && (
