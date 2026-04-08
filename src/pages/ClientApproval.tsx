@@ -422,33 +422,30 @@ const ClientApproval = () => {
           </motion.div>
         ) : (
           <>
-            <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-5 pb-4 flex-1 flex flex-col">
+            <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-4 flex-1 flex flex-col">
               <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
-                  <span className={`text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] shrink-0 ${
-                    currentPiece.type === "reel" ? "text-blue-400" : currentPiece.type === "story" ? "text-purple-400" : currentPiece.type === "ad" ? "text-violet-400" : "text-amber-400"
-                  }`}>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wider border bg-gradient-to-r ${TYPE_COLORS[currentPiece.type] || "from-white/5 to-white/5 text-white/50 border-white/10"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
                     {TYPE_LABELS[currentPiece.type] || currentPiece.type}
                   </span>
-                  <span className="text-white/15 text-xs">•</span>
-                  <span className="text-white/40 text-[10px] sm:text-xs font-mono">
-                    {currentIndex + 1} von {pieces.length}
+                  <span className="text-white/30 text-xs font-mono tabular-nums">
+                    {currentIndex + 1}/{pieces.length}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1">
+                <div className="flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.06] p-0.5">
                   <button
                     onClick={() => { flushPendingComment(); setCurrentIndex(Math.max(0, currentIndex - 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                     disabled={currentIndex === 0}
-                    className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
+                    className="p-2 rounded-full hover:bg-white/10 disabled:opacity-20 transition-all active:scale-90"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => { flushPendingComment(); setCurrentIndex(Math.min(pieces.length - 1, currentIndex + 1)); setShowFeedback(false); setCommentText(""); setCommentTimestamp(null); setConfirmApprove(false); }}
                     disabled={currentIndex === pieces.length - 1}
-                    className="p-2.5 rounded-full hover:bg-white/5 disabled:opacity-20 transition-all active:scale-90"
+                    className="p-2 rounded-full hover:bg-white/10 disabled:opacity-20 transition-all active:scale-90"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
@@ -461,7 +458,7 @@ const ClientApproval = () => {
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="mb-4 sm:mb-5 text-[clamp(1.8rem,7vw,2.4rem)] sm:text-xl font-bold tracking-tight leading-[0.95] break-words"
+                  className="mb-4 sm:mb-5 text-lg sm:text-2xl font-bold tracking-tight leading-tight break-words"
                 >
                   {currentPiece.title || "Ohne Titel"}
                 </motion.h2>
@@ -481,9 +478,9 @@ const ClientApproval = () => {
                     <CarouselSlideGallery slides={carouselSlides} scriptText={currentPiece?.script_text} />
                   ) : currentEmbed ? (
                     <>
-                      <div className="p-2.5 sm:p-0">
-                        <div className="mx-auto w-full max-w-[22rem] sm:max-w-none">
-                          <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[60vh]"}`}>
+                      <div className="p-2.5 sm:p-3">
+                        <div className="mx-auto w-full max-w-[22rem] sm:max-w-md">
+                          <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[75vh]"}`}>
                             <iframe
                               src={currentEmbed}
                               className="absolute inset-0 h-full w-full"
@@ -755,7 +752,7 @@ const ClientApproval = () => {
             </div>
 
             <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
-              <div className="max-w-3xl mx-auto px-4 sm:px-6">
+              <div className="max-w-2xl mx-auto px-4 sm:px-6">
                 <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
                   {/* Confirm approve dialog when comments exist */}
                   <AnimatePresence>
