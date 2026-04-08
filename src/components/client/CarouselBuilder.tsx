@@ -670,7 +670,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
               {/* Color pickers */}
               <div className="space-y-1.5">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Farben</span>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {([
                     { key: "primary" as const, label: "Primär" },
                     { key: "secondary" as const, label: "Sekundär" },
@@ -679,12 +679,26 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                   ]).map(({ key, label }) => (
                     <div key={key} className="space-y-1">
                       <span className="text-[9px] text-muted-foreground block truncate">{label}</span>
-                      <input
-                        type="color"
-                        value={brandColors[key]}
-                        onChange={e => setBrandColors(prev => ({ ...prev, [key]: e.target.value }))}
-                        className="w-full h-7 rounded border border-border cursor-pointer"
-                      />
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="color"
+                          value={brandColors[key]}
+                          onChange={e => setBrandColors(prev => ({ ...prev, [key]: e.target.value }))}
+                          className="w-7 h-7 rounded border border-border cursor-pointer shrink-0"
+                        />
+                        <Input
+                          value={brandColors[key]}
+                          onChange={e => {
+                            let v = e.target.value;
+                            if (!v.startsWith("#")) v = "#" + v;
+                            if (/^#[0-9a-fA-F]{0,6}$/.test(v)) {
+                              setBrandColors(prev => ({ ...prev, [key]: v }));
+                            }
+                          }}
+                          className="h-7 text-[10px] font-mono px-1.5 flex-1"
+                          maxLength={7}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
