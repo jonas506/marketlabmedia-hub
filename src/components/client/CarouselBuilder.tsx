@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
   Copy, Check, FileDown, ImageIcon, Upload, Save, Palette, Archive,
+  ArrowUp, ArrowDown, AlignLeft, AlignCenter, AlignRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,9 @@ interface Slide {
   text: string;
   body?: string;
   isCta?: boolean;
+  headingSize?: number;
+  bodySize?: number;
+  textAlign?: "left" | "center" | "right";
 }
 
 interface BrandColors {
