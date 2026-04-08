@@ -168,7 +168,7 @@ const PieceLatePhaseRow: React.FC<PieceLatePhaseRowProps> = React.memo(({
       )}
 
       {/* Caption/Transcript */}
-      {(activePhase === "approved" || activePhase === "handed_over") && (
+      {(
         <>
           <span className="text-border">·</span>
           <Button
