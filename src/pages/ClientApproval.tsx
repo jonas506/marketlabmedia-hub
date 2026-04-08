@@ -547,6 +547,19 @@ const ClientApproval = () => {
                 </div>
               )}
 
+              {currentPiece && currentPiece.caption && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-3.5"
+                >
+                  <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest block mb-2">
+                    Caption
+                  </span>
+                  <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{currentPiece.caption}</p>
+                </motion.div>
+              )}
+
               {currentPiece && (
                 <div className="mt-4 sm:mt-5">
                   {currentComments.length > 0 && (
