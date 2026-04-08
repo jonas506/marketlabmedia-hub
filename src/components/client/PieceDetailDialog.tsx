@@ -39,7 +39,6 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const [generating, setGenerating] = useState(false);
   const [refining, setRefining] = useState(false);
   const [autoGenerating, setAutoGenerating] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedPromptId, setSelectedPromptId] = useState("");
   
   const autoTriggeredRef = useRef<string | null>(null);
