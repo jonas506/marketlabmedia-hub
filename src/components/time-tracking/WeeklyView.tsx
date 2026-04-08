@@ -94,6 +94,7 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
   };
 
   const activityLabel = (val: string) => ACTIVITY_TYPES.find(a => a.value === val)?.label ?? val;
+  const activityColor = (val: string) => ACTIVITY_TYPES.find(a => a.value === val)?.color ?? 'bg-muted text-muted-foreground';
 
   const changeWeek = (direction: "prev" | "next") => {
     const newWeek = direction === "prev" ? subWeeks(weekRef, 1) : addWeeks(weekRef, 1);
@@ -128,7 +129,7 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>{ACTIVITY_TYPES.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent>
                   </Select>
-                ) : activityLabel(entry.activity_type)}
+                ) : <span className={cn("inline-block px-2 py-0.5 rounded-full text-xs font-medium", activityColor(entry.activity_type))}>{activityLabel(entry.activity_type)}</span>}
               </TableCell>
               <TableCell className="text-right text-sm font-medium">
                 {editingId === entry.id ? (
