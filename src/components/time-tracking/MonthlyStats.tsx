@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Download, ChevronDown, ChevronUp } from "luc
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ACTIVITY_TYPES, ACTIVITY_BAR_COLORS } from "@/lib/time-tracking-constants";
+import { ACTIVITY_TYPES, ACTIVITY_BAR_COLORS, formatHoursMinutes } from "@/lib/time-tracking-constants";
 
 interface TimeEntry {
   id: string;
@@ -105,7 +105,7 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
       <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden">
         <div className={cn("h-full rounded-full transition-all", barColor || "bg-primary/70")} style={{ width: `${max > 0 ? (value / max) * 100 : 0}%` }} />
       </div>
-      <span className="w-16 text-right font-medium">{hours.toFixed(1)}h</span>
+      <span className="w-20 text-right font-medium">{formatHoursMinutes(hours)}</span>
       <span className="w-12 text-right text-muted-foreground">{totalHours > 0 ? ((hours / totalHours) * 100).toFixed(0) : 0}%</span>
     </div>
   );
@@ -131,7 +131,7 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
         </div>
       </div>
       <CollapsibleContent className="mt-4 space-y-6">
-        <div className="text-2xl font-bold">{totalHours.toFixed(1)}h <span className="text-sm font-normal text-muted-foreground">gesamt</span></div>
+        <div className="text-2xl font-bold">{formatHoursMinutes(totalHours)} <span className="text-sm font-normal text-muted-foreground">gesamt</span></div>
 
         {/* By Client */}
         <div className="space-y-2">

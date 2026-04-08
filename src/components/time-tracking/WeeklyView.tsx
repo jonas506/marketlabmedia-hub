@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ACTIVITY_TYPES } from "@/lib/time-tracking-constants";
+import { ACTIVITY_TYPES, formatHoursMinutes } from "@/lib/time-tracking-constants";
 import { cn } from "@/lib/utils";
 
 interface TimeEntry {
@@ -134,7 +134,7 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
               <TableCell className="text-right text-sm font-medium">
                 {editingId === entry.id ? (
                   <Input type="number" className="h-8 w-20 text-xs" step="0.25" min="0.25" max="24" value={editHours} onChange={e => setEditHours(e.target.value)} />
-                ) : `${Number(entry.hours).toFixed(2)}h`}
+                ) : formatHoursMinutes(Number(entry.hours))}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {editingId === entry.id ? (
@@ -186,7 +186,7 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
           </span>
           <Button variant="ghost" size="icon" onClick={() => changeWeek("next")}><ChevronRight className="h-4 w-4" /></Button>
         </div>
-        <span className="text-sm font-semibold">{totalHours.toFixed(1)}h diese Woche</span>
+        <span className="text-sm font-semibold">{formatHoursMinutes(totalHours)} diese Woche</span>
       </div>
 
       {/* Day selector pills */}
@@ -219,7 +219,7 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
               <span className="text-xs font-semibold leading-none mt-0.5">{format(day, "dd.")}</span>
               {dayHours > 0 && (
                 <span className={cn("text-[10px] leading-none mt-0.5", isSelected ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                  {dayHours.toFixed(1)}h
+                  {formatHoursMinutes(dayHours)}
                 </span>
               )}
             </Button>
@@ -234,7 +234,7 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
             {format(selectedDay, "EEEE, dd. MMMM yyyy", { locale: de })}
             {dayEntries.length > 0 && (
               <span className="text-muted-foreground font-normal ml-2">
-                — {dayEntries.reduce((s, e) => s + Number(e.hours), 0).toFixed(1)}h
+                — {formatHoursMinutes(dayEntries.reduce((s, e) => s + Number(e.hours), 0))}
               </span>
             )}
           </h3>
