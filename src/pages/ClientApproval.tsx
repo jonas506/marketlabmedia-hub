@@ -29,6 +29,7 @@ interface Piece {
   client_comment: string | null;
   team_reply?: string | null;
   script_text?: string | null;
+  caption?: string | null;
   slide_images?: string[] | null;
   revision_count?: number;
 }
