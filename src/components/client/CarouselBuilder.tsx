@@ -763,6 +763,12 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                         {idx + 1}{slide.isCta ? " — CTA" : ""}
                       </span>
                       <div className="flex gap-1">
+                        <button onClick={e => { e.stopPropagation(); moveSlide(idx, -1); }} disabled={idx === 0} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition disabled:opacity-20">
+                          <ArrowUp className="h-3 w-3" />
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); moveSlide(idx, 1); }} disabled={idx === slides.length - 1} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition disabled:opacity-20">
+                          <ArrowDown className="h-3 w-3" />
+                        </button>
                         <button onClick={e => { e.stopPropagation(); copySlideText(idx); }} className="p-0.5 rounded text-muted-foreground hover:text-foreground transition">
                           {copiedIdx === idx ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                         </button>
@@ -789,6 +795,49 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       className="text-[11px] bg-transparent border-0 p-0 min-h-[32px] resize-none focus-visible:ring-0 text-muted-foreground"
                       rows={2}
                     />
+                    {/* Font size & alignment controls */}
+                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 flex-1">
+                        <span className="text-[9px] text-muted-foreground shrink-0">H:</span>
+                        <Input
+                          type="number"
+                          value={slide.headingSize || ""}
+                          onChange={e => updateSlideProp(idx, { headingSize: e.target.value ? Number(e.target.value) : undefined })}
+                          placeholder="auto"
+                          className="h-6 text-[10px] w-14 px-1"
+                          min={12}
+                          max={72}
+                        />
+                        <span className="text-[9px] text-muted-foreground shrink-0 ml-1">B:</span>
+                        <Input
+                          type="number"
+                          value={slide.bodySize || ""}
+                          onChange={e => updateSlideProp(idx, { bodySize: e.target.value ? Number(e.target.value) : undefined })}
+                          placeholder="auto"
+                          className="h-6 text-[10px] w-14 px-1"
+                          min={10}
+                          max={48}
+                        />
+                      </div>
+                      <div className="flex gap-0.5">
+                        {(["left", "center", "right"] as const).map(align => (
+                          <button
+                            key={align}
+                            onClick={() => updateSlideProp(idx, { textAlign: align })}
+                            className={cn(
+                              "p-1 rounded transition",
+                              (slide.textAlign || "left") === align
+                                ? "bg-primary/10 text-primary"
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {align === "left" && <AlignLeft className="h-3 w-3" />}
+                            {align === "center" && <AlignCenter className="h-3 w-3" />}
+                            {align === "right" && <AlignRight className="h-3 w-3" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 ))}
 
