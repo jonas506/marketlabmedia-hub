@@ -13,6 +13,9 @@ export interface SlideData {
   text: string;
   body?: string;
   isCta?: boolean;
+  headingSize?: number;
+  bodySize?: number;
+  textAlign?: "left" | "center" | "right";
 }
 
 export interface ThemeRenderProps {
@@ -30,8 +33,10 @@ export interface ThemeRenderProps {
 }
 
 // --- Helpers ---
-const shrinkFont = (base: number, text: string) =>
-  text.length > 120 ? base * 0.65 : text.length > 80 ? base * 0.75 : text.length > 40 ? base * 0.85 : base;
+const shrinkFont = (base: number, text: string, override?: number) => {
+  if (override) return override;
+  return text.length > 120 ? base * 0.65 : text.length > 80 ? base * 0.75 : text.length > 40 ? base * 0.85 : base;
+};
 
 const ProfileRow: React.FC<{
   avatarSrc: string | null;
@@ -71,7 +76,7 @@ const SlideCounter: React.FC<{ index: number; total: number; color: string; font
 );
 
 const SwipeHint: React.FC<{ color: string; font: string }> = ({ color, font }) => (
-  <span style={{ fontSize: 10, color, opacity: 0.4, fontFamily: font }}>swipe ←</span>
+  <span style={{ fontSize: 10, color, opacity: 0.4, fontFamily: font }}>swipe →</span>
 );
 
 // ============================================================
