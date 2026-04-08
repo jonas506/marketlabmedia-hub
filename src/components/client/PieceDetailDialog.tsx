@@ -195,6 +195,16 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
                 rows={6}
                 disabled={autoGenerating}
               />
+              {!caption && !autoGenerating && piece && (piece.preview_link || piece.video_path) && (
+                <Button
+                  className="w-full mt-2 h-9 text-xs font-mono gap-2"
+                  onClick={() => runAutoGenerate(piece.id)}
+                  disabled={isLoading}
+                >
+                  {autoGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  Caption aus Video generieren
+                </Button>
+              )}
               <div className="flex items-center gap-2 mt-2">
                 <Button size="sm" className="h-7 text-xs font-mono gap-1" onClick={saveAll} disabled={isLoading}>
                   <Save className="h-3 w-3" /> Speichern
