@@ -107,7 +107,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          textAlign: "center", lineHeight: 1.3,
+          textAlign: slide.textAlign || "center", lineHeight: 1.3,
         }}>{slide.text}</p>
         <div style={{ marginTop: 20, padding: "10px 24px", borderRadius: 8, background: "rgba(255,255,255,0.15)" }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>Jetzt speichern →</span>
@@ -187,11 +187,11 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(26, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textDark, fontFamily: fonts.heading,
-          lineHeight: 1.35, whiteSpace: "pre-wrap" as const,
+          lineHeight: 1.35, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         {slide.body && (
           <p style={{
-            fontSize: 14, fontWeight: 400,
+            fontSize: slide.bodySize || 14, fontWeight: 400,
             color: brandColors.textDark, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 12, opacity: 0.7,
@@ -241,7 +241,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          textAlign: "center", lineHeight: 1.3, fontStyle: "italic",
+          textAlign: slide.textAlign || "center", lineHeight: 1.3, fontStyle: "italic",
         }}>{slide.text}</p>
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 40, background: "rgba(255,255,255,0.12)" }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body, letterSpacing: "0.05em" }}>JETZT SPEICHERN</span>
@@ -306,11 +306,11 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(32, slide.text, slide.headingSize), fontWeight: 700,
           color: textColor, fontFamily: fonts.heading,
           lineHeight: 1.3, fontStyle: "italic",
-          whiteSpace: "pre-wrap" as const,
+          whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         {slide.body && (
           <p style={{
-            fontSize: 14, fontWeight: 400,
+            fontSize: slide.bodySize || 14, fontWeight: 400,
             color: textColor, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 12, opacity: 0.6, fontStyle: "normal",
@@ -352,7 +352,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(34, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          textAlign: "center", lineHeight: 1.35,
+          textAlign: slide.textAlign || "center", lineHeight: 1.35,
         }}>{slide.text}</p>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
@@ -368,14 +368,14 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
         fontSize: shrinkFont(index === 0 ? 38 : 32, slide.text, slide.headingSize),
         fontWeight: index === 0 ? 800 : 500,
         color: brandColors.textDark, fontFamily: fonts.heading,
-        textAlign: "center", lineHeight: 1.4,
+        textAlign: slide.textAlign || "center", lineHeight: 1.4,
         whiteSpace: "pre-wrap" as const,
       }}>{slide.text}</p>
       {slide.body && (
         <p style={{
-          fontSize: 13, fontWeight: 400,
+          fontSize: slide.bodySize || 13, fontWeight: 400,
           color: brandColors.textDark, fontFamily: fonts.body,
-          textAlign: "center", lineHeight: 1.5,
+          textAlign: slide.textAlign || "center", lineHeight: 1.5,
           whiteSpace: "pre-wrap" as const,
           marginTop: 12, opacity: 0.6,
         }}>{slide.body}</p>
@@ -419,7 +419,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(34, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          textAlign: "center", lineHeight: 1.3, position: "relative",
+          textAlign: slide.textAlign || "center", lineHeight: 1.3, position: "relative",
         }}>{slide.text}</p>
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 8, background: brandColors.accent + "33" }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>Speichern →</span>
@@ -468,11 +468,11 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(28, slide.text, slide.headingSize), fontWeight: 600,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          lineHeight: 1.4, whiteSpace: "pre-wrap" as const,
+          lineHeight: 1.4, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         {slide.body && (
           <p style={{
-            fontSize: 14, fontWeight: 400,
+            fontSize: slide.bodySize || 14, fontWeight: 400,
             color: brandColors.textLight, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 12, opacity: 0.5,
@@ -510,7 +510,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
-          textAlign: "center", lineHeight: 1.3,
+          textAlign: slide.textAlign || "center", lineHeight: 1.3,
         }}>{slide.text}</p>
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 40, background: "rgba(255,255,255,0.15)" }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body }}>SPEICHERN</span>
@@ -554,9 +554,9 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
       }}>{slide.text}</p>
       {slide.body && (
         <p style={{
-          fontSize: 14, fontWeight: 400,
+          fontSize: slide.bodySize || 14, fontWeight: 400,
           color: brandColors.textLight, fontFamily: fonts.body,
-          textAlign: "center", lineHeight: 1.5,
+          textAlign: slide.textAlign || "center", lineHeight: 1.5,
           whiteSpace: "pre-wrap" as const,
           marginTop: 12, opacity: 0.5,
         }}>{slide.body}</p>
@@ -608,7 +608,7 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
           <p style={{
             fontSize: shrinkFont(28, slide.text, slide.headingSize), fontWeight: 700,
             color: brandColors.textDark, fontFamily: fonts.heading,
-            textAlign: "center", lineHeight: 1.35,
+            textAlign: slide.textAlign || "center", lineHeight: 1.35,
           }}>{slide.text}</p>
           <div style={{ width: 40, height: 3, background: brandColors.accent, borderRadius: 2, margin: "16px auto 0" }} />
         </div>
@@ -648,11 +648,11 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
         <p style={{
           fontSize: shrinkFont(24, slide.text, slide.headingSize), fontWeight: 500,
           color: brandColors.textDark, fontFamily: fonts.heading,
-          lineHeight: 1.45, whiteSpace: "pre-wrap" as const,
+          lineHeight: 1.45, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}>{slide.text}</p>
         {slide.body && (
           <p style={{
-            fontSize: 13, fontWeight: 400,
+            fontSize: slide.bodySize || 13, fontWeight: 400,
             color: brandColors.textDark, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 10, opacity: 0.6,
