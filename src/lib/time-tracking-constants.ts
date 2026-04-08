@@ -26,6 +26,14 @@ export const ACTIVITY_BAR_COLORS: Record<string, string> = {
   other: 'bg-gray-400',
 };
 
+export function formatHoursMinutes(decimal: number): string {
+  const h = Math.floor(decimal);
+  const m = Math.round((decimal - h) * 60);
+  if (h === 0) return `${m}min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
+}
+
 export const VACATION_TYPES = [
   { value: 'vacation', label: 'Urlaub' },
   { value: 'sick', label: 'Krank' },
