@@ -890,7 +890,7 @@ function MarketingSummaryBar({ marketing }: { marketing: MarketingSummary }) {
       animate={{ opacity: 1, y: 0 }}
       className="border-b border-white/[0.04]"
     >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
           <span className="text-[10px] font-semibold text-white/25 uppercase tracking-widest">
@@ -926,7 +926,7 @@ function CarouselSlideGallery({ slides, scriptText }: { slides: string[]; script
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full max-h-[60vh] object-contain mx-auto"
+            className="w-full max-h-[75vh] object-contain mx-auto"
           />
         </AnimatePresence>
 
