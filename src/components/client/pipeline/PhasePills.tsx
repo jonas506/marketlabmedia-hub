@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { icons } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isUpcomingHandedOver } from "@/lib/pipeline-utils";
 import type { ContentPiece } from "./types";
 
 interface PhasePillsProps {
@@ -20,7 +21,11 @@ const PhasePills: React.FC<PhasePillsProps> = React.memo(({
   return (
     <div className="flex flex-wrap gap-1.5 mb-5 overflow-x-auto scrollbar-none">
       {phases.map((p) => {
-        const count = monthPieces.filter((c) => c.phase === p.key).length;
+        const count = monthPieces.filter((c) => {
+          if (c.phase !== p.key) return false;
+          if (p.key !== "handed_over") return true;
+          return isUpcomingHandedOver(c.scheduled_post_date);
+        }).length;
         const isActive = activePhase === p.key;
         const Icon = icons[p.emoji as keyof typeof icons];
         return (

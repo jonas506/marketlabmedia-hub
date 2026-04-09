@@ -21,7 +21,7 @@ const PHASE_LABELS: Record<string, string> = {
   review: "Freigabe",
   feedback: "Feedback",
   approved: "Freigegeben",
-  handed_over: "Übergeben",
+  handed_over: "Geplant",
 };
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces, canEdit, onNavigate }) => {
