@@ -102,8 +102,8 @@ const PipelineFilterBar: React.FC<PipelineFilterBarProps> = React.memo(({
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <span>{config.emoji}</span> Mehrere {config.label} erstellen
+                 <DialogTitle className="flex items-center gap-2">
+                   {(() => { const TIcon = icons[config.emoji as keyof typeof icons]; return TIcon ? <TIcon size={18} /> : null; })()} Mehrere {config.label} erstellen
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-3">
