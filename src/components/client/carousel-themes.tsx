@@ -666,9 +666,153 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
 }
 
 // ============================================================
+// THEME: CREATOR (Personal Brand — like reference slides)
+// ============================================================
+export function renderCreator(p: ThemeRenderProps): React.ReactElement {
+  const { slide, index, totalSlides, brandColors, fonts, avatarSrc, displayName, slideW, slideH } = p;
+  const isCover = index === 0;
+  const isCta = !!slide.isCta;
+
+  const wrapper: React.CSSProperties = {
+    width: slideW, height: slideH,
+    display: "flex",
+    flexDirection: "column",
+    position: "relative",
+    overflow: "hidden",
+    background: "#ffffff",
+    padding: "36px 36px 48px 36px",
+  };
+
+  const profileBlock = (
+    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+      {avatarSrc && (
+        <div style={{
+          width: 56, height: 56, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+          background: brandColors.accent + "22",
+        }}>
+          <img src={avatarSrc} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+        </div>
+      )}
+      {displayName && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "#1a1a1a", fontFamily: fonts.heading }}>{displayName}</span>
+          <svg viewBox="0 0 22 22" width="18" height="18">
+            <circle cx="11" cy="11" r="11" fill="#1DA1F2" />
+            <path d="M9.5 14.5L6 11l1-1 2.5 2.5L15 7l1 1-6.5 6.5z" fill="#fff" />
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+
+  const footerBlock = (
+    <div style={{
+      position: "absolute" as const, bottom: 24, left: 36, right: 36,
+      display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 16,
+    }}>
+      {index < totalSlides - 1 && (
+        <span style={{ fontSize: 13, color: "#999", fontFamily: fonts.body, letterSpacing: "0.12em" }}>swipe →</span>
+      )}
+      <span style={{ fontSize: 14, color: "#bbb", fontFamily: fonts.body }}>{index + 1} / {totalSlides}</span>
+    </div>
+  );
+
+  if (isCta) {
+    return (
+      <div key={slide.id} id={`carousel-slide-${index}`} style={{
+        ...wrapper, justifyContent: "flex-start",
+      }}>
+        {profileBlock}
+        <div style={{
+          fontSize: 11, fontWeight: 800, letterSpacing: "0.15em",
+          textTransform: "uppercase" as const, color: brandColors.accent || "#999",
+          fontFamily: fonts.body, marginBottom: 20, marginTop: 8,
+        }}>{slide.body ? "" : "NUN BIST DU AN DER REIHE!"}</div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+          <p style={{
+            fontSize: shrinkFont(22, slide.text, slide.headingSize), fontWeight: 400,
+            color: "#444", fontFamily: fonts.body,
+            textAlign: slide.textAlign || "center", lineHeight: 1.5, fontStyle: "italic",
+            whiteSpace: "pre-wrap" as const,
+          }}>{slide.text}</p>
+          {slide.body && (
+            <p style={{
+              fontSize: slide.bodySize || 20, fontWeight: 800,
+              color: "#1a1a1a", fontFamily: fonts.heading,
+              textAlign: slide.textAlign || "center", lineHeight: 1.3,
+              whiteSpace: "pre-wrap" as const, marginTop: 8,
+            }}>{slide.body}</p>
+          )}
+        </div>
+        {footerBlock}
+      </div>
+    );
+  }
+
+  if (isCover) {
+    return (
+      <div key={slide.id} id={`carousel-slide-${index}`} style={{
+        ...wrapper, justifyContent: "flex-start",
+      }}>
+        <div style={{ marginTop: 12 }} />
+        {profileBlock}
+        {slide.body && (
+          <div style={{
+            fontSize: 11, fontWeight: 800, letterSpacing: "0.15em",
+            textTransform: "uppercase" as const, color: brandColors.accent || "#999",
+            fontFamily: fonts.body, marginBottom: 12, marginTop: 8,
+          }}>{slide.body}</div>
+        )}
+        <p style={{
+          fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 900,
+          color: "#1a1a1a", fontFamily: fonts.heading,
+          lineHeight: 1.15, textAlign: slide.textAlign || "left",
+          whiteSpace: "pre-wrap" as const,
+          flex: 1, display: "flex", alignItems: "center",
+        }}>{slide.text}</p>
+        {footerBlock}
+      </div>
+    );
+  }
+
+  // Content slides
+  return (
+    <div key={slide.id} id={`carousel-slide-${index}`} style={{
+      ...wrapper, justifyContent: "flex-start",
+    }}>
+      <div style={{ marginTop: 12 }} />
+      {profileBlock}
+      {/* Category label from body field used as category OR auto */}
+      <div style={{
+        fontSize: 11, fontWeight: 800, letterSpacing: "0.15em",
+        textTransform: "uppercase" as const, color: brandColors.accent || "#999",
+        fontFamily: fonts.body, marginBottom: 12, marginTop: 4,
+      }}>{slide.body?.split("\n")[0] || ""}</div>
+      {/* Heading */}
+      <p style={{
+        fontSize: shrinkFont(22, slide.text, slide.headingSize), fontWeight: 700,
+        color: "#1a1a1a", fontFamily: fonts.heading,
+        lineHeight: 1.4, textAlign: slide.textAlign || "left",
+        whiteSpace: "pre-wrap" as const,
+      }}>{slide.text}</p>
+      {/* Body text (lines after first) */}
+      {slide.body && slide.body.split("\n").slice(1).join("\n").trim() && (
+        <p style={{
+          fontSize: slide.bodySize || 16, fontWeight: 400,
+          color: "#444", fontFamily: fonts.body,
+          lineHeight: 1.6, textAlign: slide.textAlign || "left",
+          whiteSpace: "pre-wrap" as const, marginTop: 14,
+        }}>{slide.body.split("\n").slice(1).join("\n").trim()}</p>
+      )}
+      {footerBlock}
+    </div>
+  );
+}
+
+// ============================================================
 // DISPATCHER
 // ============================================================
-export type ThemeId = "numbered" | "steps" | "minimal" | "dark" | "gradient" | "card";
+export type ThemeId = "numbered" | "steps" | "minimal" | "dark" | "gradient" | "card" | "creator";
 
 const renderers: Record<ThemeId, (p: ThemeRenderProps) => React.ReactElement> = {
   numbered: renderNumbered,
@@ -677,6 +821,7 @@ const renderers: Record<ThemeId, (p: ThemeRenderProps) => React.ReactElement> = 
   dark: renderDark,
   gradient: renderGradient,
   card: renderCard,
+  creator: renderCreator,
 };
 
 export function renderThemedSlide(theme: ThemeId, props: Omit<ThemeRenderProps, never>): React.ReactElement {
