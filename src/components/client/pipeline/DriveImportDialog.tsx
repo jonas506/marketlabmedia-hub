@@ -58,6 +58,7 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
   const [importing, setImporting] = useState(false);
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [alreadyImported, setAlreadyImported] = useState<Set<string>>(new Set());
   const [targetPhase, setTargetPhase] = useState("review");
   const [targetType, setTargetType] = useState(activeType);
 
@@ -115,8 +116,23 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
         f.mimeType === "application/vnd.google-apps.drawing"
       );
       const filesToShow = mediaFiles.length > 0 ? mediaFiles : allFiles;
+
+      // Check which files are already imported
+      const driveIds = filesToShow.map((f: DriveFile) => f.id);
+      const { data: existingPieces } = await supabase
+        .from("content_pieces")
+        .select("drive_file_id")
+        .eq("client_id", clientId)
+        .in("drive_file_id", driveIds);
+      
+      const alreadySet = new Set((existingPieces ?? []).map(p => p.drive_file_id).filter(Boolean) as string[]);
+      setAlreadyImported(alreadySet);
+
       setFiles(filesToShow);
-      setSelectedFiles(new Set(filesToShow.map((f: DriveFile) => f.id)));
+      // Only pre-select NEW files
+      setSelectedFiles(new Set(filesToShow.filter((f: DriveFile) => !alreadySet.has(f.id)).map((f: DriveFile) => f.id)));
+      
+      const newCount = filesToShow.length - alreadySet.size;
       if (allFiles.length === 0) {
         toast.error("Keine Dateien im Ordner gefunden", {
           description: result.service_account_email 
@@ -124,8 +140,12 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
             : "Stelle sicher, dass der Ordner mit dem Service Account geteilt ist.",
           duration: 10000,
         });
-      } else if (mediaFiles.length === 0 && allFiles.length > 0) {
-        toast.info(`${allFiles.length} Dateien gefunden (kein Medien-Filter angewendet)`);
+      } else if (alreadySet.size > 0 && newCount > 0) {
+        toast.success(`${newCount} neue Dateien gefunden`, {
+          description: `${alreadySet.size} bereits importiert`,
+        });
+      } else if (alreadySet.size > 0 && newCount === 0) {
+        toast.info("Alle Dateien wurden bereits importiert");
       }
     } catch (err: any) {
       toast.error("Fehler beim Laden", { description: err.message });
@@ -179,9 +199,11 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
     });
   };
 
+  const selectableFiles = files.filter(f => !alreadyImported.has(f.id));
+
   const toggleAll = () => {
-    if (selectedFiles.size === files.length) setSelectedFiles(new Set());
-    else setSelectedFiles(new Set(files.map(f => f.id)));
+    if (selectedFiles.size === selectableFiles.length) setSelectedFiles(new Set());
+    else setSelectedFiles(new Set(selectableFiles.map(f => f.id)));
   };
 
   return (
@@ -250,36 +272,45 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
               {/* File list */}
               <div className="flex items-center justify-between">
                 <button onClick={toggleAll} className="text-xs text-primary hover:underline">
-                  {selectedFiles.size === files.length ? "Keine auswählen" : "Alle auswählen"}
+                  {selectedFiles.size === selectableFiles.length ? "Keine auswählen" : "Alle neuen auswählen"}
                 </button>
                 <span className="text-xs text-muted-foreground">
-                  {selectedFiles.size}/{files.length} ausgewählt
+                  {selectedFiles.size} neu / {alreadyImported.size} bereits importiert
                 </span>
               </div>
 
               <div className="overflow-y-auto flex-1 space-y-1 max-h-[300px] pr-1">
-                {files.map(f => (
-                  <label
-                    key={f.id}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors",
-                      selectedFiles.has(f.id) ? "bg-primary/5 border border-primary/20" : "bg-muted/30 border border-transparent hover:bg-muted/50"
-                    )}
-                  >
-                    <Checkbox
-                      checked={selectedFiles.has(f.id)}
-                      onCheckedChange={() => toggleFile(f.id)}
-                    />
-                    {fileIcon(f.mimeType)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate">{f.name}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        {f.folder && <span className="bg-muted px-1.5 py-0.5 rounded">{f.folder}</span>}
-                        {f.size && <span>{formatSize(f.size)}</span>}
+                {files.map(f => {
+                  const isImported = alreadyImported.has(f.id);
+                  return (
+                    <label
+                      key={f.id}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                        isImported 
+                          ? "bg-muted/20 border border-transparent opacity-60 cursor-default"
+                          : selectedFiles.has(f.id) 
+                            ? "bg-primary/5 border border-primary/20 cursor-pointer" 
+                            : "bg-muted/30 border border-transparent hover:bg-muted/50 cursor-pointer"
+                      )}
+                    >
+                      <Checkbox
+                        checked={isImported || selectedFiles.has(f.id)}
+                        disabled={isImported}
+                        onCheckedChange={() => !isImported && toggleFile(f.id)}
+                      />
+                      {fileIcon(f.mimeType)}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm truncate">{f.name}</p>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          {isImported && <span className="bg-green-500/10 text-green-600 px-1.5 py-0.5 rounded font-medium">✓ Importiert</span>}
+                          {f.folder && <span className="bg-muted px-1.5 py-0.5 rounded">{f.folder}</span>}
+                          {f.size && <span>{formatSize(f.size)}</span>}
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  );
+                })}
               </div>
 
               <Button onClick={handleImport} disabled={importing || selectedFiles.size === 0} className="w-full">
