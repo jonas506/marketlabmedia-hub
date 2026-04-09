@@ -116,8 +116,23 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
         f.mimeType === "application/vnd.google-apps.drawing"
       );
       const filesToShow = mediaFiles.length > 0 ? mediaFiles : allFiles;
+
+      // Check which files are already imported
+      const driveIds = filesToShow.map((f: DriveFile) => f.id);
+      const { data: existingPieces } = await supabase
+        .from("content_pieces")
+        .select("drive_file_id")
+        .eq("client_id", clientId)
+        .in("drive_file_id", driveIds);
+      
+      const alreadySet = new Set((existingPieces ?? []).map(p => p.drive_file_id).filter(Boolean) as string[]);
+      setAlreadyImported(alreadySet);
+
       setFiles(filesToShow);
-      setSelectedFiles(new Set(filesToShow.map((f: DriveFile) => f.id)));
+      // Only pre-select NEW files
+      setSelectedFiles(new Set(filesToShow.filter((f: DriveFile) => !alreadySet.has(f.id)).map((f: DriveFile) => f.id)));
+      
+      const newCount = filesToShow.length - alreadySet.size;
       if (allFiles.length === 0) {
         toast.error("Keine Dateien im Ordner gefunden", {
           description: result.service_account_email 
@@ -125,8 +140,12 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
             : "Stelle sicher, dass der Ordner mit dem Service Account geteilt ist.",
           duration: 10000,
         });
-      } else if (mediaFiles.length === 0 && allFiles.length > 0) {
-        toast.info(`${allFiles.length} Dateien gefunden (kein Medien-Filter angewendet)`);
+      } else if (alreadySet.size > 0 && newCount > 0) {
+        toast.success(`${newCount} neue Dateien gefunden`, {
+          description: `${alreadySet.size} bereits importiert`,
+        });
+      } else if (alreadySet.size > 0 && newCount === 0) {
+        toast.info("Alle Dateien wurden bereits importiert");
       }
     } catch (err: any) {
       toast.error("Fehler beim Laden", { description: err.message });
