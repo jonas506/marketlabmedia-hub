@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, FileText, LayoutList, Columns3, AlertTriangle, Film, LayoutGrid, Megaphone, Youtube, ExternalLink } from "lucide-react";
+import { Printer, FileText, LayoutList, Columns3, AlertTriangle, Film, LayoutGrid, Megaphone, Youtube, ExternalLink, FolderDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -23,6 +23,7 @@ interface PipelineHeaderProps {
   onViewModeChange: (mode: "list" | "kanban") => void;
   onOpenPrintScripts: () => void;
   onOpenCaptionStudio: () => void;
+  onOpenDriveImport?: () => void;
   canEdit: boolean;
   hasPieces: boolean;
   noDeadlineCount?: number;
@@ -44,6 +45,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   onViewModeChange,
   onOpenPrintScripts,
   onOpenCaptionStudio,
+  onOpenDriveImport,
   canEdit,
   hasPieces,
   noDeadlineCount = 0,
@@ -123,6 +125,17 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           </div>
         )}
 
+        {canEdit && onOpenDriveImport && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs gap-1.5"
+            onClick={onOpenDriveImport}
+          >
+            <FolderDown className="h-3 w-3" />
+            <span className="hidden sm:inline">Drive Import</span>
+          </Button>
+        )}
         {hasPieces && (
           <Button
             size="sm"
