@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
   Copy, Check, FileDown, ImageIcon, Upload, Save, Palette, Archive,
   ArrowUp, ArrowDown, AlignLeft, AlignCenter, AlignRight,
+  Bold, Underline, Highlighter,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,29 @@ interface CarouselBuilderProps {
 }
 
 const genSlideId = () => `s${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+/** Wrap selected text in a textarea with an HTML tag */
+const wrapSelection = (
+  textarea: HTMLTextAreaElement,
+  tag: string,
+  onChange: (newValue: string) => void,
+  attrs?: string,
+) => {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) return; // nothing selected
+  const text = textarea.value;
+  const selected = text.substring(start, end);
+  const openTag = attrs ? `<${tag} ${attrs}>` : `<${tag}>`;
+  const closeTag = `</${tag}>`;
+  const newText = text.substring(0, start) + openTag + selected + closeTag + text.substring(end);
+  onChange(newText);
+  // Restore cursor after React re-render
+  requestAnimationFrame(() => {
+    textarea.focus();
+    textarea.setSelectionRange(start + openTag.length, end + openTag.length);
+  });
+};
 
 const DEFAULT_SLIDES: Slide[] = [
   { id: genSlideId(), text: "Slide 1 — Überschrift hier" },
@@ -786,6 +810,8 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       </div>
                     </div>
                     <Textarea
+                      ref={el => { if (el) (el as any).__slideField = 'heading'; }}
+                      id={`slide-heading-${idx}`}
                       value={slide.text}
                       onChange={e => updateSlide(idx, e.target.value)}
                       onClick={e => e.stopPropagation()}
@@ -794,6 +820,8 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       rows={1}
                     />
                     <Textarea
+                      ref={el => { if (el) (el as any).__slideField = 'body'; }}
+                      id={`slide-body-${idx}`}
                       value={slide.body || ""}
                       onChange={e => updateSlideBody(idx, e.target.value)}
                       onClick={e => e.stopPropagation()}
@@ -801,6 +829,51 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       className="text-[11px] bg-transparent border-0 p-0 min-h-[32px] resize-none focus-visible:ring-0 text-muted-foreground"
                       rows={2}
                     />
+                    {/* Formatting toolbar */}
+                    <div className="flex items-center gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
+                      <span className="text-[9px] text-muted-foreground mr-1">Format:</span>
+                      {([
+                        { icon: Bold, tag: "b", label: "Fett" },
+                        { icon: Underline, tag: "u", label: "Unterstrichen" },
+                      ] as const).map(({ icon: Icon, tag, label }) => (
+                        <button
+                          key={tag}
+                          title={label}
+                          className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+                          onMouseDown={e => {
+                            e.preventDefault();
+                            // Find the focused textarea within this slide card
+                            const headingEl = document.getElementById(`slide-heading-${idx}`) as HTMLTextAreaElement | null;
+                            const bodyEl = document.getElementById(`slide-body-${idx}`) as HTMLTextAreaElement | null;
+                            const active = document.activeElement;
+                            const target = active === bodyEl ? bodyEl : headingEl;
+                            if (target) {
+                              const setter = target === bodyEl ? (v: string) => updateSlideBody(idx, v) : (v: string) => updateSlide(idx, v);
+                              wrapSelection(target, tag, setter);
+                            }
+                          }}
+                        >
+                          <Icon className="h-3 w-3" />
+                        </button>
+                      ))}
+                      <button
+                        title="Farblich hervorheben"
+                        className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          const headingEl = document.getElementById(`slide-heading-${idx}`) as HTMLTextAreaElement | null;
+                          const bodyEl = document.getElementById(`slide-body-${idx}`) as HTMLTextAreaElement | null;
+                          const active = document.activeElement;
+                          const target = active === bodyEl ? bodyEl : headingEl;
+                          if (target) {
+                            const setter = target === bodyEl ? (v: string) => updateSlideBody(idx, v) : (v: string) => updateSlide(idx, v);
+                            wrapSelection(target, "mark", setter);
+                          }
+                        }}
+                      >
+                        <Highlighter className="h-3 w-3" />
+                      </button>
+                    </div>
                     {/* Font size & alignment controls */}
                     <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center gap-1 flex-1">
