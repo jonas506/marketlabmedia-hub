@@ -56,6 +56,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [localTitles, setLocalTitles] = useState<Record<string, string>>({});
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [printScriptsOpen, setPrintScriptsOpen] = useState(false);
+  const [driveImportOpen, setDriveImportOpen] = useState(false);
   const [carouselBuilderPiece, setCarouselBuilderPiece] = useState<ContentPiece | null>(null);
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
