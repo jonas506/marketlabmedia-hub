@@ -117,15 +117,21 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
       );
       const filesToShow = mediaFiles.length > 0 ? mediaFiles : allFiles;
 
-      // Check which files are already imported
+      // Check which files are currently active in the pipeline (not yet fully done)
       const driveIds = filesToShow.map((f: DriveFile) => f.id);
+      const activePhasesFilter = ["script", "filmed", "editing", "edit", "design", "review", "feedback"];
       const { data: existingPieces } = await supabase
         .from("content_pieces")
-        .select("drive_file_id")
+        .select("drive_file_id, phase")
         .eq("client_id", clientId)
         .in("drive_file_id", driveIds);
       
-      const alreadySet = new Set((existingPieces ?? []).map(p => p.drive_file_id).filter(Boolean) as string[]);
+      // Only mark as "already imported" if the piece is still active (not approved/handed_over)
+      const alreadySet = new Set(
+        (existingPieces ?? [])
+          .filter(p => p.drive_file_id && activePhasesFilter.includes(p.phase))
+          .map(p => p.drive_file_id) as string[]
+      );
       setAlreadyImported(alreadySet);
 
       setFiles(filesToShow);
