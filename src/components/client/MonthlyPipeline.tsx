@@ -83,7 +83,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const { data: team = [] } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
-      const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["cutter", "head_of_content"]);
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
       if (!roles?.length) return [];
       const userIds = roles.map((r) => r.user_id);
       const { data: profiles } = await supabase.from("profiles").select("user_id, name, email").in("user_id", userIds);
