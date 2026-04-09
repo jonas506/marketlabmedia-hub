@@ -16,6 +16,7 @@ import ScriptEditorDialog from "./ScriptEditorDialog";
 import PipelineKanban from "./PipelineKanban";
 import PrintScriptsDialog from "./PrintScriptsDialog";
 import CarouselBuilder from "./CarouselBuilder";
+import DriveImportDialog from "./pipeline/DriveImportDialog";
 import {
   PipelineHeader,
   PipelineTypeTabs,
