@@ -238,6 +238,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     qc.invalidateQueries({ queryKey: ["posting-calendar"] });
     qc.invalidateQueries({ queryKey: ["tasks"] });
+    qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
   }, [qc, clientId, config, getPhaseLabel, monthPieces, triggerTranscription]);
 
   const bulkMove = useMutation({
@@ -250,6 +251,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     },
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
+      qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
       setSelected(new Set());
       if (result) {
         if (result.next === "handed_over") { fireConfetti(); toast.success(`🚀 ${result.count} Pieces geplant!`, { description: "Alles zählt jetzt ins Kontingent" }); }
