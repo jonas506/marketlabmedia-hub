@@ -44,6 +44,7 @@ const KontingentBar: React.FC<{ label: string; posted: number; target: number; c
 const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = ({ client, index }) => {
   const { role } = useAuth();
   const canDelete = role === "admin";
+  const lc = lifecycleConfig[client.lifecyclePhase];
 
   return (
     <motion.div
@@ -58,9 +59,39 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
         </div>
       )}
 
-      <Link to={`/client/${client.id}`} className="block p-4">
-        <div className="flex items-center gap-4">
-          {/* Logo */}
+      <Link to={`/client/${client.id}`} className="block p-3 sm:p-4">
+        {/* Mobile layout */}
+        <div className="sm:hidden">
+          <div className="flex items-start gap-3">
+            {client.logo_url ? (
+              <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-contain bg-white p-1 ring-1 ring-border shrink-0" />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary shrink-0">
+                {client.name.charAt(0)}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold truncate pr-8">{client.name}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`inline-flex items-center gap-1 text-[10px] py-0.5 px-2 rounded-full border font-semibold ${lc.className}`}>
+                  {lc.icon}
+                  {lc.label}
+                </span>
+                <RunwayBadge days={client.runway} />
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 space-y-1.5">
+            <KontingentBar label="Reels" posted={client.handedOverThisMonth.reels} target={client.monthly_reels} color="bg-primary" />
+            <KontingentBar label="Karussell" posted={client.handedOverThisMonth.carousels} target={client.monthly_carousels} color="bg-secondary" />
+            {client.monthly_stories > 0 && (
+              <KontingentBar label="Stories" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} color="bg-accent" />
+            )}
+          </div>
+        </div>
+
+        {/* Desktop layout */}
+        <div className="hidden sm:flex items-center gap-4">
           {client.logo_url ? (
             <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-contain bg-white p-1 ring-1 ring-border shrink-0" />
           ) : (
@@ -68,25 +99,16 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
               {client.name.charAt(0)}
             </div>
           )}
-
-          {/* Name + Status */}
           <div className="min-w-0 w-40 shrink-0">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold truncate">{client.name}</h3>
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary transition-all shrink-0" />
             </div>
-            {(() => {
-              const lc = lifecycleConfig[client.lifecyclePhase];
-              return (
-                <span className={`inline-flex items-center gap-1 text-[10px] py-0.5 px-2 rounded-full border font-semibold mt-1 ${lc.className}`}>
-                  {lc.icon}
-                  {lc.label}
-                </span>
-              );
-            })()}
+            <span className={`inline-flex items-center gap-1 text-[10px] py-0.5 px-2 rounded-full border font-semibold mt-1 ${lc.className}`}>
+              {lc.icon}
+              {lc.label}
+            </span>
           </div>
-
-          {/* Kontingent bars */}
           <div className="flex-1 space-y-1 min-w-0 hidden md:block">
             <KontingentBar label="Reels" posted={client.handedOverThisMonth.reels} target={client.monthly_reels} color="bg-primary" />
             <KontingentBar label="Karussell" posted={client.handedOverThisMonth.carousels} target={client.monthly_carousels} color="bg-secondary" />
@@ -94,8 +116,6 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
               <KontingentBar label="Stories" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} color="bg-accent" />
             )}
           </div>
-
-          {/* Pipeline + Shoot + Runway */}
           <div className="flex items-center gap-4 shrink-0">
             <div className="text-right hidden sm:block">
               <div className="flex items-center gap-1.5">
@@ -112,15 +132,6 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
             <RunwayBadge days={client.runway} />
           </div>
         </div>
-
-        {/* Mobile Kontingent */}
-        <div className="mt-3 space-y-1 md:hidden">
-          <KontingentBar label="Reels" posted={client.handedOverThisMonth.reels} target={client.monthly_reels} color="bg-primary" />
-          <KontingentBar label="Karussell" posted={client.handedOverThisMonth.carousels} target={client.monthly_carousels} color="bg-secondary" />
-          {client.monthly_stories > 0 && (
-            <KontingentBar label="Stories" posted={client.handedOverThisMonth.stories} target={client.monthly_stories} color="bg-accent" />
-          )}
-        </div>
       </Link>
     </motion.div>
   );
@@ -134,10 +145,10 @@ const ClientsList = () => {
   return (
     <AppLayout>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">Kunden</h1>
-            <p className="text-sm text-muted-foreground">Sortiert nach Content-Runway — dringendste zuerst</p>
+        <div className="flex items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-semibold">Kunden</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Sortiert nach Content-Runway — dringendste zuerst</p>
           </div>
           {canCreate && <CreateClientDialog />}
         </div>
