@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, FileText, LayoutList, Columns3, AlertTriangle, Film, LayoutGrid, Megaphone, Youtube, ExternalLink } from "lucide-react";
+import { Printer, FileText, LayoutList, Columns3, AlertTriangle, Film, LayoutGrid, Megaphone, Youtube, ExternalLink, FolderDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -23,6 +23,7 @@ interface PipelineHeaderProps {
   onViewModeChange: (mode: "list" | "kanban") => void;
   onOpenPrintScripts: () => void;
   onOpenCaptionStudio: () => void;
+  onOpenDriveImport?: () => void;
   canEdit: boolean;
   hasPieces: boolean;
   noDeadlineCount?: number;
