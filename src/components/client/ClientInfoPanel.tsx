@@ -277,6 +277,11 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                       <InputField key={l.key} label={l.label} value={values[l.key]} onChange={(v) => setValues({ ...values, [l.key]: v })} placeholder="https://..." />
                     ))}
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {contentDriveLinks.map((l) => (
+                      <InputField key={l.key} icon={<l.icon className="h-3.5 w-3.5" />} label={`${l.label}-Ordner`} value={values[l.key]} onChange={(v) => setValues({ ...values, [l.key]: v })} placeholder="https://drive.google.com/..." />
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
