@@ -87,8 +87,22 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
       const result = await res.json();
       if (result.error) { toast.error(result.error); setLoading(false); return; }
       
+      // Show Drive API error if present
+      if (result.drive_error) {
+        const errMsg = result.drive_error?.message || JSON.stringify(result.drive_error);
+        if (errMsg.includes("notFound") || errMsg.includes("404")) {
+          toast.error("Ordner nicht gefunden oder kein Zugriff", {
+            description: result.service_account_email 
+              ? `Teile den Ordner mit: ${result.service_account_email}`
+              : "Stelle sicher, dass der Ordner mit dem Service Account geteilt ist.",
+            duration: 10000,
+          });
+          setLoading(false);
+          return;
+        }
+      }
+      
       const allFiles = result.files ?? [];
-      // Accept all file types (videos, images, PDFs, PSD, AI, etc.)
       const mediaFiles = allFiles.filter((f: DriveFile) =>
         f.mimeType.startsWith("video/") || 
         f.mimeType.startsWith("image/") || 
@@ -96,18 +110,19 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
         f.mimeType === "application/postscript" ||
         f.mimeType === "application/x-photoshop" ||
         f.mimeType === "application/octet-stream" ||
-        // Google native types
         f.mimeType === "application/vnd.google-apps.video" ||
         f.mimeType === "application/vnd.google-apps.photo" ||
         f.mimeType === "application/vnd.google-apps.drawing"
       );
-      // If no media files found, show ALL files (skip only folders)
       const filesToShow = mediaFiles.length > 0 ? mediaFiles : allFiles;
       setFiles(filesToShow);
       setSelectedFiles(new Set(filesToShow.map((f: DriveFile) => f.id)));
       if (allFiles.length === 0) {
         toast.error("Keine Dateien im Ordner gefunden", {
-          description: "Stelle sicher, dass der Ordner mit dem Service Account geteilt ist.",
+          description: result.service_account_email 
+            ? `Stelle sicher, dass der Ordner mit ${result.service_account_email} geteilt ist.`
+            : "Stelle sicher, dass der Ordner mit dem Service Account geteilt ist.",
+          duration: 10000,
         });
       } else if (mediaFiles.length === 0 && allFiles.length > 0) {
         toast.info(`${allFiles.length} Dateien gefunden (kein Medien-Filter angewendet)`);

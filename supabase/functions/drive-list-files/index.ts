@@ -117,12 +117,14 @@ Deno.serve(async (req) => {
     // List all files recursively (folders + files)
     const q = `'${targetFolderId}' in parents and trashed=false`;
     const fields = "files(id,name,mimeType,webViewLink,thumbnailLink,size,modifiedTime)";
-    const res = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=modifiedTime desc&pageSize=100`,
-      { headers: { Authorization: `Bearer ${googleToken}` } }
-    );
+    const driveUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=modifiedTime desc&pageSize=100&supportsAllDrives=true&includeItemsFromAllDrives=true`;
+    console.log("Drive API request:", driveUrl);
+    const res = await fetch(driveUrl, { 
+      headers: { Authorization: `Bearer ${googleToken}` } 
+    });
 
     const data = await res.json();
+    console.log("Drive API response status:", res.status, "files count:", data.files?.length ?? 0, "error:", JSON.stringify(data.error ?? null));
 
     // For subfolders, also list their contents
     const files = [];
@@ -151,8 +153,15 @@ Deno.serve(async (req) => {
       }
     }
 
+    const serviceEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL") ?? null;
+
     return new Response(
-      JSON.stringify({ files, subfolders: subfolders.map((f) => ({ id: f.id, name: f.name })) }),
+      JSON.stringify({ 
+        files, 
+        subfolders: subfolders.map((f) => ({ id: f.id, name: f.name })),
+        service_account_email: serviceEmail,
+        drive_error: data.error ?? null,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
