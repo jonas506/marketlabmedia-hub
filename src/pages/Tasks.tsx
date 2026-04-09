@@ -5,29 +5,33 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { format, isToday as isTodayFn, addDays, subDays } from "date-fns";
+import { Plus, AlertTriangle, Clock, Calendar, CalendarDays } from "lucide-react";
+import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Task, TeamMember, GroupKey, groupTasks, getInitials } from "@/components/tasks/constants";
 import { TaskCard } from "@/components/tasks";
 import TaskGroupSection from "@/components/tasks/TaskGroupSection";
-import TeamTaskColumn from "@/components/tasks/TeamTaskColumn";
-import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
-import TaskGroupCard from "@/components/tasks/TaskGroupCard";
 import MergedGroupCard from "@/components/tasks/MergedGroupCard";
 import CompletedTasksView from "@/components/tasks/CompletedTasksView";
+import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+
+const PRIORITY_COLUMNS = [
+  { key: "overdue" as GroupKey, label: "Überfällig", icon: AlertTriangle, color: "text-destructive", borderColor: "border-t-destructive", bgAccent: "bg-destructive/5" },
+  { key: "today" as GroupKey, label: "Heute", icon: Clock, color: "text-[hsl(var(--status-working))]", borderColor: "border-t-[hsl(var(--status-working))]", bgAccent: "bg-[hsl(var(--status-working))]/5" },
+  { key: "week" as GroupKey, label: "Diese Woche", icon: Calendar, color: "text-primary", borderColor: "border-t-primary", bgAccent: "bg-primary/5" },
+  { key: "later" as GroupKey, label: "Später", icon: CalendarDays, color: "text-muted-foreground", borderColor: "border-t-muted", bgAccent: "bg-muted/5" },
+];
 
 const Tasks = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<"team" | "mine" | "done">("team");
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [quickTitle, setQuickTitle] = useState("");
   const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -84,7 +88,12 @@ const Tasks = () => {
     return m;
   }, [team]);
 
-  // Detect group tasks (those with group_source and no content_piece_id = parent tasks)
+  const personNameMap = useMemo(() => {
+    const m: Record<string, string> = {};
+    team.forEach(t => m[t.user_id] = t.name || t.email || "?");
+    return m;
+  }, [team]);
+
   const isGroupTask = useCallback((task: any) => {
     return task.group_source && !task.content_piece_id;
   }, []);
@@ -120,43 +129,58 @@ const Tasks = () => {
     toast.success("Aufgabe erstellt");
   };
 
-  // Merge group tasks by client
-  const mergeByClient = useCallback((gTasks: Task[]) => {
+  // === Team view: Group all tasks by priority, then by client ===
+  const regularTasks = useMemo(() => allTasks.filter(t => !isGroupTask(t)), [allTasks, isGroupTask]);
+  const groupedByPriority = useMemo(() => groupTasks(regularTasks, todayStr), [regularTasks, todayStr]);
+
+  // Group tasks within each priority column by client
+  const groupByClient = useCallback((tasks: Task[]) => {
     const byClient: Record<string, Task[]> = {};
-    gTasks.forEach(t => {
+    tasks.forEach(t => {
+      const key = t.client_id || "no-client";
+      if (!byClient[key]) byClient[key] = [];
+      byClient[key].push(t);
+    });
+    return Object.entries(byClient)
+      .map(([cid, ts]) => ({ clientId: cid, clientName: clientMap[cid] || "Ohne Kunde", tasks: ts }))
+      .sort((a, b) => b.tasks.length - a.tasks.length);
+  }, [clientMap]);
+
+  // Merged group tasks (Pieces schneiden etc.) grouped by priority
+  const allGroupTasks = useMemo(() => allTasks.filter(t => isGroupTask(t)), [allTasks, isGroupTask]);
+  const mergeByClient = useCallback((tasks: Task[]) => {
+    const byClient: Record<string, Task[]> = {};
+    tasks.forEach(t => {
       const key = t.client_id || "unknown";
       if (!byClient[key]) byClient[key] = [];
       byClient[key].push(t);
     });
-    return Object.entries(byClient).map(([cid, tasks]) => ({
+    return Object.entries(byClient).map(([cid, ts]) => ({
       clientId: cid,
       clientName: clientMap[cid] || "Unbekannt",
-      parentTasks: tasks,
+      parentTasks: ts,
     }));
   }, [clientMap]);
+  const mergedGroups = useMemo(() => mergeByClient(allGroupTasks), [allGroupTasks, mergeByClient]);
 
+  // No-deadline tasks
+  const noDeadlineTasks = groupedByPriority.no_deadline;
+  const noDeadlineByClient = useMemo(() => groupByClient(noDeadlineTasks), [noDeadlineTasks, groupByClient]);
+
+  // === My tasks ===
   const myTasks = useMemo(() => allTasks.filter(t => t.assigned_to === user?.id), [allTasks, user?.id]);
-  const myGrouped = useMemo(() => groupTasks(myTasks.filter(t => !isGroupTask(t)), todayStr), [myTasks, todayStr, isGroupTask]);
+  const myRegular = useMemo(() => myTasks.filter(t => !isGroupTask(t)), [myTasks, isGroupTask]);
+  const myGrouped = useMemo(() => groupTasks(myRegular, todayStr), [myRegular, todayStr]);
   const myGroupTasks = useMemo(() => myTasks.filter(t => isGroupTask(t)), [myTasks, isGroupTask]);
   const myMergedGroups = useMemo(() => mergeByClient(myGroupTasks), [myGroupTasks, mergeByClient]);
 
-  const teamColumns = useMemo(() => {
-    return team.map(member => {
-      const tasks = allTasks.filter(t => t.assigned_to === member.user_id);
-      const regularTasks = tasks.filter(t => !isGroupTask(t));
-      const groupedTasks = tasks.filter(t => isGroupTask(t));
-      const grouped = groupTasks(regularTasks, todayStr);
-      const mergedGroups = mergeByClient(groupedTasks);
-      return { member, grouped, mergedGroups };
-    });
-  }, [team, allTasks, todayStr, isGroupTask, mergeByClient]);
-
-  const unassignedTasks = useMemo(() => allTasks.filter(t => !t.assigned_to), [allTasks]);
-  const unassignedGrouped = useMemo(() => groupTasks(unassignedTasks, todayStr), [unassignedTasks, todayStr]);
+  // Summary stats
+  const totalOpen = allTasks.length;
+  const overdueCount = groupedByPriority.overdue.length;
 
   const VIEW_TABS = [
-    { key: "team" as const, label: "Team" },
-    { key: "mine" as const, label: "Meine" },
+    { key: "team" as const, label: "Team", count: totalOpen },
+    { key: "mine" as const, label: "Meine", count: myTasks.length },
     { key: "done" as const, label: "Erledigt" },
   ];
 
@@ -165,12 +189,14 @@ const Tasks = () => {
       <ErrorBoundary level="section">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
-        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
+        <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             <h1 className="text-xl font-display font-bold tracking-tight">Aufgaben</h1>
-            <p className="font-body text-xs text-muted-foreground mt-0.5">
-              Aufgaben im Team verwalten und priorisieren
-            </p>
+            {overdueCount > 0 && viewMode !== "done" && (
+              <span className="flex items-center gap-1 text-[10px] font-mono text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+                <AlertTriangle className="h-3 w-3" /> {overdueCount} überfällig
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1 bg-surface-elevated rounded-lg p-0.5 border border-border">
             {VIEW_TABS.map(tab => (
@@ -178,11 +204,19 @@ const Tasks = () => {
                 key={tab.key}
                 onClick={() => setViewMode(tab.key)}
                 className={cn(
-                  "px-3 py-1.5 rounded-md text-xs font-mono transition-all",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono transition-all",
                   viewMode === tab.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {tab.label}
+                {tab.count !== undefined && (
+                  <span className={cn(
+                    "text-[10px] px-1.5 py-0 rounded-full",
+                    viewMode === tab.key ? "bg-primary-foreground/20" : "bg-muted/60"
+                  )}>
+                    {tab.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -202,8 +236,6 @@ const Tasks = () => {
                 onKeyDown={e => { if (e.key === "Enter" && quickTitle.trim()) quickAdd(); }}
               />
             </div>
-
-            {/* Merged group tasks by client */}
             {myMergedGroups.length > 0 && (
               <div className="space-y-2">
                 {myMergedGroups.map(mg => (
@@ -219,7 +251,6 @@ const Tasks = () => {
                 ))}
               </div>
             )}
-
             <div className="space-y-3">
               <TaskGroupSection groupKey="overdue" tasks={myGrouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
               <TaskGroupSection groupKey="today" tasks={myGrouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
@@ -234,66 +265,125 @@ const Tasks = () => {
             </div>
           </div>
         ) : (
+          /* ====== TEAM VIEW: Priority Kanban ====== */
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(prev => subDays(prev, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="font-display text-sm font-semibold min-w-36 text-center">
-                {format(selectedDate, "EEEE, dd. MMMM yyyy", { locale: de })}
-              </span>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedDate(prev => addDays(prev, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              {!isTodayFn(selectedDate) && (
-                <Button variant="outline" size="sm" className="h-8 text-xs font-mono" onClick={() => setSelectedDate(new Date())}>
-                  Heute
-                </Button>
-              )}
-            </div>
+            {/* Merged group tasks (Pieces schneiden) — compact summary */}
+            {mergedGroups.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {mergedGroups.map(mg => (
+                  <MergedGroupCard
+                    key={mg.clientId}
+                    clientId={mg.clientId}
+                    clientName={mg.clientName}
+                    parentTasks={mg.parentTasks as any}
+                    teamMap={teamNameMap}
+                    todayStr={todayStr}
+                    onSelect={selectTask}
+                  />
+                ))}
+              </div>
+            )}
 
-            <div className="flex gap-4 overflow-x-auto pb-2 snap-x md:snap-none">
-              {teamColumns.map(({ member, grouped, mergedGroups }) => (
-                <div key={member.user_id} className="min-w-[280px] md:min-w-0 md:flex-1 snap-start space-y-2">
-                  {/* Merged group tasks by client */}
-                  {mergedGroups.map(mg => (
-                    <MergedGroupCard
-                      key={mg.clientId}
-                      clientId={mg.clientId}
-                      clientName={mg.clientName}
-                      parentTasks={mg.parentTasks as any}
-                      teamMap={teamNameMap}
-                      todayStr={todayStr}
-                      onSelect={selectTask}
-                    />
-                  ))}
-                  <TeamTaskColumn member={member} grouped={grouped} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-                </div>
-              ))}
+            {/* Priority columns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+              {PRIORITY_COLUMNS.map(col => {
+                const tasks = groupedByPriority[col.key];
+                const clientGroups = groupByClient(tasks);
+                const Icon = col.icon;
 
-              {unassignedTasks.length > 0 && (
-                <div className="min-w-[280px] md:min-w-0 md:flex-1 snap-start">
-                  <div className="rounded-xl border border-border bg-card overflow-hidden">
-                    <div className="flex items-center gap-2.5 px-3 py-2.5 bg-surface-elevated border-b border-border">
-                      <Avatar className="h-7 w-7">
-                        <AvatarFallback className="text-[10px] font-bold bg-muted text-muted-foreground">?</AvatarFallback>
-                      </Avatar>
-                      <p className="text-xs font-display font-semibold text-muted-foreground">Nicht zugewiesen</p>
-                      <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full ml-auto">
-                        {unassignedTasks.length}
+                return (
+                  <div key={col.key} className={cn("rounded-xl border border-border bg-card overflow-hidden border-t-2", col.borderColor)}>
+                    {/* Column header */}
+                    <div className={cn("flex items-center gap-2 px-3 py-2.5 border-b border-border", col.bgAccent)}>
+                      <Icon className={cn("h-4 w-4", col.color)} />
+                      <span className={cn("text-xs font-display font-semibold", col.color)}>{col.label}</span>
+                      <span className={cn("ml-auto text-[10px] font-mono font-bold rounded-full px-2 py-0.5", col.bgAccent, col.color)}>
+                        {tasks.length}
                       </span>
                     </div>
-                    <div className="p-2 space-y-1 max-h-[60vh] overflow-y-auto">
-                      <AnimatePresence mode="popLayout">
-                        {unassignedTasks.map(t => (
-                          <TaskCard key={t.id} task={t} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-                        ))}
-                      </AnimatePresence>
+
+                    {/* Tasks grouped by client */}
+                    <div className="p-2 space-y-3 max-h-[55vh] overflow-y-auto">
+                      {clientGroups.length === 0 && (
+                        <div className="py-6 text-center text-[10px] text-muted-foreground/30 font-mono">
+                          Keine Aufgaben
+                        </div>
+                      )}
+                      {clientGroups.map(({ clientId, clientName, tasks: clientTasks }) => (
+                        <div key={clientId}>
+                          <p className="text-[10px] font-mono font-semibold text-muted-foreground px-1 mb-1 truncate">
+                            {clientName}
+                          </p>
+                          <div className="space-y-1">
+                            <AnimatePresence mode="popLayout">
+                              {clientTasks.map(t => (
+                                <TaskCard
+                                  key={t.id}
+                                  task={t}
+                                  showClient={false}
+                                  showPerson
+                                  personName={t.assigned_to ? personNameMap[t.assigned_to] : null}
+                                  todayStr={todayStr}
+                                  onComplete={completeTask}
+                                  onSelect={selectTask}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })}
             </div>
+
+            {/* No deadline section — collapsed */}
+            {noDeadlineTasks.length > 0 && (
+              <Collapsible defaultOpen={false}>
+                <CollapsibleTrigger className="flex items-center gap-2 px-3 py-2 w-full text-left hover:bg-surface-hover rounded-lg transition-colors border border-border bg-card">
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform [[data-state=closed]_&]:-rotate-90" />
+                  <CalendarDays className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  <span className="text-xs font-display font-semibold text-muted-foreground">Ohne Deadline</span>
+                  <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full">
+                    {noDeadlineTasks.length}
+                  </span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {noDeadlineByClient.map(({ clientId, clientName, tasks: clientTasks }) => (
+                      <div key={clientId} className="rounded-lg border border-border/50 bg-card p-2">
+                        <p className="text-[10px] font-mono font-semibold text-muted-foreground px-1 mb-1.5 truncate">
+                          {clientName} <span className="text-muted-foreground/50">({clientTasks.length})</span>
+                        </p>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                          <AnimatePresence mode="popLayout">
+                            {clientTasks.map(t => (
+                              <TaskCard
+                                key={t.id}
+                                task={t}
+                                showClient={false}
+                                showPerson
+                                personName={t.assigned_to ? personNameMap[t.assigned_to] : null}
+                                todayStr={todayStr}
+                                onComplete={completeTask}
+                                onSelect={selectTask}
+                              />
+                            ))}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+            {totalOpen === 0 && (
+              <div className="py-12 text-center text-xs text-muted-foreground/40 font-mono">
+                Keine offenen Aufgaben ✓
+              </div>
+            )}
           </div>
         )}
 
