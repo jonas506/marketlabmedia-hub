@@ -294,7 +294,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                       <ExternalLink className="h-3 w-3 opacity-60" />
                     </a>
                   )}
-                  {/* Quick links */}
+                  {/* Branding quick links */}
                   <div className="flex flex-wrap gap-1.5">
                     {brandingLinks.map((l) => {
                       const Icon = l.icon;
@@ -305,10 +305,24 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                         </a>
                       ) : null;
                     })}
-                    {!brandingLinks.some((l) => client[l.key]) && ciAssets.length === 0 && (
-                      <span className="text-xs text-muted-foreground">Keine Branding-Links oder CI-Dateien</span>
-                    )}
                   </div>
+                  {/* Content-type Drive links */}
+                  {contentDriveLinks.some((l) => (client as any)[l.key]) && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {contentDriveLinks.map((l) => {
+                        const Icon = l.icon;
+                        return (client as any)[l.key] ? (
+                          <a key={l.key} href={(client as any)[l.key]} target="_blank" rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/5 px-2.5 py-1.5 text-xs font-body text-primary hover:bg-primary/10 hover:border-primary/30 transition-all">
+                            <Icon className="h-3 w-3" />{l.label}<ExternalLink className="h-2.5 w-2.5 opacity-40" />
+                          </a>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  {!brandingLinks.some((l) => client[l.key]) && !contentDriveLinks.some((l) => (client as any)[l.key]) && ciAssets.length === 0 && !driveFolderUrl && (
+                    <span className="text-xs text-muted-foreground">Keine Branding-Links oder CI-Dateien</span>
+                  )}
                   {/* CI Assets – compact grid */}
                   {ciAssets.length > 0 && (
                     <div className="flex flex-wrap gap-2">
