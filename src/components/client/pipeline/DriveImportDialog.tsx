@@ -87,12 +87,31 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
       const result = await res.json();
       if (result.error) { toast.error(result.error); setLoading(false); return; }
       
-      const mediaFiles = (result.files ?? []).filter((f: DriveFile) =>
-        f.mimeType.startsWith("video/") || f.mimeType.startsWith("image/") || f.mimeType === "application/pdf"
+      const allFiles = result.files ?? [];
+      // Accept all file types (videos, images, PDFs, PSD, AI, etc.)
+      const mediaFiles = allFiles.filter((f: DriveFile) =>
+        f.mimeType.startsWith("video/") || 
+        f.mimeType.startsWith("image/") || 
+        f.mimeType === "application/pdf" ||
+        f.mimeType === "application/postscript" ||
+        f.mimeType === "application/x-photoshop" ||
+        f.mimeType === "application/octet-stream" ||
+        // Google native types
+        f.mimeType === "application/vnd.google-apps.video" ||
+        f.mimeType === "application/vnd.google-apps.photo" ||
+        f.mimeType === "application/vnd.google-apps.drawing"
       );
-      setFiles(mediaFiles);
-      setSelectedFiles(new Set(mediaFiles.map((f: DriveFile) => f.id)));
-      if (mediaFiles.length === 0) toast.info("Keine Medien-Dateien im Ordner gefunden");
+      // If no media files found, show ALL files (skip only folders)
+      const filesToShow = mediaFiles.length > 0 ? mediaFiles : allFiles;
+      setFiles(filesToShow);
+      setSelectedFiles(new Set(filesToShow.map((f: DriveFile) => f.id)));
+      if (allFiles.length === 0) {
+        toast.error("Keine Dateien im Ordner gefunden", {
+          description: "Stelle sicher, dass der Ordner mit dem Service Account geteilt ist.",
+        });
+      } else if (mediaFiles.length === 0 && allFiles.length > 0) {
+        toast.info(`${allFiles.length} Dateien gefunden (kein Medien-Filter angewendet)`);
+      }
     } catch (err: any) {
       toast.error("Fehler beim Laden", { description: err.message });
     } finally {
