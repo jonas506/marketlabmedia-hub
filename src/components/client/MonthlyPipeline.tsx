@@ -191,7 +191,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     if (nextPhase === "handed_over") {
       const piece = monthPieces.find(p => p.id === pieceId);
       if (!piece?.scheduled_post_date) {
-        toast.error("📅 Posting-Datum fehlt", { description: "Bitte zuerst ein Posting-Datum setzen, bevor das Piece übergeben wird." });
+        toast.error("📅 Posting-Datum fehlt", { description: "Bitte zuerst ein Posting-Datum setzen, bevor das Piece geplant wird." });
         return;
       }
     }
