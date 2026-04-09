@@ -125,6 +125,17 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           </div>
         )}
 
+        {canEdit && onOpenDriveImport && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs gap-1.5"
+            onClick={onOpenDriveImport}
+          >
+            <FolderDown className="h-3 w-3" />
+            <span className="hidden sm:inline">Drive Import</span>
+          </Button>
+        )}
         {hasPieces && (
           <Button
             size="sm"
