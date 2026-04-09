@@ -152,6 +152,10 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     client.monthly_carousels > 0 && `${client.monthly_carousels} Karussells`,
   ].filter(Boolean).join(" · ") || "Kein Kontingent";
 
+  const driveFolderUrl = client.drive_folder_id
+    ? `https://drive.google.com/drive/folders/${client.drive_folder_id}`
+    : null;
+
   const brandingLinks = [
     { key: "drive_branding_link", label: "Branding", icon: Folder },
     { key: "drive_logo_link", label: "Logo", icon: Image },
@@ -238,6 +242,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
             {/* Branding & CI – compact */}
             <Section title="Branding & CI" editing={editing === "branding"} canEdit={canEdit}
               onEdit={() => startEdit("branding", {
+                drive_folder_id: client.drive_folder_id || "",
                 drive_branding_link: client.drive_branding_link || "",
                 drive_logo_link: client.drive_logo_link || "",
                 drive_styleguide_link: client.drive_styleguide_link || "",
@@ -252,13 +257,28 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                 </Button>
               ) : undefined}>
               {editing === "branding" ? (
-                <div className="grid grid-cols-3 gap-3">
-                  {brandingLinks.map((l) => (
-                    <InputField key={l.key} label={l.label} value={values[l.key]} onChange={(v) => setValues({ ...values, [l.key]: v })} placeholder="https://..." />
-                  ))}
+                <div className="space-y-3">
+                  <div>
+                    <InputField icon={<Folder className="h-3.5 w-3.5" />} label="Drive-Ordner ID" value={values.drive_folder_id} onChange={(v) => setValues({ ...values, drive_folder_id: v })} placeholder="Google Drive Folder-ID einfügen" />
+                    <p className="text-[10px] text-muted-foreground mt-1">Die Folder-ID findest du in der URL: drive.google.com/drive/folders/<strong>DIESE_ID</strong></p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {brandingLinks.map((l) => (
+                      <InputField key={l.key} label={l.label} value={values[l.key]} onChange={(v) => setValues({ ...values, [l.key]: v })} placeholder="https://..." />
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Drive folder prominent button */}
+                  {driveFolderUrl && (
+                    <a href={driveFolderUrl} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-all">
+                      <Folder className="h-4 w-4" />
+                      Drive-Ordner öffnen
+                      <ExternalLink className="h-3 w-3 opacity-60" />
+                    </a>
+                  )}
                   {/* Quick links */}
                   <div className="flex flex-wrap gap-1.5">
                     {brandingLinks.map((l) => {
