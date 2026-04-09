@@ -50,7 +50,7 @@ interface BrandColors {
 
 type FontStyle = "modern" | "editorial" | "bold";
 type SlideFormat = "1:1" | "4:5";
-type ThemeId = "numbered" | "steps" | "minimal" | "dark" | "gradient" | "card";
+type ThemeId = "numbered" | "steps" | "minimal" | "dark" | "gradient" | "card" | "creator";
 
 interface CarouselBuilderProps {
   open: boolean;
@@ -108,6 +108,10 @@ const THEMES: { id: ThemeId; label: string; preview: (c: BrandColors) => { bg: s
   {
     id: "card", label: "Card",
     preview: (c) => ({ bg: c.accent, accent: "#ffffff", text: c.textDark }),
+  },
+  {
+    id: "creator", label: "Creator",
+    preview: () => ({ bg: "#ffffff", accent: "#1DA1F2", text: "#1a1a1a" }),
   },
 ];
 
