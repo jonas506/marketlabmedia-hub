@@ -720,6 +720,7 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                     <SelectItem value="modern">Modern (Sans-Serif)</SelectItem>
                     <SelectItem value="editorial">Editorial (Serif)</SelectItem>
                     <SelectItem value="bold">Bold (Display)</SelectItem>
+                    <SelectItem value="poppins">Poppins</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
