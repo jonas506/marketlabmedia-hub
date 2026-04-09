@@ -323,7 +323,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-border bg-card overflow-hidden">
-      <PipelineHeader
+       <PipelineHeader
         config={config}
         totalPieces={totalPieces}
         progress={progress}
@@ -335,6 +335,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         canEdit={canEdit}
         hasPieces={monthPieces.length > 0}
         noDeadlineCount={noDeadlineCount}
+        driveLinks={driveLinks ?? undefined}
       />
 
       <div className="p-4">
