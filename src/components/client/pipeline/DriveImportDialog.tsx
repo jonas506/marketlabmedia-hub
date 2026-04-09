@@ -75,16 +75,9 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("drive-list-files", {
-        body: null,
-        headers: {},
-      });
-
-      // Use query params approach - invoke doesn't support query params easily,
-      // so we'll use fetch directly
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
-      if (!token) { toast.error("Nicht eingeloggt"); return; }
+      if (!token) { toast.error("Nicht eingeloggt"); setLoading(false); return; }
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
@@ -92,7 +85,7 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
         { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
       );
       const result = await res.json();
-      if (result.error) { toast.error(result.error); return; }
+      if (result.error) { toast.error(result.error); setLoading(false); return; }
       
       const mediaFiles = (result.files ?? []).filter((f: DriveFile) =>
         f.mimeType.startsWith("video/") || f.mimeType.startsWith("image/") || f.mimeType === "application/pdf"
