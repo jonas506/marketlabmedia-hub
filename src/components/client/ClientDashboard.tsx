@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { differenceInDays, parseISO, format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, AlertTriangle, Clock, ListChecks, TrendingUp } from "lucide-react";
+import { Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, AlertTriangle, Clock, ListChecks, TrendingUp, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isUpcomingHandedOver } from "@/lib/pipeline-utils";
 import KontingentTracker from "./KontingentTracker";
 
 interface ClientDashboardProps {
@@ -27,15 +28,33 @@ const PHASE_LABELS: Record<string, string> = {
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces, canEdit, onNavigate }) => {
   const now = new Date();
 
-  // Pipeline summary
+  // Pipeline summary — 30-day rolling
   const pipelineStats = useMemo(() => {
-    const total = contentPieces.length;
-    const done = contentPieces.filter(p => p.phase === "handed_over").length;
-    const inReview = contentPieces.filter(p => p.phase === "review").length;
-    const inEditing = contentPieces.filter(p => p.phase === "editing").length;
-    const inFeedback = contentPieces.filter(p => p.phase === "feedback").length;
-    const progress = total > 0 ? Math.round((done / total) * 100) : 0;
-    return { total, done, inReview, inEditing, inFeedback, progress };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const in30Days = new Date(today);
+    in30Days.setDate(in30Days.getDate() + 30);
+
+    const upcoming = contentPieces.filter(p => {
+      if (p.scheduled_post_date) {
+        const d = new Date(p.scheduled_post_date);
+        return d >= today && d <= in30Days;
+      }
+      return p.target_month === today.getMonth() + 1 && p.target_year === today.getFullYear();
+    });
+
+    const total = upcoming.length;
+    const planned = upcoming.filter((p: any) => p.phase === "handed_over" && p.scheduled_post_date).length;
+    const inReview = contentPieces.filter((p: any) => p.phase === "review").length;
+    const inEditing = contentPieces.filter((p: any) => p.phase === "editing").length;
+    const inFeedback = contentPieces.filter((p: any) => p.phase === "feedback").length;
+    const progress = total > 0 ? Math.round((planned / total) * 100) : 0;
+
+    const nextPosting = upcoming
+      .filter((p: any) => p.phase === "handed_over" && p.scheduled_post_date && new Date(p.scheduled_post_date) >= today)
+      .sort((a: any, b: any) => new Date(a.scheduled_post_date).getTime() - new Date(b.scheduled_post_date).getTime())[0] as any | undefined;
+
+    return { total, planned, inReview, inEditing, inFeedback, progress, nextPosting };
   }, [contentPieces]);
 
   // Tasks
