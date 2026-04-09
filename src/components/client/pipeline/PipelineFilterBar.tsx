@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { Filter, Plus, Sparkles, ListPlus } from "lucide-react";
+import { Filter, Plus, Sparkles, ListPlus, icons } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { PipelineConfig, TeamMember } from "./types";
 
@@ -17,6 +17,7 @@ interface PipelineFilterBarProps {
   bulkMovePending: boolean;
   nextPhaseEmoji: string;
   nextPhaseLabel: string;
+
   canEdit: boolean;
   onAddPiece: () => void;
   addPiecePending: boolean;
@@ -81,7 +82,7 @@ const PipelineFilterBar: React.FC<PipelineFilterBarProps> = React.memo(({
               <Sparkles className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{selectedCount} →</span>
               <span className="sm:hidden">{selectedCount}→</span>
-              {nextPhaseEmoji}{" "}
+              {(() => { const NIcon = icons[nextPhaseEmoji as keyof typeof icons]; return NIcon ? <NIcon size={14} /> : null; })()}{" "}
               <span className="hidden sm:inline">{nextPhaseLabel}</span>
             </Button>
           </motion.div>
@@ -101,8 +102,8 @@ const PipelineFilterBar: React.FC<PipelineFilterBarProps> = React.memo(({
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <span>{config.emoji}</span> Mehrere {config.label} erstellen
+                 <DialogTitle className="flex items-center gap-2">
+                   {(() => { const TIcon = icons[config.emoji as keyof typeof icons]; return TIcon ? <TIcon size={18} /> : null; })()} Mehrere {config.label} erstellen
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-3">

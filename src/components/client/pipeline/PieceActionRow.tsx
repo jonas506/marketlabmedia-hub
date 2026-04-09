@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { icons } from "lucide-react";
 import { motion } from "framer-motion";
 import { relativeTime } from "./constants";
 import { format } from "date-fns";
@@ -93,7 +94,7 @@ const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
             }`}
             onClick={() => onMovePiece(piece.id, nextPhase)}
           >
-            → {config.phases.find((p) => p.key === nextPhase)?.emoji}
+            → {(() => { const NIcon = icons[config.phases.find((p) => p.key === nextPhase)?.emoji as keyof typeof icons]; return NIcon ? <NIcon size={12} /> : null; })()}
             <span className="hidden sm:inline"> {config.phases.find((p) => p.key === nextPhase)?.label}</span>
           </Button>
         </motion.div>
