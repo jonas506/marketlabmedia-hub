@@ -145,10 +145,10 @@ const ClientsList = () => {
   return (
     <AppLayout>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">Kunden</h1>
-            <p className="text-sm text-muted-foreground">Sortiert nach Content-Runway — dringendste zuerst</p>
+        <div className="flex items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-semibold">Kunden</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Sortiert nach Content-Runway — dringendste zuerst</p>
           </div>
           {canCreate && <CreateClientDialog />}
         </div>
