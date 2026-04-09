@@ -1,9 +1,18 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, FileText, LayoutList, Columns3, AlertTriangle } from "lucide-react";
+import { Printer, FileText, LayoutList, Columns3, AlertTriangle, Film, LayoutGrid, Megaphone, Youtube, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { PipelineConfig } from "./types";
+
+interface DriveLinks {
+  drive_folder_id?: string | null;
+  drive_reels_link?: string | null;
+  drive_carousels_link?: string | null;
+  drive_ads_link?: string | null;
+  drive_youtube_link?: string | null;
+}
 
 interface PipelineHeaderProps {
   config: PipelineConfig;
@@ -17,7 +26,15 @@ interface PipelineHeaderProps {
   canEdit: boolean;
   hasPieces: boolean;
   noDeadlineCount?: number;
+  driveLinks?: DriveLinks;
 }
+
+const DRIVE_LINK_ITEMS = [
+  { key: "drive_reels_link" as const, label: "Reels", icon: Film, color: "text-rose-500" },
+  { key: "drive_carousels_link" as const, label: "Karussells", icon: LayoutGrid, color: "text-blue-500" },
+  { key: "drive_ads_link" as const, label: "Ads", icon: Megaphone, color: "text-amber-500" },
+  { key: "drive_youtube_link" as const, label: "YouTube", icon: Youtube, color: "text-red-500" },
+];
 
 const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   totalPieces,
@@ -30,7 +47,13 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   canEdit,
   hasPieces,
   noDeadlineCount = 0,
+  driveLinks,
 }) => {
+  const activeDriveLinks = DRIVE_LINK_ITEMS.filter(item => driveLinks?.[item.key]);
+  const mainDriveLink = driveLinks?.drive_folder_id
+    ? `https://drive.google.com/drive/folders/${driveLinks.drive_folder_id}`
+    : null;
+
   return (
     <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-3 border-b border-border">
       <h3 className="text-sm font-semibold">Material-Pipeline</h3>
@@ -55,6 +78,51 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
       )}
       <div className="flex-1" />
       <div className="flex items-center gap-1.5 flex-wrap">
+        {/* Drive Links */}
+        {(activeDriveLinks.length > 0 || mainDriveLink) && (
+          <div className="flex items-center gap-0.5 bg-muted/50 rounded-lg px-1 py-0.5">
+            {activeDriveLinks.map(item => (
+              <Tooltip key={item.key}>
+                <TooltipTrigger asChild>
+                  <a
+                    href={driveLinks![item.key]!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "flex items-center gap-1 px-2 py-1 rounded-md text-[11px] transition-all hover:bg-background/80",
+                      item.color
+                    )}
+                  >
+                    <item.icon className="h-3 w-3" />
+                    <span className="hidden lg:inline">{item.label}</span>
+                  </a>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  {item.label}-Ordner in Drive öffnen
+                </TooltipContent>
+              </Tooltip>
+            ))}
+            {mainDriveLink && activeDriveLinks.length === 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <a
+                    href={mainDriveLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground transition-all hover:bg-background/80"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span className="hidden lg:inline">Drive</span>
+                  </a>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  Kunden-Ordner in Drive öffnen
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        )}
+
         {hasPieces && (
           <Button
             size="sm"
