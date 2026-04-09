@@ -51,7 +51,9 @@ export const useClients = () => {
         .select("client_id, phase, type, target_month, target_year, scheduled_post_date")
         .in("client_id", clientIds);
 
-      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+      const today = now.toISOString().split("T")[0];
+      const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
       const { data: shootDays } = await supabase
         .from("shoot_days")
         .select("client_id, date")
