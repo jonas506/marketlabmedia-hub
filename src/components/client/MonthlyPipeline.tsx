@@ -347,6 +347,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const handlePhaseChange = useCallback((phase: string) => { setActivePhase(phase); setSelected(new Set()); }, []);
   const handleOpenPrintScripts = useCallback(() => setPrintScriptsOpen(true), []);
   const handleOpenCaptionStudio = useCallback(() => setCaptionStudioOpen(true), []);
+  const handleOpenDriveImport = useCallback(() => setDriveImportOpen(true), []);
   const handleViewModeChange = useCallback((mode: "list" | "kanban") => setViewMode(mode), []);
   const handleAddPiece = useCallback(() => addPiece.mutate(), [addPiece]);
   const handleBulkMove = useCallback(() => bulkMove.mutate(), [bulkMove]);
@@ -373,6 +374,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         onViewModeChange={handleViewModeChange}
         onOpenPrintScripts={handleOpenPrintScripts}
         onOpenCaptionStudio={handleOpenCaptionStudio}
+        onOpenDriveImport={handleOpenDriveImport}
         canEdit={canEdit}
         hasPieces={monthPieces.length > 0}
         noDeadlineCount={noDeadlineCount}
@@ -540,6 +542,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       <ScriptEditorDialog open={!!scriptPiece} onOpenChange={(open) => !open && setScriptPiece(null)} piece={scriptPiece} clientId={clientId} canEdit={canEdit} />
       <PrintScriptsDialog open={printScriptsOpen} onOpenChange={setPrintScriptsOpen} pieces={monthPieces} />
       <CarouselBuilder open={!!carouselBuilderPiece} onOpenChange={(open) => !open && setCarouselBuilderPiece(null)} piece={carouselBuilderPiece} clientId={clientId} onSaved={() => qc.invalidateQueries({ queryKey: ["content-pieces", clientId] })} />
+      <DriveImportDialog open={driveImportOpen} onOpenChange={setDriveImportOpen} clientId={clientId} activeType={activeType} onImportComplete={() => qc.invalidateQueries({ queryKey: ["content-pieces", clientId] })} />
     </motion.div>
   );
 };
