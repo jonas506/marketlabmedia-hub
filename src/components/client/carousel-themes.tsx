@@ -1,5 +1,19 @@
 import React from "react";
 
+// Sanitize HTML: only allow <b>, <u>, <mark> tags
+const ALLOWED_TAGS = ['b', 'u', 'mark', '/b', '/u', '/mark'];
+function sanitizeHtml(text: string): string {
+  return text.replace(/<\/?[^>]+(>|$)/g, (tag) => {
+    const tagName = tag.replace(/[<>/\s]/g, '').toLowerCase();
+    return ALLOWED_TAGS.includes(tagName) || ALLOWED_TAGS.includes('/' + tagName) ? tag : '';
+  });
+}
+
+/** Renders text with inline formatting (bold/underline/highlight) */
+const RichText: React.FC<{ text: string; style: React.CSSProperties }> = ({ text, style }) => (
+  <p style={style} dangerouslySetInnerHTML={{ __html: sanitizeHtml(text.replace(/\n/g, '<br/>')) }} />
+);
+
 export interface BrandColors {
   primary: string;
   secondary: string;
