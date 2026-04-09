@@ -118,7 +118,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
         alignItems: "center",
         padding: 40,
       }}>
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3,
@@ -156,7 +156,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
           }}>GUIDE</span>
         </div>
         <ProfileRow avatarSrc={avatarSrc} displayName={displayName} color={brandColors.textDark} headingFont={fonts.heading} accentColor={brandColors.accent} />
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(44, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.15, marginTop: 16, textAlign: slide.textAlign || "left",
@@ -198,13 +198,13 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
       </div>
       {/* Headline / body */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(26, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.35, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}} />
         {slide.body && (
-          <RichText text={slide.body} style={style={{
+          <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 14, fontWeight: 400,
             color: brandColors.textDark, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
@@ -252,7 +252,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           textTransform: "uppercase" as const, color: brandColors.textLight,
           opacity: 0.6, fontFamily: fonts.body, marginBottom: 16,
         }}>WANT IN?</span>
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3, fontStyle: "italic",
@@ -280,7 +280,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           opacity: 0.5, fontFamily: fonts.body, marginBottom: 12,
         }}>A QUICK GUIDE</span>
         <ProfileRow avatarSrc={avatarSrc} displayName={displayName} color={brandColors.textLight} headingFont={fonts.heading} accentColor={brandColors.accent} />
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.2, fontStyle: "italic", marginTop: 16, textAlign: slide.textAlign || "left",
@@ -316,14 +316,14 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
       }}>STEP {String(index).padStart(2, "0")}</span>
       {/* Content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", marginTop: 16 }}>
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(32, slide.text, slide.headingSize), fontWeight: 700,
           color: textColor, fontFamily: fonts.heading,
           lineHeight: 1.3, fontStyle: "italic",
           whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}} />
         {slide.body && (
-          <RichText text={slide.body} style={style={{
+          <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 14, fontWeight: 400,
             color: textColor, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
@@ -363,7 +363,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
         ...wrapper, background: brandColors.primary,
       }}>
         <div style={{ width: 40, height: 2, background: brandColors.accent, borderRadius: 1, marginBottom: 24 }} />
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(34, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.35,
@@ -378,7 +378,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
       ...wrapper, background: "#ffffff",
     }}>
       <div style={{ width: 50, height: 2, background: brandColors.accent, borderRadius: 1, marginBottom: 28, opacity: 0.6 }} />
-      <RichText text={slide.text} style={style={{
+      <RichText text={slide.text} style={{
         fontSize: shrinkFont(index === 0 ? 38 : 32, slide.text, slide.headingSize),
         fontWeight: index === 0 ? 800 : 500,
         color: brandColors.textDark, fontFamily: fonts.heading,
@@ -386,7 +386,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
         whiteSpace: "pre-wrap" as const,
       }}} />
       {slide.body && (
-        <RichText text={slide.body} style={style={{
+        <RichText text={slide.body} style={{
           fontSize: slide.bodySize || 13, fontWeight: 400,
           color: brandColors.textDark, fontFamily: fonts.body,
           textAlign: slide.textAlign || "center", lineHeight: 1.5,
@@ -430,7 +430,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
           transform: "translate(-50%, -50%)",
         }} />
         <div style={{ width: 40, height: 3, background: brandColors.accent, borderRadius: 2, marginBottom: 20 }} />
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(34, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3, position: "relative",
@@ -456,7 +456,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
         }} />
         <ProfileRow avatarSrc={avatarSrc} displayName={displayName} color={brandColors.textLight} headingFont={fonts.heading} accentColor={brandColors.accent} />
         <div style={{ width: 40, height: 3, background: brandColors.accent, borderRadius: 2, margin: "16px 0" }} />
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(44, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.15, textAlign: slide.textAlign || "left",
@@ -479,13 +479,13 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
       }} />
       <div style={{ width: 30, height: 3, background: brandColors.accent, borderRadius: 2, marginBottom: 16, opacity: 0.7 }} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(28, slide.text, slide.headingSize), fontWeight: 600,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.4, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}} />
         {slide.body && (
-          <RichText text={slide.body} style={style={{
+          <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 14, fontWeight: 400,
             color: brandColors.textLight, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
@@ -521,7 +521,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
         ...wrapper, justifyContent: "center", alignItems: "center", padding: 40,
         background: brandColors.accent,
       }}>
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3,
@@ -545,7 +545,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
           opacity: 0.6, fontFamily: fonts.body, marginBottom: 12,
         }}>GUIDE</span>
         <ProfileRow avatarSrc={avatarSrc} displayName={displayName} color={brandColors.textLight} headingFont={fonts.heading} accentColor="rgba(255,255,255,0.5)" />
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.2, marginTop: 16, textAlign: slide.textAlign || "left",
@@ -560,14 +560,14 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
     <div key={slide.id} id={`carousel-slide-${index}`} style={{
       ...wrapper, padding: 40, justifyContent: "center", alignItems: "center",
     }}>
-      <RichText text={slide.text} style={style={{
+      <RichText text={slide.text} style={{
         fontSize: shrinkFont(30, slide.text, slide.headingSize), fontWeight: 600,
         color: brandColors.textLight, fontFamily: fonts.heading,
         lineHeight: 1.4, textAlign: "center",
         whiteSpace: "pre-wrap" as const,
       }}} />
       {slide.body && (
-        <RichText text={slide.body} style={style={{
+        <RichText text={slide.body} style={{
           fontSize: slide.bodySize || 14, fontWeight: 400,
           color: brandColors.textLight, fontFamily: fonts.body,
           textAlign: slide.textAlign || "center", lineHeight: 1.5,
@@ -619,7 +619,7 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
           opacity: 0.5, fontFamily: fonts.body, marginBottom: 12,
         }}>ZUSAMMENFASSUNG</span>
         <div style={{ ...card, border: `2px solid ${brandColors.accent}` }}>
-          <RichText text={slide.text} style={style={{
+          <RichText text={slide.text} style={{
             fontSize: shrinkFont(28, slide.text, slide.headingSize), fontWeight: 700,
             color: brandColors.textDark, fontFamily: fonts.heading,
             textAlign: slide.textAlign || "center", lineHeight: 1.35,
@@ -638,7 +638,7 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
           <ProfileRow avatarSrc={avatarSrc} displayName={displayName} color={brandColors.textLight} headingFont={fonts.heading} accentColor={brandColors.accent} />
         </div>
         <div style={card}>
-          <RichText text={slide.text} style={style={{
+          <RichText text={slide.text} style={{
             fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
             color: brandColors.textDark, fontFamily: fonts.heading,
             lineHeight: 1.2, textAlign: slide.textAlign || "left",
@@ -659,13 +659,13 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
         opacity: 0.5, fontFamily: fonts.body, marginBottom: 12,
       }}>{String(index).padStart(2, "0")}</span>
       <div style={card}>
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(24, slide.text, slide.headingSize), fontWeight: 500,
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.45, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
         }}} />
         {slide.body && (
-          <RichText text={slide.body} style={style={{
+          <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 13, fontWeight: 400,
             color: brandColors.textDark, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
@@ -743,14 +743,14 @@ export function renderCreator(p: ThemeRenderProps): React.ReactElement {
           fontFamily: fonts.body, marginBottom: 20, marginTop: 8,
         }}>{slide.body ? "" : "NUN BIST DU AN DER REIHE!"}</div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-          <RichText text={slide.text} style={style={{
+          <RichText text={slide.text} style={{
             fontSize: shrinkFont(22, slide.text, slide.headingSize), fontWeight: 400,
             color: "#444", fontFamily: fonts.body,
             textAlign: slide.textAlign || "center", lineHeight: 1.5, fontStyle: "italic",
             whiteSpace: "pre-wrap" as const,
           }}} />
           {slide.body && (
-            <RichText text={slide.body} style={style={{
+            <RichText text={slide.body} style={{
               fontSize: slide.bodySize || 20, fontWeight: 800,
               color: "#1a1a1a", fontFamily: fonts.heading,
               textAlign: slide.textAlign || "center", lineHeight: 1.3,
@@ -777,7 +777,7 @@ export function renderCreator(p: ThemeRenderProps): React.ReactElement {
             fontFamily: fonts.body, marginBottom: 12, marginTop: 8,
           }}>{slide.body}</div>
         )}
-        <RichText text={slide.text} style={style={{
+        <RichText text={slide.text} style={{
           fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 900,
           color: "#1a1a1a", fontFamily: fonts.heading,
           lineHeight: 1.15, textAlign: slide.textAlign || "left",
@@ -803,7 +803,7 @@ export function renderCreator(p: ThemeRenderProps): React.ReactElement {
         fontFamily: fonts.body, marginBottom: 12, marginTop: 4,
       }}>{slide.body?.split("\n")[0] || ""}</div>
       {/* Heading */}
-      <RichText text={slide.text} style={style={{
+      <RichText text={slide.text} style={{
         fontSize: shrinkFont(22, slide.text, slide.headingSize), fontWeight: 700,
         color: "#1a1a1a", fontFamily: fonts.heading,
         lineHeight: 1.4, textAlign: slide.textAlign || "left",
