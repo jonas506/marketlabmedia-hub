@@ -58,6 +58,7 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
   const [importing, setImporting] = useState(false);
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [alreadyImported, setAlreadyImported] = useState<Set<string>>(new Set());
   const [targetPhase, setTargetPhase] = useState("review");
   const [targetType, setTargetType] = useState(activeType);
 
