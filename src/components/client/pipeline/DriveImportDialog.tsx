@@ -199,9 +199,11 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
     });
   };
 
+  const selectableFiles = files.filter(f => !alreadyImported.has(f.id));
+
   const toggleAll = () => {
-    if (selectedFiles.size === files.length) setSelectedFiles(new Set());
-    else setSelectedFiles(new Set(files.map(f => f.id)));
+    if (selectedFiles.size === selectableFiles.length) setSelectedFiles(new Set());
+    else setSelectedFiles(new Set(selectableFiles.map(f => f.id)));
   };
 
   return (
