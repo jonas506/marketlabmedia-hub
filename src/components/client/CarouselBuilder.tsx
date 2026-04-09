@@ -19,7 +19,7 @@ import JSZip from "jszip";
 import { renderThemedSlide, type ThemeId as CarouselThemeId, type BrandColors as ThemeBrandColors } from "./carousel-themes";
 
 const ensureFontsLoaded = async () => {
-  const fontFamilies = ['Inter', 'Playfair Display', 'Outfit', 'Source Sans 3'];
+  const fontFamilies = ['Inter', 'Playfair Display', 'Outfit', 'Source Sans 3', 'Poppins'];
   try {
     await Promise.race([
       Promise.all(fontFamilies.map(font => document.fonts.load(`400 16px "${font}"`))).then(() => document.fonts.ready),
@@ -48,7 +48,7 @@ interface BrandColors {
   textDark: string;
 }
 
-type FontStyle = "modern" | "editorial" | "bold";
+type FontStyle = "modern" | "editorial" | "bold" | "poppins";
 type SlideFormat = "1:1" | "4:5";
 type ThemeId = "numbered" | "steps" | "minimal" | "dark" | "gradient" | "card" | "creator";
 
@@ -82,6 +82,7 @@ const FONT_FAMILIES: Record<FontStyle, { heading: string; body: string }> = {
   modern: { heading: "'Inter', 'Helvetica Neue', sans-serif", body: "'Inter', 'Helvetica Neue', sans-serif" },
   editorial: { heading: "'Playfair Display', 'Georgia', serif", body: "'Source Sans 3', 'Source Sans Pro', sans-serif" },
   bold: { heading: "'Outfit', 'Inter', sans-serif", body: "'Inter', sans-serif" },
+  poppins: { heading: "'Poppins', sans-serif", body: "'Poppins', sans-serif" },
 };
 
 const THEMES: { id: ThemeId; label: string; preview: (c: BrandColors) => { bg: string; accent: string; text: string } }[] = [
