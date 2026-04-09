@@ -339,8 +339,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   })), [config.phases, monthPieces]);
 
   const totalPieces = monthPieces.length;
-  const handedOver = monthPieces.filter(c => c.phase === "handed_over" || c.phase === "approved").length;
-  const progress = totalPieces > 0 ? Math.round((handedOver / totalPieces) * 100) : 0;
+  const plannedCount = monthPieces.filter(c => (c.phase === "handed_over" && isUpcomingHandedOver(c.scheduled_post_date)) || c.phase === "approved").length;
+  const progress = totalPieces > 0 ? Math.round((plannedCount / totalPieces) * 100) : 0;
 
   const handlePhaseChange = useCallback((phase: string) => { setActivePhase(phase); setSelected(new Set()); }, []);
   const handleOpenPrintScripts = useCallback(() => setPrintScriptsOpen(true), []);
