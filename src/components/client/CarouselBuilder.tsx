@@ -63,6 +63,29 @@ interface CarouselBuilderProps {
 
 const genSlideId = () => `s${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
+/** Wrap selected text in a textarea with an HTML tag */
+const wrapSelection = (
+  textarea: HTMLTextAreaElement,
+  tag: string,
+  onChange: (newValue: string) => void,
+  attrs?: string,
+) => {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) return; // nothing selected
+  const text = textarea.value;
+  const selected = text.substring(start, end);
+  const openTag = attrs ? `<${tag} ${attrs}>` : `<${tag}>`;
+  const closeTag = `</${tag}>`;
+  const newText = text.substring(0, start) + openTag + selected + closeTag + text.substring(end);
+  onChange(newText);
+  // Restore cursor after React re-render
+  requestAnimationFrame(() => {
+    textarea.focus();
+    textarea.setSelectionRange(start + openTag.length, end + openTag.length);
+  });
+};
+
 const DEFAULT_SLIDES: Slide[] = [
   { id: genSlideId(), text: "Slide 1 — Überschrift hier" },
   { id: genSlideId(), text: "Slide 2 — Dein Punkt" },
