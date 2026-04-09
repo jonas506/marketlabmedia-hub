@@ -57,6 +57,18 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [carouselBuilderPiece, setCarouselBuilderPiece] = useState<ContentPiece | null>(null);
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
+  const { data: driveLinks } = useQuery({
+    queryKey: ["client-drive-links", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("clients")
+        .select("drive_folder_id, drive_reels_link, drive_carousels_link, drive_ads_link, drive_youtube_link")
+        .eq("id", clientId)
+        .single();
+      return data;
+    },
+  });
+
   const config = PIPELINE_CONFIG[activeType];
 
   const handleTypeChange = useCallback((type: string) => {
@@ -311,7 +323,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-border bg-card overflow-hidden">
-      <PipelineHeader
+       <PipelineHeader
         config={config}
         totalPieces={totalPieces}
         progress={progress}
@@ -323,6 +335,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         canEdit={canEdit}
         hasPieces={monthPieces.length > 0}
         noDeadlineCount={noDeadlineCount}
+        driveLinks={driveLinks ?? undefined}
       />
 
       <div className="p-4">
