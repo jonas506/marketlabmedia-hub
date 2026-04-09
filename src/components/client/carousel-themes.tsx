@@ -816,7 +816,7 @@ export function renderCreator(p: ThemeRenderProps): React.ReactElement {
           color: "#444", fontFamily: fonts.body,
           lineHeight: 1.6, textAlign: slide.textAlign || "left",
           whiteSpace: "pre-wrap" as const, marginTop: 14,
-        }}>{slide.body.split("\n").slice(1).join("\n").trim()}</p>
+        }}><span dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.body.split("\n").slice(1).join("\n").trim().replace(/\n/g, '<br/>')) }} /></p>
       )}
       {footerBlock}
     </div>
