@@ -162,6 +162,13 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     { key: "drive_styleguide_link", label: "Style Guide", icon: BookOpen },
   ] as const;
 
+  const contentDriveLinks = [
+    { key: "drive_reels_link", label: "Reels", icon: Film },
+    { key: "drive_carousels_link", label: "Karussells", icon: LayoutGrid },
+    { key: "drive_ads_link", label: "Ads", icon: Megaphone },
+    { key: "drive_youtube_link", label: "YouTube", icon: Youtube },
+  ] as const;
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <input ref={fileInputRef} type="file" className="hidden" multiple
