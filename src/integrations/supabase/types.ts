@@ -518,6 +518,7 @@ export type Database = {
           contract_start: string | null
           created_at: string
           drive_branding_link: string | null
+          drive_folder_id: string | null
           drive_logo_link: string | null
           drive_styleguide_link: string | null
           id: string
@@ -563,6 +564,7 @@ export type Database = {
           contract_start?: string | null
           created_at?: string
           drive_branding_link?: string | null
+          drive_folder_id?: string | null
           drive_logo_link?: string | null
           drive_styleguide_link?: string | null
           id?: string
@@ -608,6 +610,7 @@ export type Database = {
           contract_start?: string | null
           created_at?: string
           drive_branding_link?: string | null
+          drive_folder_id?: string | null
           drive_logo_link?: string | null
           drive_styleguide_link?: string | null
           id?: string
@@ -748,6 +751,9 @@ export type Database = {
           created_at: string | null
           cta_label: string | null
           deadline: string | null
+          drive_file_id: string | null
+          drive_file_name: string | null
+          drive_uploaded_at: string | null
           has_script: boolean | null
           id: string
           phase: string
@@ -777,6 +783,9 @@ export type Database = {
           created_at?: string | null
           cta_label?: string | null
           deadline?: string | null
+          drive_file_id?: string | null
+          drive_file_name?: string | null
+          drive_uploaded_at?: string | null
           has_script?: boolean | null
           id?: string
           phase: string
@@ -806,6 +815,9 @@ export type Database = {
           created_at?: string | null
           cta_label?: string | null
           deadline?: string | null
+          drive_file_id?: string | null
+          drive_file_name?: string | null
+          drive_uploaded_at?: string | null
           has_script?: boolean | null
           id?: string
           phase?: string
