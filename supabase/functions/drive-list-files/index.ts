@@ -153,8 +153,15 @@ Deno.serve(async (req) => {
       }
     }
 
+    const serviceEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL") ?? null;
+
     return new Response(
-      JSON.stringify({ files, subfolders: subfolders.map((f) => ({ id: f.id, name: f.name })) }),
+      JSON.stringify({ 
+        files, 
+        subfolders: subfolders.map((f) => ({ id: f.id, name: f.name })),
+        service_account_email: serviceEmail,
+        drive_error: data.error ?? null,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
