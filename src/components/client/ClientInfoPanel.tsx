@@ -252,7 +252,10 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                 drive_folder_id: client.drive_folder_id || "",
                 drive_branding_link: client.drive_branding_link || "",
                 drive_logo_link: client.drive_logo_link || "",
-                drive_styleguide_link: client.drive_styleguide_link || "",
+                drive_reels_link: client.drive_reels_link || "",
+                drive_carousels_link: client.drive_carousels_link || "",
+                drive_ads_link: client.drive_ads_link || "",
+                drive_youtube_link: client.drive_youtube_link || "",
               })}
               onSave={() => saveFields(values)} onCancel={() => setEditing(null)}
               extra={canEdit && !editing ? (
