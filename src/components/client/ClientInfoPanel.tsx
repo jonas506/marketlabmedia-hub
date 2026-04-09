@@ -152,6 +152,10 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     client.monthly_carousels > 0 && `${client.monthly_carousels} Karussells`,
   ].filter(Boolean).join(" · ") || "Kein Kontingent";
 
+  const driveFolderUrl = client.drive_folder_id
+    ? `https://drive.google.com/drive/folders/${client.drive_folder_id}`
+    : null;
+
   const brandingLinks = [
     { key: "drive_branding_link", label: "Branding", icon: Folder },
     { key: "drive_logo_link", label: "Logo", icon: Image },
