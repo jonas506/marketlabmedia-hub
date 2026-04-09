@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { differenceInDays, parseISO, format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, AlertTriangle, Clock, ListChecks, TrendingUp } from "lucide-react";
+import { Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, AlertTriangle, Clock, ListChecks, TrendingUp, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isUpcomingHandedOver } from "@/lib/pipeline-utils";
 import KontingentTracker from "./KontingentTracker";
 
 interface ClientDashboardProps {
@@ -21,21 +22,39 @@ const PHASE_LABELS: Record<string, string> = {
   review: "Freigabe",
   feedback: "Feedback",
   approved: "Freigegeben",
-  handed_over: "Übergeben",
+  handed_over: "Geplant",
 };
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces, canEdit, onNavigate }) => {
   const now = new Date();
 
-  // Pipeline summary
+  // Pipeline summary — 30-day rolling
   const pipelineStats = useMemo(() => {
-    const total = contentPieces.length;
-    const done = contentPieces.filter(p => p.phase === "handed_over").length;
-    const inReview = contentPieces.filter(p => p.phase === "review").length;
-    const inEditing = contentPieces.filter(p => p.phase === "editing").length;
-    const inFeedback = contentPieces.filter(p => p.phase === "feedback").length;
-    const progress = total > 0 ? Math.round((done / total) * 100) : 0;
-    return { total, done, inReview, inEditing, inFeedback, progress };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const in30Days = new Date(today);
+    in30Days.setDate(in30Days.getDate() + 30);
+
+    const upcoming = contentPieces.filter(p => {
+      if (p.scheduled_post_date) {
+        const d = new Date(p.scheduled_post_date);
+        return d >= today && d <= in30Days;
+      }
+      return p.target_month === today.getMonth() + 1 && p.target_year === today.getFullYear();
+    });
+
+    const total = upcoming.length;
+    const planned = upcoming.filter((p: any) => p.phase === "handed_over" && p.scheduled_post_date).length;
+    const inReview = contentPieces.filter((p: any) => p.phase === "review").length;
+    const inEditing = contentPieces.filter((p: any) => p.phase === "editing").length;
+    const inFeedback = contentPieces.filter((p: any) => p.phase === "feedback").length;
+    const progress = total > 0 ? Math.round((planned / total) * 100) : 0;
+
+    const nextPosting = upcoming
+      .filter((p: any) => p.phase === "handed_over" && p.scheduled_post_date && new Date(p.scheduled_post_date) >= today)
+      .sort((a: any, b: any) => new Date(a.scheduled_post_date).getTime() - new Date(b.scheduled_post_date).getTime())[0] as any | undefined;
+
+    return { total, planned, inReview, inEditing, inFeedback, progress, nextPosting };
   }, [contentPieces]);
 
   // Tasks
@@ -118,17 +137,22 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces
           className="rounded-lg border border-border bg-card p-4 text-left hover:border-primary/30 transition-colors group"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground">Pipeline</span>
-            <TrendingUp className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span className="text-xs text-muted-foreground">Pipeline (30 Tage)</span>
+            <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
           <div className="text-2xl font-semibold tabular-nums">{pipelineStats.progress}%</div>
           <div className="text-[11px] text-muted-foreground mt-1">
-            {pipelineStats.done}/{pipelineStats.total} übergeben
+            {pipelineStats.planned}/{pipelineStats.total} geplant
           </div>
           {/* Mini progress bar */}
           <div className="h-1 rounded-full bg-muted/50 mt-2 overflow-hidden">
             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pipelineStats.progress}%` }} />
           </div>
+          {pipelineStats.nextPosting?.scheduled_post_date && (
+            <div className="text-[10px] text-muted-foreground mt-1.5 truncate">
+              Nächstes: {format(new Date(pipelineStats.nextPosting.scheduled_post_date), "dd. MMM", { locale: de })} ({pipelineStats.nextPosting.title || "—"})
+            </div>
+          )}
         </button>
 
         {/* Open Tasks */}

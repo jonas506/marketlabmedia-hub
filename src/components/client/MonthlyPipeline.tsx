@@ -3,11 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Plus, icons } from "lucide-react";
+import { Plus, icons, CalendarCheck, Package, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { isUpcomingHandedOver, isArchivedHandedOver } from "@/lib/pipeline-utils";
 import CaptionStudio from "./CaptionStudio";
 import PieceDetailDialog from "./PieceDetailDialog";
 import ScriptEditorDialog from "./ScriptEditorDialog";
@@ -107,13 +109,19 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const phasePieces = useMemo(() => {
     let filtered = monthPieces.filter((c) => c.phase === activePhase);
-    // In "Übergeben" only show pieces with a future scheduled_post_date (or no date yet)
+    // In "Geplant" only show upcoming pieces (next 30 days or no date)
     if (activePhase === "handed_over") {
-      const today = new Date().toISOString().split("T")[0];
-      filtered = filtered.filter((c) => !c.scheduled_post_date || c.scheduled_post_date >= today);
+      filtered = filtered.filter((c) => isUpcomingHandedOver(c.scheduled_post_date));
     }
     if (filterPerson !== "all") filtered = filtered.filter((c) => c.assigned_to === filterPerson);
     return [...filtered].sort((a, b) => {
+      // For handed_over: sort by scheduled_post_date ascending, no-date at end
+      if (activePhase === "handed_over") {
+        if (a.scheduled_post_date && b.scheduled_post_date) return a.scheduled_post_date.localeCompare(b.scheduled_post_date);
+        if (a.scheduled_post_date) return -1;
+        if (b.scheduled_post_date) return 1;
+        return 0;
+      }
       const pa = PRIORITY_WEIGHT[a.priority || "normal"] ?? 2;
       const pb = PRIORITY_WEIGHT[b.priority || "normal"] ?? 2;
       if (pa !== pb) return pa - pb;
@@ -123,6 +131,37 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       return 0;
     });
   }, [monthPieces, activePhase, filterPerson]);
+
+  // Archive pieces for handed_over phase
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiveLimit, setArchiveLimit] = useState(50);
+
+  const archivedPieces = useMemo(() => {
+    if (activePhase !== "handed_over") return [];
+    return monthPieces
+      .filter((c) => c.phase === "handed_over" && isArchivedHandedOver(c.scheduled_post_date))
+      .sort((a, b) => new Date(b.scheduled_post_date!).getTime() - new Date(a.scheduled_post_date!).getTime())
+      .slice(0, archiveLimit);
+  }, [monthPieces, activePhase, archiveLimit]);
+
+  const totalArchivedCount = useMemo(() => {
+    if (activePhase !== "handed_over") return 0;
+    return monthPieces.filter((c) => c.phase === "handed_over" && isArchivedHandedOver(c.scheduled_post_date)).length;
+  }, [monthPieces, activePhase]);
+
+  // Geplant summary for header
+  const geplantSummary = useMemo(() => {
+    if (activePhase !== "handed_over") return null;
+    const allHandedOver = monthPieces.filter(c => c.phase === "handed_over");
+    const upcoming = allHandedOver.filter(c => isUpcomingHandedOver(c.scheduled_post_date));
+    const withDate = upcoming.filter(c => c.scheduled_post_date);
+    const nextPiece = withDate.sort((a, b) => a.scheduled_post_date!.localeCompare(b.scheduled_post_date!))[0];
+    return {
+      upcomingCount: upcoming.length,
+      totalPlanned: allHandedOver.length,
+      nextPiece,
+    };
+  }, [monthPieces, activePhase]);
 
   const nextPhaseMap = useMemo(() => {
     const phases = config.phases;
@@ -152,7 +191,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     if (nextPhase === "handed_over") {
       const piece = monthPieces.find(p => p.id === pieceId);
       if (!piece?.scheduled_post_date) {
-        toast.error("📅 Posting-Datum fehlt", { description: "Bitte zuerst ein Posting-Datum setzen, bevor das Piece übergeben wird." });
+        toast.error("📅 Posting-Datum fehlt", { description: "Bitte zuerst ein Posting-Datum setzen, bevor das Piece geplant wird." });
         return;
       }
     }
@@ -175,7 +214,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     setTimeout(() => setRecentlyMoved(prev => { const s = new Set(prev); s.delete(pieceId); return s; }), 600);
     if (nextPhase === "handed_over") {
       fireConfetti();
-      toast.success(`${config.emoji} ${config.label.slice(0, -1)} übergeben!`, { description: "Zählt jetzt ins Kontingent 🎯" });
+      toast.success(`${config.emoji} ${config.label.slice(0, -1)} geplant!`, { description: "Zählt jetzt ins Kontingent 🎯" });
       toast("✓ Verknüpfte Aufgaben erledigt", { description: "Aufgaben wurden automatisch abgehakt", position: "bottom-right", duration: 3000 });
     } else if (nextPhase === "approved") {
       fireSmallCelebration();
@@ -211,7 +250,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
       setSelected(new Set());
       if (result) {
-        if (result.next === "handed_over") { fireConfetti(); toast.success(`🚀 ${result.count} Pieces übergeben!`, { description: "Alles zählt jetzt ins Kontingent" }); }
+        if (result.next === "handed_over") { fireConfetti(); toast.success(`🚀 ${result.count} Pieces geplant!`, { description: "Alles zählt jetzt ins Kontingent" }); }
         else if (result.next === "approved") { fireSmallCelebration(); toast.success(`✅ ${result.count} Pieces freigegeben!`); }
         else { toast.success(`${result.count} Pieces → ${getPhaseLabel(result.next)}`); }
       }
@@ -300,8 +339,8 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   })), [config.phases, monthPieces]);
 
   const totalPieces = monthPieces.length;
-  const handedOver = monthPieces.filter(c => c.phase === "handed_over" || c.phase === "approved").length;
-  const progress = totalPieces > 0 ? Math.round((handedOver / totalPieces) * 100) : 0;
+  const plannedCount = monthPieces.filter(c => (c.phase === "handed_over" && isUpcomingHandedOver(c.scheduled_post_date)) || c.phase === "approved").length;
+  const progress = totalPieces > 0 ? Math.round((plannedCount / totalPieces) * 100) : 0;
 
   const handlePhaseChange = useCallback((phase: string) => { setActivePhase(phase); setSelected(new Set()); }, []);
   const handleOpenPrintScripts = useCallback(() => setPrintScriptsOpen(true), []);
@@ -379,7 +418,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             />
 
             <div className="min-h-[280px]">
-              {phasePieces.length === 0 ? (
+              {/* Geplant summary banner */}
+              {activePhase === "handed_over" && geplantSummary && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2 mb-3">
+                  <CalendarCheck className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>
+                    <strong className="text-foreground">{geplantSummary.upcomingCount}</strong> von {geplantSummary.totalPlanned} Content-Pieces
+                    {geplantSummary.nextPiece?.scheduled_post_date && (
+                      <> · Nächstes Posting: <strong className="text-foreground">{format(new Date(geplantSummary.nextPiece.scheduled_post_date), "dd. MMM", { locale: de })}</strong> ({geplantSummary.nextPiece.title || "Ohne Titel"})</>
+                    )}
+                  </span>
+                </div>
+              )}
+
+              {phasePieces.length === 0 && activePhase !== "handed_over" ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
                   {(() => {
                     const phaseEmoji = config.phases.find(p => p.key === activePhase)?.emoji;
@@ -392,6 +444,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       <Plus className="h-4 w-4" /> Erstes Piece erstellen
                     </Button>
                   )}
+                </motion.div>
+              ) : phasePieces.length === 0 && activePhase === "handed_over" ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-8 text-center">
+                  <CalendarCheck className="h-10 w-10 mx-auto mb-3 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground font-body">Keine geplanten Pieces in den nächsten 30 Tagen</p>
                 </motion.div>
               ) : (
                 <div className="space-y-1.5">
@@ -429,6 +486,47 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     ))}
                   </AnimatePresence>
                 </div>
+              )}
+
+              {/* Archive section for Geplant phase */}
+              {activePhase === "handed_over" && totalArchivedCount > 0 && (
+                <Collapsible open={archiveOpen} onOpenChange={setArchiveOpen} className="mt-4">
+                  <CollapsibleTrigger className="flex items-center gap-2 w-full text-left rounded-lg border border-border bg-muted/30 px-4 py-2.5 hover:bg-muted/50 transition-colors">
+                    <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground">Archiv ({totalArchivedCount} Pieces)</span>
+                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground ml-auto transition-transform ${archiveOpen ? "rotate-180" : ""}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="rounded-lg border border-border overflow-hidden divide-y divide-border">
+                      {archivedPieces.map((piece) => (
+                        <button
+                          key={piece.id}
+                          onClick={() => setDetailPiece(piece)}
+                          className="flex items-center gap-3 px-4 py-2 text-xs w-full text-left hover:bg-muted/30 transition-colors"
+                        >
+                          <span className="text-muted-foreground tabular-nums shrink-0 w-20">
+                            {piece.scheduled_post_date ? format(new Date(piece.scheduled_post_date), "dd.MM.yyyy") : "—"}
+                          </span>
+                          <span className="text-muted-foreground shrink-0 w-16 capitalize">
+                            {piece.type === "youtube_longform" ? "YouTube" : piece.type === "carousel" ? "Karussell" : piece.type === "ad" ? "Ad" : "Reel"}
+                          </span>
+                          <span className="truncate flex-1 text-foreground">{piece.title || "Ohne Titel"}</span>
+                          <span className="text-emerald-500 shrink-0">✅</span>
+                        </button>
+                      ))}
+                    </div>
+                    {archiveLimit < totalArchivedCount && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full mt-2 text-xs text-muted-foreground"
+                        onClick={() => setArchiveLimit(prev => prev + 50)}
+                      >
+                        Mehr laden ({totalArchivedCount - archiveLimit} weitere)
+                      </Button>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
               )}
             </div>
           </>
