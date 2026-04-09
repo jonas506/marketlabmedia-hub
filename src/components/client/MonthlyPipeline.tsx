@@ -57,6 +57,18 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const [carouselBuilderPiece, setCarouselBuilderPiece] = useState<ContentPiece | null>(null);
   const titleTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
 
+  const { data: driveLinks } = useQuery({
+    queryKey: ["client-drive-links", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("clients")
+        .select("drive_folder_id, drive_reels_link, drive_carousels_link, drive_ads_link, drive_youtube_link")
+        .eq("id", clientId)
+        .single();
+      return data;
+    },
+  });
+
   const config = PIPELINE_CONFIG[activeType];
 
   const handleTypeChange = useCallback((type: string) => {
