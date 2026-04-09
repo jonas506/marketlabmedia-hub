@@ -272,36 +272,45 @@ const DriveImportDialog: React.FC<DriveImportDialogProps> = ({
               {/* File list */}
               <div className="flex items-center justify-between">
                 <button onClick={toggleAll} className="text-xs text-primary hover:underline">
-                  {selectedFiles.size === files.length ? "Keine auswählen" : "Alle auswählen"}
+                  {selectedFiles.size === selectableFiles.length ? "Keine auswählen" : "Alle neuen auswählen"}
                 </button>
                 <span className="text-xs text-muted-foreground">
-                  {selectedFiles.size}/{files.length} ausgewählt
+                  {selectedFiles.size} neu / {alreadyImported.size} bereits importiert
                 </span>
               </div>
 
               <div className="overflow-y-auto flex-1 space-y-1 max-h-[300px] pr-1">
-                {files.map(f => (
-                  <label
-                    key={f.id}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors",
-                      selectedFiles.has(f.id) ? "bg-primary/5 border border-primary/20" : "bg-muted/30 border border-transparent hover:bg-muted/50"
-                    )}
-                  >
-                    <Checkbox
-                      checked={selectedFiles.has(f.id)}
-                      onCheckedChange={() => toggleFile(f.id)}
-                    />
-                    {fileIcon(f.mimeType)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate">{f.name}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        {f.folder && <span className="bg-muted px-1.5 py-0.5 rounded">{f.folder}</span>}
-                        {f.size && <span>{formatSize(f.size)}</span>}
+                {files.map(f => {
+                  const isImported = alreadyImported.has(f.id);
+                  return (
+                    <label
+                      key={f.id}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                        isImported 
+                          ? "bg-muted/20 border border-transparent opacity-60 cursor-default"
+                          : selectedFiles.has(f.id) 
+                            ? "bg-primary/5 border border-primary/20 cursor-pointer" 
+                            : "bg-muted/30 border border-transparent hover:bg-muted/50 cursor-pointer"
+                      )}
+                    >
+                      <Checkbox
+                        checked={isImported || selectedFiles.has(f.id)}
+                        disabled={isImported}
+                        onCheckedChange={() => !isImported && toggleFile(f.id)}
+                      />
+                      {fileIcon(f.mimeType)}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm truncate">{f.name}</p>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          {isImported && <span className="bg-green-500/10 text-green-600 px-1.5 py-0.5 rounded font-medium">✓ Importiert</span>}
+                          {f.folder && <span className="bg-muted px-1.5 py-0.5 rounded">{f.folder}</span>}
+                          {f.size && <span>{formatSize(f.size)}</span>}
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  );
+                })}
               </div>
 
               <Button onClick={handleImport} disabled={importing || selectedFiles.size === 0} className="w-full">
