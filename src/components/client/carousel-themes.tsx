@@ -122,7 +122,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3,
-        }}} />
+        }} />
         <div style={{ marginTop: 20, padding: "10px 24px", borderRadius: 8, background: "rgba(255,255,255,0.15)" }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>Jetzt speichern →</span>
         </div>
@@ -160,7 +160,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(44, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.15, marginTop: 16, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         <SlideCounter index={index} total={totalSlides} color={brandColors.textDark} font={fonts.body} />
       </div>
     );
@@ -202,14 +202,14 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(26, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.35, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         {slide.body && (
           <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 14, fontWeight: 400,
             color: brandColors.textDark, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 12, opacity: 0.7,
-          }}} />
+          }} />
         )}
       </div>
       {/* Footer */}
@@ -256,7 +256,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3, fontStyle: "italic",
-        }}} />
+        }} />
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 40, background: "rgba(255,255,255,0.12)" }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body, letterSpacing: "0.05em" }}>JETZT SPEICHERN</span>
         </div>
@@ -284,7 +284,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.2, fontStyle: "italic", marginTop: 16, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         <p style={{
           fontSize: 14, color: brandColors.textLight, opacity: 0.5,
           fontFamily: fonts.body, marginTop: 12,
@@ -321,14 +321,14 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           color: textColor, fontFamily: fonts.heading,
           lineHeight: 1.3, fontStyle: "italic",
           whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         {slide.body && (
           <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 14, fontWeight: 400,
             color: textColor, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 12, opacity: 0.6, fontStyle: "normal",
-          }}} />
+          }} />
         )}
       </div>
       {/* Deko circles */}
@@ -367,7 +367,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(34, slide.text, slide.headingSize), fontWeight: 700,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.35,
-        }}} />
+        }} />
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
     );
@@ -384,7 +384,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
         color: brandColors.textDark, fontFamily: fonts.heading,
         textAlign: slide.textAlign || "center", lineHeight: 1.4,
         whiteSpace: "pre-wrap" as const,
-      }}} />
+      }} />
       {slide.body && (
         <RichText text={slide.body} style={{
           fontSize: slide.bodySize || 13, fontWeight: 400,
@@ -392,7 +392,7 @@ export function renderMinimal(p: ThemeRenderProps): React.ReactElement {
           textAlign: slide.textAlign || "center", lineHeight: 1.5,
           whiteSpace: "pre-wrap" as const,
           marginTop: 12, opacity: 0.6,
-        }}} />
+        }} />
       )}
       <div style={{ width: 50, height: 2, background: brandColors.accent, borderRadius: 1, marginTop: 28, opacity: 0.6 }} />
       <SlideCounter index={index} total={totalSlides} color={brandColors.textDark} font={fonts.body} />
@@ -434,7 +434,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(34, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3, position: "relative",
-        }}} />
+        }} />
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 8, background: brandColors.accent + "33" }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>Speichern →</span>
         </div>
@@ -460,7 +460,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(44, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.15, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
     );
@@ -483,14 +483,14 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(28, slide.text, slide.headingSize), fontWeight: 600,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.4, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         {slide.body && (
           <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 14, fontWeight: 400,
             color: brandColors.textLight, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 12, opacity: 0.5,
-          }}} />
+          }} />
         )}
       </div>
       <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
@@ -525,7 +525,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           textAlign: slide.textAlign || "center", lineHeight: 1.3,
-        }}} />
+        }} />
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 40, background: "rgba(255,255,255,0.15)" }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body }}>SPEICHERN</span>
         </div>
@@ -549,7 +549,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(42, slide.text, slide.headingSize), fontWeight: 800,
           color: brandColors.textLight, fontFamily: fonts.heading,
           lineHeight: 1.2, marginTop: 16, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
     );
@@ -565,7 +565,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
         color: brandColors.textLight, fontFamily: fonts.heading,
         lineHeight: 1.4, textAlign: "center",
         whiteSpace: "pre-wrap" as const,
-      }}} />
+      }} />
       {slide.body && (
         <RichText text={slide.body} style={{
           fontSize: slide.bodySize || 14, fontWeight: 400,
@@ -573,7 +573,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
           textAlign: slide.textAlign || "center", lineHeight: 1.5,
           whiteSpace: "pre-wrap" as const,
           marginTop: 12, opacity: 0.5,
-        }}} />
+        }} />
       )}
       <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
     </div>
@@ -623,7 +623,7 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
             fontSize: shrinkFont(28, slide.text, slide.headingSize), fontWeight: 700,
             color: brandColors.textDark, fontFamily: fonts.heading,
             textAlign: slide.textAlign || "center", lineHeight: 1.35,
-          }}} />
+          }} />
           <div style={{ width: 40, height: 3, background: brandColors.accent, borderRadius: 2, margin: "16px auto 0" }} />
         </div>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
@@ -642,7 +642,7 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
             fontSize: shrinkFont(36, slide.text, slide.headingSize), fontWeight: 800,
             color: brandColors.textDark, fontFamily: fonts.heading,
             lineHeight: 1.2, textAlign: slide.textAlign || "left",
-          }}} />
+          }} />
           <div style={{ width: 40, height: 3, background: brandColors.accent, borderRadius: 2, marginTop: 16 }} />
         </div>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
@@ -663,14 +663,14 @@ export function renderCard(p: ThemeRenderProps): React.ReactElement {
           fontSize: shrinkFont(24, slide.text, slide.headingSize), fontWeight: 500,
           color: brandColors.textDark, fontFamily: fonts.heading,
           lineHeight: 1.45, whiteSpace: "pre-wrap" as const, textAlign: slide.textAlign || "left",
-        }}} />
+        }} />
         {slide.body && (
           <RichText text={slide.body} style={{
             fontSize: slide.bodySize || 13, fontWeight: 400,
             color: brandColors.textDark, fontFamily: fonts.body,
             lineHeight: 1.5, whiteSpace: "pre-wrap" as const,
             marginTop: 10, opacity: 0.6,
-          }}} />
+          }} />
         )}
         <div style={{ width: 30, height: 2, background: brandColors.accent, borderRadius: 1, marginTop: 14, opacity: 0.6 }} />
       </div>
@@ -748,14 +748,14 @@ export function renderCreator(p: ThemeRenderProps): React.ReactElement {
             color: "#444", fontFamily: fonts.body,
             textAlign: slide.textAlign || "center", lineHeight: 1.5, fontStyle: "italic",
             whiteSpace: "pre-wrap" as const,
-          }}} />
+          }} />
           {slide.body && (
             <RichText text={slide.body} style={{
               fontSize: slide.bodySize || 20, fontWeight: 800,
               color: "#1a1a1a", fontFamily: fonts.heading,
               textAlign: slide.textAlign || "center", lineHeight: 1.3,
               whiteSpace: "pre-wrap" as const, marginTop: 8,
-            }}} />
+            }} />
           )}
         </div>
         {footerBlock}
@@ -783,7 +783,7 @@ export function renderCreator(p: ThemeRenderProps): React.ReactElement {
           lineHeight: 1.15, textAlign: slide.textAlign || "left",
           whiteSpace: "pre-wrap" as const,
           flex: 1, display: "flex", alignItems: "center",
-        }}} />
+        }} />
         {footerBlock}
       </div>
     );
@@ -808,7 +808,7 @@ export function renderCreator(p: ThemeRenderProps): React.ReactElement {
         color: "#1a1a1a", fontFamily: fonts.heading,
         lineHeight: 1.4, textAlign: slide.textAlign || "left",
         whiteSpace: "pre-wrap" as const,
-      }}} />
+      }} />
       {/* Body text (lines after first) */}
       {slide.body && slide.body.split("\n").slice(1).join("\n").trim() && (
         <p style={{
