@@ -118,17 +118,22 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces
           className="rounded-lg border border-border bg-card p-4 text-left hover:border-primary/30 transition-colors group"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground">Pipeline</span>
-            <TrendingUp className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span className="text-xs text-muted-foreground">Pipeline (30 Tage)</span>
+            <CalendarCheck className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
           <div className="text-2xl font-semibold tabular-nums">{pipelineStats.progress}%</div>
           <div className="text-[11px] text-muted-foreground mt-1">
-            {pipelineStats.done}/{pipelineStats.total} übergeben
+            {pipelineStats.planned}/{pipelineStats.total} geplant
           </div>
           {/* Mini progress bar */}
           <div className="h-1 rounded-full bg-muted/50 mt-2 overflow-hidden">
             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pipelineStats.progress}%` }} />
           </div>
+          {pipelineStats.nextPosting?.scheduled_post_date && (
+            <div className="text-[10px] text-muted-foreground mt-1.5 truncate">
+              Nächstes: {format(new Date(pipelineStats.nextPosting.scheduled_post_date), "dd. MMM", { locale: de })} ({pipelineStats.nextPosting.title || "—"})
+            </div>
+          )}
         </button>
 
         {/* Open Tasks */}

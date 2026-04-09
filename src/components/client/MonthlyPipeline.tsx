@@ -418,7 +418,20 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             />
 
             <div className="min-h-[280px]">
-              {phasePieces.length === 0 ? (
+              {/* Geplant summary banner */}
+              {activePhase === "handed_over" && geplantSummary && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2 mb-3">
+                  <CalendarCheck className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>
+                    <strong className="text-foreground">{geplantSummary.upcomingCount}</strong> von {geplantSummary.totalPlanned} Content-Pieces
+                    {geplantSummary.nextPiece?.scheduled_post_date && (
+                      <> · Nächstes Posting: <strong className="text-foreground">{format(new Date(geplantSummary.nextPiece.scheduled_post_date), "dd. MMM", { locale: de })}</strong> ({geplantSummary.nextPiece.title || "Ohne Titel"})</>
+                    )}
+                  </span>
+                </div>
+              )}
+
+              {phasePieces.length === 0 && activePhase !== "handed_over" ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
                   {(() => {
                     const phaseEmoji = config.phases.find(p => p.key === activePhase)?.emoji;
@@ -431,6 +444,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                       <Plus className="h-4 w-4" /> Erstes Piece erstellen
                     </Button>
                   )}
+                </motion.div>
+              ) : phasePieces.length === 0 && activePhase === "handed_over" ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-8 text-center">
+                  <CalendarCheck className="h-10 w-10 mx-auto mb-3 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground font-body">Keine geplanten Pieces in den nächsten 30 Tagen</p>
                 </motion.div>
               ) : (
                 <div className="space-y-1.5">
@@ -468,6 +486,47 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                     ))}
                   </AnimatePresence>
                 </div>
+              )}
+
+              {/* Archive section for Geplant phase */}
+              {activePhase === "handed_over" && totalArchivedCount > 0 && (
+                <Collapsible open={archiveOpen} onOpenChange={setArchiveOpen} className="mt-4">
+                  <CollapsibleTrigger className="flex items-center gap-2 w-full text-left rounded-lg border border-border bg-muted/30 px-4 py-2.5 hover:bg-muted/50 transition-colors">
+                    <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground">Archiv ({totalArchivedCount} Pieces)</span>
+                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground ml-auto transition-transform ${archiveOpen ? "rotate-180" : ""}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="rounded-lg border border-border overflow-hidden divide-y divide-border">
+                      {archivedPieces.map((piece) => (
+                        <button
+                          key={piece.id}
+                          onClick={() => setDetailPiece(piece)}
+                          className="flex items-center gap-3 px-4 py-2 text-xs w-full text-left hover:bg-muted/30 transition-colors"
+                        >
+                          <span className="text-muted-foreground tabular-nums shrink-0 w-20">
+                            {piece.scheduled_post_date ? format(new Date(piece.scheduled_post_date), "dd.MM.yyyy") : "—"}
+                          </span>
+                          <span className="text-muted-foreground shrink-0 w-16 capitalize">
+                            {piece.type === "youtube_longform" ? "YouTube" : piece.type === "carousel" ? "Karussell" : piece.type === "ad" ? "Ad" : "Reel"}
+                          </span>
+                          <span className="truncate flex-1 text-foreground">{piece.title || "Ohne Titel"}</span>
+                          <span className="text-emerald-500 shrink-0">✅</span>
+                        </button>
+                      ))}
+                    </div>
+                    {archiveLimit < totalArchivedCount && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full mt-2 text-xs text-muted-foreground"
+                        onClick={() => setArchiveLimit(prev => prev + 50)}
+                      >
+                        Mehr laden ({totalArchivedCount - archiveLimit} weitere)
+                      </Button>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
               )}
             </div>
           </>
