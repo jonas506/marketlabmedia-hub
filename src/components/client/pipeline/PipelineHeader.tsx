@@ -45,6 +45,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   onViewModeChange,
   onOpenPrintScripts,
   onOpenCaptionStudio,
+  onOpenDriveImport,
   canEdit,
   hasPieces,
   noDeadlineCount = 0,
