@@ -517,10 +517,14 @@ export type Database = {
           contract_end: string | null
           contract_start: string | null
           created_at: string
+          drive_ads_link: string | null
           drive_branding_link: string | null
+          drive_carousels_link: string | null
           drive_folder_id: string | null
           drive_logo_link: string | null
+          drive_reels_link: string | null
           drive_styleguide_link: string | null
+          drive_youtube_link: string | null
           id: string
           industry: string | null
           instagram_handle: string | null
@@ -563,10 +567,14 @@ export type Database = {
           contract_end?: string | null
           contract_start?: string | null
           created_at?: string
+          drive_ads_link?: string | null
           drive_branding_link?: string | null
+          drive_carousels_link?: string | null
           drive_folder_id?: string | null
           drive_logo_link?: string | null
+          drive_reels_link?: string | null
           drive_styleguide_link?: string | null
+          drive_youtube_link?: string | null
           id?: string
           industry?: string | null
           instagram_handle?: string | null
@@ -609,10 +617,14 @@ export type Database = {
           contract_end?: string | null
           contract_start?: string | null
           created_at?: string
+          drive_ads_link?: string | null
           drive_branding_link?: string | null
+          drive_carousels_link?: string | null
           drive_folder_id?: string | null
           drive_logo_link?: string | null
+          drive_reels_link?: string | null
           drive_styleguide_link?: string | null
+          drive_youtube_link?: string | null
           id?: string
           industry?: string | null
           instagram_handle?: string | null

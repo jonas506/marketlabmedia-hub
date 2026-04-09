@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { ChevronDown, Pencil, Check, X, ExternalLink, Globe, Phone, Mail, User, Folder, Image, BookOpen, Bell, Plus, Trash2, Link as LinkIcon, Copy, Upload, Download, Loader2, FileImage } from "lucide-react";
+import { ChevronDown, Pencil, Check, X, ExternalLink, Globe, Phone, Mail, User, Folder, Image, BookOpen, Bell, Plus, Trash2, Link as LinkIcon, Copy, Upload, Download, Loader2, FileImage, Film, LayoutGrid, Megaphone, Youtube } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -162,6 +162,13 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     { key: "drive_styleguide_link", label: "Style Guide", icon: BookOpen },
   ] as const;
 
+  const contentDriveLinks = [
+    { key: "drive_reels_link", label: "Reels", icon: Film },
+    { key: "drive_carousels_link", label: "Karussells", icon: LayoutGrid },
+    { key: "drive_ads_link", label: "Ads", icon: Megaphone },
+    { key: "drive_youtube_link", label: "YouTube", icon: Youtube },
+  ] as const;
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <input ref={fileInputRef} type="file" className="hidden" multiple
@@ -245,7 +252,10 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                 drive_folder_id: client.drive_folder_id || "",
                 drive_branding_link: client.drive_branding_link || "",
                 drive_logo_link: client.drive_logo_link || "",
-                drive_styleguide_link: client.drive_styleguide_link || "",
+                drive_reels_link: client.drive_reels_link || "",
+                drive_carousels_link: client.drive_carousels_link || "",
+                drive_ads_link: client.drive_ads_link || "",
+                drive_youtube_link: client.drive_youtube_link || "",
               })}
               onSave={() => saveFields(values)} onCancel={() => setEditing(null)}
               extra={canEdit && !editing ? (
@@ -267,6 +277,11 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                       <InputField key={l.key} label={l.label} value={values[l.key]} onChange={(v) => setValues({ ...values, [l.key]: v })} placeholder="https://..." />
                     ))}
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {contentDriveLinks.map((l) => (
+                      <InputField key={l.key} icon={<l.icon className="h-3.5 w-3.5" />} label={`${l.label}-Ordner`} value={values[l.key]} onChange={(v) => setValues({ ...values, [l.key]: v })} placeholder="https://drive.google.com/..." />
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -279,7 +294,7 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                       <ExternalLink className="h-3 w-3 opacity-60" />
                     </a>
                   )}
-                  {/* Quick links */}
+                  {/* Branding quick links */}
                   <div className="flex flex-wrap gap-1.5">
                     {brandingLinks.map((l) => {
                       const Icon = l.icon;
@@ -290,10 +305,24 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                         </a>
                       ) : null;
                     })}
-                    {!brandingLinks.some((l) => client[l.key]) && ciAssets.length === 0 && (
-                      <span className="text-xs text-muted-foreground">Keine Branding-Links oder CI-Dateien</span>
-                    )}
                   </div>
+                  {/* Content-type Drive links */}
+                  {contentDriveLinks.some((l) => (client as any)[l.key]) && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {contentDriveLinks.map((l) => {
+                        const Icon = l.icon;
+                        return (client as any)[l.key] ? (
+                          <a key={l.key} href={(client as any)[l.key]} target="_blank" rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/5 px-2.5 py-1.5 text-xs font-body text-primary hover:bg-primary/10 hover:border-primary/30 transition-all">
+                            <Icon className="h-3 w-3" />{l.label}<ExternalLink className="h-2.5 w-2.5 opacity-40" />
+                          </a>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  {!brandingLinks.some((l) => client[l.key]) && !contentDriveLinks.some((l) => (client as any)[l.key]) && ciAssets.length === 0 && !driveFolderUrl && (
+                    <span className="text-xs text-muted-foreground">Keine Branding-Links oder CI-Dateien</span>
+                  )}
                   {/* CI Assets – compact grid */}
                   {ciAssets.length > 0 && (
                     <div className="flex flex-wrap gap-2">
