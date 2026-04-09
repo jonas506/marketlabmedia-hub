@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { ChevronDown, Pencil, Check, X, ExternalLink, Globe, Phone, Mail, User, Folder, Image, BookOpen, Bell, Plus, Trash2, Link as LinkIcon, Copy, Upload, Download, Loader2, FileImage } from "lucide-react";
+import { ChevronDown, Pencil, Check, X, ExternalLink, Globe, Phone, Mail, User, Folder, Image, BookOpen, Bell, Plus, Trash2, Link as LinkIcon, Copy, Upload, Download, Loader2, FileImage, Film, LayoutGrid, Megaphone, Youtube } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
