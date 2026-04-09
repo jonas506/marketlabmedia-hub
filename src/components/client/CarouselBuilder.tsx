@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
   Copy, Check, FileDown, ImageIcon, Upload, Save, Palette, Archive,
   ArrowUp, ArrowDown, AlignLeft, AlignCenter, AlignRight,
+  Bold, Underline, Highlighter,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
