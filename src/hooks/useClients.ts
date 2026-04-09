@@ -51,7 +51,9 @@ export const useClients = () => {
         .select("client_id, phase, type, target_month, target_year, scheduled_post_date")
         .in("client_id", clientIds);
 
-      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+      const today = now.toISOString().split("T")[0];
+      const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
       const { data: shootDays } = await supabase
         .from("shoot_days")
         .select("client_id, date")
@@ -72,20 +74,33 @@ export const useClients = () => {
       return clients.map((client) => {
         const pieces = allPieces?.filter((c) => c.client_id === client.id) ?? [];
         
-        const inPipeline = pieces.filter((c) => c.phase !== "handed_over" && c.phase !== "approved").length;
-        const handedOver = pieces.filter((c) => c.phase === "handed_over" && (c as any).scheduled_post_date && (c as any).scheduled_post_date >= today).length;
+        const activePipelinePhases = ["script", "filmed", "editing", "edit", "design", "review", "feedback"];
+        const inPipeline = pieces.filter((c) => activePipelinePhases.includes(c.phase)).length;
+        const handedOver = pieces.filter((c) => c.phase === "handed_over" && (c as any).scheduled_post_date && (c as any).scheduled_post_date >= today && (c as any).scheduled_post_date <= in30Days).length;
 
-        const handedOverThisMonth = pieces.filter(
-          (c) => (c.phase === "approved" || c.phase === "handed_over") && Number(c.target_month) === month && Number(c.target_year) === year
+        // Count secured pieces for the next 30 days (approved + handed_over with future date)
+        const securedNext30 = pieces.filter(
+          (c) => (c.phase === "approved" || c.phase === "handed_over") &&
+          (c as any).scheduled_post_date && (c as any).scheduled_post_date >= today && (c as any).scheduled_post_date <= in30Days
         );
+        // Also count approved pieces without a scheduled date (they're ready but unscheduled)
+        const approvedNoDate = pieces.filter(
+          (c) => c.phase === "approved" && !(c as any).scheduled_post_date
+        );
+        const handedOverThisMonth = [...securedNext30, ...approvedNoDate];
 
-        // Runway: only reels, done + handed_over
+        // Runway: reels secured for next 30 days
         const reelTarget = client.monthly_reels;
         const dailyFreq = reelTarget / 30;
-        const readyPieces = pieces.filter(
+        const readyReels = pieces.filter(
           (c) => c.type === "reel" && (c.phase === "approved" || c.phase === "handed_over") &&
-          Number(c.target_month) === month && Number(c.target_year) === year
+          (c as any).scheduled_post_date && (c as any).scheduled_post_date >= today && (c as any).scheduled_post_date <= in30Days
         ).length;
+        // Also count approved reels without date
+        const approvedReelsNoDate = pieces.filter(
+          (c) => c.type === "reel" && c.phase === "approved" && !(c as any).scheduled_post_date
+        ).length;
+        const readyPieces = readyReels + approvedReelsNoDate;
         const runway = dailyFreq > 0 ? Math.round(readyPieces / dailyFreq) : 999;
 
         const nextShoot = shootDays?.find((s) => s.client_id === client.id);
