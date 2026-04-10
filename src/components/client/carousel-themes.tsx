@@ -1,11 +1,12 @@
 import React from "react";
 
 // Sanitize HTML: only allow <b>, <u>, <mark> tags
-const ALLOWED_TAGS = ['b', 'u', 'mark', '/b', '/u', '/mark'];
+const ALLOWED_TAGS = ['b', 'u', 'mark', '/b', '/u', '/mark', 'br'];
 function sanitizeHtml(text: string): string {
   return text.replace(/<\/?[^>]+(>|$)/g, (tag) => {
-    const tagName = tag.replace(/[<>/\s]/g, '').toLowerCase();
-    return ALLOWED_TAGS.includes(tagName) || ALLOWED_TAGS.includes('/' + tagName) ? tag : '';
+    const stripped = tag.replace(/[<>/\s]/g, '').toLowerCase();
+    // Handle self-closing tags like <br/> and regular tags
+    return ALLOWED_TAGS.includes(stripped) || ALLOWED_TAGS.includes('/' + stripped) ? tag : '';
   });
 }
 
