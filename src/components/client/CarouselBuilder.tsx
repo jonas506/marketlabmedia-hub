@@ -36,6 +36,7 @@ interface Slide {
   text: string;
   body?: string;
   isCta?: boolean;
+  ctaLabel?: string;
   headingSize?: number;
   bodySize?: number;
   textAlign?: "left" | "center" | "right";
