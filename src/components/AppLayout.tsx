@@ -16,6 +16,7 @@ import GlobalSearch from "@/components/GlobalSearch";
 const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/clients", label: "Kunden", icon: Users },
+  { to: "/posting-kalender", label: "Posting-Kalender", icon: CalendarRange },
 
   { to: "/my-todos", label: "Meine To-Dos", icon: ListTodo },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },

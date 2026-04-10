@@ -33,6 +33,7 @@ import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 import TimeTracking from "./pages/TimeTracking";
 import ClientsList from "./pages/ClientsList";
+import PostingCalendarPage from "./pages/PostingCalendarPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -83,6 +84,7 @@ const App = () => (
                   <Route path="/approve/:token" element={<ClientApproval />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/clients" element={<ProtectedRoute><ClientsList /></ProtectedRoute>} />
+                  <Route path="/posting-kalender" element={<ProtectedRoute><PostingCalendarPage /></ProtectedRoute>} />
                   <Route path="/client/:id" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
                   <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
                   <Route path="/my-todos" element={<ProtectedRoute><MyTodos /></ProtectedRoute>} />
