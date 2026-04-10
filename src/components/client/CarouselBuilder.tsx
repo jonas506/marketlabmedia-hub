@@ -11,7 +11,7 @@ import {
   ChevronLeft, ChevronRight, Download, Loader2, Sparkles, Plus, Trash2,
   Copy, Check, FileDown, ImageIcon, Upload, Save, Palette, Archive,
   ArrowUp, ArrowDown, AlignLeft, AlignCenter, AlignRight,
-  Bold, Underline, Highlighter,
+  Bold, Underline, Highlighter, Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -84,6 +84,12 @@ const wrapSelection = (
     textarea.focus();
     textarea.setSelectionRange(start + openTag.length, end + openTag.length);
   });
+};
+
+/** Auto-resize a textarea to fit its content */
+const autoResize = (el: HTMLTextAreaElement) => {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
 };
 
 const DEFAULT_SLIDES: Slide[] = [
