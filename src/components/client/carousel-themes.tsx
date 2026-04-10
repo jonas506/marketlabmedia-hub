@@ -31,6 +31,7 @@ export interface SlideData {
   text: string;
   body?: string;
   isCta?: boolean;
+  ctaLabel?: string;
   headingSize?: number;
   bodySize?: number;
   textAlign?: "left" | "center" | "right";
@@ -128,7 +129,7 @@ export function renderNumbered(p: ThemeRenderProps): React.ReactElement {
           textAlign: slide.textAlign || "center", lineHeight: 1.3,
         }} />
         <div style={{ marginTop: 20, padding: "10px 24px", borderRadius: 8, background: "rgba(255,255,255,0.15)" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>Jetzt speichern →</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>{slide.ctaLabel || "Jetzt speichern →"}</span>
         </div>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
@@ -262,7 +263,7 @@ export function renderSteps(p: ThemeRenderProps): React.ReactElement {
           textAlign: slide.textAlign || "center", lineHeight: 1.3, fontStyle: "italic",
         }} />
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 40, background: "rgba(255,255,255,0.12)" }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body, letterSpacing: "0.05em" }}>JETZT SPEICHERN</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body, letterSpacing: "0.05em" }}>{slide.ctaLabel || "JETZT SPEICHERN"}</span>
         </div>
         {/* Deko circles */}
         <div style={{ position: "absolute", bottom: 30, right: 30, width: 60, height: 60, borderRadius: "50%", border: `2px solid ${brandColors.textLight}22` }} />
@@ -440,7 +441,7 @@ export function renderDark(p: ThemeRenderProps): React.ReactElement {
           textAlign: slide.textAlign || "center", lineHeight: 1.3, position: "relative",
         }} />
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 8, background: brandColors.accent + "33" }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>Speichern →</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.heading }}>{slide.ctaLabel || "Speichern →"}</span>
         </div>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
@@ -531,7 +532,7 @@ export function renderGradient(p: ThemeRenderProps): React.ReactElement {
           textAlign: slide.textAlign || "center", lineHeight: 1.3,
         }} />
         <div style={{ marginTop: 24, padding: "10px 28px", borderRadius: 40, background: "rgba(255,255,255,0.15)" }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body }}>SPEICHERN</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: brandColors.textLight, fontFamily: fonts.body }}>{slide.ctaLabel || "SPEICHERN"}</span>
         </div>
         <SlideCounter index={index} total={totalSlides} color={brandColors.textLight} font={fonts.body} />
       </div>
