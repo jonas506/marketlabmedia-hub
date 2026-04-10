@@ -903,11 +903,6 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                           ))}
                         </SelectContent>
                       </Select>
-                          }
-                        }}
-                      >
-                        <Highlighter className="h-3 w-3" />
-                      </button>
                     </div>
                     {/* Font size & alignment controls */}
                     <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50" onClick={e => e.stopPropagation()}>
