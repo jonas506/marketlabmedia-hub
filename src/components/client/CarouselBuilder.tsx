@@ -836,6 +836,15 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       className="text-[11px] bg-transparent border-0 p-0 min-h-[28px] resize-none focus-visible:ring-0 text-muted-foreground overflow-hidden"
                       rows={1}
                     />
+                    {slide.isCta && (
+                      <Input
+                        value={slide.ctaLabel || ""}
+                        onChange={e => updateSlideProp(idx, { ctaLabel: e.target.value })}
+                        onClick={e => e.stopPropagation()}
+                        placeholder="Button-Text (z.B. Speichern, Folg für mehr…)"
+                        className="h-7 text-[11px] mt-1 bg-primary/5 border-primary/20"
+                      />
+                    )}
                     {/* Formatting toolbar */}
                     <div className="flex items-center gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
                       <span className="text-[9px] text-muted-foreground mr-1">Format:</span>
