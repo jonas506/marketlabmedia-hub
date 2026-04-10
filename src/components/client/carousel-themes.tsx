@@ -1,16 +1,19 @@
 import React from "react";
 
-// Sanitize HTML: only allow <b>, <u>, <mark> tags
-const ALLOWED_TAGS = ['b', 'u', 'mark', '/b', '/u', '/mark', 'br'];
+// Sanitize HTML: allow <b>, <u>, <mark>, <br>, <span style="font-size:..."> tags
 function sanitizeHtml(text: string): string {
   return text.replace(/<\/?[^>]+(>|$)/g, (tag) => {
+    // Allow simple tags
     const stripped = tag.replace(/[<>/\s]/g, '').toLowerCase();
-    // Handle self-closing tags like <br/> and regular tags
-    return ALLOWED_TAGS.includes(stripped) || ALLOWED_TAGS.includes('/' + stripped) ? tag : '';
+    const SIMPLE_TAGS = ['b', 'u', 'mark', '/b', '/u', '/mark', 'br', '/span'];
+    if (SIMPLE_TAGS.includes(stripped) || SIMPLE_TAGS.includes('/' + stripped)) return tag;
+    // Allow <span style="font-size:XXpx"> only
+    if (/^<span\s+style="font-size:\s*\d+(\.\d+)?(px|em|rem|%)"\s*>$/i.test(tag)) return tag;
+    return '';
   });
 }
 
-/** Renders text with inline formatting (bold/underline/highlight) */
+/** Renders text with inline formatting (bold/underline/highlight/font-size) */
 const RichText: React.FC<{ text: string; style: React.CSSProperties }> = ({ text, style }) => (
   <p style={style} dangerouslySetInnerHTML={{ __html: sanitizeHtml(text.replace(/\n/g, '<br/>')) }} />
 );
