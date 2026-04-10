@@ -33,6 +33,7 @@ import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 import TimeTracking from "./pages/TimeTracking";
 import ClientsList from "./pages/ClientsList";
+import PostingCalendarPage from "./pages/PostingCalendarPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
