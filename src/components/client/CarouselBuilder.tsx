@@ -816,24 +816,24 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                       </div>
                     </div>
                     <Textarea
-                      ref={el => { if (el) (el as any).__slideField = 'heading'; }}
+                      ref={el => { if (el) { (el as any).__slideField = 'heading'; autoResize(el); } }}
                       id={`slide-heading-${idx}`}
                       value={slide.text}
-                      onChange={e => updateSlide(idx, e.target.value)}
+                      onChange={e => { updateSlide(idx, e.target.value); autoResize(e.target); }}
                       onClick={e => e.stopPropagation()}
                       placeholder="Überschrift…"
-                      className="text-xs bg-transparent border-0 p-0 min-h-[36px] resize-none focus-visible:ring-0 font-semibold"
+                      className="text-xs bg-transparent border-0 p-0 min-h-[28px] resize-none focus-visible:ring-0 font-semibold overflow-hidden"
                       rows={1}
                     />
                     <Textarea
-                      ref={el => { if (el) (el as any).__slideField = 'body'; }}
+                      ref={el => { if (el) { (el as any).__slideField = 'body'; autoResize(el); } }}
                       id={`slide-body-${idx}`}
                       value={slide.body || ""}
-                      onChange={e => updateSlideBody(idx, e.target.value)}
+                      onChange={e => { updateSlideBody(idx, e.target.value); autoResize(e.target); }}
                       onClick={e => e.stopPropagation()}
                       placeholder="Fließtext (optional)…"
-                      className="text-[11px] bg-transparent border-0 p-0 min-h-[32px] resize-none focus-visible:ring-0 text-muted-foreground"
-                      rows={2}
+                      className="text-[11px] bg-transparent border-0 p-0 min-h-[28px] resize-none focus-visible:ring-0 text-muted-foreground overflow-hidden"
+                      rows={1}
                     />
                     {/* Formatting toolbar */}
                     <div className="flex items-center gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
@@ -874,6 +874,35 @@ const CarouselBuilder: React.FC<CarouselBuilderProps> = ({ open, onOpenChange, p
                           if (target) {
                             const setter = target === bodyEl ? (v: string) => updateSlideBody(idx, v) : (v: string) => updateSlide(idx, v);
                             wrapSelection(target, "mark", setter);
+                          }
+                        }}
+                      >
+                        <Highlighter className="h-3 w-3" />
+                      </button>
+                      {/* Inline font-size */}
+                      <Select
+                        value=""
+                        onValueChange={(size) => {
+                          const headingEl = document.getElementById(`slide-heading-${idx}`) as HTMLTextAreaElement | null;
+                          const bodyEl = document.getElementById(`slide-body-${idx}`) as HTMLTextAreaElement | null;
+                          const active = document.activeElement;
+                          const target = active === bodyEl ? bodyEl : headingEl;
+                          if (target) {
+                            const setter = target === bodyEl ? (v: string) => updateSlideBody(idx, v) : (v: string) => updateSlide(idx, v);
+                            wrapSelection(target, "span", setter, `style="font-size:${size}px"`);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-6 w-16 text-[9px] px-1.5 gap-0.5 border-border/50" title="Schriftgröße für Auswahl">
+                          <Type className="h-3 w-3 shrink-0" />
+                          <span>Größe</span>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48].map(s => (
+                            <SelectItem key={s} value={String(s)} className="text-xs">{s}px</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                           }
                         }}
                       >
