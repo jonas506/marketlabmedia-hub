@@ -118,6 +118,13 @@ export default function CRMLeadDetail() {
   const [importResult, setImportResult] = useState<any>(null);
   const [showLinkedInHint, setShowLinkedInHint] = useState(false);
 
+  // Email compose
+  const [showEmailCompose, setShowEmailCompose] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+
   // Files
   const [filesOpen, setFilesOpen] = useState(true);
   const [leadFiles, setLeadFiles] = useState<any[]>([]);
@@ -257,6 +264,35 @@ export default function CRMLeadDetail() {
     setActivityTitle("");
     setActivityBody("");
     fetchLead();
+  };
+
+  const sendEmail = async () => {
+    if (!emailTo.trim() || !emailSubject.trim() || !emailBody.trim() || !id) return;
+    setEmailSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("crm-send-email", {
+        body: { to: emailTo, subject: emailSubject, body: emailBody, lead_id: id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("E-Mail gesendet");
+      setShowEmailCompose(false);
+      setEmailTo("");
+      setEmailSubject("");
+      setEmailBody("");
+      fetchLead();
+    } catch (err: any) {
+      toast.error(err.message || "E-Mail konnte nicht gesendet werden");
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  const openEmailCompose = () => {
+    setEmailTo(lead?.contact_email || "");
+    setEmailSubject("");
+    setEmailBody("");
+    setShowEmailCompose(true);
   };
 
   const deleteActivity = async (activityId: string) => {
@@ -590,7 +626,14 @@ export default function CRMLeadDetail() {
                   variant="outline"
                   size="sm"
                   className="gap-1.5 h-8 text-xs border-border bg-transparent"
-                  onClick={() => { setActivityType(t.value); setShowActivity(true); }}
+                  onClick={() => {
+                    if (t.value === "email") {
+                      openEmailCompose();
+                    } else {
+                      setActivityType(t.value);
+                      setShowActivity(true);
+                    }
+                  }}
                 >
                   <t.icon className="h-3.5 w-3.5" style={{ color: t.color }} />
                   {t.label}
@@ -1182,6 +1225,61 @@ export default function CRMLeadDetail() {
               <Input placeholder="Titel *" value={activityTitle} onChange={e => setActivityTitle(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && addActivity()} />
               <Textarea placeholder="Details (optional)" value={activityBody} onChange={e => setActivityBody(e.target.value)} rows={3} />
               <Button onClick={addActivity} className="w-full">Hinzufügen</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Email compose dialog */}
+        <Dialog open={showEmailCompose} onOpenChange={setShowEmailCompose}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                E-Mail senden
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">An</label>
+                <Input
+                  placeholder="email@beispiel.de"
+                  value={emailTo}
+                  onChange={e => setEmailTo(e.target.value)}
+                  className="bg-background border-border"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Betreff</label>
+                <Input
+                  placeholder="Betreff eingeben..."
+                  value={emailSubject}
+                  onChange={e => setEmailSubject(e.target.value)}
+                  className="bg-background border-border"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Nachricht</label>
+                <Textarea
+                  placeholder="Ihre Nachricht..."
+                  value={emailBody}
+                  onChange={e => setEmailBody(e.target.value)}
+                  rows={8}
+                  className="bg-background border-border"
+                />
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] text-muted-foreground">
+                  Gesendet von noreply@marketlabmedia.de
+                </span>
+                <Button
+                  onClick={sendEmail}
+                  disabled={emailSending || !emailTo.trim() || !emailSubject.trim() || !emailBody.trim()}
+                  className="gap-2"
+                >
+                  {emailSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                  Senden
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
