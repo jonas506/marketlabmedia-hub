@@ -137,6 +137,13 @@ function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeav
 export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) {
   const { user } = useAuth();
   const { data: stages = [] } = useCrmStages();
+  const { data: sourceTags = [] } = useQuery({
+    queryKey: ["crm-source-tags"],
+    queryFn: async () => {
+      const { data } = await supabase.from("crm_source_tags").select("name, color").order("name");
+      return (data ?? []) as { name: string; color: string }[];
+    },
+  });
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
   const [wonCollapsed, setWonCollapsed] = useState(false);
