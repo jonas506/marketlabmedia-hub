@@ -1067,7 +1067,7 @@ export default function CRMLeadDetail() {
                           <div className="flex-1 min-w-0 pt-0.5">
                             <div className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 min-w-0">
-                                <p className={cn("text-sm font-medium text-foreground truncate", isAiEntry && "text-primary")}>{cleanTitle}</p>
+                                <p className={cn("text-sm font-medium text-foreground truncate", isAiEntry && "text-primary")}>{act.title}</p>
                                 {channelInfo && (
                                   <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0", channelInfo.color)}>
                                     {channelInfo.label}
