@@ -14,26 +14,26 @@ interface MagicInputProps {
 
 export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const { user } = useAuth();
-  const [name, setName] = useState("");
   const [contactName, setContactName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [source, setSource] = useState<string>("outreach");
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
-    if (!name.trim()) { toast.error("Firmenname fehlt"); return; }
+    if (!contactName.trim()) { toast.error("Name fehlt"); return; }
     setSaving(true);
     const { error } = await supabase.from("crm_leads").insert({
-      name: name.trim(),
-      contact_name: contactName.trim() || null,
+      name: companyName.trim() || contactName.trim(),
+      contact_name: contactName.trim(),
       source,
       stage: "erstkontakt",
       created_by: user!.id,
     });
     setSaving(false);
     if (error) { toast.error("Fehler beim Erstellen"); return; }
-    toast.success(`${name.trim()} hinzugefügt`);
-    setName("");
+    toast.success(`${contactName.trim()} hinzugefügt`);
     setContactName("");
+    setCompanyName("");
     onLeadCreated();
   };
 
@@ -49,16 +49,16 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
         <Input
-          placeholder="Firmenname *"
-          value={name}
-          onChange={e => setName(e.target.value)}
+          placeholder="Name *"
+          value={contactName}
+          onChange={e => setContactName(e.target.value)}
           onKeyDown={handleKeyDown}
           className="flex-1"
         />
         <Input
-          placeholder="Ansprechpartner"
-          value={contactName}
-          onChange={e => setContactName(e.target.value)}
+          placeholder="Firma (optional)"
+          value={companyName}
+          onChange={e => setCompanyName(e.target.value)}
           onKeyDown={handleKeyDown}
           className="flex-1"
         />
@@ -72,7 +72,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={handleCreate} disabled={saving || !name.trim()} size="sm" className="shrink-0">
+        <Button onClick={handleCreate} disabled={saving || !contactName.trim()} size="sm" className="shrink-0">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           <span className="ml-1">Hinzufügen</span>
         </Button>
