@@ -39,7 +39,7 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd }: {
   onDragEnd: () => void;
 }) {
   const sourceInfo = getSourceInfo(lead.source);
-  const stageColor = getStageColor(lead.stage);
+  const stageColor = dynGetStageColor([], lead.stage);
 
   return (
     <div
@@ -226,10 +226,10 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       await supabase.from("crm_activities").insert({
         lead_id: draggedId,
         type: "status_change" as any,
-        title: `Status geändert: ${getStageLabel(oldStage)} → ${getStageLabel(newStage)}`,
+        title: `Status geändert: ${dynGetStageLabel(stages, oldStage)} → ${dynGetStageLabel(stages, newStage)}`,
         created_by: user!.id,
       });
-      toast.success(`→ ${getStageLabel(newStage)}`);
+      toast.success(`→ ${dynGetStageLabel(stages, newStage)}`);
       onRefresh();
     }
     setDraggedId(null);
@@ -258,8 +258,14 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       </div>
 
       {/* Kanban board */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[calc(100vh-240px)]">
-        {PIPELINE_STAGES.map(stage => (
+      <div className="flex items-center justify-end mb-2">
+        <PipelineSettings stages={stages} />
+      </div>
+      <div
+        className="grid grid-cols-1 gap-3 h-[calc(100vh-280px)]"
+        style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, 1fr) 1fr` }}
+      >
+        {pipelineStageConfigs.map(stage => (
           <DropZone
             key={stage.value}
             stage={stage.value}
@@ -273,13 +279,13 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
             <div className="flex items-center gap-2 mb-3 px-1">
               <div className="h-2.5 w-2.5 rounded-full" style={{ background: stage.color }} />
               <span className="text-xs font-semibold uppercase tracking-wider">{stage.label}</span>
-              <span className="text-xs text-muted-foreground ml-auto">{byStage[stage.value].length}</span>
+              <span className="text-xs text-muted-foreground ml-auto">{byStage[stage.value]?.length ?? 0}</span>
             </div>
             <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-              {byStage[stage.value].map(lead => (
+              {(byStage[stage.value] ?? []).map(lead => (
                 <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
               ))}
-              {overStage === stage.value && draggedId && !byStage[stage.value].find(l => l.id === draggedId) && (
+              {overStage === stage.value && draggedId && !(byStage[stage.value] ?? []).find(l => l.id === draggedId) && (
                 <div className="border-2 border-dashed border-primary/30 rounded-lg h-16 flex items-center justify-center animate-fade-in">
                   <span className="text-xs text-primary/50">Hier ablegen</span>
                 </div>
@@ -288,17 +294,23 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
           </DropZone>
         ))}
 
-        {/* Won + Lost column */}
+        {/* Closed stages column */}
         <div className="space-y-3">
-          <DropZone
-            stage="gewonnen"
-            isOver={overStage === 'gewonnen' && draggedId !== null}
-            onDragOver={handleDragOver}
-            onDragEnter={(e) => handleDragEnter(e, 'gewonnen')}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className="bg-emerald-500/5 border border-emerald-500/20"
-          >
+          {closedStageConfigs.map(closedStage => {
+            const isCollapsed = closedStage.is_win ? wonCollapsed : lostCollapsed;
+            const setCollapsed = closedStage.is_win ? setWonCollapsed : setLostCollapsed;
+            return (
+              <DropZone
+                key={closedStage.value}
+                stage={closedStage.value}
+                isOver={overStage === closedStage.value && draggedId !== null}
+                onDragOver={handleDragOver}
+                onDragEnter={(e) => handleDragEnter(e, closedStage.value)}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className="border"
+                style={{ background: closedStage.color + '0D', borderColor: closedStage.color + '33' }}
+              >
             <button
               onClick={() => setWonCollapsed(!wonCollapsed)}
               className="flex items-center gap-2 w-full px-1 mb-2"
