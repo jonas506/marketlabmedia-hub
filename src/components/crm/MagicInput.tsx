@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Loader2, Tag } from "lucide-react";
+import { Plus, Sparkles, Loader2, Tag, DollarSign } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface MagicInputProps {
