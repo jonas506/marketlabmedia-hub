@@ -267,7 +267,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       <div className="max-w-full overflow-x-auto pb-2">
         <div
           className="grid min-w-full w-max gap-3"
-          style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, minmax(240px, 240px)) 180px` }}
+          style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, minmax(240px, 240px)) repeat(${closedStageConfigs.length}, 180px)` }}
         >
           {pipelineStageConfigs.map(stage => (
             <DropZone
