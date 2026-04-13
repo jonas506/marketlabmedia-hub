@@ -296,7 +296,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
                 {(byStage[stage.value] ?? []).map(lead => (
-                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
+                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} sourceTags={sourceTags} />
                 ))}
                 {overStage === stage.value && draggedId && !(byStage[stage.value] ?? []).find(l => l.id === draggedId) && (
                   <div className="border-2 border-dashed border-primary/30 rounded-lg h-16 flex items-center justify-center animate-fade-in">
