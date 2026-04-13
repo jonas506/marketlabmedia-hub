@@ -72,7 +72,10 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd }: {
       
       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
         {sourceInfo && (
-          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`}>
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`}
+            style={sourceInfo.style}
+          >
             {sourceInfo.label}
           </span>
         )}

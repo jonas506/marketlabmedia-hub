@@ -164,7 +164,10 @@ export default function CRMHome() {
                         </td>
                         <td className="px-3 py-2.5">
                           {sourceInfo ? (
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`}>
+                            <span
+                              className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`}
+                              style={sourceInfo.style}
+                            >
                               {sourceInfo.label}
                             </span>
                           ) : "—"}
