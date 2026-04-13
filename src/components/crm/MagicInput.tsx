@@ -129,6 +129,16 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
             </div>
           )}
         </div>
+        <div className="relative">
+          <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Deal €"
+            value={dealValue}
+            onChange={e => setDealValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-[110px] pl-8"
+          />
+        </div>
         <Button onClick={handleCreate} disabled={saving || !contactName.trim()} size="sm" className="shrink-0">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           <span className="ml-1">Hinzufügen</span>
