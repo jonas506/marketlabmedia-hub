@@ -24,7 +24,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { CRM_STAGES, getStageLabel, getStageColor, getSourceInfo } from "@/lib/crm-constants";
+import { getSourceInfo } from "@/lib/crm-constants";
+import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel } from "@/hooks/useCrmStages";
 import { useQuery } from "@tanstack/react-query";
 
 const ACTIVITY_TYPES = [
