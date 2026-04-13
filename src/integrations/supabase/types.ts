@@ -1558,6 +1558,39 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_stage_config: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_loss: boolean
+          is_win: boolean
+          label: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_loss?: boolean
+          is_win?: boolean
+          label: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_loss?: boolean
+          is_win?: boolean
+          label?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: []
+      }
       crm_tasks: {
         Row: {
           assigned_to: string
