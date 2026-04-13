@@ -114,6 +114,13 @@ export default function CRMLeadDetail() {
   const [importResult, setImportResult] = useState<any>(null);
   const [showLinkedInHint, setShowLinkedInHint] = useState(false);
 
+  // Files
+  const [filesOpen, setFilesOpen] = useState(true);
+  const [leadFiles, setLeadFiles] = useState<any[]>([]);
+  const [fileUploading, setFileUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const fetchLead = async () => {
     if (!id) return;
     const [{ data: leadData }, { data: actData }, { data: taskData }] = await Promise.all([
