@@ -971,21 +971,80 @@ export default function CRMLeadDetail() {
                     ) : filteredActivities.map(act => {
                       const config = ACTIVITY_ICON_MAP[act.type] || ACTIVITY_ICON_MAP.note;
                       const Icon = config.icon;
+                      const isAiEntry = act.title.includes("analysiert") || act.title.includes("Dokument analysiert");
+                      
+                      // Parse structured body for AI entries
+                      const renderBody = (body: string) => {
+                        if (!isAiEntry) {
+                          return <p className="text-xs text-muted-foreground mt-1.5 whitespace-pre-wrap leading-relaxed">{body}</p>;
+                        }
+                        
+                        const parts = body.split("\n\n");
+                        const summary = parts[0];
+                        const keyPointsSection = parts.find(p => p.includes("**Wichtige Punkte:**"));
+                        const keyPoints = keyPointsSection
+                          ? keyPointsSection.replace("**Wichtige Punkte:**", "").trim().split("\n").map(p => p.replace(/^•\s*/, "").trim()).filter(Boolean)
+                          : [];
+
+                        return (
+                          <div className="mt-2 space-y-2.5">
+                            <p className="text-[13px] text-foreground/80 leading-relaxed">{summary}</p>
+                            {keyPoints.length > 0 && (
+                              <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-1.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Erkenntnisse</p>
+                                {keyPoints.map((point, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary/60 mt-[5px] shrink-0" />
+                                    <p className="text-xs text-foreground/70 leading-relaxed">{point}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      };
+
+                      // Extract channel from title like "🖼️ Bild analysiert (INSTAGRAM):"
+                      const channelMatch = act.title.match(/\((\w+)\)/);
+                      const channel = channelMatch?.[1]?.toLowerCase();
+                      const channelLabels: Record<string, { label: string; color: string }> = {
+                        instagram: { label: "Instagram", color: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
+                        linkedin: { label: "LinkedIn", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
+                        whatsapp: { label: "WhatsApp", color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
+                        email: { label: "E-Mail", color: "bg-sky-500/15 text-sky-400 border-sky-500/20" },
+                        phone: { label: "Telefon", color: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
+                      };
+                      const channelInfo = channel ? channelLabels[channel] : null;
+
+                      // Clean title (remove channel tag)
+                      const cleanTitle = act.title.replace(/\s*\(\w+\)\s*/, " ").trim();
+
                       return (
-                        <div key={act.id} className="flex gap-3.5 py-3 relative">
-                          <div className="relative z-10 flex items-center justify-center h-[30px] w-[30px] rounded-full bg-background border border-border shrink-0">
-                            <Icon className="h-3.5 w-3.5" style={{ color: config.color }} />
+                        <div key={act.id} className={cn("flex gap-3.5 py-3 relative", isAiEntry && "py-4")}>
+                          <div className={cn(
+                            "relative z-10 flex items-center justify-center shrink-0 rounded-full bg-background border",
+                            isAiEntry ? "h-8 w-8 border-primary/30" : "h-[30px] w-[30px] border-border"
+                          )}>
+                            {isAiEntry
+                              ? <Sparkles className="h-3.5 w-3.5 text-primary" />
+                              : <Icon className="h-3.5 w-3.5" style={{ color: config.color }} />
+                            }
                           </div>
                           <div className="flex-1 min-w-0 pt-0.5">
-                            <div className="flex items-baseline justify-between gap-3">
-                              <p className="text-sm font-medium text-foreground">{act.title}</p>
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <p className={cn("text-sm font-medium text-foreground truncate", isAiEntry && "text-primary")}>{cleanTitle}</p>
+                                {channelInfo && (
+                                  <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0", channelInfo.color)}>
+                                    {channelInfo.label}
+                                  </span>
+                                )}
+                              </div>
                               <span className="text-[10px] text-muted-foreground shrink-0">
                                 {new Date(act.created_at).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
                               </span>
                             </div>
-                            {act.body && (
-                              <p className="text-xs text-foreground/50 mt-1 whitespace-pre-wrap leading-relaxed">{act.body}</p>
-                            )}
+                            {act.body && renderBody(act.body)}
                           </div>
                         </div>
                       );
