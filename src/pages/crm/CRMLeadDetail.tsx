@@ -222,6 +222,13 @@ export default function CRMLeadDetail() {
     fetchLead();
   };
 
+  const deleteActivity = async (activityId: string) => {
+    const { error } = await supabase.from("crm_activities").delete().eq("id", activityId);
+    if (error) { toast.error("Fehler beim Löschen"); return; }
+    setActivities(prev => prev.filter(a => a.id !== activityId));
+    toast.success("Eintrag gelöscht");
+  };
+
   const addCrmTask = async () => {
     if (!newTaskTitle.trim() || !id || !user) return;
     const { error } = await supabase.from("crm_tasks").insert({
