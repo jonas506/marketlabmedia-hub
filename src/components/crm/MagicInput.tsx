@@ -14,8 +14,8 @@ interface MagicInputProps {
 
 export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const { user } = useAuth();
-  const [name, setName] = useState("");
   const [contactName, setContactName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [source, setSource] = useState<string>("outreach");
   const [saving, setSaving] = useState(false);
 
