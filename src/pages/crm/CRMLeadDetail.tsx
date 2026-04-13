@@ -126,7 +126,7 @@ export default function CRMLeadDetail() {
     if (!id) return;
     const [{ data: leadData }, { data: actData }, { data: taskData }, { data: fileData }] = await Promise.all([
       supabase.from("crm_leads").select("*").eq("id", id).single(),
-      supabase.from("crm_activities").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
+      supabase.from("crm_activities").select("*").eq("lead_id", id).order("created_at", { ascending: true }),
       supabase.from("crm_tasks").select("*").eq("lead_id", id).order("is_completed").order("due_date", { ascending: true, nullsFirst: false }),
       supabase.from("crm_files").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
     ]);
