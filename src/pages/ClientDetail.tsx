@@ -78,16 +78,17 @@ const ClientDetail = () => {
           .upload(filePath, file);
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabaseClient.storage
+        const { data: signedData } = await supabaseClient.storage
           .from("client-documents")
-          .getPublicUrl(filePath);
+          .createSignedUrl(filePath, 31536000); // 1 year expiry
+        const documentUrl = signedData?.signedUrl || filePath;
 
         await supabase.from("client_knowledge").insert({
           client_id: id,
           title: file.name.replace(/\.pdf$/i, ""),
           content: `PDF-Dokument: ${file.name}`,
           category: "sonstiges",
-          source_url: publicUrl,
+          source_url: documentUrl,
         });
       }
       toast.success("PDF(s) hochgeladen");
