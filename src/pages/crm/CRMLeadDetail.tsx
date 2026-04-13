@@ -375,11 +375,17 @@ export default function CRMLeadDetail() {
             setLead(p => p ? { ...p, source: sourceName } : p);
           }
 
-          // Log activity with AI summary
-          const channelLabel = aiData.source_channel ? ` (${aiData.source_channel.toUpperCase()})` : "";
+          // Log activity with AI-generated title
+          const channelEmoji: Record<string, string> = {
+            instagram: "📸", linkedin: "💼", whatsapp: "💬", email: "✉️", phone: "📞", website: "🌐",
+          };
+          const emoji = aiData.source_channel ? (channelEmoji[aiData.source_channel] || "📋") : "📋";
+          const actTitle = aiData.activity_title || `${emoji} Kontakt analysiert`;
+          const dateHint = aiData.interaction_date ? ` · ${new Date(aiData.interaction_date).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}` : "";
+          
           await supabase.from("crm_activities").insert({
             lead_id: id, type: "note" as any,
-            title: `🖼️ Bild analysiert${channelLabel}: ${file.name}`,
+            title: `${emoji} ${actTitle}${dateHint}`,
             body: aiData.summary + (aiData.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiData.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
             created_by: user.id,
           });
@@ -997,7 +1003,7 @@ export default function CRMLeadDetail() {
                     ) : filteredActivities.map(act => {
                       const config = ACTIVITY_ICON_MAP[act.type] || ACTIVITY_ICON_MAP.note;
                       const Icon = config.icon;
-                      const isAiEntry = act.title.includes("analysiert") || act.title.includes("Dokument analysiert");
+                      const isAiEntry = act.body?.includes("**Wichtige Punkte:**") || act.title.includes("analysiert") || act.title.includes("Dokument analysiert");
                       
                       // Parse structured body for AI entries
                       const renderBody = (body: string) => {
@@ -1030,9 +1036,14 @@ export default function CRMLeadDetail() {
                         );
                       };
 
-                      // Extract channel from title like "🖼️ Bild analysiert (INSTAGRAM):"
-                      const channelMatch = act.title.match(/\((\w+)\)/);
-                      const channel = channelMatch?.[1]?.toLowerCase();
+                      // Detect channel from emoji or keywords in title
+                      const titleLower = act.title.toLowerCase();
+                      const detectedChannel = titleLower.includes("instagram") || act.title.includes("📸") ? "instagram"
+                        : titleLower.includes("linkedin") || act.title.includes("💼") ? "linkedin"
+                        : titleLower.includes("whatsapp") || act.title.includes("💬") ? "whatsapp"
+                        : titleLower.includes("email") || titleLower.includes("e-mail") || act.title.includes("✉️") ? "email"
+                        : titleLower.includes("telefon") || act.title.includes("📞") ? "phone"
+                        : null;
                       const channelLabels: Record<string, { label: string; color: string }> = {
                         instagram: { label: "Instagram", color: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
                         linkedin: { label: "LinkedIn", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
@@ -1040,10 +1051,7 @@ export default function CRMLeadDetail() {
                         email: { label: "E-Mail", color: "bg-sky-500/15 text-sky-400 border-sky-500/20" },
                         phone: { label: "Telefon", color: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
                       };
-                      const channelInfo = channel ? channelLabels[channel] : null;
-
-                      // Clean title (remove channel tag)
-                      const cleanTitle = act.title.replace(/\s*\(\w+\)\s*/, " ").trim();
+                      const channelInfo = detectedChannel ? channelLabels[detectedChannel] : null;
 
                       return (
                         <div key={act.id} className={cn("flex gap-3.5 py-3 relative", isAiEntry && "py-4")}>
@@ -1059,7 +1067,7 @@ export default function CRMLeadDetail() {
                           <div className="flex-1 min-w-0 pt-0.5">
                             <div className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2 min-w-0">
-                                <p className={cn("text-sm font-medium text-foreground truncate", isAiEntry && "text-primary")}>{cleanTitle}</p>
+                                <p className={cn("text-sm font-medium text-foreground truncate", isAiEntry && "text-primary")}>{act.title}</p>
                                 {channelInfo && (
                                   <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0", channelInfo.color)}>
                                     {channelInfo.label}
