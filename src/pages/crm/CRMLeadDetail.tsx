@@ -123,17 +123,75 @@ export default function CRMLeadDetail() {
 
   const fetchLead = async () => {
     if (!id) return;
-    const [{ data: leadData }, { data: actData }, { data: taskData }] = await Promise.all([
+    const [{ data: leadData }, { data: actData }, { data: taskData }, { data: fileData }] = await Promise.all([
       supabase.from("crm_leads").select("*").eq("id", id).single(),
       supabase.from("crm_activities").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
       supabase.from("crm_tasks").select("*").eq("lead_id", id).order("is_completed").order("due_date", { ascending: true, nullsFirst: false }),
+      supabase.from("crm_files").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
     ]);
     if (leadData) setLead(leadData as any);
     setActivities((actData || []) as any[]);
     setCrmTasks((taskData || []) as any[]);
+    setLeadFiles((fileData || []) as any[]);
   };
 
   useEffect(() => { fetchLead(); }, [id]);
+
+  // File upload handler
+  const uploadFiles = useCallback(async (files: FileList | File[]) => {
+    if (!id || !user || files.length === 0) return;
+    setFileUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const ext = file.name.split(".").pop() || "";
+        const storagePath = `${id}/${Date.now()}-${file.name}`;
+        const { error: uploadErr } = await supabase.storage.from("crm-files").upload(storagePath, file);
+        if (uploadErr) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
+        const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
+        await supabase.from("crm_files").insert({
+          lead_id: id,
+          name: file.name,
+          file_url: urlData.publicUrl,
+          mime_type: file.type || "application/octet-stream",
+          file_size: file.size,
+          uploaded_by: user.id,
+        });
+      }
+      toast.success(`${files.length === 1 ? "Datei" : `${files.length} Dateien`} hochgeladen`);
+      fetchLead();
+    } catch (err: any) {
+      toast.error(err.message || "Upload fehlgeschlagen");
+    } finally {
+      setFileUploading(false);
+    }
+  }, [id, user]);
+
+  const deleteFile = async (fileId: string, fileUrl: string) => {
+    // Extract storage path from URL
+    const pathMatch = fileUrl.split("/crm-files/")[1];
+    if (pathMatch) {
+      await supabase.storage.from("crm-files").remove([decodeURIComponent(pathMatch)]);
+    }
+    await supabase.from("crm_files").delete().eq("id", fileId);
+    setLeadFiles(prev => prev.filter(f => f.id !== fileId));
+    toast.success("Datei gelöscht");
+  };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files);
+  }, [uploadFiles]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+  }, []);
 
   const { data: sourceTags = [] } = useQuery({
     queryKey: ["crm-source-tags"],
