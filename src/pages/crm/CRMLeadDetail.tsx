@@ -652,7 +652,92 @@ export default function CRMLeadDetail() {
                 )}
               </div>
 
-              {/* SMART IMPORT – collapsed by default */}
+              {/* DATEIEN – drag & drop */}
+              <div className="border-b border-border">
+                <button
+                  onClick={() => setFilesOpen(!filesOpen)}
+                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {filesOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <Paperclip className="h-3 w-3" />
+                  Dateien
+                  <span className="ml-1 text-[10px] text-muted-foreground">{leadFiles.length}</span>
+                </button>
+                {filesOpen && (
+                  <div className="px-4 pb-4 space-y-2">
+                    {/* Drop zone */}
+                    <div
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed py-5 cursor-pointer transition-all",
+                        dragOver
+                          ? "border-primary bg-primary/10 scale-[1.02]"
+                          : "border-border hover:border-muted-foreground/40 hover:bg-muted/30"
+                      )}
+                    >
+                      {fileUploading ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      ) : (
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {fileUploading ? "Lädt hoch..." : dragOver ? "Loslassen zum Hochladen" : "Dateien hierher ziehen oder klicken"}
+                      </span>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.md,.pptx"
+                        className="hidden"
+                        onChange={e => {
+                          if (e.target.files) uploadFiles(e.target.files);
+                          e.target.value = "";
+                        }}
+                      />
+                    </div>
+
+                    {/* File list */}
+                    {leadFiles.map(file => {
+                      const isImage = file.mime_type?.startsWith("image/");
+                      return (
+                        <div key={file.id} className="flex items-center gap-2 group rounded-md px-2 py-1.5 hover:bg-muted/30 transition-colors">
+                          {isImage ? (
+                            <Image className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                          ) : (
+                            <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          )}
+                          <a
+                            href={file.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 text-xs truncate text-foreground/70 hover:text-foreground transition-colors"
+                          >
+                            {file.name}
+                          </a>
+                          <span className="text-[10px] text-muted-foreground shrink-0">
+                            {file.file_size > 1048576
+                              ? `${(file.file_size / 1048576).toFixed(1)} MB`
+                              : `${Math.round(file.file_size / 1024)} KB`}
+                          </span>
+                          <button
+                            onClick={() => deleteFile(file.id, file.file_url)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {leadFiles.length === 0 && !fileUploading && (
+                      <p className="text-xs text-muted-foreground text-center">Keine Dateien</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="border-b border-border">
                 <button
                   onClick={() => setSmartImportOpen(!smartImportOpen)}
