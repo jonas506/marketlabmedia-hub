@@ -156,17 +156,16 @@ export default function CRMLeadDetail() {
       const timelineText = activities
         .map(a => `[${new Date(a.created_at).toLocaleDateString("de-DE")}] ${a.title}${a.body ? ": " + a.body.slice(0, 200) : ""}`)
         .join("\n");
-      const res = await supabase.functions.invoke("client-ai-chat", {
+      const res = await supabase.functions.invoke("crm-lead-summary", {
         body: {
-          messages: [
-            { role: "system", content: "Du bist ein CRM-Assistent. Fasse die Timeline-Einträge eines Leads kurz und prägnant auf Deutsch zusammen. Nenne den aktuellen Status, die wichtigsten Erkenntnisse und empfohlene nächste Schritte. Maximal 5-6 Sätze." },
-            { role: "user", content: `Lead: ${lead.name}\nKontakt: ${lead.contact_name || "–"}\nStufe: ${lead.stage}\n\nTimeline:\n${timelineText}\n\nFasse zusammen.` }
-          ]
+          lead_name: lead.name,
+          contact_name: lead.contact_name,
+          stage: lead.stage,
+          timeline: timelineText,
         }
       });
       if (res.error) throw res.error;
-      const data = res.data;
-      setSummaryText(data?.reply || data?.content || data?.message || JSON.stringify(data));
+      setSummaryText(res.data?.summary || "Keine Zusammenfassung verfügbar.");
     } catch (err: any) {
       toast.error("Zusammenfassung fehlgeschlagen");
       setSummaryText(null);
