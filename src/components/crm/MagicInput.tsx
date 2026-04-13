@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Loader2, Tag } from "lucide-react";
+import { Plus, Sparkles, Loader2, Tag, DollarSign } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface MagicInputProps {
@@ -16,6 +16,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const [contactName, setContactName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [source, setSource] = useState("");
+  const [dealValue, setDealValue] = useState("");
   const [sourceOpen, setSourceOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const sourceRef = useRef<HTMLDivElement>(null);
@@ -53,10 +54,12 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const handleCreate = async () => {
     if (!contactName.trim()) { toast.error("Name fehlt"); return; }
     setSaving(true);
+    const dv = parseFloat(dealValue.replace(/[^\d.,]/g, "").replace(",", "."));
     const { error } = await supabase.from("crm_leads").insert({
       name: companyName.trim() || contactName.trim(),
       contact_name: contactName.trim(),
       source: source.trim() || null,
+      deal_value: isNaN(dv) ? 0 : dv,
       stage: "erstkontakt",
       created_by: user!.id,
     });
@@ -66,6 +69,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
     setContactName("");
     setCompanyName("");
     setSource("");
+    setDealValue("");
     onLeadCreated();
   };
 
@@ -124,6 +128,16 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
               ))}
             </div>
           )}
+        </div>
+        <div className="relative">
+          <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Deal €"
+            value={dealValue}
+            onChange={e => setDealValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-[110px] pl-8"
+          />
         </div>
         <Button onClick={handleCreate} disabled={saving || !contactName.trim()} size="sm" className="shrink-0">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
