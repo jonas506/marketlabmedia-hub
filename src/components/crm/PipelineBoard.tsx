@@ -8,6 +8,7 @@ import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target } from
 import { CRM_STAGES, PIPELINE_STAGES, getStageColor, getStageLabel, getSourceInfo } from "@/lib/crm-constants";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 type Lead = {
   id: string;
@@ -29,7 +30,12 @@ interface PipelineBoardProps {
   onRefresh: () => void;
 }
 
-function LeadCard({ lead, onDragStart }: { lead: Lead; onDragStart: (e: React.DragEvent, id: string) => void }) {
+function LeadCard({ lead, isDragging, onDragStart, onDragEnd }: { 
+  lead: Lead; 
+  isDragging: boolean;
+  onDragStart: (e: React.DragEvent, id: string) => void;
+  onDragEnd: () => void;
+}) {
   const sourceInfo = getSourceInfo(lead.source);
   const stageColor = getStageColor(lead.stage);
 
@@ -37,17 +43,22 @@ function LeadCard({ lead, onDragStart }: { lead: Lead; onDragStart: (e: React.Dr
     <div
       draggable
       onDragStart={(e) => onDragStart(e, lead.id)}
-      className="bg-card border border-border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:border-primary/40 transition-colors"
+      onDragEnd={onDragEnd}
+      className={cn(
+        "bg-card border border-border rounded-lg p-3 cursor-grab active:cursor-grabbing transition-all duration-200",
+        isDragging 
+          ? "opacity-40 scale-95 rotate-1 shadow-none" 
+          : "hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5"
+      )}
       style={{ borderLeftWidth: 3, borderLeftColor: stageColor }}
     >
-      <Link to={`/crm/lead/${lead.id}`} className="font-semibold text-sm hover:text-primary transition-colors">
+      <Link to={`/crm/lead/${lead.id}`} onClick={e => isDragging && e.preventDefault()} className="font-semibold text-sm hover:text-primary transition-colors">
         {lead.name}
       </Link>
       {lead.contact_name && (
         <p className="text-xs text-muted-foreground mt-0.5">{lead.contact_name}</p>
       )}
       
-      {/* Contact details */}
       {(lead.contact_email || lead.contact_phone) && (
         <div className="mt-1.5 space-y-0.5">
           {lead.contact_email && (
@@ -90,9 +101,37 @@ function LeadCard({ lead, onDragStart }: { lead: Lead; onDragStart: (e: React.Dr
   );
 }
 
+function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeave, onDrop, className }: {
+  stage: string;
+  isOver: boolean;
+  children: React.ReactNode;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragEnter: (e: React.DragEvent) => void;
+  onDragLeave: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent, stage: string) => void;
+  className?: string;
+}) {
+  return (
+    <div
+      onDragOver={onDragOver}
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => onDrop(e, stage)}
+      className={cn(
+        "rounded-lg p-2 min-h-[200px] transition-all duration-200",
+        isOver && "ring-2 ring-primary/50 bg-primary/5 scale-[1.01]",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) {
   const { user } = useAuth();
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [overStage, setOverStage] = useState<string | null>(null);
   const [wonCollapsed, setWonCollapsed] = useState(false);
   const [lostCollapsed, setLostCollapsed] = useState(true);
 
@@ -106,7 +145,6 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
     return map;
   }, [leads]);
 
-  // Stats
   const pipelineLeads = leads.filter(l => !['gewonnen', 'verloren'].includes(l.stage));
   const openDeals = pipelineLeads.reduce((s, l) => s + Number(l.deal_value || 0), 0);
   const now = new Date();
@@ -121,16 +159,50 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedId(id);
     e.dataTransfer.effectAllowed = "move";
+    // Create a ghost image with slight rotation
+    const el = e.currentTarget as HTMLElement;
+    const ghost = el.cloneNode(true) as HTMLElement;
+    ghost.style.transform = "rotate(3deg) scale(1.05)";
+    ghost.style.opacity = "0.9";
+    ghost.style.position = "absolute";
+    ghost.style.top = "-9999px";
+    ghost.style.width = `${el.offsetWidth}px`;
+    document.body.appendChild(ghost);
+    e.dataTransfer.setDragImage(ghost, el.offsetWidth / 2, 20);
+    requestAnimationFrame(() => document.body.removeChild(ghost));
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setOverStage(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDragEnter = (e: React.DragEvent, stage: string) => {
+    e.preventDefault();
+    setOverStage(stage);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const { clientX, clientY } = e;
+    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+      setOverStage(null);
+    }
   };
 
   const handleDrop = async (e: React.DragEvent, newStage: string) => {
     e.preventDefault();
+    setOverStage(null);
     if (!draggedId) return;
     const lead = leads.find(l => l.id === draggedId);
     if (!lead || lead.stage === newStage) { setDraggedId(null); return; }
 
     const oldStage = lead.stage;
-    // Optimistic: update via supabase
     const { error } = await supabase
       .from("crm_leads")
       .update({ stage: newStage, last_activity_at: new Date().toISOString() })
@@ -139,7 +211,6 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
     if (error) {
       toast.error("Fehler beim Verschieben");
     } else {
-      // Log activity
       await supabase.from("crm_activities").insert({
         lead_id: draggedId,
         type: "status_change" as any,
@@ -151,8 +222,6 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
     }
     setDraggedId(null);
   };
-
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; };
 
   return (
     <div>
@@ -178,13 +247,16 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
 
       {/* Kanban board */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 min-h-[400px]">
-        {/* Pipeline columns */}
         {PIPELINE_STAGES.map(stage => (
-          <div
+          <DropZone
             key={stage.value}
+            stage={stage.value}
+            isOver={overStage === stage.value && draggedId !== null}
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, stage.value)}
-            className="bg-muted/30 rounded-lg p-2 min-h-[200px]"
+            onDragEnter={(e) => handleDragEnter(e, stage.value)}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className="bg-muted/30"
           >
             <div className="flex items-center gap-2 mb-3 px-1">
               <div className="h-2.5 w-2.5 rounded-full" style={{ background: stage.color }} />
@@ -193,19 +265,27 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
             </div>
             <div className="space-y-2">
               {byStage[stage.value].map(lead => (
-                <LeadCard key={lead.id} lead={lead} onDragStart={handleDragStart} />
+                <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
               ))}
+              {overStage === stage.value && draggedId && !byStage[stage.value].find(l => l.id === draggedId) && (
+                <div className="border-2 border-dashed border-primary/30 rounded-lg h-16 flex items-center justify-center animate-fade-in">
+                  <span className="text-xs text-primary/50">Hier ablegen</span>
+                </div>
+              )}
             </div>
-          </div>
+          </DropZone>
         ))}
 
         {/* Won + Lost column */}
         <div className="space-y-3">
-          {/* Gewonnen */}
-          <div
+          <DropZone
+            stage="gewonnen"
+            isOver={overStage === 'gewonnen' && draggedId !== null}
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'gewonnen')}
-            className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-2"
+            onDragEnter={(e) => handleDragEnter(e, 'gewonnen')}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className="bg-emerald-500/5 border border-emerald-500/20"
           >
             <button
               onClick={() => setWonCollapsed(!wonCollapsed)}
@@ -219,17 +299,20 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
             {!wonCollapsed && (
               <div className="space-y-2">
                 {byStage['gewonnen'].map(lead => (
-                  <LeadCard key={lead.id} lead={lead} onDragStart={handleDragStart} />
+                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
                 ))}
               </div>
             )}
-          </div>
+          </DropZone>
 
-          {/* Verloren */}
-          <div
+          <DropZone
+            stage="verloren"
+            isOver={overStage === 'verloren' && draggedId !== null}
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'verloren')}
-            className="bg-red-500/5 border border-red-500/20 rounded-lg p-2"
+            onDragEnter={(e) => handleDragEnter(e, 'verloren')}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className="bg-red-500/5 border border-red-500/20"
           >
             <button
               onClick={() => setLostCollapsed(!lostCollapsed)}
@@ -243,11 +326,11 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
             {!lostCollapsed && (
               <div className="space-y-2">
                 {byStage['verloren'].map(lead => (
-                  <LeadCard key={lead.id} lead={lead} onDragStart={handleDragStart} />
+                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
                 ))}
               </div>
             )}
-          </div>
+          </DropZone>
         </div>
       </div>
     </div>
