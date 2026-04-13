@@ -1228,6 +1228,61 @@ export default function CRMLeadDetail() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Email compose dialog */}
+        <Dialog open={showEmailCompose} onOpenChange={setShowEmailCompose}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                E-Mail senden
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">An</label>
+                <Input
+                  placeholder="email@beispiel.de"
+                  value={emailTo}
+                  onChange={e => setEmailTo(e.target.value)}
+                  className="bg-background border-border"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Betreff</label>
+                <Input
+                  placeholder="Betreff eingeben..."
+                  value={emailSubject}
+                  onChange={e => setEmailSubject(e.target.value)}
+                  className="bg-background border-border"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Nachricht</label>
+                <Textarea
+                  placeholder="Ihre Nachricht..."
+                  value={emailBody}
+                  onChange={e => setEmailBody(e.target.value)}
+                  rows={8}
+                  className="bg-background border-border"
+                />
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] text-muted-foreground">
+                  Gesendet von noreply@marketlabmedia.de
+                </span>
+                <Button
+                  onClick={sendEmail}
+                  disabled={emailSending || !emailTo.trim() || !emailSubject.trim() || !emailBody.trim()}
+                  className="gap-2"
+                >
+                  {emailSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                  Senden
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </ErrorBoundary>
     </AppLayout>
   );
