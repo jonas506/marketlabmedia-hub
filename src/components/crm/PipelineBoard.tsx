@@ -300,7 +300,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
               <span className="text-xs text-muted-foreground ml-auto">{byStage['gewonnen'].length}</span>
             </button>
             {!wonCollapsed && (
-              <div className="space-y-2">
+              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
                 {byStage['gewonnen'].map(lead => (
                   <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
                 ))}
@@ -327,7 +327,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
               <span className="text-xs text-muted-foreground ml-auto">{byStage['verloren'].length}</span>
             </button>
             {!lostCollapsed && (
-              <div className="space-y-2">
+              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
                 {byStage['verloren'].map(lead => (
                   <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
                 ))}
