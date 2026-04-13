@@ -28,11 +28,16 @@ export function getStageColor(value: string) {
   return CRM_STAGES.find(s => s.value === value)?.color ?? '#6B7280';
 }
 
-export function getSourceInfo(value: string | null): { value: string; label: string; color: string; style?: { background: string; color: string } } | null {
+export function getSourceInfo(value: string | null, savedTags?: { name: string; color: string }[]): { value: string; label: string; color: string; style?: { background: string; color: string } } | null {
   if (!value) return null;
   const found = CRM_SOURCES.find(s => s.value === value);
   if (found) return found;
-  // Generate consistent color for custom tags
+  // Check saved tags
+  const saved = savedTags?.find(t => t.name === value);
+  if (saved) {
+    return { value, label: value, color: '', style: { background: saved.color + '33', color: saved.color } };
+  }
+  // Fallback: generate consistent color
   const hash = Array.from(value).reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
   const hue = ((hash % 360) + 360) % 360;
   return {
