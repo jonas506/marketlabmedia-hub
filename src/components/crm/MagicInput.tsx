@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Loader2, Tag, DollarSign } from "lucide-react";
+import { Plus, Sparkles, Loader2, Tag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface MagicInputProps {
@@ -16,7 +16,6 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const [contactName, setContactName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [source, setSource] = useState("");
-  const [dealValue, setDealValue] = useState("");
   const [sourceOpen, setSourceOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const sourceRef = useRef<HTMLDivElement>(null);
@@ -54,12 +53,13 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const handleCreate = async () => {
     if (!contactName.trim()) { toast.error("Name fehlt"); return; }
     setSaving(true);
-    const dv = parseFloat(dealValue.replace(/[^\d.,]/g, "").replace(",", "."));
     const { error } = await supabase.from("crm_leads").insert({
       name: companyName.trim() || contactName.trim(),
       contact_name: contactName.trim(),
       source: source.trim() || null,
-      deal_value: isNaN(dv) ? 0 : dv,
+      stage: "erstkontakt",
+      created_by: user!.id,
+    });
       stage: "erstkontakt",
       created_by: user!.id,
     });
