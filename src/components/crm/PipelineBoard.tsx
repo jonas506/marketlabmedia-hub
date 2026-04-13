@@ -32,13 +32,14 @@ interface PipelineBoardProps {
   onRefresh: () => void;
 }
 
-function LeadCard({ lead, isDragging, onDragStart, onDragEnd }: { 
+function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: { 
   lead: Lead; 
   isDragging: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
+  sourceTags?: { name: string; color: string }[];
 }) {
-  const sourceInfo = getSourceInfo(lead.source);
+  const sourceInfo = getSourceInfo(lead.source, sourceTags);
   const stageColor = dynGetStageColor([], lead.stage);
 
   return (
