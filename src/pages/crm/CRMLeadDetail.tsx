@@ -142,6 +142,40 @@ export default function CRMLeadDetail() {
 
   useEffect(() => { fetchLead(); }, [id]);
 
+  useEffect(() => {
+    if (activities.length > 0) {
+      setTimeout(() => timelineEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    }
+  }, [activities]);
+
+  const generateSummary = async () => {
+    if (!lead || activities.length === 0) return;
+    setSummaryLoading(true);
+    setShowSummary(true);
+    try {
+      const timelineText = activities
+        .map(a => `[${new Date(a.created_at).toLocaleDateString("de-DE")}] ${a.title}${a.body ? ": " + a.body.slice(0, 200) : ""}`)
+        .join("\n");
+      const res = await supabase.functions.invoke("client-ai-chat", {
+        body: {
+          messages: [
+            { role: "system", content: "Du bist ein CRM-Assistent. Fasse die Timeline-Einträge eines Leads kurz und prägnant auf Deutsch zusammen. Nenne den aktuellen Status, die wichtigsten Erkenntnisse und empfohlene nächste Schritte. Maximal 5-6 Sätze." },
+            { role: "user", content: `Lead: ${lead.name}\nKontakt: ${lead.contact_name || "–"}\nStufe: ${lead.stage}\n\nTimeline:\n${timelineText}\n\nFasse zusammen.` }
+          ]
+        }
+      });
+      if (res.error) throw res.error;
+      const data = res.data;
+      setSummaryText(data?.reply || data?.content || data?.message || JSON.stringify(data));
+    } catch (err: any) {
+      toast.error("Zusammenfassung fehlgeschlagen");
+      setSummaryText(null);
+      setShowSummary(false);
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
   // File upload handler
   const uploadFiles = useCallback(async (files: FileList | File[]) => {
     if (!id || !user || files.length === 0) return;
