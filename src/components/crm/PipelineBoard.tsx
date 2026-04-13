@@ -142,7 +142,10 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   const [lostCollapsed, setLostCollapsed] = useState(true);
 
   const pipelineStageConfigs = useMemo(() => getPipelineStages(stages), [stages]);
-  const closedStageConfigs = useMemo(() => getClosedStages(stages), [stages]);
+  const closedStageConfigs = useMemo(() => {
+    const closed = getClosedStages(stages);
+    return closed.sort((a, b) => (a.is_loss === b.is_loss ? 0 : a.is_loss ? -1 : 1));
+  }, [stages]);
   const winStages = useMemo(() => stages.filter(s => s.is_win).map(s => s.value), [stages]);
   const lossStages = useMemo(() => stages.filter(s => s.is_loss).map(s => s.value), [stages]);
   const firstStageValue = pipelineStageConfigs[0]?.value ?? 'interessiert';
