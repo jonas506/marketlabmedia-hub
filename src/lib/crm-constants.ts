@@ -1,6 +1,6 @@
 export const CRM_STAGES = [
-  { value: 'erstkontakt', label: 'Erstkontakt', color: '#6B7280' },
   { value: 'interessiert', label: 'Interessiert', color: '#8B5CF6' },
+  { value: 'erstkontakt', label: 'Erstkontakt', color: '#6B7280' },
   { value: 'gespraech', label: 'Gespräch', color: '#3B82F6' },
   { value: 'angebot', label: 'Angebot', color: '#F59E0B' },
   { value: 'gewonnen', label: 'Gewonnen', color: '#22C55E' },
