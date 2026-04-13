@@ -5,7 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target } from "lucide-react";
-import { CRM_STAGES, PIPELINE_STAGES, getStageColor, getStageLabel, getSourceInfo } from "@/lib/crm-constants";
+import { getSourceInfo } from "@/lib/crm-constants";
+import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel, getPipelineStages, getClosedStages, type CrmStageConfig } from "@/hooks/useCrmStages";
+import PipelineSettings from "@/components/crm/PipelineSettings";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -133,30 +135,37 @@ function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeav
 
 export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) {
   const { user } = useAuth();
+  const { data: stages = [] } = useCrmStages();
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
   const [wonCollapsed, setWonCollapsed] = useState(false);
   const [lostCollapsed, setLostCollapsed] = useState(true);
 
+  const pipelineStageConfigs = useMemo(() => getPipelineStages(stages), [stages]);
+  const closedStageConfigs = useMemo(() => getClosedStages(stages), [stages]);
+  const winStages = useMemo(() => stages.filter(s => s.is_win).map(s => s.value), [stages]);
+  const lossStages = useMemo(() => stages.filter(s => s.is_loss).map(s => s.value), [stages]);
+  const firstStageValue = pipelineStageConfigs[0]?.value ?? 'interessiert';
+
   const byStage = useMemo(() => {
     const map: Record<string, Lead[]> = {};
-    CRM_STAGES.forEach(s => { map[s.value] = []; });
+    stages.forEach(s => { map[s.value] = []; });
     leads.forEach(l => {
       if (map[l.stage]) map[l.stage].push(l);
-      else map['interessiert'].push(l);
+      else if (map[firstStageValue]) map[firstStageValue].push(l);
     });
     return map;
-  }, [leads]);
+  }, [leads, stages, firstStageValue]);
 
-  const pipelineLeads = leads.filter(l => !['gewonnen', 'verloren'].includes(l.stage));
+  const pipelineLeads = leads.filter(l => !winStages.includes(l.stage) && !lossStages.includes(l.stage));
   const openDeals = pipelineLeads.reduce((s, l) => s + Number(l.deal_value || 0), 0);
   const now = new Date();
   const qStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
   const wonThisQ = leads
-    .filter(l => l.stage === 'gewonnen' && new Date(l.last_activity_at || l.created_at) >= qStart)
+    .filter(l => winStages.includes(l.stage) && new Date(l.last_activity_at || l.created_at) >= qStart)
     .reduce((s, l) => s + Number(l.deal_value || 0), 0);
-  const totalLeads = leads.filter(l => l.stage !== 'verloren').length;
-  const wonCount = byStage['gewonnen'].length;
+  const totalLeads = leads.filter(l => !lossStages.includes(l.stage)).length;
+  const wonCount = leads.filter(l => winStages.includes(l.stage)).length;
   const conversion = totalLeads > 0 ? Math.round((wonCount / totalLeads) * 100) : 0;
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
