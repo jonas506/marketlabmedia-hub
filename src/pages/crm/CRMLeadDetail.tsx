@@ -320,22 +320,80 @@ export default function CRMLeadDetail() {
     setImportLoading(true);
     setImportResult(null);
     try {
-      // If it's an image, upload to storage + log activity
+      // If it's an image, analyze with AI vision + upload to storage
       if (file.type.startsWith("image/")) {
+        // Convert to base64 for AI vision
+        const arrayBuffer = await file.arrayBuffer();
+        const base64 = btoa(
+          new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+        );
+
+        // Upload to storage in parallel with AI analysis
         const storagePath = `${id}/${Date.now()}-${file.name}`;
-        const { error: uploadErr } = await supabase.storage.from("crm-files").upload(storagePath, file);
-        if (uploadErr) throw new Error(uploadErr.message);
+        const [uploadResult, aiResult] = await Promise.all([
+          supabase.storage.from("crm-files").upload(storagePath, file),
+          supabase.functions.invoke("crm-smart-import", {
+            body: { image_base64: base64, image_mime_type: file.type, lead_name: lead?.name, source_type: "image" },
+          }),
+        ]);
+
+        if (uploadResult.error) throw new Error(uploadResult.error.message);
         const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
         await supabase.from("crm_files").insert({
           lead_id: id, name: file.name, file_url: urlData.publicUrl,
           mime_type: file.type, file_size: file.size, uploaded_by: user.id,
         });
-        await supabase.from("crm_activities").insert({
-          lead_id: id, type: "note" as any,
-          title: `🖼️ Bild hochgeladen: ${file.name}`,
-          body: null, created_by: user.id,
-        });
-        toast.success("Bild hochgeladen");
+
+        const aiData = aiResult.data;
+        if (aiData && !aiResult.error) {
+          setImportResult(aiData);
+
+          // Auto-fill lead fields from AI analysis
+          if (aiData.contact_info) {
+            const ci = aiData.contact_info;
+            const updates: any = {};
+            if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
+            if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
+            if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
+            if (ci.website && !lead?.website) updates.website = ci.website;
+            if (ci.instagram && !lead?.instagram_handle) updates.instagram_handle = ci.instagram;
+            if (ci.linkedin && !lead?.linkedin_url) updates.linkedin_url = ci.linkedin;
+            if (Object.keys(updates).length > 0) {
+              await supabase.from("crm_leads").update(updates).eq("id", id);
+              setLead(p => p ? { ...p, ...updates } : p);
+            }
+          }
+
+          // Set source based on detected channel
+          if (aiData.source_channel && !lead?.source) {
+            const channelMap: Record<string, string> = {
+              instagram: "Instagram", linkedin: "LinkedIn", whatsapp: "WhatsApp",
+              email: "Email", phone: "Telefon", website: "Website",
+            };
+            const sourceName = channelMap[aiData.source_channel] || aiData.source_channel;
+            await supabase.from("crm_leads").update({ source: sourceName }).eq("id", id);
+            setLead(p => p ? { ...p, source: sourceName } : p);
+          }
+
+          // Log activity with AI summary
+          const channelLabel = aiData.source_channel ? ` (${aiData.source_channel.toUpperCase()})` : "";
+          await supabase.from("crm_activities").insert({
+            lead_id: id, type: "note" as any,
+            title: `🖼️ Bild analysiert${channelLabel}: ${file.name}`,
+            body: aiData.summary + (aiData.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiData.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
+            created_by: user.id,
+          });
+
+          toast.success("Bild analysiert & Infos extrahiert");
+        } else {
+          await supabase.from("crm_activities").insert({
+            lead_id: id, type: "note" as any,
+            title: `🖼️ Bild hochgeladen: ${file.name}`,
+            body: null, created_by: user.id,
+          });
+          toast.success("Bild hochgeladen");
+        }
+
         fetchLead();
         return;
       }
