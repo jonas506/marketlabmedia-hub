@@ -127,8 +127,12 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
             <Tag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             {selectedTag ? (
               <span className="flex items-center gap-1.5 flex-1">
-                <span className="h-2 w-2 rounded-full shrink-0" style={{ background: selectedTag.color }} />
-                <span className="truncate">{selectedTag.name}</span>
+                <span
+                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full truncate"
+                  style={{ background: selectedTag.color + "33", color: selectedTag.color }}
+                >
+                  {selectedTag.name}
+                </span>
                 <X
                   className="h-3 w-3 ml-auto text-muted-foreground hover:text-foreground shrink-0"
                   onClick={(e) => { e.stopPropagation(); setSelectedSource(null); }}
