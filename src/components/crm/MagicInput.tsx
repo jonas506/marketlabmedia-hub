@@ -60,16 +60,12 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
       stage: "erstkontakt",
       created_by: user!.id,
     });
-      stage: "erstkontakt",
-      created_by: user!.id,
-    });
     setSaving(false);
     if (error) { toast.error("Fehler beim Erstellen"); return; }
     toast.success(`${contactName.trim()} hinzugefügt`);
     setContactName("");
     setCompanyName("");
     setSource("");
-    setDealValue("");
     onLeadCreated();
   };
 
