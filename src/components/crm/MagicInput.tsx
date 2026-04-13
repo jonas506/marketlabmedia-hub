@@ -157,8 +157,12 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
                       setSourceOpen(false);
                     }}
                   >
-                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: tag.color }} />
-                    {tag.name}
+                    <span
+                      className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full"
+                      style={{ background: tag.color + "33", color: tag.color }}
+                    >
+                      {tag.name}
+                    </span>
                     {selectedSource === tag.name && <Check className="h-3 w-3 ml-auto text-primary" />}
                   </button>
                 ))}
