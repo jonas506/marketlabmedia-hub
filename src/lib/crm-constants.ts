@@ -29,5 +29,15 @@ export function getStageColor(value: string) {
 }
 
 export function getSourceInfo(value: string | null) {
-  return CRM_SOURCES.find(s => s.value === value) ?? null;
+  if (!value) return null;
+  const found = CRM_SOURCES.find(s => s.value === value);
+  if (found) return found;
+  // Generate consistent color for custom tags
+  const hash = Array.from(value).reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+  const hue = ((hash % 360) + 360) % 360;
+  return {
+    value,
+    label: value,
+    color: `bg-[hsl(${hue},60%,40%)]/20 text-[hsl(${hue},60%,60%)]`,
+  };
 }
