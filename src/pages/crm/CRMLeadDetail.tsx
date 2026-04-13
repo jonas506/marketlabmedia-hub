@@ -997,46 +997,26 @@ export default function CRMLeadDetail() {
                   {filteredActivities.length > 0 && (
                     <div className="absolute left-[15px] top-4 bottom-4 w-px bg-border" />
                   )}
-                  <div className="space-y-0">
+                   <div className="space-y-0">
                     {filteredActivities.length === 0 ? (
                       <p className="text-center text-muted-foreground py-12 text-sm">Noch keine Einträge</p>
                     ) : filteredActivities.map(act => {
                       const config = ACTIVITY_ICON_MAP[act.type] || ACTIVITY_ICON_MAP.note;
                       const Icon = config.icon;
                       const isAiEntry = act.body?.includes("**Wichtige Punkte:**") || act.title.includes("analysiert") || act.title.includes("Dokument analysiert");
-                      
-                      // Parse structured body for AI entries
+
+                      // Compact body: max 2 lines for normal, short summary for AI
                       const renderBody = (body: string) => {
                         if (!isAiEntry) {
-                          return <p className="text-xs text-muted-foreground mt-1.5 whitespace-pre-wrap leading-relaxed">{body}</p>;
+                          const short = body.length > 120 ? body.slice(0, 120) + "…" : body;
+                          return <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{short}</p>;
                         }
-                        
-                        const parts = body.split("\n\n");
-                        const summary = parts[0];
-                        const keyPointsSection = parts.find(p => p.includes("**Wichtige Punkte:**"));
-                        const keyPoints = keyPointsSection
-                          ? keyPointsSection.replace("**Wichtige Punkte:**", "").trim().split("\n").map(p => p.replace(/^•\s*/, "").trim()).filter(Boolean)
-                          : [];
-
-                        return (
-                          <div className="mt-2 space-y-2.5">
-                            <p className="text-[13px] text-foreground/80 leading-relaxed">{summary}</p>
-                            {keyPoints.length > 0 && (
-                              <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-1.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Erkenntnisse</p>
-                                {keyPoints.map((point, i) => (
-                                  <div key={i} className="flex items-start gap-2">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-primary/60 mt-[5px] shrink-0" />
-                                    <p className="text-xs text-foreground/70 leading-relaxed">{point}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
+                        const summary = body.split("\n\n")[0];
+                        const short = summary.length > 150 ? summary.slice(0, 150) + "…" : summary;
+                        return <p className="text-[11px] text-foreground/70 mt-0.5 line-clamp-2">{short}</p>;
                       };
 
-                      // Detect channel from emoji or keywords in title
+                      // Detect channel
                       const titleLower = act.title.toLowerCase();
                       const detectedChannel = titleLower.includes("instagram") || act.title.includes("📸") ? "instagram"
                         : titleLower.includes("linkedin") || act.title.includes("💼") ? "linkedin"
@@ -1045,38 +1025,43 @@ export default function CRMLeadDetail() {
                         : titleLower.includes("telefon") || act.title.includes("📞") ? "phone"
                         : null;
                       const channelLabels: Record<string, { label: string; color: string }> = {
-                        instagram: { label: "Instagram", color: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
-                        linkedin: { label: "LinkedIn", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
-                        whatsapp: { label: "WhatsApp", color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
-                        email: { label: "E-Mail", color: "bg-sky-500/15 text-sky-400 border-sky-500/20" },
-                        phone: { label: "Telefon", color: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
+                        instagram: { label: "IG", color: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
+                        linkedin: { label: "LI", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
+                        whatsapp: { label: "WA", color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
+                        email: { label: "Mail", color: "bg-sky-500/15 text-sky-400 border-sky-500/20" },
+                        phone: { label: "Tel", color: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
                       };
                       const channelInfo = detectedChannel ? channelLabels[detectedChannel] : null;
 
                       return (
-                        <div key={act.id} className={cn("flex gap-3.5 py-3 relative", isAiEntry && "py-4")}>
+                        <div key={act.id} className="group flex gap-3 py-2 relative">
                           <div className={cn(
                             "relative z-10 flex items-center justify-center shrink-0 rounded-full bg-background border",
-                            isAiEntry ? "h-8 w-8 border-primary/30" : "h-[30px] w-[30px] border-border"
+                            isAiEntry ? "h-7 w-7 border-primary/30" : "h-7 w-7 border-border"
                           )}>
                             {isAiEntry
-                              ? <Sparkles className="h-3.5 w-3.5 text-primary" />
-                              : <Icon className="h-3.5 w-3.5" style={{ color: config.color }} />
+                              ? <Sparkles className="h-3 w-3 text-primary" />
+                              : <Icon className="h-3 w-3" style={{ color: config.color }} />
                             }
                           </div>
-                          <div className="flex-1 min-w-0 pt-0.5">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <p className={cn("text-sm font-medium text-foreground truncate", isAiEntry && "text-primary")}>{act.title}</p>
-                                {channelInfo && (
-                                  <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0", channelInfo.color)}>
-                                    {channelInfo.label}
-                                  </span>
-                                )}
-                              </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <p className={cn("text-xs font-medium text-foreground truncate flex-1", isAiEntry && "text-primary")}>{act.title}</p>
+                              {channelInfo && (
+                                <span className={cn("text-[9px] font-semibold px-1 py-0.5 rounded border shrink-0", channelInfo.color)}>
+                                  {channelInfo.label}
+                                </span>
+                              )}
                               <span className="text-[10px] text-muted-foreground shrink-0">
                                 {new Date(act.created_at).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
                               </span>
+                              <button
+                                onClick={() => deleteActivity(act.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                title="Löschen"
+                              >
+                                <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                              </button>
                             </div>
                             {act.body && renderBody(act.body)}
                           </div>
