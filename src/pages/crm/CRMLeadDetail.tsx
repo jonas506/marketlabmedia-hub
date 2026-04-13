@@ -1003,7 +1003,7 @@ export default function CRMLeadDetail() {
                     ) : filteredActivities.map(act => {
                       const config = ACTIVITY_ICON_MAP[act.type] || ACTIVITY_ICON_MAP.note;
                       const Icon = config.icon;
-                      const isAiEntry = act.title.includes("analysiert") || act.title.includes("Dokument analysiert");
+                      const isAiEntry = act.body?.includes("**Wichtige Punkte:**") || act.title.includes("analysiert") || act.title.includes("Dokument analysiert");
                       
                       // Parse structured body for AI entries
                       const renderBody = (body: string) => {
