@@ -10,11 +10,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { content, lead_name, source_type } = await req.json();
+    const { content, lead_name, source_type, image_base64, image_mime_type } = await req.json();
 
-    if (!content) {
+    if (!content && !image_base64) {
       return new Response(
-        JSON.stringify({ error: "Content is required" }),
+        JSON.stringify({ error: "Content or image is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -39,9 +39,18 @@ Antworte IMMER als valides JSON mit genau diesem Schema:
     "email": "Falls erkennbar, E-Mail oder null",
     "phone": "Falls erkennbar, Telefonnummer oder null",
     "company": "Falls erkennbar, Firmenname oder null",
-    "website": "Falls erkennbar, Website oder null"
-  }
+    "website": "Falls erkennbar, Website oder null",
+    "instagram": "Falls erkennbar, Instagram-Handle (z.B. @name) oder null",
+    "linkedin": "Falls erkennbar, LinkedIn-URL oder null"
+  },
+  "source_channel": "Erkannter Kontaktkanal: 'instagram', 'linkedin', 'whatsapp', 'email', 'phone', 'website' oder null"
 }
+
+Wenn es ein Screenshot eines Chats ist (z.B. Instagram DM, WhatsApp, LinkedIn):
+- Erkenne die Plattform und setze source_channel entsprechend
+- Fasse zusammen was besprochen wurde
+- Extrahiere Namen, Kontaktinformationen
+- Identifiziere nächste Schritte
 
 Wenn es ein Call-Transkript ist, fokussiere dich auf:
 - Was wurde besprochen?
@@ -53,9 +62,33 @@ Wenn es eine Website ist, fokussiere dich auf:
 - Kontaktinformationen
 - Potenzielle Anknüpfungspunkte für Social-Media-Marketing`;
 
-    const userPrompt = source_type === "pdf"
-      ? `Analysiere dieses Call-Transkript/Dokument für den Lead "${lead_name || "Unbekannt"}":\n\n${content.substring(0, 15000)}`
-      : `Analysiere diese gescrapte Website-Informationen für den Lead "${lead_name || "Unbekannt"}":\n\n${content.substring(0, 15000)}`;
+    // Build messages array
+    const messages: any[] = [{ role: "system", content: systemPrompt }];
+
+    if (image_base64) {
+      // Vision request with image
+      const mimeType = image_mime_type || "image/jpeg";
+      messages.push({
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Analysiere dieses Bild für den Lead "${lead_name || "Unbekannt"}". Extrahiere alle erkennbaren Informationen wie Kontaktdaten, Gesprächsinhalt, Plattform etc.`,
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${mimeType};base64,${image_base64}`,
+            },
+          },
+        ],
+      });
+    } else {
+      const userPrompt = source_type === "pdf"
+        ? `Analysiere dieses Call-Transkript/Dokument für den Lead "${lead_name || "Unbekannt"}":\n\n${content.substring(0, 15000)}`
+        : `Analysiere diese gescrapte Website-Informationen für den Lead "${lead_name || "Unbekannt"}":\n\n${content.substring(0, 15000)}`;
+      messages.push({ role: "user", content: userPrompt });
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -64,11 +97,8 @@ Wenn es eine Website ist, fokussiere dich auf:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
+        model: "google/gemini-2.5-flash",
+        messages,
         response_format: { type: "json_object" },
       }),
     });
@@ -76,6 +106,18 @@ Wenn es eine Website ist, fokussiere dich auf:
     if (!response.ok) {
       const errText = await response.text();
       console.error("AI error:", errText);
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit erreicht, bitte versuche es gleich nochmal." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI-Credits aufgebraucht." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       return new Response(
         JSON.stringify({ error: "AI analysis failed" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
