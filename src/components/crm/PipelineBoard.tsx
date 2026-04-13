@@ -298,7 +298,9 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
         <div className="space-y-3">
           {closedStageConfigs.map(closedStage => {
             const isCollapsed = closedStage.is_win ? wonCollapsed : lostCollapsed;
-            const setCollapsed = closedStage.is_win ? setWonCollapsed : setLostCollapsed;
+            const toggleCollapsed = closedStage.is_win
+              ? () => setWonCollapsed(!wonCollapsed)
+              : () => setLostCollapsed(!lostCollapsed);
             return (
               <DropZone
                 key={closedStage.value}
@@ -309,52 +311,26 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 className="border"
-                style={{ background: closedStage.color + '0D', borderColor: closedStage.color + '33' }}
               >
-            <button
-              onClick={() => setWonCollapsed(!wonCollapsed)}
-              className="flex items-center gap-2 w-full px-1 mb-2"
-            >
-              {wonCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Gewonnen</span>
-              <span className="text-xs text-muted-foreground ml-auto">{byStage['gewonnen'].length}</span>
-            </button>
-            {!wonCollapsed && (
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-                {byStage['gewonnen'].map(lead => (
-                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
-                ))}
-              </div>
-            )}
-          </DropZone>
-
-          <DropZone
-            stage="verloren"
-            isOver={overStage === 'verloren' && draggedId !== null}
-            onDragOver={handleDragOver}
-            onDragEnter={(e) => handleDragEnter(e, 'verloren')}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className="bg-red-500/5 border border-red-500/20"
-          >
-            <button
-              onClick={() => setLostCollapsed(!lostCollapsed)}
-              className="flex items-center gap-2 w-full px-1 mb-2"
-            >
-              {lostCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-red-400">Verloren</span>
-              <span className="text-xs text-muted-foreground ml-auto">{byStage['verloren'].length}</span>
-            </button>
-            {!lostCollapsed && (
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-                {byStage['verloren'].map(lead => (
-                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
-                ))}
-              </div>
-            )}
-          </DropZone>
+                <button
+                  onClick={toggleCollapsed}
+                  className="flex items-center gap-2 w-full px-1 mb-2"
+                >
+                  {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: closedStage.color }} />
+                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: closedStage.color }}>{closedStage.label}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{(byStage[closedStage.value] ?? []).length}</span>
+                </button>
+                {!isCollapsed && (
+                  <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+                    {(byStage[closedStage.value] ?? []).map(lead => (
+                      <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
+                    ))}
+                  </div>
+                )}
+              </DropZone>
+            );
+          })}
         </div>
       </div>
     </div>
