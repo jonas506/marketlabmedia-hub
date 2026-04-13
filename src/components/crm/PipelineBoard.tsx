@@ -264,7 +264,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       <div className="max-w-full overflow-x-auto pb-2">
         <div
           className="grid min-w-full w-max gap-3"
-          style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, minmax(240px, 240px)) minmax(240px, 240px)` }}
+          style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, minmax(240px, 240px)) 180px` }}
         >
           {pipelineStageConfigs.map(stage => (
             <DropZone
@@ -295,13 +295,13 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
             </DropZone>
           ))}
 
-          {/* Closed stages column */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             {closedStageConfigs.map(closedStage => {
               const isCollapsed = closedStage.is_win ? wonCollapsed : lostCollapsed;
               const toggleCollapsed = closedStage.is_win
                 ? () => setWonCollapsed(!wonCollapsed)
                 : () => setLostCollapsed(!lostCollapsed);
+              const count = (byStage[closedStage.value] ?? []).length;
               return (
                 <DropZone
                   key={closedStage.value}
@@ -311,21 +311,26 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                   onDragEnter={(e) => handleDragEnter(e, closedStage.value)}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className="border"
+                  className="border border-border/50 bg-muted/10"
                 >
                   <button
                     onClick={toggleCollapsed}
-                    className="flex items-center gap-2 w-full px-1 mb-2"
+                    className="flex items-center gap-1.5 w-full px-1 py-0.5"
                   >
-                    {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                    <div className="h-2.5 w-2.5 rounded-full" style={{ background: closedStage.color }} />
-                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: closedStage.color }}>{closedStage.label}</span>
-                    <span className="text-xs text-muted-foreground ml-auto">{(byStage[closedStage.value] ?? []).length}</span>
+                    {isCollapsed ? <ChevronRight className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                    <div className="h-2 w-2 rounded-full" style={{ background: closedStage.color }} />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: closedStage.color }}>{closedStage.label}</span>
+                    <span className="text-[11px] text-muted-foreground ml-auto">{count}</span>
                   </button>
-                  {!isCollapsed && (
-                    <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+                  {!isCollapsed && count > 0 && (
+                    <div className="mt-1.5 space-y-1.5 max-h-48 overflow-y-auto">
                       {(byStage[closedStage.value] ?? []).map(lead => (
-                        <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
+                        <Link key={lead.id} to={`/crm/lead/${lead.id}`} className="block px-2 py-1.5 rounded-md bg-card/50 border border-border/40 hover:border-border transition-colors">
+                          <p className="text-xs font-medium truncate">{lead.name}</p>
+                          {lead.deal_value > 0 && (
+                            <p className="text-[10px] text-muted-foreground">{Number(lead.deal_value).toLocaleString("de-DE")} €</p>
+                          )}
+                        </Link>
                       ))}
                     </div>
                   )}
