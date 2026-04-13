@@ -298,7 +298,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
             </DropZone>
           ))}
 
-          <div className="space-y-2">
+          <>
             {closedStageConfigs.map(closedStage => {
               const isCollapsed = closedStage.is_win ? wonCollapsed : lostCollapsed;
               const toggleCollapsed = closedStage.is_win
