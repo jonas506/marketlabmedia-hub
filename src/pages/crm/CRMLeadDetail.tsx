@@ -119,6 +119,7 @@ export default function CRMLeadDetail() {
   const [leadFiles, setLeadFiles] = useState<any[]>([]);
   const [fileUploading, setFileUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [importDragOver, setImportDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchLead = async () => {
