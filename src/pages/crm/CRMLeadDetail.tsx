@@ -99,6 +99,10 @@ export default function CRMLeadDetail() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [timelineFilter, setTimelineFilter] = useState<string>("Alle");
   const [timelineSearch, setTimelineSearch] = useState("");
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryText, setSummaryText] = useState<string | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
+  const timelineEndRef = useRef<HTMLDivElement>(null);
 
   const [contactOpen, setContactOpen] = useState(true);
   const [tasksOpen, setTasksOpen] = useState(true);
