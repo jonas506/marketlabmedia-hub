@@ -118,6 +118,13 @@ export default function CRMLeadDetail() {
   const [importResult, setImportResult] = useState<any>(null);
   const [showLinkedInHint, setShowLinkedInHint] = useState(false);
 
+  // Email compose
+  const [showEmailCompose, setShowEmailCompose] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+
   // Files
   const [filesOpen, setFilesOpen] = useState(true);
   const [leadFiles, setLeadFiles] = useState<any[]>([]);
