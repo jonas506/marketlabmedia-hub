@@ -328,7 +328,18 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                   {!isCollapsed && count > 0 && (
                     <div className="mt-1.5 space-y-1.5 max-h-48 overflow-y-auto">
                       {(byStage[closedStage.value] ?? []).map(lead => (
-                        <Link key={lead.id} to={`/crm/lead/${lead.id}`} className="block px-2 py-1.5 rounded-md bg-card/50 border border-border/40 hover:border-border transition-colors">
+                        <Link
+                          key={lead.id}
+                          to={`/crm/lead/${lead.id}`}
+                          draggable
+                          onDragStart={(e) => { e.dataTransfer.setData("text/plain", lead.id); handleDragStart(e as any, lead.id); }}
+                          onDragEnd={handleDragEnd}
+                          className={cn(
+                            "block px-2 py-1.5 rounded-md bg-card/50 border border-border/40 hover:border-border transition-colors cursor-grab active:cursor-grabbing",
+                            draggedId === lead.id && "opacity-40"
+                          )}
+                          onClick={(e) => { if (draggedId) e.preventDefault(); }}
+                        >
                           <p className="text-xs font-medium truncate">{lead.name}</p>
                           {lead.deal_value > 0 && (
                             <p className="text-[10px] text-muted-foreground">{Number(lead.deal_value).toLocaleString("de-DE")} €</p>
