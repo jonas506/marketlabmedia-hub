@@ -165,13 +165,17 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
 
               <div className="border-t border-border p-1">
                 {addingTag ? (
-                  <div className="flex items-center gap-1 px-1">
+                  <div
+                    className="flex items-center gap-1 px-1"
+                    onMouseDown={e => e.stopPropagation()}
+                  >
                     <Input
                       autoFocus
                       placeholder="Neue Quelle…"
                       value={newTagName}
                       onChange={e => setNewTagName(e.target.value)}
                       onKeyDown={e => {
+                        e.stopPropagation();
                         if (e.key === "Enter") { e.preventDefault(); handleCreateTag(); }
                         if (e.key === "Escape") { setAddingTag(false); setNewTagName(""); }
                       }}
@@ -181,6 +185,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
                       size="sm"
                       variant="ghost"
                       className="h-7 w-7 p-0 shrink-0"
+                      onMouseDown={e => e.stopPropagation()}
                       onClick={handleCreateTag}
                       disabled={!newTagName.trim()}
                     >
@@ -191,7 +196,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
                   <button
                     type="button"
                     className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-primary hover:bg-accent/20 rounded transition-colors"
-                    onMouseDown={(e) => { e.preventDefault(); setAddingTag(true); }}
+                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setAddingTag(true); }}
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Neue Quelle erstellen
