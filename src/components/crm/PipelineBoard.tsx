@@ -13,6 +13,8 @@ type Lead = {
   id: string;
   name: string;
   contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
   stage: string;
   source: string | null;
   deal_value: number;
