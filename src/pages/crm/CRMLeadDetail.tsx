@@ -476,7 +476,17 @@ export default function CRMLeadDetail() {
                           <SelectValue placeholder="Wählen..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {CRM_SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                          {sourceTags.map(s => (
+                            <SelectItem key={s.id} value={s.name}>
+                              <span className="flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full shrink-0" style={{ background: s.color }} />
+                                {s.name}
+                              </span>
+                            </SelectItem>
+                          ))}
+                          {sourceTags.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-muted-foreground">Noch keine Quellen erstellt</div>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
