@@ -266,6 +266,35 @@ export default function CRMLeadDetail() {
     fetchLead();
   };
 
+  const sendEmail = async () => {
+    if (!emailTo.trim() || !emailSubject.trim() || !emailBody.trim() || !id) return;
+    setEmailSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("crm-send-email", {
+        body: { to: emailTo, subject: emailSubject, body: emailBody, lead_id: id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("E-Mail gesendet");
+      setShowEmailCompose(false);
+      setEmailTo("");
+      setEmailSubject("");
+      setEmailBody("");
+      fetchLead();
+    } catch (err: any) {
+      toast.error(err.message || "E-Mail konnte nicht gesendet werden");
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  const openEmailCompose = () => {
+    setEmailTo(lead?.contact_email || "");
+    setEmailSubject("");
+    setEmailBody("");
+    setShowEmailCompose(true);
+  };
+
   const deleteActivity = async (activityId: string) => {
     const { error } = await supabase.from("crm_activities").delete().eq("id", activityId);
     if (error) { toast.error("Fehler beim Löschen"); return; }
