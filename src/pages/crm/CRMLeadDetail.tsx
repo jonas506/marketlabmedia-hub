@@ -514,25 +514,45 @@ export default function CRMLeadDetail() {
                       { field: "contact_email", icon: Mail, label: "Email", value: lead.contact_email },
                       { field: "contact_phone", icon: Phone, label: "Telefon", value: lead.contact_phone },
                       { field: "website", icon: Globe, label: "Website", value: lead.website },
-                    ].map(({ field, icon: Icon, label, value }) => (
-                      <div key={field} className="flex items-center gap-2">
-                        <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        {editingField === field ? (
-                          <Input
-                            autoFocus
-                            value={value || ""}
-                            onChange={e => setLead(p => p ? { ...p, [field]: e.target.value } : p)}
-                            onBlur={() => saveField(field, (lead as any)[field])}
-                            onKeyDown={e => e.key === "Enter" && saveField(field, (lead as any)[field])}
-                            className="h-6 bg-background border-border text-xs flex-1"
-                          />
-                        ) : (
-                          <button onClick={() => setEditingField(field)} className="text-xs text-foreground/60 hover:text-foreground transition-colors truncate text-left">
-                            {value || <span className="text-muted-foreground/50">{label}...</span>}
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                      { field: "instagram_handle", icon: Image, label: "Instagram", value: lead.instagram_handle },
+                      { field: "linkedin_url", icon: Link2, label: "LinkedIn", value: lead.linkedin_url },
+                    ].map(({ field, icon: Icon, label, value }) => {
+                      const isLink = ["website", "instagram_handle", "linkedin_url"].includes(field);
+                      const linkHref = value
+                        ? field === "instagram_handle"
+                          ? (value.startsWith("http") ? value : `https://instagram.com/${value.replace(/^@/, "")}`)
+                          : field === "linkedin_url"
+                            ? (value.startsWith("http") ? value : `https://${value}`)
+                            : (value.startsWith("http") ? value : `https://${value}`)
+                        : null;
+                      return (
+                        <div key={field} className="flex items-center gap-2">
+                          <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          {editingField === field ? (
+                            <Input
+                              autoFocus
+                              value={value || ""}
+                              onChange={e => setLead(p => p ? { ...p, [field]: e.target.value } : p)}
+                              onBlur={() => saveField(field, (lead as any)[field])}
+                              onKeyDown={e => e.key === "Enter" && saveField(field, (lead as any)[field])}
+                              className="h-6 bg-background border-border text-xs flex-1"
+                              placeholder={field === "instagram_handle" ? "@handle" : field === "linkedin_url" ? "linkedin.com/in/..." : label}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-1 flex-1 min-w-0">
+                              <button onClick={() => setEditingField(field)} className="text-xs text-foreground/60 hover:text-foreground transition-colors truncate text-left">
+                                {value || <span className="text-muted-foreground/50">{label}...</span>}
+                              </button>
+                              {isLink && linkHref && (
+                                <a href={linkHref} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="shrink-0">
+                                  <Globe className="h-3 w-3 text-muted-foreground hover:text-primary transition-colors" />
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
 
                     {/* Deal value */}
                     <div className="flex items-center gap-2">
