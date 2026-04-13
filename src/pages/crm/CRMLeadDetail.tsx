@@ -16,6 +16,7 @@ import {
   ChevronDown, ChevronRight, Plus, DollarSign,
   Search, CheckSquare, CalendarIcon, Clock,
   Sparkles, Upload, Link2, Loader2, AlertTriangle,
+  Paperclip, FileText, Image, Trash2, X,
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 import { Badge } from "@/components/ui/badge";
