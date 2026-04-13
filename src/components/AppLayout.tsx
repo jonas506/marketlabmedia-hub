@@ -243,7 +243,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </div>
       </aside>
-      <main className={`${mainMargin} flex-1 p-6 transition-all duration-200`}>
+      <main className={`${mainMargin} min-w-0 flex-1 p-6 transition-all duration-200`}>
         {children}
       </main>
       <QuickAddTask />
