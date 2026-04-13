@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,13 +33,14 @@ interface PipelineBoardProps {
   onRefresh: () => void;
 }
 
-function LeadCard({ lead, isDragging, onDragStart, onDragEnd }: { 
+function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: { 
   lead: Lead; 
   isDragging: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
+  sourceTags?: { name: string; color: string }[];
 }) {
-  const sourceInfo = getSourceInfo(lead.source);
+  const sourceInfo = getSourceInfo(lead.source, sourceTags);
   const stageColor = dynGetStageColor([], lead.stage);
 
   return (
@@ -136,6 +138,13 @@ function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeav
 export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) {
   const { user } = useAuth();
   const { data: stages = [] } = useCrmStages();
+  const { data: sourceTags = [] } = useQuery({
+    queryKey: ["crm-source-tags"],
+    queryFn: async () => {
+      const { data } = await supabase.from("crm_source_tags").select("name, color").order("name");
+      return (data ?? []) as { name: string; color: string }[];
+    },
+  });
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
   const [wonCollapsed, setWonCollapsed] = useState(false);
@@ -287,7 +296,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
                 {(byStage[stage.value] ?? []).map(lead => (
-                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
+                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} sourceTags={sourceTags} />
                 ))}
                 {overStage === stage.value && draggedId && !(byStage[stage.value] ?? []).find(l => l.id === draggedId) && (
                   <div className="border-2 border-dashed border-primary/30 rounded-lg h-16 flex items-center justify-center animate-fade-in">
