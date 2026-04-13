@@ -36,6 +36,7 @@ export default function CRMHome() {
   const [tab, setTab] = useState(defaultTab);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: stages = [] } = useCrmStages();
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
   const [sortAsc, setSortAsc] = useState(false);
@@ -158,9 +159,9 @@ export default function CRMHome() {
                         <td className="px-3 py-2.5">
                           <span
                             className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ background: getStageColor(lead.stage) + "22", color: getStageColor(lead.stage) }}
+                            style={{ background: dynGetStageColor(stages, lead.stage) + "22", color: dynGetStageColor(stages, lead.stage) }}
                           >
-                            {getStageLabel(lead.stage)}
+                            {dynGetStageLabel(stages, lead.stage)}
                           </span>
                         </td>
                         <td className="px-3 py-2.5">
