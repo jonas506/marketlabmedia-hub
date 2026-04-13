@@ -261,9 +261,9 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       <div className="flex items-center justify-end mb-2">
         <PipelineSettings stages={stages} />
       </div>
-      <div className="max-w-full overflow-x-auto overflow-y-hidden pb-2">
+      <div className="max-w-full overflow-x-auto pb-2">
         <div
-          className="grid h-[calc(100vh-340px)] min-w-full w-max gap-3"
+          className="grid min-w-full w-max gap-3"
           style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, minmax(240px, 240px)) minmax(240px, 240px)` }}
         >
           {pipelineStageConfigs.map(stage => (
