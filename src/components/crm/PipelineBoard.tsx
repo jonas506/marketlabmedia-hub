@@ -236,7 +236,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   };
 
   return (
-    <div>
+    <div className="flex flex-col h-[calc(100vh-220px)]">
       {/* Stats bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         {[
