@@ -249,7 +249,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       </div>
 
       {/* Kanban board */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 min-h-[400px]">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[calc(100vh-240px)]">
         {PIPELINE_STAGES.map(stage => (
           <DropZone
             key={stage.value}
