@@ -11,38 +11,24 @@ import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { de } from "date-fns/locale";
 import {
-  ArrowLeft, StickyNote, Phone, Mail, Users2, Globe, Save,
-  ChevronDown, ChevronRight, Plus, ExternalLink, Lightbulb,
-  Search, Filter, MoreHorizontal, CheckSquare, CalendarIcon, Clock,
-  Sparkles, Upload, Link2, Loader2, FileText, AlertTriangle,
+  ArrowLeft, StickyNote, Phone, Mail, Users2, Globe,
+  ChevronDown, ChevronRight, Plus,
+  Search, CheckSquare, CalendarIcon, Clock,
+  Sparkles, Upload, Link2, Loader2, AlertTriangle,
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import CRMLayout from "../CRM";
+import AppLayout from "@/components/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
-
-const SOURCE_OPTIONS = [
-  { value: "empfehlung", label: "Empfehlung" },
-  { value: "ads", label: "Ads" },
-  { value: "kaltakquise_telefon", label: "Kaltakquise Telefon" },
-  { value: "linkedin", label: "LinkedIn" },
-];
-
-const SOURCE_COLORS: Record<string, string> = {
-  empfehlung: "bg-emerald-500/20 text-emerald-400",
-  ads: "bg-blue-500/20 text-blue-400",
-  kaltakquise_telefon: "bg-orange-500/20 text-orange-400",
-  linkedin: "bg-sky-500/20 text-sky-400",
-};
+import { CRM_STAGES, CRM_SOURCES, getStageLabel, getStageColor, getSourceInfo } from "@/lib/crm-constants";
 
 const ACTIVITY_TYPES = [
   { value: "note", label: "Notiz", icon: StickyNote, color: "#F59E0B" },
-  { value: "email", label: "Email", icon: Mail, color: "#0083F7" },
   { value: "call", label: "Anruf", icon: Phone, color: "#22C55E" },
+  { value: "email", label: "Email", icon: Mail, color: "#0083F7" },
   { value: "sms", label: "Meeting", icon: Users2, color: "#8B5CF6" },
 ] as const;
 
@@ -51,8 +37,7 @@ const ACTIVITY_ICON_MAP: Record<string, { icon: typeof StickyNote; color: string
   call: { icon: Phone, color: "#22C55E" },
   email: { icon: Mail, color: "#0083F7" },
   sms: { icon: Users2, color: "#8B5CF6" },
-  status_change: { icon: Lightbulb, color: "#F59E0B" },
-  opportunity_change: { icon: Lightbulb, color: "#F59E0B" },
+  status_change: { icon: StickyNote, color: "#F59E0B" },
   task_completed: { icon: CheckSquare, color: "#22C55E" },
   created: { icon: StickyNote, color: "#6B7280" },
 };
@@ -72,7 +57,13 @@ interface LeadData {
   notes: string | null;
   description: string | null;
   source: string | null;
-  status_id: string | null;
+  stage: string;
+  deal_value: number | null;
+  next_step: string | null;
+  next_step_date: string | null;
+  instagram_handle: string | null;
+  linkedin_url: string | null;
+  ai_summary: string | null;
 }
 
 interface Activity {
@@ -81,22 +72,6 @@ interface Activity {
   title: string;
   body: string | null;
   created_at: string;
-}
-
-interface Status {
-  id: string;
-  name: string;
-  color: string;
-}
-
-interface Opportunity {
-  id: string;
-  value: number;
-  note: string | null;
-  pipeline_name: string;
-  stage_name: string;
-  stage_color: string;
-  win_probability: number;
 }
 
 interface CrmTask {
@@ -115,56 +90,37 @@ export default function CRMLeadDetail() {
   const { user } = useAuth();
   const [lead, setLead] = useState<LeadData | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [statuses, setStatuses] = useState<Status[]>([]);
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [showActivity, setShowActivity] = useState(false);
   const [activityType, setActivityType] = useState<string>("note");
   const [activityTitle, setActivityTitle] = useState("");
   const [activityBody, setActivityBody] = useState("");
-  const [saving, setSaving] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [timelineFilter, setTimelineFilter] = useState<string>("Alle");
   const [timelineSearch, setTimelineSearch] = useState("");
 
-  // Collapsible sections
-  const [aboutOpen, setAboutOpen] = useState(true);
-  const [oppsOpen, setOppsOpen] = useState(true);
   const [contactOpen, setContactOpen] = useState(true);
   const [tasksOpen, setTasksOpen] = useState(true);
-  const [smartImportOpen, setSmartImportOpen] = useState(true);
+  const [smartImportOpen, setSmartImportOpen] = useState(false);
 
-  // Tasks state
   const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDate, setNewTaskDate] = useState<Date | undefined>();
   const [newTaskTime, setNewTaskTime] = useState("");
 
-  // Smart Import state
   const [importUrl, setImportUrl] = useState("");
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
+  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
 
   const fetchLead = async () => {
     if (!id) return;
-    const [{ data: leadData }, { data: actData }, { data: statusData }, { data: oppData }, { data: taskData }] = await Promise.all([
+    const [{ data: leadData }, { data: actData }, { data: taskData }] = await Promise.all([
       supabase.from("crm_leads").select("*").eq("id", id).single(),
       supabase.from("crm_activities").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
-      supabase.from("crm_lead_statuses").select("*").order("sort_order"),
-      supabase.from("crm_opportunities").select("*, crm_pipelines(name), crm_pipeline_stages(name, color, win_probability)").eq("lead_id", id),
       supabase.from("crm_tasks").select("*").eq("lead_id", id).order("is_completed").order("due_date", { ascending: true, nullsFirst: false }),
     ]);
     if (leadData) setLead(leadData as any);
     setActivities((actData || []) as any[]);
-    setStatuses(statusData || []);
-    setOpportunities((oppData || []).map((o: any) => ({
-      id: o.id,
-      value: o.value,
-      note: o.note,
-      pipeline_name: o.crm_pipelines?.name || "",
-      stage_name: o.crm_pipeline_stages?.name || "",
-      stage_color: o.crm_pipeline_stages?.color || "#6B7280",
-      win_probability: o.crm_pipeline_stages?.win_probability || 0,
-    })));
     setCrmTasks((taskData || []) as any[]);
   };
 
@@ -176,32 +132,11 @@ export default function CRMLeadDetail() {
     setEditingField(null);
   };
 
-  const saveLead = async () => {
-    if (!lead || !id) return;
-    setSaving(true);
-    const { error } = await supabase.from("crm_leads").update({
-      name: lead.name,
-      contact_name: lead.contact_name,
-      contact_email: lead.contact_email,
-      contact_phone: lead.contact_phone,
-      website: lead.website,
-      notes: lead.notes,
-      source: lead.source,
-      status_id: lead.status_id,
-    }).eq("id", id);
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success("Gespeichert");
-  };
-
   const addActivity = async () => {
     if (!activityTitle.trim() || !id || !user) return;
     const { error } = await supabase.from("crm_activities").insert({
-      lead_id: id,
-      type: activityType as any,
-      title: activityTitle,
-      body: activityBody || null,
-      created_by: user.id,
+      lead_id: id, type: activityType as any, title: activityTitle,
+      body: activityBody || null, created_by: user.id,
     });
     if (error) { toast.error(error.message); return; }
     toast.success("Eintrag erstellt");
@@ -214,8 +149,7 @@ export default function CRMLeadDetail() {
   const addCrmTask = async () => {
     if (!newTaskTitle.trim() || !id || !user) return;
     const { error } = await supabase.from("crm_tasks").insert({
-      lead_id: id,
-      title: newTaskTitle,
+      lead_id: id, title: newTaskTitle,
       due_date: newTaskDate ? format(newTaskDate, "yyyy-MM-dd") : null,
       due_time: newTaskTime || null,
       assigned_to: user.id,
@@ -231,24 +165,21 @@ export default function CRMLeadDetail() {
   const toggleCrmTask = async (task: CrmTask) => {
     const completed = !task.is_completed;
     await supabase.from("crm_tasks").update({
-      is_completed: completed,
-      completed_at: completed ? new Date().toISOString() : null,
+      is_completed: completed, completed_at: completed ? new Date().toISOString() : null,
     }).eq("id", task.id);
     fetchLead();
   };
 
+  // Smart Import handlers
   const isLinkedInUrl = (url: string) => /linkedin\.com/i.test(url);
-  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
 
   const handleUrlImport = async () => {
     if (!importUrl.trim() || !id || !user) return;
-
     if (isLinkedInUrl(importUrl)) {
       toast.info("LinkedIn kann nicht gescrapt werden. Lade das Profil als PDF herunter.", { duration: 6000 });
       setShowLinkedInHint(true);
       return;
     }
-
     setImportLoading(true);
     setImportResult(null);
     try {
@@ -263,8 +194,8 @@ export default function CRMLeadDetail() {
         body: { content: markdown, lead_name: lead?.name, source_type: "url" },
       });
       if (aiErr) throw new Error(aiErr.message);
-
       setImportResult(aiResult);
+
       if (aiResult.contact_info) {
         const ci = aiResult.contact_info;
         const updates: any = {};
@@ -284,7 +215,6 @@ export default function CRMLeadDetail() {
         body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
         created_by: user.id,
       });
-
       toast.success("Website analysiert & importiert");
       setImportUrl("");
       fetchLead();
@@ -320,13 +250,12 @@ export default function CRMLeadDetail() {
       } else {
         text = await file.text();
       }
-      if (!text.trim()) throw new Error("Dokument ist leer oder konnte nicht gelesen werden");
+      if (!text.trim()) throw new Error("Dokument ist leer");
 
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: text, lead_name: lead?.name, source_type: "pdf" },
       });
       if (aiErr) throw new Error(aiErr.message);
-
       setImportResult(aiResult);
 
       if (aiResult.contact_info) {
@@ -348,7 +277,6 @@ export default function CRMLeadDetail() {
         body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
         created_by: user.id,
       });
-
       setShowLinkedInHint(false);
       toast.success("Dokument analysiert");
       fetchLead();
@@ -360,15 +288,10 @@ export default function CRMLeadDetail() {
     }
   };
 
-  // Create tasks from AI result
   const createTasksFromResult = async (nextSteps: string[]) => {
     if (!id || !user) return;
     for (const step of nextSteps) {
-      await supabase.from("crm_tasks").insert({
-        lead_id: id,
-        title: step,
-        assigned_to: user.id,
-      } as any);
+      await supabase.from("crm_tasks").insert({ lead_id: id, title: step, assigned_to: user.id } as any);
     }
     toast.success(`${nextSteps.length} Aufgabe(n) erstellt`);
     setImportResult(null);
@@ -385,358 +308,195 @@ export default function CRMLeadDetail() {
     return true;
   });
 
-  if (!lead) return <CRMLayout><div className="flex items-center justify-center h-64 text-muted-foreground">Laden...</div></CRMLayout>;
+  if (!lead) return (
+    <AppLayout>
+      <div className="flex items-center justify-center h-64 text-muted-foreground">Laden...</div>
+    </AppLayout>
+  );
 
-  const currentStatus = statuses.find(s => s.id === lead.status_id);
+  const stageColor = getStageColor(lead.stage);
+  const sourceInfo = getSourceInfo(lead.source);
 
   return (
-    <CRMLayout>
+    <AppLayout>
       <ErrorBoundary level="section">
-      <div className="flex flex-col h-[calc(100vh-48px)] -m-6">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-[#3A3A44] bg-[#1E1E24] shrink-0">
-          <div className="flex items-center gap-3">
-            <Link to="/crm" className="text-muted-foreground hover:text-[#FAFBFF] transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <h1 className="text-lg font-bold text-[#FAFBFF] font-body">{lead.name}</h1>
-            {/* Status dropdown */}
-            <Select
-              value={lead.status_id || ""}
-              onValueChange={v => {
-                setLead(p => p ? { ...p, status_id: v } : p);
-                saveField("status_id", v);
-              }}
-            >
-              <SelectTrigger className="h-7 w-auto gap-1.5 px-2.5 border-[#3A3A44] bg-transparent text-xs font-medium" style={currentStatus ? { color: currentStatus.color, borderColor: currentStatus.color + "44" } : {}}>
-                {currentStatus && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: currentStatus.color }} />}
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statuses.map(s => (
-                  <SelectItem key={s.id} value={s.id}>
-                    <span className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-                      {s.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {lead.source && (
-              <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${SOURCE_COLORS[lead.source] || ""}`}>
-                {SOURCE_OPTIONS.find(s => s.value === lead.source)?.label || lead.source}
-              </span>
-            )}
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-1.5">
-            {ACTIVITY_TYPES.map(t => (
-              <Button
-                key={t.value}
-                variant="outline"
-                size="sm"
-                className="gap-1.5 h-8 text-xs border-[#3A3A44] bg-transparent hover:bg-[#2A2A32] text-[#FAFBFF]/80"
-                onClick={() => { setActivityType(t.value); setShowActivity(true); }}
-              >
-                <t.icon className="h-3.5 w-3.5" style={{ color: t.color }} />
-                {t.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Two-column layout */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* LEFT PANEL */}
-          <div className="w-[380px] shrink-0 border-r border-[#3A3A44] overflow-y-auto">
-            {/* ABOUT section */}
-            <div className="border-b border-[#3A3A44]">
-              <button
-                onClick={() => setAboutOpen(!aboutOpen)}
-                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
-              >
-                {aboutOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                <StickyNote className="h-3 w-3" />
-                About
-              </button>
-              {aboutOpen && (
-                <div className="px-4 pb-4 space-y-2.5">
-                  {/* Website */}
-                  <div className="flex items-center gap-2 text-sm">
-                    <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    {lead.website ? (
-                      <a href={lead.website.startsWith("http") ? lead.website : `https://${lead.website}`} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate text-sm">
-                        {lead.website.replace(/^https?:\/\//, "")}
-                      </a>
-                    ) : (
-                      <button onClick={() => setEditingField("website")} className="text-muted-foreground/50 hover:text-muted-foreground text-sm">Website hinzufügen...</button>
-                    )}
-                  </div>
-
-                  {/* Source */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Quelle:</span>
-                    <Select value={lead.source || ""} onValueChange={v => { setLead(p => p ? { ...p, source: v } : p); saveField("source", v); }}>
-                      <SelectTrigger className="h-6 w-auto gap-1 px-2 border-none bg-transparent text-xs">
-                        <SelectValue placeholder="Quelle wählen..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SOURCE_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Notes / Description */}
-                  <div>
-                    {editingField === "notes" ? (
-                      <Textarea
-                        autoFocus
-                        value={lead.notes || ""}
-                        onChange={e => setLead(p => p ? { ...p, notes: e.target.value } : p)}
-                        onBlur={() => { saveField("notes", lead.notes); }}
-                        rows={3}
-                        className="bg-[#1E1E24] border-[#3A3A44] text-sm"
-                        placeholder="Beschreibung..."
-                      />
-                    ) : (
-                      <button
-                        onClick={() => setEditingField("notes")}
-                        className="text-sm text-left w-full"
-                      >
-                        {lead.notes ? (
-                          <span className="text-[#FAFBFF]/70 whitespace-pre-wrap">{lead.notes}</span>
-                        ) : (
-                          <span className="text-muted-foreground/50 hover:text-muted-foreground">Beschreibung hinzufügen...</span>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
+        <div className="flex flex-col h-[calc(100vh-48px)] -m-6">
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-card shrink-0">
+            <div className="flex items-center gap-3">
+              <Link to="/crm" className="text-muted-foreground hover:text-foreground transition-colors">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+              
+              {/* Name – click to edit */}
+              {editingField === "name" ? (
+                <Input
+                  autoFocus
+                  value={lead.name}
+                  onChange={e => setLead(p => p ? { ...p, name: e.target.value } : p)}
+                  onBlur={() => saveField("name", lead.name)}
+                  onKeyDown={e => e.key === "Enter" && saveField("name", lead.name)}
+                  className="h-8 text-lg font-bold w-64 bg-background border-border"
+                />
+              ) : (
+                <button onClick={() => setEditingField("name")} className="text-lg font-bold text-foreground hover:text-primary transition-colors">
+                  {lead.name}
+                </button>
               )}
-            </div>
 
-            {/* OPPORTUNITIES section */}
-            <div className="border-b border-[#3A3A44]">
-              <button
-                onClick={() => setOppsOpen(!oppsOpen)}
-                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
+              {/* Stage */}
+              <Select
+                value={lead.stage}
+                onValueChange={v => {
+                  setLead(p => p ? { ...p, stage: v } : p);
+                  saveField("stage", v);
+                }}
               >
-                {oppsOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                <Lightbulb className="h-3 w-3" />
-                Opportunities
-                <span className="ml-1 text-[10px] text-muted-foreground">{opportunities.length}</span>
-              </button>
-              {oppsOpen && (
-                <div className="px-4 pb-4 space-y-2">
-                  {opportunities.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">Keine Opportunities</p>
-                  ) : opportunities.map(opp => (
-                    <div key={opp.id} className="flex items-start gap-2.5 rounded-lg bg-[#2A2A32] p-3 border border-[#3A3A44]">
-                      <div className="w-1 h-10 rounded-full shrink-0" style={{ backgroundColor: opp.stage_color }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-semibold text-[#FAFBFF]">€{opp.value.toLocaleString("de-DE")}</span>
-                          <span className="text-[10px] text-muted-foreground">{opp.win_probability}%</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#3A3A44] text-[#FAFBFF]/70 truncate">{opp.pipeline_name}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium truncate" style={{ backgroundColor: opp.stage_color + "22", color: opp.stage_color }}>
-                            {opp.stage_name}
-                          </span>
-                        </div>
-                        {opp.note && <p className="text-[11px] text-[#FAFBFF]/50 mt-1.5">{opp.note}</p>}
-                      </div>
-                    </div>
+                <SelectTrigger
+                  className="h-7 w-auto gap-1.5 px-2.5 border-border bg-transparent text-xs font-medium"
+                  style={{ color: stageColor, borderColor: stageColor + "44" }}
+                >
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stageColor }} />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CRM_STAGES.map(s => (
+                    <SelectItem key={s.value} value={s.value}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                        {s.label}
+                      </span>
+                    </SelectItem>
                   ))}
-                </div>
+                </SelectContent>
+              </Select>
+
+              {sourceInfo && (
+                <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${sourceInfo.color}`}>
+                  {sourceInfo.label}
+                </span>
               )}
             </div>
 
-            {/* CONTACT – inline in About */}
-            <div className="border-b border-[#3A3A44]">
-              <button
-                onClick={() => setContactOpen(!contactOpen)}
-                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
-              >
-                {contactOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                <Users2 className="h-3 w-3" />
-                Kontakt
-              </button>
-              {contactOpen && (
-                <div className="px-4 pb-4 space-y-2">
-                  {[
-                    { field: "contact_name" as const, icon: Users2, label: "Name", value: lead.contact_name },
-                    { field: "contact_email" as const, icon: Mail, label: "Email", value: lead.contact_email },
-                    { field: "contact_phone" as const, icon: Phone, label: "Telefon", value: lead.contact_phone },
-                  ].map(({ field, icon: Icon, label, value }) => (
-                    <div key={field} className="flex items-center gap-2">
-                      <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
-                      {editingField === field ? (
-                        <Input
+            {/* Quick-add activity buttons */}
+            <div className="flex items-center gap-1.5">
+              {ACTIVITY_TYPES.map(t => (
+                <Button
+                  key={t.value}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-8 text-xs border-border bg-transparent"
+                  onClick={() => { setActivityType(t.value); setShowActivity(true); }}
+                >
+                  <t.icon className="h-3.5 w-3.5" style={{ color: t.color }} />
+                  {t.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* LEFT PANEL */}
+            <div className="w-[340px] shrink-0 border-r border-border overflow-y-auto bg-card/50">
+
+              {/* KONTAKT + INFO – always visible */}
+              <div className="border-b border-border">
+                <button
+                  onClick={() => setContactOpen(!contactOpen)}
+                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {contactOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <Users2 className="h-3 w-3" />
+                  Info & Kontakt
+                </button>
+                {contactOpen && (
+                  <div className="px-4 pb-4 space-y-2.5">
+                    {/* Inline-editable fields */}
+                    {[
+                      { field: "contact_name", icon: Users2, label: "Ansprechpartner", value: lead.contact_name },
+                      { field: "contact_email", icon: Mail, label: "Email", value: lead.contact_email },
+                      { field: "contact_phone", icon: Phone, label: "Telefon", value: lead.contact_phone },
+                      { field: "website", icon: Globe, label: "Website", value: lead.website },
+                    ].map(({ field, icon: Icon, label, value }) => (
+                      <div key={field} className="flex items-center gap-2">
+                        <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        {editingField === field ? (
+                          <Input
+                            autoFocus
+                            value={value || ""}
+                            onChange={e => setLead(p => p ? { ...p, [field]: e.target.value } : p)}
+                            onBlur={() => saveField(field, (lead as any)[field])}
+                            onKeyDown={e => e.key === "Enter" && saveField(field, (lead as any)[field])}
+                            className="h-6 bg-background border-border text-xs flex-1"
+                          />
+                        ) : (
+                          <button onClick={() => setEditingField(field)} className="text-xs text-foreground/60 hover:text-foreground transition-colors truncate text-left">
+                            {value || <span className="text-muted-foreground/50">{label}...</span>}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Source */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">Quelle:</span>
+                      <Select value={lead.source || ""} onValueChange={v => { setLead(p => p ? { ...p, source: v } : p); saveField("source", v); }}>
+                        <SelectTrigger className="h-6 w-auto gap-1 px-2 border-none bg-transparent text-xs">
+                          <SelectValue placeholder="Wählen..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CRM_SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Notes */}
+                    <div className="pt-1">
+                      {editingField === "notes" ? (
+                        <Textarea
                           autoFocus
-                          value={value || ""}
-                          onChange={e => setLead(p => p ? { ...p, [field]: e.target.value } : p)}
-                          onBlur={() => saveField(field, (lead as any)[field])}
-                          onKeyDown={e => e.key === "Enter" && saveField(field, (lead as any)[field])}
-                          className="h-6 bg-[#1E1E24] border-[#3A3A44] text-xs flex-1"
+                          value={lead.notes || ""}
+                          onChange={e => setLead(p => p ? { ...p, notes: e.target.value } : p)}
+                          onBlur={() => saveField("notes", lead.notes)}
+                          rows={3}
+                          className="bg-background border-border text-sm"
+                          placeholder="Notizen..."
                         />
                       ) : (
-                        <button onClick={() => setEditingField(field)} className="text-xs text-[#FAFBFF]/60 hover:text-[#FAFBFF] transition-colors truncate">
-                          {value || `${label} hinzufügen...`}
+                        <button onClick={() => setEditingField("notes")} className="text-sm text-left w-full">
+                          {lead.notes ? (
+                            <span className="text-foreground/70 whitespace-pre-wrap">{lead.notes}</span>
+                          ) : (
+                            <span className="text-muted-foreground/50 hover:text-muted-foreground">Notizen hinzufügen...</span>
+                          )}
                         </button>
                       )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* SMART IMPORT section */}
-            <div className="border-b border-[#3A3A44]">
-              <button
-                onClick={() => setSmartImportOpen(!smartImportOpen)}
-                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
-              >
-                {smartImportOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                <Sparkles className="h-3 w-3" />
-                Smart Import
-              </button>
-              {smartImportOpen && (
-                <div className="px-4 pb-4 space-y-3">
-                  {/* URL Input */}
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Website scrapen</p>
-                    <div className="flex gap-1.5">
-                      <div className="relative flex-1">
-                        <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                        <Input
-                          placeholder="https://beispiel.de"
-                          value={importUrl}
-                          onChange={e => setImportUrl(e.target.value)}
-                          onKeyDown={e => e.key === "Enter" && handleUrlImport()}
-                          className="h-8 pl-7 text-xs bg-[#1E1E24] border-[#3A3A44]"
-                          disabled={importLoading}
-                        />
-                      </div>
-                      <Button size="sm" className="h-8 px-2.5 text-xs gap-1" onClick={handleUrlImport} disabled={importLoading || !importUrl.trim()}>
-                        {importLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                        Analysieren
-                      </Button>
-                    </div>
                   </div>
+                )}
+              </div>
 
-                  {/* LinkedIn Hint */}
-                  {showLinkedInHint && (
-                    <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
-                      <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="font-medium">LinkedIn kann nicht gescrapt werden</p>
-                        <p className="text-amber-300/70 mt-0.5">Öffne das Profil → "Mehr" → "Als PDF speichern" → Lade die PDF hier hoch ↓</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* PDF Upload */}
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Call-Transkript / Dokument / LinkedIn PDF</p>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".txt,.pdf,.md,.csv"
-                        onChange={handlePdfImport}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        disabled={importLoading}
-                      />
-                      <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-[#3A3A44] py-3 text-xs text-muted-foreground hover:bg-[#2A2A32]/50 transition-colors">
-                        {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                        {importLoading ? "Wird analysiert..." : "Datei hochladen & analysieren"}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Result */}
-                  {importResult && (
-                    <div className="space-y-2.5 rounded-lg bg-[#1E1E24] p-3 border border-primary/20">
-                      <div className="flex items-center gap-1.5">
-                        <Sparkles className="h-3 w-3 text-primary" />
-                        <span className="text-xs font-semibold text-primary">AI-Zusammenfassung</span>
-                      </div>
-                      <p className="text-xs text-[#FAFBFF]/80 leading-relaxed">{importResult.summary}</p>
-
-                      {importResult.key_points?.length > 0 && (
-                        <div className="space-y-1">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Wichtige Punkte</p>
-                          {importResult.key_points.map((p: string, i: number) => (
-                            <div key={i} className="flex items-start gap-1.5 text-xs text-[#FAFBFF]/60">
-                              <span className="text-primary mt-0.5">•</span>
-                              {p}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {importResult.next_steps?.length > 0 && (
-                        <div className="space-y-1.5">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Nächste Schritte</p>
-                          {importResult.next_steps.map((s: string, i: number) => (
-                            <div key={i} className="flex items-start gap-1.5 text-xs text-[#FAFBFF]/60">
-                              <CheckSquare className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
-                              {s}
-                            </div>
-                          ))}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full h-7 text-xs gap-1.5 mt-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-                            onClick={() => createTasksFromResult(importResult.next_steps)}
-                          >
-                            <Plus className="h-3 w-3" />
-                            {importResult.next_steps.length} Aufgabe(n) erstellen
-                          </Button>
-                        </div>
-                      )}
-
-                      {importResult.contact_info && (importResult.contact_info.name || importResult.contact_info.email) && (
-                        <div className="flex flex-wrap gap-1">
-                          {importResult.contact_info.name && <Badge variant="secondary" className="text-[10px]">👤 {importResult.contact_info.name}</Badge>}
-                          {importResult.contact_info.email && <Badge variant="secondary" className="text-[10px]">✉️ {importResult.contact_info.email}</Badge>}
-                          {importResult.contact_info.phone && <Badge variant="secondary" className="text-[10px]">📞 {importResult.contact_info.phone}</Badge>}
-                        </div>
-                      )}
-
-                      <Button variant="ghost" size="sm" className="h-6 text-[10px] text-muted-foreground" onClick={() => setImportResult(null)}>
-                        Schließen
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* TASKS section */}
-            <div className="border-b border-[#3A3A44]">
-              <button
-                onClick={() => setTasksOpen(!tasksOpen)}
-                className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#FAFBFF]/50 hover:text-[#FAFBFF]/70 transition-colors"
-              >
-                {tasksOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                <CheckSquare className="h-3 w-3" />
-                To-Dos
-                <span className="ml-1 text-[10px] text-muted-foreground">{crmTasks.filter(t => !t.is_completed).length}</span>
-              </button>
-              {tasksOpen && (
-                <div className="px-4 pb-4 space-y-2">
-                  {/* Add task row */}
-                  <div className="space-y-2">
+              {/* TO-DOS */}
+              <div className="border-b border-border">
+                <button
+                  onClick={() => setTasksOpen(!tasksOpen)}
+                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {tasksOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <CheckSquare className="h-3 w-3" />
+                  To-Dos
+                  <span className="ml-1 text-[10px] text-muted-foreground">{crmTasks.filter(t => !t.is_completed).length}</span>
+                </button>
+                {tasksOpen && (
+                  <div className="px-4 pb-4 space-y-2">
                     <div className="flex gap-2">
                       <Input
                         placeholder="Follow up, Anrufen..."
                         value={newTaskTitle}
                         onChange={e => setNewTaskTitle(e.target.value)}
                         onKeyDown={e => e.key === "Enter" && addCrmTask()}
-                        className="h-7 text-xs bg-[#1E1E24] border-[#3A3A44] flex-1"
+                        className="h-7 text-xs bg-background border-border flex-1"
                       />
                       <Button size="sm" className="h-7 px-2 text-xs" onClick={addCrmTask} disabled={!newTaskTitle.trim()}>
                         <Plus className="h-3 w-3" />
@@ -745,7 +505,7 @@ export default function CRMLeadDetail() {
                     <div className="flex gap-2">
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("h-7 gap-1.5 text-xs border-[#3A3A44] bg-transparent", !newTaskDate && "text-muted-foreground")}>
+                          <Button variant="outline" size="sm" className={cn("h-7 gap-1.5 text-xs border-border bg-transparent", !newTaskDate && "text-muted-foreground")}>
                             <CalendarIcon className="h-3 w-3" />
                             {newTaskDate ? format(newTaskDate, "dd.MM.yyyy") : "Datum"}
                           </Button>
@@ -760,130 +520,190 @@ export default function CRMLeadDetail() {
                           type="time"
                           value={newTaskTime}
                           onChange={e => setNewTaskTime(e.target.value)}
-                          className="h-7 w-24 pl-7 text-xs bg-[#1E1E24] border-[#3A3A44]"
+                          className="h-7 w-24 pl-7 text-xs bg-background border-border"
                         />
                       </div>
                     </div>
+
+                    {crmTasks.map(task => {
+                      const today = new Date().toISOString().split("T")[0];
+                      const isOverdue = task.due_date && !task.is_completed && task.due_date < today;
+                      return (
+                        <div key={task.id} className={cn("flex items-center gap-2 py-1.5", task.is_completed && "opacity-40")}>
+                          <Checkbox checked={task.is_completed} onCheckedChange={() => toggleCrmTask(task)} className="shrink-0" />
+                          <span className={cn("flex-1 text-xs truncate", task.is_completed && "line-through text-muted-foreground")}>{task.title}</span>
+                          {task.due_date && (
+                            <span className={cn("text-[10px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                              {format(new Date(task.due_date), "dd.MM")}
+                              {task.due_time && ` ${task.due_time.slice(0, 5)}`}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {crmTasks.length === 0 && <p className="text-xs text-muted-foreground">Keine To-Dos</p>}
                   </div>
-
-                  {/* Task list */}
-                  {crmTasks.map(task => {
-                    const today = new Date().toISOString().split("T")[0];
-                    const isOverdue = task.due_date && !task.is_completed && task.due_date < today;
-                    return (
-                      <div key={task.id} className={cn("flex items-center gap-2 py-1.5 group", task.is_completed && "opacity-40")}>
-                        <Checkbox
-                          checked={task.is_completed}
-                          onCheckedChange={() => toggleCrmTask(task)}
-                          className="shrink-0"
-                        />
-                        <span className={cn("flex-1 text-xs truncate", task.is_completed && "line-through text-muted-foreground")}>
-                          {task.title}
-                        </span>
-                        {task.due_date && (
-                          <span className={cn("text-[10px] font-mono shrink-0 flex items-center gap-1", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
-                            <CalendarIcon className="h-2.5 w-2.5" />
-                            {format(new Date(task.due_date), "dd.MM")}
-                            {(task as any).due_time && ` ${(task as any).due_time.slice(0, 5)}`}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {crmTasks.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Keine To-Dos</p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* RIGHT PANEL – Activity Timeline */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Timeline filters */}
-            <div className="flex items-center justify-between px-5 py-2.5 border-b border-[#3A3A44] shrink-0">
-              <div className="flex items-center gap-1">
-                {TIMELINE_FILTERS.map(f => (
-                  <button
-                    key={f}
-                    onClick={() => setTimelineFilter(f)}
-                    className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                      timelineFilter === f
-                        ? "bg-primary/15 text-primary"
-                        : "text-[#FAFBFF]/50 hover:text-[#FAFBFF]/80 hover:bg-[#2A2A32]"
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
+                )}
               </div>
-              <div className="flex items-center gap-2">
+
+              {/* SMART IMPORT – collapsed by default */}
+              <div className="border-b border-border">
+                <button
+                  onClick={() => setSmartImportOpen(!smartImportOpen)}
+                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {smartImportOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <Sparkles className="h-3 w-3" />
+                  Smart Import
+                </button>
+                {smartImportOpen && (
+                  <div className="px-4 pb-4 space-y-3">
+                    <div className="flex gap-1.5">
+                      <div className="relative flex-1">
+                        <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          placeholder="https://beispiel.de"
+                          value={importUrl}
+                          onChange={e => setImportUrl(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && handleUrlImport()}
+                          className="h-8 pl-7 text-xs bg-background border-border"
+                          disabled={importLoading}
+                        />
+                      </div>
+                      <Button size="sm" className="h-8 px-2.5 text-xs gap-1" onClick={handleUrlImport} disabled={importLoading || !importUrl.trim()}>
+                        {importLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        Go
+                      </Button>
+                    </div>
+
+                    {showLinkedInHint && (
+                      <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
+                        <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <p>LinkedIn → "Als PDF speichern" → hier hochladen ↓</p>
+                      </div>
+                    )}
+
+                    <div className="relative">
+                      <input type="file" accept=".txt,.pdf,.md,.csv" onChange={handlePdfImport} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={importLoading} />
+                      <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-xs text-muted-foreground hover:bg-muted/50 transition-colors">
+                        {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {importLoading ? "Analysiert..." : "Datei hochladen"}
+                      </div>
+                    </div>
+
+                    {importResult && (
+                      <div className="space-y-2.5 rounded-lg bg-background p-3 border border-primary/20">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3 text-primary" />
+                          <span className="text-xs font-semibold text-primary">AI-Zusammenfassung</span>
+                        </div>
+                        <p className="text-xs text-foreground/80 leading-relaxed">{importResult.summary}</p>
+
+                        {importResult.next_steps?.length > 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full h-7 text-xs gap-1.5 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                            onClick={() => createTasksFromResult(importResult.next_steps)}
+                          >
+                            <Plus className="h-3 w-3" />
+                            {importResult.next_steps.length} To-Do(s) erstellen
+                          </Button>
+                        )}
+
+                        {importResult.contact_info && (
+                          <div className="flex flex-wrap gap-1">
+                            {importResult.contact_info.name && <Badge variant="secondary" className="text-[10px]">👤 {importResult.contact_info.name}</Badge>}
+                            {importResult.contact_info.email && <Badge variant="secondary" className="text-[10px]">✉️ {importResult.contact_info.email}</Badge>}
+                          </div>
+                        )}
+
+                        <Button variant="ghost" size="sm" className="h-6 text-[10px] text-muted-foreground" onClick={() => setImportResult(null)}>Schließen</Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT PANEL – Activity Timeline */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-2.5 border-b border-border shrink-0">
+                <div className="flex items-center gap-1">
+                  {TIMELINE_FILTERS.map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setTimelineFilter(f)}
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                        timelineFilter === f ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
                 <div className="relative">
                   <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                   <Input
                     placeholder="Suchen..."
                     value={timelineSearch}
                     onChange={e => setTimelineSearch(e.target.value)}
-                    className="h-7 w-48 pl-7 text-xs bg-transparent border-[#3A3A44]"
+                    className="h-7 w-48 pl-7 text-xs bg-transparent border-border"
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Timeline */}
-            <div className="flex-1 overflow-y-auto px-5 py-3">
-              <div className="relative">
-                {filteredActivities.length > 0 && (
-                  <div className="absolute left-[15px] top-4 bottom-4 w-px bg-[#3A3A44]" />
-                )}
-                <div className="space-y-0">
-                  {filteredActivities.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-12 text-sm">Noch keine Einträge</p>
-                  ) : filteredActivities.map(act => {
-                    const config = ACTIVITY_ICON_MAP[act.type] || ACTIVITY_ICON_MAP.note;
-                    const Icon = config.icon;
-                    return (
-                      <div key={act.id} className="flex gap-3.5 py-3 relative group">
-                        <div className="relative z-10 flex items-center justify-center h-[30px] w-[30px] rounded-full bg-[#1E1E24] border border-[#3A3A44] shrink-0">
-                          <Icon className="h-3.5 w-3.5" style={{ color: config.color }} />
-                        </div>
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <div className="flex items-baseline justify-between gap-3">
-                            <p className="text-sm font-medium text-[#FAFBFF]">{act.title}</p>
-                            <span className="text-[10px] text-muted-foreground shrink-0">
-                              {new Date(act.created_at).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
-                            </span>
+              <div className="flex-1 overflow-y-auto px-5 py-3">
+                <div className="relative">
+                  {filteredActivities.length > 0 && (
+                    <div className="absolute left-[15px] top-4 bottom-4 w-px bg-border" />
+                  )}
+                  <div className="space-y-0">
+                    {filteredActivities.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-12 text-sm">Noch keine Einträge</p>
+                    ) : filteredActivities.map(act => {
+                      const config = ACTIVITY_ICON_MAP[act.type] || ACTIVITY_ICON_MAP.note;
+                      const Icon = config.icon;
+                      return (
+                        <div key={act.id} className="flex gap-3.5 py-3 relative">
+                          <div className="relative z-10 flex items-center justify-center h-[30px] w-[30px] rounded-full bg-background border border-border shrink-0">
+                            <Icon className="h-3.5 w-3.5" style={{ color: config.color }} />
                           </div>
-                          {act.body && (
-                            <p className="text-xs text-[#FAFBFF]/50 mt-1 whitespace-pre-wrap leading-relaxed">{act.body}</p>
-                          )}
+                          <div className="flex-1 min-w-0 pt-0.5">
+                            <div className="flex items-baseline justify-between gap-3">
+                              <p className="text-sm font-medium text-foreground">{act.title}</p>
+                              <span className="text-[10px] text-muted-foreground shrink-0">
+                                {new Date(act.created_at).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
+                              </span>
+                            </div>
+                            {act.body && (
+                              <p className="text-xs text-foreground/50 mt-1 whitespace-pre-wrap leading-relaxed">{act.body}</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Add activity dialog */}
-      <Dialog open={showActivity} onOpenChange={setShowActivity}>
-        <DialogContent className="bg-[#2A2A32] border-[#3A3A44] text-[#FAFBFF]">
-          <DialogHeader>
-            <DialogTitle>
-              {ACTIVITY_TYPES.find(t => t.value === activityType)?.label || "Eintrag"} hinzufügen
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Input placeholder="Titel *" value={activityTitle} onChange={e => setActivityTitle(e.target.value)} className="bg-[#1E1E24] border-[#3A3A44]" onKeyDown={e => e.key === "Enter" && !e.shiftKey && addActivity()} />
-            <Textarea placeholder="Details (optional)" value={activityBody} onChange={e => setActivityBody(e.target.value)} rows={3} className="bg-[#1E1E24] border-[#3A3A44]" />
-            <Button onClick={addActivity} className="w-full">Hinzufügen</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        {/* Add activity dialog */}
+        <Dialog open={showActivity} onOpenChange={setShowActivity}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{ACTIVITY_TYPES.find(t => t.value === activityType)?.label || "Eintrag"} hinzufügen</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <Input placeholder="Titel *" value={activityTitle} onChange={e => setActivityTitle(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && addActivity()} />
+              <Textarea placeholder="Details (optional)" value={activityBody} onChange={e => setActivityBody(e.target.value)} rows={3} />
+              <Button onClick={addActivity} className="w-full">Hinzufügen</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </ErrorBoundary>
-    </CRMLayout>
+    </AppLayout>
   );
 }
