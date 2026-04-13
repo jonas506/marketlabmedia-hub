@@ -1026,14 +1026,26 @@ export default function CRMLeadDetail() {
                     </button>
                   ))}
                 </div>
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                  <Input
-                    placeholder="Suchen..."
-                    value={timelineSearch}
-                    onChange={e => setTimelineSearch(e.target.value)}
-                    className="h-7 w-48 pl-7 text-xs bg-transparent border-border"
-                  />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2.5 text-xs gap-1.5 text-muted-foreground hover:text-primary"
+                    onClick={generateSummary}
+                    disabled={summaryLoading || activities.length === 0}
+                  >
+                    {summaryLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    Zusammenfassung
+                  </Button>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                    <Input
+                      placeholder="Suchen..."
+                      value={timelineSearch}
+                      onChange={e => setTimelineSearch(e.target.value)}
+                      className="h-7 w-36 pl-7 text-xs bg-transparent border-border"
+                    />
+                  </div>
                 </div>
               </div>
 
