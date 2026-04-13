@@ -119,6 +119,7 @@ export default function CRMLeadDetail() {
   const [leadFiles, setLeadFiles] = useState<any[]>([]);
   const [fileUploading, setFileUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [importDragOver, setImportDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchLead = async () => {
@@ -319,6 +320,26 @@ export default function CRMLeadDetail() {
     setImportLoading(true);
     setImportResult(null);
     try {
+      // If it's an image, upload to storage + log activity
+      if (file.type.startsWith("image/")) {
+        const storagePath = `${id}/${Date.now()}-${file.name}`;
+        const { error: uploadErr } = await supabase.storage.from("crm-files").upload(storagePath, file);
+        if (uploadErr) throw new Error(uploadErr.message);
+        const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
+        await supabase.from("crm_files").insert({
+          lead_id: id, name: file.name, file_url: urlData.publicUrl,
+          mime_type: file.type, file_size: file.size, uploaded_by: user.id,
+        });
+        await supabase.from("crm_activities").insert({
+          lead_id: id, type: "note" as any,
+          title: `🖼️ Bild hochgeladen: ${file.name}`,
+          body: null, created_by: user.id,
+        });
+        toast.success("Bild hochgeladen");
+        fetchLead();
+        return;
+      }
+
       let text: string;
       if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
         text = await extractPdfText(file);
@@ -359,7 +380,7 @@ export default function CRMLeadDetail() {
       toast.error(err.message || "Import fehlgeschlagen");
     } finally {
       setImportLoading(false);
-      e.target.value = "";
+      if (e.target?.value !== undefined) e.target.value = "";
     }
   };
 
@@ -774,11 +795,28 @@ export default function CRMLeadDetail() {
                       </div>
                     )}
 
-                    <div className="relative">
-                      <input type="file" accept=".txt,.pdf,.md,.csv" onChange={handlePdfImport} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={importLoading} />
-                      <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-xs text-muted-foreground hover:bg-muted/50 transition-colors">
+                    <div
+                      className={cn(
+                        "relative rounded-lg border-2 border-dashed py-3 transition-all",
+                        importDragOver
+                          ? "border-primary bg-primary/10 scale-[1.02]"
+                          : "border-border hover:bg-muted/50"
+                      )}
+                      onDrop={e => {
+                        e.preventDefault();
+                        setImportDragOver(false);
+                        if (e.dataTransfer.files?.[0]) {
+                          const fakeEvent = { target: { files: e.dataTransfer.files, value: "" } } as any;
+                          handlePdfImport(fakeEvent);
+                        }
+                      }}
+                      onDragOver={e => { e.preventDefault(); setImportDragOver(true); }}
+                      onDragLeave={e => { e.preventDefault(); setImportDragOver(false); }}
+                    >
+                      <input type="file" accept="image/*,.txt,.pdf,.md,.csv" onChange={handlePdfImport} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={importLoading} />
+                      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                         {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                        {importLoading ? "Analysiert..." : "Datei hochladen"}
+                        {importLoading ? "Analysiert..." : importDragOver ? "Loslassen…" : "Datei/Bild hochladen oder reinziehen"}
                       </div>
                     </div>
 
