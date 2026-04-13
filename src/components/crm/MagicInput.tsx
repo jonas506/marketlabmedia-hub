@@ -54,9 +54,15 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const handleCreate = async () => {
     if (!contactName.trim()) { toast.error("Name fehlt"); return; }
     setSaving(true);
+    const dv = parseFloat(dealValue.replace(/[^\d.,]/g, "").replace(",", "."));
     const { error } = await supabase.from("crm_leads").insert({
       name: companyName.trim() || contactName.trim(),
       contact_name: contactName.trim(),
+      source: source.trim() || null,
+      deal_value: isNaN(dv) ? 0 : dv,
+      stage: "erstkontakt",
+      created_by: user!.id,
+    });
       source: source.trim() || null,
       stage: "erstkontakt",
       created_by: user!.id,
