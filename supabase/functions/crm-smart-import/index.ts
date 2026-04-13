@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
 
 Antworte IMMER als valides JSON mit genau diesem Schema:
 {
+  "activity_title": "Kurzer, prägnanter Titel für den CRM-Eintrag (z.B. 'Instagram DM – Erstgespräch vereinbart' oder 'LinkedIn Nachricht – Angebot angefragt'). KEIN 'Bild analysiert'. Beschreibe WAS passiert ist.",
   "summary": "Kurze Zusammenfassung (2-4 Sätze) worum es geht",
   "key_points": ["Wichtige Punkte als Array"],
   "next_steps": ["Konkrete nächste Schritte/Aufgaben als Array"],
@@ -43,7 +44,8 @@ Antworte IMMER als valides JSON mit genau diesem Schema:
     "instagram": "Falls erkennbar, Instagram-Handle (z.B. @name) oder null",
     "linkedin": "Falls erkennbar, LinkedIn-URL oder null"
   },
-  "source_channel": "Erkannter Kontaktkanal: 'instagram', 'linkedin', 'whatsapp', 'email', 'phone', 'website' oder null"
+  "source_channel": "Erkannter Kontaktkanal: 'instagram', 'linkedin', 'whatsapp', 'email', 'phone', 'website' oder null",
+  "interaction_date": "Falls ein Datum im Inhalt erkennbar ist (z.B. Chat-Datum), gib es als ISO-String zurück, sonst null"
 }
 
 Wenn es ein Screenshot eines Chats ist (z.B. Instagram DM, WhatsApp, LinkedIn):
