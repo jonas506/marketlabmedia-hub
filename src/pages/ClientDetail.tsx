@@ -88,7 +88,7 @@ const ClientDetail = () => {
           title: file.name.replace(/\.pdf$/i, ""),
           content: `PDF-Dokument: ${file.name}`,
           category: "sonstiges",
-          source_url: publicUrl,
+          source_url: documentUrl,
         });
       }
       toast.success("PDF(s) hochgeladen");
