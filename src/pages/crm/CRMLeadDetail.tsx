@@ -626,7 +626,14 @@ export default function CRMLeadDetail() {
                   variant="outline"
                   size="sm"
                   className="gap-1.5 h-8 text-xs border-border bg-transparent"
-                  onClick={() => { setActivityType(t.value); setShowActivity(true); }}
+                  onClick={() => {
+                    if (t.value === "email") {
+                      openEmailCompose();
+                    } else {
+                      setActivityType(t.value);
+                      setShowActivity(true);
+                    }
+                  }}
                 >
                   <t.icon className="h-3.5 w-3.5" style={{ color: t.color }} />
                   {t.label}
