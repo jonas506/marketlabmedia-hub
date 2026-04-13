@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   ArrowLeft, StickyNote, Phone, Mail, Users2, Globe,
-  ChevronDown, ChevronRight, Plus,
+  ChevronDown, ChevronRight, Plus, DollarSign,
   Search, CheckSquare, CalendarIcon, Clock,
   Sparkles, Upload, Link2, Loader2, AlertTriangle,
 } from "lucide-react";
@@ -437,6 +437,27 @@ export default function CRMLeadDetail() {
                         )}
                       </div>
                     ))}
+
+                    {/* Deal value */}
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      {editingField === "deal_value" ? (
+                        <Input
+                          autoFocus
+                          type="number"
+                          value={lead.deal_value ?? ""}
+                          onChange={e => setLead(p => p ? { ...p, deal_value: e.target.value ? Number(e.target.value) : null } : p)}
+                          onBlur={() => saveField("deal_value", lead.deal_value)}
+                          onKeyDown={e => e.key === "Enter" && saveField("deal_value", lead.deal_value)}
+                          className="h-6 bg-background border-border text-xs flex-1 w-24"
+                          placeholder="0"
+                        />
+                      ) : (
+                        <button onClick={() => setEditingField("deal_value")} className="text-xs text-foreground/60 hover:text-foreground transition-colors">
+                          {lead.deal_value ? `${Number(lead.deal_value).toLocaleString("de-DE")} €` : <span className="text-muted-foreground/50">Deal-Wert…</span>}
+                        </button>
+                      )}
+                    </div>
 
                     {/* Source */}
                     <div className="flex items-center gap-2">
