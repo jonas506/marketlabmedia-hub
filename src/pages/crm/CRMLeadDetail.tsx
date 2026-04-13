@@ -320,6 +320,26 @@ export default function CRMLeadDetail() {
     setImportLoading(true);
     setImportResult(null);
     try {
+      // If it's an image, upload to storage + log activity
+      if (file.type.startsWith("image/")) {
+        const storagePath = `${id}/${Date.now()}-${file.name}`;
+        const { error: uploadErr } = await supabase.storage.from("crm-files").upload(storagePath, file);
+        if (uploadErr) throw new Error(uploadErr.message);
+        const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
+        await supabase.from("crm_files").insert({
+          lead_id: id, name: file.name, file_url: urlData.publicUrl,
+          mime_type: file.type, file_size: file.size, uploaded_by: user.id,
+        });
+        await supabase.from("crm_activities").insert({
+          lead_id: id, type: "note" as any,
+          title: `🖼️ Bild hochgeladen: ${file.name}`,
+          body: null, created_by: user.id,
+        });
+        toast.success("Bild hochgeladen");
+        fetchLead();
+        return;
+      }
+
       let text: string;
       if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
         text = await extractPdfText(file);
@@ -360,7 +380,7 @@ export default function CRMLeadDetail() {
       toast.error(err.message || "Import fehlgeschlagen");
     } finally {
       setImportLoading(false);
-      e.target.value = "";
+      if (e.target?.value !== undefined) e.target.value = "";
     }
   };
 
