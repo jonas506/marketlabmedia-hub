@@ -236,7 +236,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   };
 
   return (
-    <div>
+    <div className="min-w-0 overflow-hidden">
       {/* Stats bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         {[
