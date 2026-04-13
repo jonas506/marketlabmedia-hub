@@ -774,11 +774,28 @@ export default function CRMLeadDetail() {
                       </div>
                     )}
 
-                    <div className="relative">
-                      <input type="file" accept=".txt,.pdf,.md,.csv" onChange={handlePdfImport} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={importLoading} />
-                      <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-3 text-xs text-muted-foreground hover:bg-muted/50 transition-colors">
+                    <div
+                      className={cn(
+                        "relative rounded-lg border-2 border-dashed py-3 transition-all",
+                        importDragOver
+                          ? "border-primary bg-primary/10 scale-[1.02]"
+                          : "border-border hover:bg-muted/50"
+                      )}
+                      onDrop={e => {
+                        e.preventDefault();
+                        setImportDragOver(false);
+                        if (e.dataTransfer.files?.[0]) {
+                          const fakeEvent = { target: { files: e.dataTransfer.files, value: "" } } as any;
+                          handlePdfImport(fakeEvent);
+                        }
+                      }}
+                      onDragOver={e => { e.preventDefault(); setImportDragOver(true); }}
+                      onDragLeave={e => { e.preventDefault(); setImportDragOver(false); }}
+                    >
+                      <input type="file" accept="image/*,.txt,.pdf,.md,.csv" onChange={handlePdfImport} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={importLoading} />
+                      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                         {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                        {importLoading ? "Analysiert..." : "Datei hochladen"}
+                        {importLoading ? "Analysiert..." : importDragOver ? "Loslassen…" : "Datei/Bild hochladen oder reinziehen"}
                       </div>
                     </div>
 
