@@ -16,6 +16,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const [contactName, setContactName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [source, setSource] = useState("");
+  const [dealValue, setDealValue] = useState("");
   const [sourceOpen, setSourceOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const sourceRef = useRef<HTMLDivElement>(null);
