@@ -514,6 +514,8 @@ export default function CRMLeadDetail() {
                       { field: "contact_email", icon: Mail, label: "Email", value: lead.contact_email },
                       { field: "contact_phone", icon: Phone, label: "Telefon", value: lead.contact_phone },
                       { field: "website", icon: Globe, label: "Website", value: lead.website },
+                      { field: "instagram_handle", icon: Image, label: "Instagram", value: lead.instagram_handle },
+                      { field: "linkedin_url", icon: Link2, label: "LinkedIn", value: lead.linkedin_url },
                     ].map(({ field, icon: Icon, label, value }) => (
                       <div key={field} className="flex items-center gap-2">
                         <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
