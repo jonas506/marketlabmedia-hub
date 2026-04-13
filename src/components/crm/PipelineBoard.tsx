@@ -351,7 +351,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                 </DropZone>
               );
             })}
-          </div>
+          </>
         </div>
       </div>
     </div>
