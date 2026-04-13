@@ -248,7 +248,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   };
 
   return (
-    <div className="min-w-0 overflow-hidden">
+    <div className="min-w-0 overflow-hidden flex flex-col h-full">
       {/* Stats bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         {[
@@ -273,9 +273,9 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       <div className="flex items-center justify-end mb-2">
         <PipelineSettings stages={stages} />
       </div>
-      <div className="max-w-full overflow-x-auto pb-2">
+      <div className="max-w-full overflow-x-auto pb-2 flex-1 min-h-0" style={{ height: 'calc(100vh - 320px)' }}>
         <div
-          className="grid min-w-full w-max gap-3"
+          className="grid min-w-full w-max gap-3 h-full"
           style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, minmax(240px, 240px)) repeat(${closedStageConfigs.length}, 180px)` }}
         >
           {pipelineStageConfigs.map(stage => (
@@ -294,7 +294,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                 <span className="text-xs font-semibold uppercase tracking-wider">{stage.label}</span>
                 <span className="text-xs text-muted-foreground ml-auto">{byStage[stage.value]?.length ?? 0}</span>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+              <div className="flex-1 overflow-y-auto space-y-2 min-h-0 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                 {(byStage[stage.value] ?? []).map(lead => (
                   <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} sourceTags={sourceTags} />
                 ))}
