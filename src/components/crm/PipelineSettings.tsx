@@ -178,6 +178,30 @@ function StageRow({ stage, onUpdate, onRemove, onMoveUp, onMoveDown, locked, ico
   icon?: React.ReactNode;
 }) {
   const [colorOpen, setColorOpen] = useState(false);
+  const [hexInput, setHexInput] = useState(stage.color);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setHexInput(stage.color);
+  }, [stage.color]);
+
+  useEffect(() => {
+    if (!colorOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setColorOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [colorOpen]);
+
+  const applyHex = (val: string) => {
+    const hex = val.startsWith("#") ? val : `#${val}`;
+    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+      onUpdate({ color: hex });
+    }
+  };
 
   return (
     <div className="flex items-center gap-2 bg-muted/30 rounded-md px-2 py-1.5 group">
@@ -197,28 +221,42 @@ function StageRow({ stage, onUpdate, onRemove, onMoveUp, onMoveDown, locked, ico
       )}
       {icon && <span className="flex-shrink-0">{icon}</span>}
       
-      <div className="relative">
+      <div className="relative" ref={popoverRef}>
         <button
-          className="h-6 w-6 rounded-md border border-border flex-shrink-0 cursor-pointer"
+          className="h-6 w-6 rounded-md border border-border flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
           style={{ background: stage.color }}
           onClick={() => setColorOpen(!colorOpen)}
         />
         {colorOpen && (
-          <div className="absolute top-8 left-0 z-50 bg-popover border border-border rounded-lg p-2 grid grid-cols-6 gap-1 shadow-lg">
-            {PRESET_COLORS.map(c => (
-              <button
-                key={c}
-                className={cn("h-6 w-6 rounded-md border-2 transition-all", stage.color === c ? "border-foreground scale-110" : "border-transparent hover:scale-105")}
-                style={{ background: c }}
-                onClick={() => { onUpdate({ color: c }); setColorOpen(false); }}
+          <div className="absolute top-8 left-0 z-50 bg-popover border border-border rounded-lg p-3 shadow-xl w-52">
+            <div className="grid grid-cols-6 gap-1.5 mb-3">
+              {PRESET_COLORS.map(c => (
+                <button
+                  key={c}
+                  className={cn(
+                    "h-7 w-7 rounded-md border-2 transition-all",
+                    stage.color === c ? "border-foreground scale-110 ring-2 ring-primary/30" : "border-transparent hover:scale-110"
+                  )}
+                  style={{ background: c }}
+                  onClick={() => { onUpdate({ color: c }); setColorOpen(false); }}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <div
+                className="h-8 w-8 rounded-md border border-border flex-shrink-0"
+                style={{ background: stage.color }}
               />
-            ))}
-            <div className="col-span-6 mt-1">
               <Input
-                type="color"
-                value={stage.color}
-                onChange={e => onUpdate({ color: e.target.value })}
-                className="h-7 w-full p-0.5 cursor-pointer"
+                value={hexInput}
+                onChange={e => {
+                  setHexInput(e.target.value);
+                  applyHex(e.target.value);
+                }}
+                onBlur={() => applyHex(hexInput)}
+                placeholder="#000000"
+                className="h-8 text-xs font-mono"
+                maxLength={7}
               />
             </div>
           </div>
