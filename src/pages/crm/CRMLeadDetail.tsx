@@ -375,11 +375,17 @@ export default function CRMLeadDetail() {
             setLead(p => p ? { ...p, source: sourceName } : p);
           }
 
-          // Log activity with AI summary
-          const channelLabel = aiData.source_channel ? ` (${aiData.source_channel.toUpperCase()})` : "";
+          // Log activity with AI-generated title
+          const channelEmoji: Record<string, string> = {
+            instagram: "📸", linkedin: "💼", whatsapp: "💬", email: "✉️", phone: "📞", website: "🌐",
+          };
+          const emoji = aiData.source_channel ? (channelEmoji[aiData.source_channel] || "📋") : "📋";
+          const actTitle = aiData.activity_title || `${emoji} Kontakt analysiert`;
+          const dateHint = aiData.interaction_date ? ` · ${new Date(aiData.interaction_date).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}` : "";
+          
           await supabase.from("crm_activities").insert({
             lead_id: id, type: "note" as any,
-            title: `🖼️ Bild analysiert${channelLabel}: ${file.name}`,
+            title: `${emoji} ${actTitle}${dateHint}`,
             body: aiData.summary + (aiData.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiData.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
             created_by: user.id,
           });
