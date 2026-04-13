@@ -143,7 +143,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
     CRM_STAGES.forEach(s => { map[s.value] = []; });
     leads.forEach(l => {
       if (map[l.stage]) map[l.stage].push(l);
-      else map['erstkontakt'].push(l);
+      else map['interessiert'].push(l);
     });
     return map;
   }, [leads]);
