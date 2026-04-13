@@ -1051,24 +1051,41 @@ export default function CRMLeadDetail() {
               <div className="flex-1 overflow-y-auto px-5 py-3">
                 {/* AI Summary panel */}
                 {showSummary && (
-                  <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="mb-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-transparent overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-primary/10 bg-primary/5">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-xs font-semibold text-primary">Zusammenfassung</span>
+                        <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <span className="text-sm font-semibold text-primary">KI-Zusammenfassung</span>
                       </div>
-                      <button onClick={() => setShowSummary(false)} className="text-muted-foreground hover:text-foreground">
+                      <button onClick={() => setShowSummary(false)} className="h-6 w-6 rounded-md hover:bg-primary/10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                    {summaryLoading ? (
-                      <div className="flex items-center gap-2 py-2">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                        <span className="text-xs text-muted-foreground">Wird generiert…</span>
-                      </div>
-                    ) : (
-                      <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-line">{summaryText}</p>
-                    )}
+                    <div className="px-4 py-3">
+                      {summaryLoading ? (
+                        <div className="flex items-center gap-3 py-4 justify-center">
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          <span className="text-sm text-muted-foreground">Analyse läuft…</span>
+                        </div>
+                      ) : summaryText ? (
+                        <div className="space-y-2.5">
+                          {summaryText.split('\n').filter(l => l.trim()).map((line, i) => {
+                            const boldMatch = line.match(/^\*\*(.+?):\*\*\s*(.*)$/);
+                            if (boldMatch) {
+                              return (
+                                <div key={i} className="flex gap-2">
+                                  <span className="text-xs font-bold text-primary/80 whitespace-nowrap mt-0.5">{boldMatch[1]}:</span>
+                                  <span className="text-[13px] text-foreground/80 leading-relaxed">{boldMatch[2]}</span>
+                                </div>
+                              );
+                            }
+                            return <p key={i} className="text-[13px] text-foreground/80 leading-relaxed">{line}</p>;
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 )}
 
