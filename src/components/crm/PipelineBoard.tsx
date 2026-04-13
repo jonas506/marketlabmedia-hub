@@ -294,7 +294,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                 <span className="text-xs font-semibold uppercase tracking-wider">{stage.label}</span>
                 <span className="text-xs text-muted-foreground ml-auto">{byStage[stage.value]?.length ?? 0}</span>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
                 {(byStage[stage.value] ?? []).map(lead => (
                   <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} sourceTags={sourceTags} />
                 ))}
