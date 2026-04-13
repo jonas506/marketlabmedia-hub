@@ -236,7 +236,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-220px)]">
+    <div>
       {/* Stats bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         {[
@@ -262,7 +262,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
         <PipelineSettings stages={stages} />
       </div>
       <div
-        className="grid gap-3 flex-1 min-h-0 overflow-x-auto overflow-y-hidden pb-2"
+        className="grid gap-3 h-[calc(100vh-340px)] overflow-x-auto overflow-y-hidden pb-2"
         style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length + 1}, minmax(220px, 1fr))` }}
       >
         {pipelineStageConfigs.map(stage => (
