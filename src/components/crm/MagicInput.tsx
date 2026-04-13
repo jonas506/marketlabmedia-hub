@@ -77,7 +77,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
       name: companyName.trim() || contactName.trim(),
       contact_name: contactName.trim(),
       source: selectedSource || null,
-      stage: "erstkontakt",
+      stage: "interessiert",
       created_by: user!.id,
     });
     setSaving(false);
