@@ -1036,9 +1036,14 @@ export default function CRMLeadDetail() {
                         );
                       };
 
-                      // Extract channel from title like "🖼️ Bild analysiert (INSTAGRAM):"
-                      const channelMatch = act.title.match(/\((\w+)\)/);
-                      const channel = channelMatch?.[1]?.toLowerCase();
+                      // Detect channel from emoji or keywords in title
+                      const titleLower = act.title.toLowerCase();
+                      const detectedChannel = titleLower.includes("instagram") || act.title.includes("📸") ? "instagram"
+                        : titleLower.includes("linkedin") || act.title.includes("💼") ? "linkedin"
+                        : titleLower.includes("whatsapp") || act.title.includes("💬") ? "whatsapp"
+                        : titleLower.includes("email") || titleLower.includes("e-mail") || act.title.includes("✉️") ? "email"
+                        : titleLower.includes("telefon") || act.title.includes("📞") ? "phone"
+                        : null;
                       const channelLabels: Record<string, { label: string; color: string }> = {
                         instagram: { label: "Instagram", color: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
                         linkedin: { label: "LinkedIn", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
@@ -1046,10 +1051,7 @@ export default function CRMLeadDetail() {
                         email: { label: "E-Mail", color: "bg-sky-500/15 text-sky-400 border-sky-500/20" },
                         phone: { label: "Telefon", color: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
                       };
-                      const channelInfo = channel ? channelLabels[channel] : null;
-
-                      // Clean title (remove channel tag)
-                      const cleanTitle = act.title.replace(/\s*\(\w+\)\s*/, " ").trim();
+                      const channelInfo = detectedChannel ? channelLabels[detectedChannel] : null;
 
                       return (
                         <div key={act.id} className={cn("flex gap-3.5 py-3 relative", isAiEntry && "py-4")}>
