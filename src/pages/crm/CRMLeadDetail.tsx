@@ -23,7 +23,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { CRM_STAGES, CRM_SOURCES, getStageLabel, getStageColor, getSourceInfo } from "@/lib/crm-constants";
+import { CRM_STAGES, getStageLabel, getStageColor, getSourceInfo } from "@/lib/crm-constants";
+import { useQuery } from "@tanstack/react-query";
 
 const ACTIVITY_TYPES = [
   { value: "note", label: "Notiz", icon: StickyNote, color: "#F59E0B" },
@@ -125,6 +126,14 @@ export default function CRMLeadDetail() {
   };
 
   useEffect(() => { fetchLead(); }, [id]);
+
+  const { data: sourceTags = [] } = useQuery({
+    queryKey: ["crm-source-tags"],
+    queryFn: async () => {
+      const { data } = await supabase.from("crm_source_tags").select("*").order("name");
+      return data ?? [];
+    },
+  });
 
   const saveField = async (field: string, value: any) => {
     if (!id) return;
@@ -467,7 +476,17 @@ export default function CRMLeadDetail() {
                           <SelectValue placeholder="Wählen..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {CRM_SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                          {sourceTags.map(s => (
+                            <SelectItem key={s.id} value={s.name}>
+                              <span className="flex items-center gap-1.5">
+                                <span className="h-2 w-2 rounded-full shrink-0" style={{ background: s.color }} />
+                                {s.name}
+                              </span>
+                            </SelectItem>
+                          ))}
+                          {sourceTags.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-muted-foreground">Noch keine Quellen erstellt</div>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
