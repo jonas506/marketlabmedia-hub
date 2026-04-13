@@ -28,7 +28,7 @@ export function getStageColor(value: string) {
   return CRM_STAGES.find(s => s.value === value)?.color ?? '#6B7280';
 }
 
-export function getSourceInfo(value: string | null) {
+export function getSourceInfo(value: string | null): { value: string; label: string; color: string; style?: React.CSSProperties } | null {
   if (!value) return null;
   const found = CRM_SOURCES.find(s => s.value === value);
   if (found) return found;
@@ -38,6 +38,7 @@ export function getSourceInfo(value: string | null) {
   return {
     value,
     label: value,
-    color: `bg-[hsl(${hue},60%,40%)]/20 text-[hsl(${hue},60%,60%)]`,
+    color: '',
+    style: { background: `hsla(${hue},60%,40%,0.2)`, color: `hsl(${hue},60%,65%)` },
   };
 }
