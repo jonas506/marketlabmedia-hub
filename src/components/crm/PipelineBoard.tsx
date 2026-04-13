@@ -46,6 +46,19 @@ function LeadCard({ lead, onDragStart }: { lead: Lead; onDragStart: (e: React.Dr
       {lead.contact_name && (
         <p className="text-xs text-muted-foreground mt-0.5">{lead.contact_name}</p>
       )}
+      
+      {/* Contact details */}
+      {(lead.contact_email || lead.contact_phone) && (
+        <div className="mt-1.5 space-y-0.5">
+          {lead.contact_email && (
+            <p className="text-[11px] text-muted-foreground/70 truncate">✉ {lead.contact_email}</p>
+          )}
+          {lead.contact_phone && (
+            <p className="text-[11px] text-muted-foreground/70">📞 {lead.contact_phone}</p>
+          )}
+        </div>
+      )}
+      
       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
         {sourceInfo && (
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`}>
