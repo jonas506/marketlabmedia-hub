@@ -24,7 +24,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { CRM_STAGES, getStageLabel, getStageColor, getSourceInfo } from "@/lib/crm-constants";
+import { getSourceInfo } from "@/lib/crm-constants";
+import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel } from "@/hooks/useCrmStages";
 import { useQuery } from "@tanstack/react-query";
 
 const ACTIVITY_TYPES = [
@@ -90,6 +91,7 @@ interface CrmTask {
 export default function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { data: crmStages = [] } = useCrmStages();
   const [lead, setLead] = useState<LeadData | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showActivity, setShowActivity] = useState(false);
@@ -554,7 +556,7 @@ export default function CRMLeadDetail() {
     </AppLayout>
   );
 
-  const stageColor = getStageColor(lead.stage);
+  const stageColor = dynGetStageColor(crmStages, lead.stage);
   const sourceInfo = getSourceInfo(lead.source);
 
   return (
@@ -600,7 +602,7 @@ export default function CRMLeadDetail() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CRM_STAGES.map(s => (
+                  {crmStages.map(s => (
                     <SelectItem key={s.value} value={s.value}>
                       <span className="flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />

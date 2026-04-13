@@ -5,7 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target } from "lucide-react";
-import { CRM_STAGES, PIPELINE_STAGES, getStageColor, getStageLabel, getSourceInfo } from "@/lib/crm-constants";
+import { getSourceInfo } from "@/lib/crm-constants";
+import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel, getPipelineStages, getClosedStages, type CrmStageConfig } from "@/hooks/useCrmStages";
+import PipelineSettings from "@/components/crm/PipelineSettings";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -37,7 +39,7 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd }: {
   onDragEnd: () => void;
 }) {
   const sourceInfo = getSourceInfo(lead.source);
-  const stageColor = getStageColor(lead.stage);
+  const stageColor = dynGetStageColor([], lead.stage);
 
   return (
     <div
@@ -133,30 +135,37 @@ function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeav
 
 export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) {
   const { user } = useAuth();
+  const { data: stages = [] } = useCrmStages();
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
   const [wonCollapsed, setWonCollapsed] = useState(false);
   const [lostCollapsed, setLostCollapsed] = useState(true);
 
+  const pipelineStageConfigs = useMemo(() => getPipelineStages(stages), [stages]);
+  const closedStageConfigs = useMemo(() => getClosedStages(stages), [stages]);
+  const winStages = useMemo(() => stages.filter(s => s.is_win).map(s => s.value), [stages]);
+  const lossStages = useMemo(() => stages.filter(s => s.is_loss).map(s => s.value), [stages]);
+  const firstStageValue = pipelineStageConfigs[0]?.value ?? 'interessiert';
+
   const byStage = useMemo(() => {
     const map: Record<string, Lead[]> = {};
-    CRM_STAGES.forEach(s => { map[s.value] = []; });
+    stages.forEach(s => { map[s.value] = []; });
     leads.forEach(l => {
       if (map[l.stage]) map[l.stage].push(l);
-      else map['interessiert'].push(l);
+      else if (map[firstStageValue]) map[firstStageValue].push(l);
     });
     return map;
-  }, [leads]);
+  }, [leads, stages, firstStageValue]);
 
-  const pipelineLeads = leads.filter(l => !['gewonnen', 'verloren'].includes(l.stage));
+  const pipelineLeads = leads.filter(l => !winStages.includes(l.stage) && !lossStages.includes(l.stage));
   const openDeals = pipelineLeads.reduce((s, l) => s + Number(l.deal_value || 0), 0);
   const now = new Date();
   const qStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
   const wonThisQ = leads
-    .filter(l => l.stage === 'gewonnen' && new Date(l.last_activity_at || l.created_at) >= qStart)
+    .filter(l => winStages.includes(l.stage) && new Date(l.last_activity_at || l.created_at) >= qStart)
     .reduce((s, l) => s + Number(l.deal_value || 0), 0);
-  const totalLeads = leads.filter(l => l.stage !== 'verloren').length;
-  const wonCount = byStage['gewonnen'].length;
+  const totalLeads = leads.filter(l => !lossStages.includes(l.stage)).length;
+  const wonCount = leads.filter(l => winStages.includes(l.stage)).length;
   const conversion = totalLeads > 0 ? Math.round((wonCount / totalLeads) * 100) : 0;
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -217,10 +226,10 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       await supabase.from("crm_activities").insert({
         lead_id: draggedId,
         type: "status_change" as any,
-        title: `Status geändert: ${getStageLabel(oldStage)} → ${getStageLabel(newStage)}`,
+        title: `Status geändert: ${dynGetStageLabel(stages, oldStage)} → ${dynGetStageLabel(stages, newStage)}`,
         created_by: user!.id,
       });
-      toast.success(`→ ${getStageLabel(newStage)}`);
+      toast.success(`→ ${dynGetStageLabel(stages, newStage)}`);
       onRefresh();
     }
     setDraggedId(null);
@@ -249,8 +258,14 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       </div>
 
       {/* Kanban board */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[calc(100vh-240px)]">
-        {PIPELINE_STAGES.map(stage => (
+      <div className="flex items-center justify-end mb-2">
+        <PipelineSettings stages={stages} />
+      </div>
+      <div
+        className="grid grid-cols-1 gap-3 h-[calc(100vh-280px)]"
+        style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, 1fr) 1fr` }}
+      >
+        {pipelineStageConfigs.map(stage => (
           <DropZone
             key={stage.value}
             stage={stage.value}
@@ -264,13 +279,13 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
             <div className="flex items-center gap-2 mb-3 px-1">
               <div className="h-2.5 w-2.5 rounded-full" style={{ background: stage.color }} />
               <span className="text-xs font-semibold uppercase tracking-wider">{stage.label}</span>
-              <span className="text-xs text-muted-foreground ml-auto">{byStage[stage.value].length}</span>
+              <span className="text-xs text-muted-foreground ml-auto">{byStage[stage.value]?.length ?? 0}</span>
             </div>
             <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-              {byStage[stage.value].map(lead => (
+              {(byStage[stage.value] ?? []).map(lead => (
                 <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
               ))}
-              {overStage === stage.value && draggedId && !byStage[stage.value].find(l => l.id === draggedId) && (
+              {overStage === stage.value && draggedId && !(byStage[stage.value] ?? []).find(l => l.id === draggedId) && (
                 <div className="border-2 border-dashed border-primary/30 rounded-lg h-16 flex items-center justify-center animate-fade-in">
                   <span className="text-xs text-primary/50">Hier ablegen</span>
                 </div>
@@ -279,61 +294,43 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
           </DropZone>
         ))}
 
-        {/* Won + Lost column */}
+        {/* Closed stages column */}
         <div className="space-y-3">
-          <DropZone
-            stage="gewonnen"
-            isOver={overStage === 'gewonnen' && draggedId !== null}
-            onDragOver={handleDragOver}
-            onDragEnter={(e) => handleDragEnter(e, 'gewonnen')}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className="bg-emerald-500/5 border border-emerald-500/20"
-          >
-            <button
-              onClick={() => setWonCollapsed(!wonCollapsed)}
-              className="flex items-center gap-2 w-full px-1 mb-2"
-            >
-              {wonCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Gewonnen</span>
-              <span className="text-xs text-muted-foreground ml-auto">{byStage['gewonnen'].length}</span>
-            </button>
-            {!wonCollapsed && (
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-                {byStage['gewonnen'].map(lead => (
-                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
-                ))}
-              </div>
-            )}
-          </DropZone>
-
-          <DropZone
-            stage="verloren"
-            isOver={overStage === 'verloren' && draggedId !== null}
-            onDragOver={handleDragOver}
-            onDragEnter={(e) => handleDragEnter(e, 'verloren')}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className="bg-red-500/5 border border-red-500/20"
-          >
-            <button
-              onClick={() => setLostCollapsed(!lostCollapsed)}
-              className="flex items-center gap-2 w-full px-1 mb-2"
-            >
-              {lostCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-red-400">Verloren</span>
-              <span className="text-xs text-muted-foreground ml-auto">{byStage['verloren'].length}</span>
-            </button>
-            {!lostCollapsed && (
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
-                {byStage['verloren'].map(lead => (
-                  <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
-                ))}
-              </div>
-            )}
-          </DropZone>
+          {closedStageConfigs.map(closedStage => {
+            const isCollapsed = closedStage.is_win ? wonCollapsed : lostCollapsed;
+            const toggleCollapsed = closedStage.is_win
+              ? () => setWonCollapsed(!wonCollapsed)
+              : () => setLostCollapsed(!lostCollapsed);
+            return (
+              <DropZone
+                key={closedStage.value}
+                stage={closedStage.value}
+                isOver={overStage === closedStage.value && draggedId !== null}
+                onDragOver={handleDragOver}
+                onDragEnter={(e) => handleDragEnter(e, closedStage.value)}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className="border"
+              >
+                <button
+                  onClick={toggleCollapsed}
+                  className="flex items-center gap-2 w-full px-1 mb-2"
+                >
+                  {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: closedStage.color }} />
+                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: closedStage.color }}>{closedStage.label}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{(byStage[closedStage.value] ?? []).length}</span>
+                </button>
+                {!isCollapsed && (
+                  <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+                    {(byStage[closedStage.value] ?? []).map(lead => (
+                      <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} />
+                    ))}
+                  </div>
+                )}
+              </DropZone>
+            );
+          })}
         </div>
       </div>
     </div>
