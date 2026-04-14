@@ -28,6 +28,7 @@ type Lead = {
   last_activity_at: string | null;
   created_at: string;
   profile_image_url: string | null;
+  instagram_handle: string | null;
 };
 
 interface PipelineBoardProps {

@@ -28,6 +28,7 @@ type Lead = {
   last_activity_at: string | null;
   created_at: string;
   profile_image_url: string | null;
+  instagram_handle: string | null;
 };
 
 export default function CRMHome() {
@@ -45,7 +46,7 @@ export default function CRMHome() {
   const fetchLeads = async () => {
     const { data } = await supabase
       .from("crm_leads")
-      .select("id, name, contact_name, contact_email, contact_phone, stage, source, deal_value, next_step, next_step_date, last_activity_at, created_at, profile_image_url")
+      .select("id, name, contact_name, contact_email, contact_phone, stage, source, deal_value, next_step, next_step_date, last_activity_at, created_at, profile_image_url, instagram_handle")
       .order("last_activity_at", { ascending: false });
     setLeads((data as Lead[]) ?? []);
     setLoading(false);
