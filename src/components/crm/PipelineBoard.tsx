@@ -35,8 +35,19 @@ interface PipelineBoardProps {
   onRefresh: () => void;
 }
 
+function getProfileImageUrl(lead: Lead): string | null {
+  if (lead.profile_image_url) return lead.profile_image_url;
+  // Use unavatar.io for Instagram handles
+  if (lead.instagram_handle) {
+    const urlMatch = lead.instagram_handle.match(/instagram\.com\/([^/?#]+)/);
+    const handle = urlMatch ? urlMatch[1] : lead.instagram_handle.replace(/^@/, "");
+    if (handle) return `https://unavatar.io/instagram/${handle}`;
+  }
+  return null;
+}
+
 function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: { 
-  lead: Lead; 
+  lead: Lead & { instagram_handle?: string | null }; 
   isDragging: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
@@ -44,6 +55,7 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: {
 }) {
   const sourceInfo = getSourceInfo(lead.source, sourceTags);
   const stageColor = dynGetStageColor([], lead.stage);
+  const avatarUrl = getProfileImageUrl(lead);
 
   return (
     <div
