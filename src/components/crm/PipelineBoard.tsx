@@ -58,12 +58,24 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: {
       )}
       style={{ borderLeftWidth: 3, borderLeftColor: stageColor }}
     >
-      <Link to={`/crm/lead/${lead.id}`} onClick={e => isDragging && e.preventDefault()} className="font-semibold text-sm hover:text-primary transition-colors">
-        {lead.name}
-      </Link>
-      {lead.contact_name && (
-        <p className="text-xs text-muted-foreground mt-0.5">{lead.contact_name}</p>
-      )}
+      <div className="flex items-start gap-2">
+        <Avatar className="h-7 w-7 shrink-0 mt-0.5">
+          {lead.profile_image_url ? (
+            <AvatarImage src={lead.profile_image_url} alt={lead.name} />
+          ) : null}
+          <AvatarFallback className="text-[10px] bg-muted">
+            {lead.name.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <Link to={`/crm/lead/${lead.id}`} onClick={e => isDragging && e.preventDefault()} className="font-semibold text-sm hover:text-primary transition-colors">
+            {lead.name}
+          </Link>
+          {lead.contact_name && (
+            <p className="text-xs text-muted-foreground mt-0.5">{lead.contact_name}</p>
+          )}
+        </div>
+      </div>
       
       {(lead.contact_email || lead.contact_phone) && (
         <div className="mt-1.5 space-y-0.5">
