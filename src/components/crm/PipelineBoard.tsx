@@ -44,6 +44,13 @@ function getProfileImageUrl(lead: Lead): string | null {
     const handle = urlMatch ? urlMatch[1] : lead.instagram_handle.replace(/^@/, "");
     if (handle) return `https://unavatar.io/instagram/${handle}`;
   }
+  // Extract domain from email and use as logo source
+  if (lead.contact_email) {
+    const domain = lead.contact_email.split("@")[1];
+    if (domain && !["gmail.com", "googlemail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "web.de", "gmx.de", "gmx.net", "t-online.de", "freenet.de", "posteo.de", "mailbox.org"].includes(domain.toLowerCase())) {
+      return `https://logo.clearbit.com/${domain}`;
+    }
+  }
   return null;
 }
 
