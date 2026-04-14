@@ -11,6 +11,33 @@ import { Sparkles, Copy, Check, Loader2, Wand2, Save, BookmarkIcon } from "lucid
 import { toast } from "sonner";
 import PieceActivityLog from "@/components/client/PieceActivityLog";
 
+// Helper to call edge function with extended timeout (5 min) for heavy operations
+async function invokeWithTimeout(functionName: string, body: Record<string, unknown>, timeoutMs = 300_000) {
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${functionName}`;
+  const session = (await supabase.auth.getSession()).data.session;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || `Fehler ${res.status}`);
+    }
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 interface PieceDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -39,6 +66,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const [generating, setGenerating] = useState(false);
   const [refining, setRefining] = useState(false);
   const [autoGenerating, setAutoGenerating] = useState(false);
+  const [autoStep, setAutoStep] = useState<"transcribe" | "caption" | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedPromptId, setSelectedPromptId] = useState("");
   
@@ -67,17 +95,13 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     try {
       const hasTranscript = !!transcript;
       if (!hasTranscript) {
-        const { data: tData, error: tErr } = await supabase.functions.invoke("transcribe-caption", {
-          body: { action: "transcribe", piece_id: pieceId },
-        });
-        if (tErr) throw tErr;
+        setAutoStep("transcribe");
+        const tData = await invokeWithTimeout("transcribe-caption", { action: "transcribe", piece_id: pieceId });
         if (tData?.transcript) setTranscript(tData.transcript);
       }
 
-      const { data: cData, error: cErr } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "generate", piece_id: pieceId },
-      });
-      if (cErr) throw cErr;
+      setAutoStep("caption");
+      const cData = await invokeWithTimeout("transcribe-caption", { action: "generate", piece_id: pieceId }, 60_000);
       if (cData?.caption) {
         setCaption(cData.caption);
         toast.success("Caption erstellt!");
@@ -85,9 +109,14 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
 
       qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     } catch (err: any) {
-      toast.error("Generierung fehlgeschlagen", { description: err.message });
+      if (err.name === "AbortError") {
+        toast.error("Timeout", { description: "Die Transkription hat zu lange gedauert. Versuche es mit einem kürzeren Video." });
+      } else {
+        toast.error("Generierung fehlgeschlagen", { description: err.message });
+      }
     } finally {
       setAutoGenerating(false);
+      setAutoStep(null);
     }
   };
 
@@ -175,9 +204,19 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
           <div className="px-6 py-5 space-y-5">
             {/* Auto-generating indicator */}
             {autoGenerating && (
-              <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span className="text-sm text-primary font-medium">Transkript & Caption werden erstellt…</span>
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-sm text-primary font-medium">
+                    {autoStep === "transcribe"
+                      ? "Schritt 1/2 — Video wird transkribiert… (kann bei großen Dateien 2-3 Min dauern)"
+                      : "Schritt 2/2 — Caption wird generiert…"}
+                  </span>
+                </div>
+                <div className="flex gap-1 ml-7">
+                  <div className={`h-1 flex-1 rounded-full transition-colors ${autoStep === "transcribe" ? "bg-primary animate-pulse" : "bg-primary"}`} />
+                  <div className={`h-1 flex-1 rounded-full transition-colors ${autoStep === "caption" ? "bg-primary animate-pulse" : "bg-muted"}`} />
+                </div>
               </div>
             )}
 
