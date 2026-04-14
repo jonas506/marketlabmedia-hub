@@ -73,8 +73,8 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: {
     >
       <div className="flex items-start gap-2">
         <Avatar className="h-7 w-7 shrink-0 mt-0.5">
-          {lead.profile_image_url ? (
-            <AvatarImage src={lead.profile_image_url} alt={lead.name} />
+          {avatarUrl ? (
+            <AvatarImage src={avatarUrl} alt={lead.name} />
           ) : null}
           <AvatarFallback className="text-[10px] bg-muted">
             {lead.name.slice(0, 2).toUpperCase()}
