@@ -34,13 +34,13 @@ Deno.serve(async (req) => {
     // Get leads that have instagram or linkedin but no profile image
     let query = supabase
       .from("crm_leads")
-      .select("id, name, instagram_handle, linkedin_url, profile_image_url")
-      .or("instagram_handle.neq.,linkedin_url.neq.");
+      .select("id, name, instagram_handle, linkedin_url, profile_image_url");
 
     if (leadId) {
       query = query.eq("id", leadId);
     } else {
-      query = query.is("profile_image_url", null);
+      query = query.is("profile_image_url", null)
+        .or("instagram_handle.not.is.null,linkedin_url.not.is.null");
     }
 
     const { data: leads, error } = await query;
