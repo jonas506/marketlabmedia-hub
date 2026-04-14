@@ -321,6 +321,21 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                               {phases.find(p => p.key === nextPhaseMap[piece.phase])?.label}
                             </Button>
                           )}
+
+                          {/* Admin: Direct approve from review */}
+                          {piece.phase === "review" && (userRole === "admin" || userRole === "head_of_content") && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="w-full mt-1 h-7 text-[10px] font-mono gap-1 bg-[hsl(var(--runway-green))] hover:bg-[hsl(var(--runway-green))]/90 text-white border-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onMovePiece(piece.id, "approved");
+                              }}
+                            >
+                              ✓ Freigeben
+                            </Button>
+                          )}
                         </div>
                       </motion.div>
                     );
