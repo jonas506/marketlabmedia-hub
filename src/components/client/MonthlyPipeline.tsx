@@ -45,6 +45,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   const qc = useQueryClient();
+  const { role: userRole } = useAuth();
   const [activeType, setActiveType] = useState<string>("reel");
   const [activePhase, setActivePhase] = useState<string>(PIPELINE_CONFIG["reel"].phases[0].key);
   const [selected, setSelected] = useState<Set<string>>(new Set());
