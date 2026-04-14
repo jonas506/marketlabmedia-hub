@@ -80,6 +80,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   index,
   clientId,
   monthOptions,
+  userRole,
   onToggleSelect,
   onMovePiece,
   onUpdatePiece,
