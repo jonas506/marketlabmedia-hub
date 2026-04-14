@@ -25,6 +25,7 @@ interface PieceActionRowProps {
 
 const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
   piece,
+  activePhase,
   activeType,
   isLatePhase,
   config,
@@ -32,6 +33,7 @@ const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
   team,
   canEdit,
   monthOptions,
+  userRole,
   onUpdatePiece,
   onMovePiece,
 }) => {
