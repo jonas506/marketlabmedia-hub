@@ -148,6 +148,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           team={team}
           canEdit={canEdit}
           monthOptions={monthOptions}
+          userRole={userRole}
           onUpdatePiece={onUpdatePiece}
           onMovePiece={onMovePiece}
         />
