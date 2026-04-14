@@ -394,6 +394,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             phases={config.phases}
             team={team}
             canEdit={canEdit}
+            userRole={userRole}
             onMovePiece={(pieceId, targetPhase) => movePiece(pieceId, targetPhase)}
             onOpenDetail={(piece) => setDetailPiece(piece)}
             onOpenScript={(piece) => setScriptPiece(piece)}
