@@ -48,7 +48,7 @@ function getProfileImageUrl(lead: Lead): string | null {
 }
 
 function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: { 
-  lead: Lead & { instagram_handle?: string | null }; 
+  lead: Lead; 
   isDragging: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
