@@ -43,6 +43,7 @@ interface PipelineKanbanProps {
   phases: PhaseConfig[];
   team?: { user_id: string; name: string | null; email?: string | null }[];
   canEdit: boolean;
+  userRole?: string | null;
   onMovePiece: (pieceId: string, targetPhase: string) => void;
   onOpenDetail: (piece: ContentPiece) => void;
   onOpenScript: (piece: ContentPiece) => void;
