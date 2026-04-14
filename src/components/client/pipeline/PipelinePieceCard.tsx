@@ -54,6 +54,7 @@ interface PipelinePieceCardProps {
   index: number;
   clientId: string;
   monthOptions: MonthOption[];
+  userRole?: string | null;
   onToggleSelect: (id: string) => void;
   onMovePiece: (pieceId: string, nextPhase: string) => void;
   onUpdatePiece: (pieceId: string, updates: Record<string, any>) => void;
@@ -79,6 +80,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   index,
   clientId,
   monthOptions,
+  userRole,
   onToggleSelect,
   onMovePiece,
   onUpdatePiece,
@@ -146,6 +148,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           team={team}
           canEdit={canEdit}
           monthOptions={monthOptions}
+          userRole={userRole}
           onUpdatePiece={onUpdatePiece}
           onMovePiece={onMovePiece}
         />

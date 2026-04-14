@@ -1,6 +1,7 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect, useContext } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Plus, icons, CalendarCheck, Package, ChevronDown } from "lucide-react";
@@ -44,6 +45,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   const qc = useQueryClient();
+  const { role: userRole } = useAuth();
   const [activeType, setActiveType] = useState<string>("reel");
   const [activePhase, setActivePhase] = useState<string>(PIPELINE_CONFIG["reel"].phases[0].key);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -392,6 +394,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
             phases={config.phases}
             team={team}
             canEdit={canEdit}
+            userRole={userRole}
             onMovePiece={(pieceId, targetPhase) => movePiece(pieceId, targetPhase)}
             onOpenDetail={(piece) => setDetailPiece(piece)}
             onOpenScript={(piece) => setScriptPiece(piece)}
@@ -477,6 +480,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         canEdit={canEdit}
                         index={index}
                         clientId={clientId}
+                        userRole={userRole}
                         monthOptions={monthOptions}
                         onToggleSelect={toggleSelect}
                         onMovePiece={movePiece}

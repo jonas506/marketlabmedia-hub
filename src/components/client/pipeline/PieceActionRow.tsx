@@ -18,12 +18,14 @@ interface PieceActionRowProps {
   team: TeamMember[];
   canEdit: boolean;
   monthOptions: MonthOption[];
+  userRole?: string | null;
   onUpdatePiece: (pieceId: string, updates: Record<string, any>) => void;
   onMovePiece: (pieceId: string, nextPhase: string) => void;
 }
 
 const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
   piece,
+  activePhase,
   activeType,
   isLatePhase,
   config,
@@ -31,6 +33,7 @@ const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
   team,
   canEdit,
   monthOptions,
+  userRole,
   onUpdatePiece,
   onMovePiece,
 }) => {
@@ -96,6 +99,20 @@ const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
           >
             → {(() => { const NIcon = icons[config.phases.find((p) => p.key === nextPhase)?.emoji as keyof typeof icons]; return NIcon ? <NIcon size={12} /> : null; })()}
             <span className="hidden sm:inline"> {config.phases.find((p) => p.key === nextPhase)?.label}</span>
+          </Button>
+        </motion.div>
+      )}
+
+      {/* Admin: Direct approve from review */}
+      {activePhase === "review" && (userRole === "admin" || userRole === "head_of_content") && (
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            size="sm"
+            variant="default"
+            className="h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs gap-1 font-mono bg-[hsl(var(--runway-green))] hover:bg-[hsl(var(--runway-green))]/90 text-white border-0"
+            onClick={() => onMovePiece(piece.id, "approved")}
+          >
+            ✓ <span className="hidden sm:inline">Freigeben</span>
           </Button>
         </motion.div>
       )}
