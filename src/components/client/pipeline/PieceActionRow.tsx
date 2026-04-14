@@ -18,6 +18,7 @@ interface PieceActionRowProps {
   team: TeamMember[];
   canEdit: boolean;
   monthOptions: MonthOption[];
+  userRole?: string | null;
   onUpdatePiece: (pieceId: string, updates: Record<string, any>) => void;
   onMovePiece: (pieceId: string, nextPhase: string) => void;
 }
