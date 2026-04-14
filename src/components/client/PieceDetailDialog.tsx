@@ -204,9 +204,19 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
           <div className="px-6 py-5 space-y-5">
             {/* Auto-generating indicator */}
             {autoGenerating && (
-              <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span className="text-sm text-primary font-medium">Transkript & Caption werden erstellt…</span>
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-sm text-primary font-medium">
+                    {autoStep === "transcribe"
+                      ? "Schritt 1/2 — Video wird transkribiert… (kann bei großen Dateien 2-3 Min dauern)"
+                      : "Schritt 2/2 — Caption wird generiert…"}
+                  </span>
+                </div>
+                <div className="flex gap-1 ml-7">
+                  <div className={`h-1 flex-1 rounded-full transition-colors ${autoStep === "transcribe" ? "bg-primary animate-pulse" : "bg-primary"}`} />
+                  <div className={`h-1 flex-1 rounded-full transition-colors ${autoStep === "caption" ? "bg-primary animate-pulse" : "bg-muted"}`} />
+                </div>
               </div>
             )}
 
