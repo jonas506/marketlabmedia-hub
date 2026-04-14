@@ -5,13 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target } from "lucide-react";
+import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target, User } from "lucide-react";
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel, getPipelineStages, getClosedStages, type CrmStageConfig } from "@/hooks/useCrmStages";
 import PipelineSettings from "@/components/crm/PipelineSettings";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 type Lead = {
   id: string;
@@ -26,6 +27,7 @@ type Lead = {
   next_step_date: string | null;
   last_activity_at: string | null;
   created_at: string;
+  profile_image_url: string | null;
 };
 
 interface PipelineBoardProps {
