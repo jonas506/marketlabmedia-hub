@@ -479,6 +479,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
                         canEdit={canEdit}
                         index={index}
                         clientId={clientId}
+                        userRole={userRole}
                         monthOptions={monthOptions}
                         onToggleSelect={toggleSelect}
                         onMovePiece={movePiece}
