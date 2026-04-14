@@ -68,6 +68,7 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
   phases,
   team,
   canEdit,
+  userRole,
   onMovePiece,
   onOpenDetail,
   onOpenScript,
