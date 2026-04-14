@@ -5,13 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target } from "lucide-react";
+import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target, User } from "lucide-react";
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel, getPipelineStages, getClosedStages, type CrmStageConfig } from "@/hooks/useCrmStages";
 import PipelineSettings from "@/components/crm/PipelineSettings";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 type Lead = {
   id: string;
@@ -26,11 +27,24 @@ type Lead = {
   next_step_date: string | null;
   last_activity_at: string | null;
   created_at: string;
+  profile_image_url: string | null;
+  instagram_handle: string | null;
 };
 
 interface PipelineBoardProps {
   leads: Lead[];
   onRefresh: () => void;
+}
+
+function getProfileImageUrl(lead: Lead): string | null {
+  if (lead.profile_image_url) return lead.profile_image_url;
+  // Use unavatar.io for Instagram handles
+  if (lead.instagram_handle) {
+    const urlMatch = lead.instagram_handle.match(/instagram\.com\/([^/?#]+)/);
+    const handle = urlMatch ? urlMatch[1] : lead.instagram_handle.replace(/^@/, "");
+    if (handle) return `https://unavatar.io/instagram/${handle}`;
+  }
+  return null;
 }
 
 function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: { 
@@ -42,6 +56,7 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: {
 }) {
   const sourceInfo = getSourceInfo(lead.source, sourceTags);
   const stageColor = dynGetStageColor([], lead.stage);
+  const avatarUrl = getProfileImageUrl(lead);
 
   return (
     <div
@@ -56,12 +71,24 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: {
       )}
       style={{ borderLeftWidth: 3, borderLeftColor: stageColor }}
     >
-      <Link to={`/crm/lead/${lead.id}`} onClick={e => isDragging && e.preventDefault()} className="font-semibold text-sm hover:text-primary transition-colors">
-        {lead.name}
-      </Link>
-      {lead.contact_name && (
-        <p className="text-xs text-muted-foreground mt-0.5">{lead.contact_name}</p>
-      )}
+      <div className="flex items-start gap-2">
+        <Avatar className="h-7 w-7 shrink-0 mt-0.5">
+          {avatarUrl ? (
+            <AvatarImage src={avatarUrl} alt={lead.name} />
+          ) : null}
+          <AvatarFallback className="text-[10px] bg-muted">
+            {lead.name.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <Link to={`/crm/lead/${lead.id}`} onClick={e => isDragging && e.preventDefault()} className="font-semibold text-sm hover:text-primary transition-colors">
+            {lead.name}
+          </Link>
+          {lead.contact_name && (
+            <p className="text-xs text-muted-foreground mt-0.5">{lead.contact_name}</p>
+          )}
+        </div>
+      </div>
       
       {(lead.contact_email || lead.contact_phone) && (
         <div className="mt-1.5 space-y-0.5">

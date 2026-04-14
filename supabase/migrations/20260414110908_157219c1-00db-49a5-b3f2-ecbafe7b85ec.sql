@@ -1,0 +1,1 @@
+ALTER TABLE public.crm_leads ADD COLUMN profile_image_url text;
