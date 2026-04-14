@@ -6,6 +6,69 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function scrapeProfileImage(url: string, apiKey: string): Promise<string | null> {
+  try {
+    console.log("Scraping:", url);
+    const resp = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url,
+        formats: ["markdown", "links"],
+        onlyMainContent: false,
+        waitFor: 5000,
+      }),
+    });
+
+    if (!resp.ok) {
+      console.error("Firecrawl error:", resp.status, await resp.text());
+      return null;
+    }
+
+    const data = await resp.json();
+    const markdown = data?.data?.markdown || data?.markdown || "";
+    const html = data?.data?.html || data?.html || "";
+    const metadata = data?.data?.metadata || data?.metadata || {};
+
+    // Try og:image from metadata first
+    if (metadata?.ogImage) {
+      console.log("Found og:image from metadata");
+      return metadata.ogImage;
+    }
+
+    // Try to find profile image URLs in markdown - common patterns
+    // Instagram profile pics often contain cdninstagram or scontent
+    const igProfileMatch = markdown.match(/!\[.*?\]\((https:\/\/[^\s)]*(?:cdninstagram|scontent|fbcdn)[^\s)]*)\)/);
+    if (igProfileMatch?.[1]) {
+      console.log("Found IG CDN image");
+      return igProfileMatch[1];
+    }
+
+    // LinkedIn profile pics
+    const liProfileMatch = markdown.match(/!\[.*?\]\((https:\/\/media\.licdn\.com[^\s)]*)\)/);
+    if (liProfileMatch?.[1]) {
+      console.log("Found LinkedIn media image");
+      return liProfileMatch[1];
+    }
+
+    // Generic first image in markdown
+    const firstImgMatch = markdown.match(/!\[.*?\]\((https:\/\/[^\s)]+)\)/);
+    if (firstImgMatch?.[1] && !firstImgMatch[1].includes('icon') && !firstImgMatch[1].includes('logo') && !firstImgMatch[1].includes('sprite')) {
+      console.log("Found first markdown image");
+      return firstImgMatch[1];
+    }
+
+    console.log("No profile image found");
+    return null;
+  } catch (e) {
+    console.error("Scrape error:", e);
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -31,7 +94,6 @@ Deno.serve(async (req) => {
       leadId = body?.lead_id || null;
     } catch { /* no body */ }
 
-    // Get leads that have instagram or linkedin but no profile image
     let query = supabase
       .from("crm_leads")
       .select("id, name, instagram_handle, linkedin_url, profile_image_url");
@@ -50,7 +112,6 @@ Deno.serve(async (req) => {
 
     for (const lead of leads || []) {
       try {
-        // Skip if no social links
         if (!lead.instagram_handle && !lead.linkedin_url) {
           results.push({ id: lead.id, name: lead.name, profile_image_url: null });
           continue;
@@ -58,83 +119,25 @@ Deno.serve(async (req) => {
 
         let profileImageUrl: string | null = null;
 
-        // Try Instagram first
+        // Try Instagram
         if (lead.instagram_handle && !profileImageUrl) {
-          const handle = lead.instagram_handle.replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/\/$/, "");
-          const igUrl = `https://www.instagram.com/${handle}/`;
-          console.log(`Scraping IG profile for ${lead.name}: ${igUrl}`);
-
-          try {
-            const resp = await fetch("https://api.firecrawl.dev/v1/scrape", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${FIRECRAWL_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                url: igUrl,
-                formats: ["html"],
-                onlyMainContent: false,
-                waitFor: 5000,
-              }),
-            });
-
-            if (resp.ok) {
-              const data = await resp.json();
-              const html = data?.data?.html || data?.html || "";
-              
-              // Try to extract profile picture from meta tags
-              const ogImageMatch = html.match(/property="og:image"\s+content="([^"]+)"/);
-              if (ogImageMatch?.[1]) {
-                profileImageUrl = ogImageMatch[1];
-              }
-              
-              // Try Twitter image meta
-              if (!profileImageUrl) {
-                const twitterImageMatch = html.match(/name="twitter:image"\s+content="([^"]+)"/);
-                if (twitterImageMatch?.[1]) {
-                  profileImageUrl = twitterImageMatch[1];
-                }
-              }
-            }
-          } catch (e) {
-            console.error(`IG scrape failed for ${lead.name}:`, e);
+          // Clean the handle - might be a full URL or just @handle
+          let handle = lead.instagram_handle;
+          // Extract handle from URL
+          const urlMatch = handle.match(/instagram\.com\/([^/?#]+)/);
+          if (urlMatch) {
+            handle = urlMatch[1];
           }
+          handle = handle.replace(/^@/, "");
+          const igUrl = `https://www.instagram.com/${handle}/`;
+          profileImageUrl = await scrapeProfileImage(igUrl, FIRECRAWL_KEY);
         }
 
-        // Try LinkedIn if no IG image
+        // Try LinkedIn
         if (lead.linkedin_url && !profileImageUrl) {
           let liUrl = lead.linkedin_url;
           if (!liUrl.startsWith("http")) liUrl = `https://${liUrl}`;
-          console.log(`Scraping LinkedIn profile for ${lead.name}: ${liUrl}`);
-
-          try {
-            const resp = await fetch("https://api.firecrawl.dev/v1/scrape", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${FIRECRAWL_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                url: liUrl,
-                formats: ["html"],
-                onlyMainContent: false,
-                waitFor: 5000,
-              }),
-            });
-
-            if (resp.ok) {
-              const data = await resp.json();
-              const html = data?.data?.html || data?.html || "";
-              
-              const ogImageMatch = html.match(/property="og:image"\s+content="([^"]+)"/);
-              if (ogImageMatch?.[1]) {
-                profileImageUrl = ogImageMatch[1];
-              }
-            }
-          } catch (e) {
-            console.error(`LinkedIn scrape failed for ${lead.name}:`, e);
-          }
+          profileImageUrl = await scrapeProfileImage(liUrl, FIRECRAWL_KEY);
         }
 
         if (profileImageUrl) {
@@ -148,8 +151,6 @@ Deno.serve(async (req) => {
         }
 
         results.push({ id: lead.id, name: lead.name, profile_image_url: profileImageUrl });
-
-        // Rate limit
         await new Promise((r) => setTimeout(r, 1000));
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Unknown error";
