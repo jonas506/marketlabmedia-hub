@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target, User } from "lucide-react";
+import { ChevronDown, ChevronRight, TrendingUp, Users, DollarSign, Target, ChevronLeft, ArrowRight } from "lucide-react";
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel, getPipelineStages, getClosedStages, type CrmStageConfig } from "@/hooks/useCrmStages";
 import PipelineSettings from "@/components/crm/PipelineSettings";
@@ -13,6 +13,9 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 type Lead = {
   id: string;
@@ -38,13 +41,11 @@ interface PipelineBoardProps {
 
 function getProfileImageUrl(lead: Lead): string | null {
   if (lead.profile_image_url) return lead.profile_image_url;
-  // Use unavatar.io for Instagram handles
   if (lead.instagram_handle) {
     const urlMatch = lead.instagram_handle.match(/instagram\.com\/([^/?#]+)/);
     const handle = urlMatch ? urlMatch[1] : lead.instagram_handle.replace(/^@/, "");
     if (handle) return `https://unavatar.io/instagram/${handle}`;
   }
-  // Extract domain from email and use as logo source
   if (lead.contact_email) {
     const domain = lead.contact_email.split("@")[1];
     if (domain && !["gmail.com", "googlemail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "web.de", "gmx.de", "gmx.net", "t-online.de", "freenet.de", "posteo.de", "mailbox.org"].includes(domain.toLowerCase())) {
@@ -142,6 +143,91 @@ function LeadCard({ lead, isDragging, onDragStart, onDragEnd, sourceTags }: {
   );
 }
 
+/* ── Mobile Lead Card with stage selector ── */
+function MobileLeadCard({ lead, stages, onMoveStage, sourceTags }: {
+  lead: Lead;
+  stages: CrmStageConfig[];
+  onMoveStage: (leadId: string, newStage: string) => void;
+  sourceTags?: { name: string; color: string }[];
+}) {
+  const sourceInfo = getSourceInfo(lead.source, sourceTags);
+  const stageColor = dynGetStageColor(stages, lead.stage);
+  const avatarUrl = getProfileImageUrl(lead);
+
+  return (
+    <div
+      className="bg-card border border-border rounded-lg p-3 transition-colors"
+      style={{ borderLeftWidth: 3, borderLeftColor: stageColor }}
+    >
+      <div className="flex items-start gap-2.5">
+        <Avatar className="h-9 w-9 shrink-0 mt-0.5">
+          {avatarUrl ? <AvatarImage src={avatarUrl} alt={lead.name} /> : null}
+          <AvatarFallback className="text-xs bg-muted">
+            {lead.name.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <Link to={`/crm/lead/${lead.id}`} className="font-semibold text-sm hover:text-primary transition-colors line-clamp-1">
+            {lead.name}
+          </Link>
+          {lead.contact_name && (
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{lead.contact_name}</p>
+          )}
+        </div>
+        {lead.deal_value > 0 && (
+          <span className="text-xs font-semibold text-emerald-400 shrink-0">
+            {Number(lead.deal_value).toLocaleString("de-DE")} €
+          </span>
+        )}
+      </div>
+
+      {lead.next_step && (
+        <p className="text-xs text-muted-foreground mt-2 leading-tight truncate">
+          → {lead.next_step}
+          {lead.next_step_date && (
+            <span className="text-muted-foreground/60 ml-1">
+              ({new Date(lead.next_step_date).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })})
+            </span>
+          )}
+        </p>
+      )}
+
+      <div className="flex items-center gap-2 mt-2.5">
+        {sourceInfo && (
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${sourceInfo.color}`}
+            style={sourceInfo.style}
+          >
+            {sourceInfo.label}
+          </span>
+        )}
+        {lead.last_activity_at && (
+          <span className="text-[10px] text-muted-foreground/50 shrink-0">
+            {formatDistanceToNow(new Date(lead.last_activity_at), { addSuffix: true, locale: de })}
+          </span>
+        )}
+        <div className="ml-auto shrink-0">
+          <Select value={lead.stage} onValueChange={(v) => onMoveStage(lead.id, v)}>
+            <SelectTrigger className="h-7 text-[11px] w-auto min-w-[100px] gap-1 px-2 border-border/60">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {stages.map(s => (
+                <SelectItem key={s.value} value={s.value} className="text-xs">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: s.color }} />
+                    {s.label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeave, onDrop, className }: {
   stage: string;
   isOver: boolean;
@@ -171,6 +257,7 @@ function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeav
 
 export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { data: stages = [] } = useCrmStages();
   const { data: sourceTags = [] } = useQuery({
     queryKey: ["crm-source-tags"],
@@ -183,12 +270,14 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   const [overStage, setOverStage] = useState<string | null>(null);
   const [wonCollapsed, setWonCollapsed] = useState(false);
   const [lostCollapsed, setLostCollapsed] = useState(true);
+  const [mobileStageIndex, setMobileStageIndex] = useState(0);
 
   const pipelineStageConfigs = useMemo(() => getPipelineStages(stages), [stages]);
   const closedStageConfigs = useMemo(() => {
     const closed = getClosedStages(stages);
     return closed.sort((a, b) => (a.is_loss === b.is_loss ? 0 : a.is_loss ? -1 : 1));
   }, [stages]);
+  const allStageConfigs = useMemo(() => [...pipelineStageConfigs, ...closedStageConfigs], [pipelineStageConfigs, closedStageConfigs]);
   const winStages = useMemo(() => stages.filter(s => s.is_win).map(s => s.value), [stages]);
   const lossStages = useMemo(() => stages.filter(s => s.is_loss).map(s => s.value), [stages]);
   const firstStageValue = pipelineStageConfigs[0]?.value ?? 'interessiert';
@@ -214,10 +303,32 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
   const wonCount = leads.filter(l => winStages.includes(l.stage)).length;
   const conversion = totalLeads > 0 ? Math.round((wonCount / totalLeads) * 100) : 0;
 
+  const handleMoveStage = async (leadId: string, newStage: string) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead || lead.stage === newStage) return;
+    const oldStage = lead.stage;
+    const { error } = await supabase
+      .from("crm_leads")
+      .update({ stage: newStage, last_activity_at: new Date().toISOString() })
+      .eq("id", leadId);
+    if (error) {
+      toast.error("Fehler beim Verschieben");
+    } else {
+      await supabase.from("crm_activities").insert({
+        lead_id: leadId,
+        type: "status_change" as any,
+        title: `Status geändert: ${dynGetStageLabel(stages, oldStage)} → ${dynGetStageLabel(stages, newStage)}`,
+        created_by: user!.id,
+      });
+      toast.success(`→ ${dynGetStageLabel(stages, newStage)}`);
+      onRefresh();
+    }
+  };
+
+  // Desktop drag handlers
   const handleDragStart = (e: React.DragEvent, id: string) => {
     setDraggedId(id);
     e.dataTransfer.effectAllowed = "move";
-    // Create a ghost image with slight rotation
     const el = e.currentTarget as HTMLElement;
     const ghost = el.cloneNode(true) as HTMLElement;
     ghost.style.transform = "rotate(3deg) scale(1.05)";
@@ -230,21 +341,9 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
     requestAnimationFrame(() => document.body.removeChild(ghost));
   };
 
-  const handleDragEnd = () => {
-    setDraggedId(null);
-    setOverStage(null);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDragEnter = (e: React.DragEvent, stage: string) => {
-    e.preventDefault();
-    setOverStage(stage);
-  };
-
+  const handleDragEnd = () => { setDraggedId(null); setOverStage(null); };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; };
+  const handleDragEnter = (e: React.DragEvent, stage: string) => { e.preventDefault(); setOverStage(stage); };
   const handleDragLeave = (e: React.DragEvent) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const { clientX, clientY } = e;
@@ -252,35 +351,93 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
       setOverStage(null);
     }
   };
-
   const handleDrop = async (e: React.DragEvent, newStage: string) => {
     e.preventDefault();
     setOverStage(null);
     if (!draggedId) return;
-    const lead = leads.find(l => l.id === draggedId);
-    if (!lead || lead.stage === newStage) { setDraggedId(null); return; }
-
-    const oldStage = lead.stage;
-    const { error } = await supabase
-      .from("crm_leads")
-      .update({ stage: newStage, last_activity_at: new Date().toISOString() })
-      .eq("id", draggedId);
-
-    if (error) {
-      toast.error("Fehler beim Verschieben");
-    } else {
-      await supabase.from("crm_activities").insert({
-        lead_id: draggedId,
-        type: "status_change" as any,
-        title: `Status geändert: ${dynGetStageLabel(stages, oldStage)} → ${dynGetStageLabel(stages, newStage)}`,
-        created_by: user!.id,
-      });
-      toast.success(`→ ${dynGetStageLabel(stages, newStage)}`);
-      onRefresh();
-    }
+    await handleMoveStage(draggedId, newStage);
     setDraggedId(null);
   };
 
+  // ── Mobile view ──
+  if (isMobile) {
+    const currentStage = allStageConfigs[mobileStageIndex];
+    const currentLeads = currentStage ? (byStage[currentStage.value] ?? []) : [];
+
+    return (
+      <div className="min-w-0 flex flex-col">
+        {/* Compact stats */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {[
+            { icon: Users, label: "Pipeline", value: pipelineLeads.length },
+            { icon: DollarSign, label: "Offen", value: `${openDeals > 999 ? `${(openDeals / 1000).toFixed(0)}k` : openDeals} €` },
+            { icon: TrendingUp, label: "Gewonnen Q", value: `${wonThisQ > 999 ? `${(wonThisQ / 1000).toFixed(0)}k` : wonThisQ} €` },
+            { icon: Target, label: "Conversion", value: `${conversion}%` },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="bg-card border border-border rounded-lg p-2.5 flex items-center gap-2">
+              <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground truncate">{label}</p>
+                <p className="text-xs font-bold">{value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Stage tabs - horizontal scrollable */}
+        <div className="flex items-center gap-1 mb-3 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
+          {allStageConfigs.map((s, i) => (
+            <button
+              key={s.value}
+              onClick={() => setMobileStageIndex(i)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 min-h-[36px] transition-all",
+                mobileStageIndex === i
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted/40 text-muted-foreground"
+              )}
+            >
+              <span className="h-2 w-2 rounded-full shrink-0" style={{ background: mobileStageIndex === i ? 'currentColor' : s.color }} />
+              {s.label}
+              <span className={cn(
+                "text-[10px] px-1.5 py-0.5 rounded-full",
+                mobileStageIndex === i ? "bg-primary-foreground/20" : "bg-muted"
+              )}>
+                {(byStage[s.value] ?? []).length}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Settings */}
+        <div className="flex items-center justify-end mb-2">
+          <PipelineSettings stages={stages} />
+        </div>
+
+        {/* Lead cards */}
+        <div className="space-y-2 flex-1 min-h-0 overflow-y-auto pb-4">
+          {currentLeads.length === 0 && (
+            <div className="text-center py-10 text-muted-foreground text-sm">
+              Keine Leads in dieser Stufe
+            </div>
+          )}
+          {currentLeads.map(lead => (
+            <MobileLeadCard
+              key={lead.id}
+              lead={lead}
+              stages={allStageConfigs}
+              onMoveStage={handleMoveStage}
+              sourceTags={sourceTags}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Desktop view ──
   return (
     <div className="min-w-0 overflow-hidden flex flex-col h-full">
       {/* Stats bar */}
