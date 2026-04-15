@@ -137,68 +137,124 @@ export default function CRMHome() {
                 />
               </div>
             </div>
-            <div className="border border-border rounded-lg overflow-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/40">
-                  <tr>
-                    <SortHeader field="name">Firma</SortHeader>
-                    <SortHeader field="contact_name">Ansprechpartner</SortHeader>
-                    <SortHeader field="stage">Stage</SortHeader>
-                    <SortHeader field="source">Quelle</SortHeader>
-                    <SortHeader field="deal_value">Deal-Wert</SortHeader>
-                    <SortHeader field="next_step">Nächster Schritt</SortHeader>
-                    <SortHeader field="last_activity_at">Letzte Aktivität</SortHeader>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filteredLeads.map(lead => {
-                    const sourceInfo = getSourceInfo(lead.source);
-                    return (
-                      <tr key={lead.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="px-3 py-2.5">
-                          <Link to={`/crm/lead/${lead.id}`} className="font-medium hover:text-primary transition-colors">
-                            {lead.name}
-                          </Link>
-                        </td>
-                        <td className="px-3 py-2.5 text-muted-foreground">{lead.contact_name || "—"}</td>
-                        <td className="px-3 py-2.5">
-                          <span
-                            className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ background: dynGetStageColor(stages, lead.stage) + "22", color: dynGetStageColor(stages, lead.stage) }}
-                          >
-                            {dynGetStageLabel(stages, lead.stage)}
+
+            {/* Mobile: Card layout */}
+            {isMobile ? (
+              <div className="space-y-2">
+                {filteredLeads.map(lead => {
+                  const sourceInfo = getSourceInfo(lead.source);
+                  const avatarUrl = lead.profile_image_url || (lead.instagram_handle ? `https://unavatar.io/instagram/${lead.instagram_handle.replace(/^@/, "")}` : null);
+                  return (
+                    <Link
+                      key={lead.id}
+                      to={`/crm/lead/${lead.id}`}
+                      className="block bg-card border border-border rounded-lg p-3 hover:border-primary/30 transition-colors"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <Avatar className="h-9 w-9 shrink-0">
+                          {avatarUrl ? <AvatarImage src={avatarUrl} alt={lead.name} /> : null}
+                          <AvatarFallback className="text-xs bg-muted">{lead.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-sm truncate">{lead.name}</p>
+                          {lead.contact_name && <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>}
+                        </div>
+                        {Number(lead.deal_value) > 0 && (
+                          <span className="text-xs font-semibold text-emerald-400 shrink-0">
+                            {Number(lead.deal_value).toLocaleString("de-DE")} €
                           </span>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          {sourceInfo ? (
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <span
+                          className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                          style={{ background: dynGetStageColor(stages, lead.stage) + "22", color: dynGetStageColor(stages, lead.stage) }}
+                        >
+                          {dynGetStageLabel(stages, lead.stage)}
+                        </span>
+                        {sourceInfo && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`} style={sourceInfo.style}>
+                            {sourceInfo.label}
+                          </span>
+                        )}
+                        {lead.last_activity_at && (
+                          <span className="text-[10px] text-muted-foreground/50 ml-auto">
+                            {formatDistanceToNow(new Date(lead.last_activity_at), { addSuffix: true, locale: de })}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+                {filteredLeads.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground text-sm">Keine Leads gefunden</div>
+                )}
+              </div>
+            ) : (
+              /* Desktop: Table layout */
+              <div className="border border-border rounded-lg overflow-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40">
+                    <tr>
+                      <SortHeader field="name">Firma</SortHeader>
+                      <SortHeader field="contact_name">Ansprechpartner</SortHeader>
+                      <SortHeader field="stage">Stage</SortHeader>
+                      <SortHeader field="source">Quelle</SortHeader>
+                      <SortHeader field="deal_value">Deal-Wert</SortHeader>
+                      <SortHeader field="next_step">Nächster Schritt</SortHeader>
+                      <SortHeader field="last_activity_at">Letzte Aktivität</SortHeader>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredLeads.map(lead => {
+                      const sourceInfo = getSourceInfo(lead.source);
+                      return (
+                        <tr key={lead.id} className="hover:bg-muted/20 transition-colors">
+                          <td className="px-3 py-2.5">
+                            <Link to={`/crm/lead/${lead.id}`} className="font-medium hover:text-primary transition-colors">
+                              {lead.name}
+                            </Link>
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground">{lead.contact_name || "—"}</td>
+                          <td className="px-3 py-2.5">
                             <span
-                              className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`}
-                              style={sourceInfo.style}
+                              className="text-xs px-2 py-0.5 rounded-full font-medium"
+                              style={{ background: dynGetStageColor(stages, lead.stage) + "22", color: dynGetStageColor(stages, lead.stage) }}
                             >
-                              {sourceInfo.label}
+                              {dynGetStageLabel(stages, lead.stage)}
                             </span>
-                          ) : "—"}
-                        </td>
-                        <td className="px-3 py-2.5">
-                          {Number(lead.deal_value) > 0 ? `${Number(lead.deal_value).toLocaleString("de-DE")} €` : "—"}
-                        </td>
-                        <td className="px-3 py-2.5 text-muted-foreground text-xs max-w-[200px] truncate">
-                          {lead.next_step || "—"}
-                        </td>
-                        <td className="px-3 py-2.5 text-muted-foreground text-xs">
-                          {lead.last_activity_at
-                            ? formatDistanceToNow(new Date(lead.last_activity_at), { addSuffix: true, locale: de })
-                            : "—"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {filteredLeads.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">Keine Leads gefunden</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {sourceInfo ? (
+                              <span
+                                className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`}
+                                style={sourceInfo.style}
+                              >
+                                {sourceInfo.label}
+                              </span>
+                            ) : "—"}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {Number(lead.deal_value) > 0 ? `${Number(lead.deal_value).toLocaleString("de-DE")} €` : "—"}
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs max-w-[200px] truncate">
+                            {lead.next_step || "—"}
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground text-xs">
+                            {lead.last_activity_at
+                              ? formatDistanceToNow(new Date(lead.last_activity_at), { addSuffix: true, locale: de })
+                              : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredLeads.length === 0 && (
+                      <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">Keine Leads gefunden</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="kampagnen">
