@@ -44,6 +44,7 @@ export default function CRMHome() {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
   const [sortAsc, setSortAsc] = useState(false);
+  const isMobile = useIsMobile();
 
   const fetchLeads = async () => {
     const { data } = await supabase
