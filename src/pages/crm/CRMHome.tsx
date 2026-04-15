@@ -13,6 +13,8 @@ import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 type Lead = {
   id: string;
