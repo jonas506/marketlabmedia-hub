@@ -324,7 +324,7 @@ export default function CRMLeadDetail() {
     navigate("/crm");
   };
 
-
+  const addCrmTask = async () => {
     if (!newTaskTitle.trim() || !id || !user) return;
     const { error } = await supabase.from("crm_tasks").insert({
       lead_id: id, title: newTaskTitle,
