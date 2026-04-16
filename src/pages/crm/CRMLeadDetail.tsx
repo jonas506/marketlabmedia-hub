@@ -305,7 +305,26 @@ export default function CRMLeadDetail() {
     toast.success("Eintrag gelöscht");
   };
 
-  const addCrmTask = async () => {
+  const deleteLead = async () => {
+    if (!id) return;
+    if (!confirm("Lead wirklich endgültig löschen? Alle zugehörigen Daten werden ebenfalls entfernt.")) return;
+    // Delete related data first
+    await Promise.all([
+      supabase.from("crm_activities").delete().eq("lead_id", id),
+      supabase.from("crm_contacts").delete().eq("lead_id", id),
+      supabase.from("crm_notes").delete().eq("lead_id", id),
+      supabase.from("crm_tasks").delete().eq("lead_id", id),
+      supabase.from("crm_files").delete().eq("lead_id", id),
+      supabase.from("crm_opportunities").delete().eq("lead_id", id),
+      supabase.from("crm_emails").delete().eq("lead_id", id),
+    ]);
+    const { error } = await supabase.from("crm_leads").delete().eq("id", id);
+    if (error) { toast.error("Fehler beim Löschen des Leads"); return; }
+    toast.success("Lead gelöscht");
+    navigate("/crm");
+  };
+
+
     if (!newTaskTitle.trim() || !id || !user) return;
     const { error } = await supabase.from("crm_tasks").insert({
       lead_id: id, title: newTaskTitle,
