@@ -90,6 +90,7 @@ interface CrmTask {
 
 export default function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: crmStages = [] } = useCrmStages();
   const [lead, setLead] = useState<LeadData | null>(null);
