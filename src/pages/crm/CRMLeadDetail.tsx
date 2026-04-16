@@ -661,6 +661,14 @@ export default function CRMLeadDetail() {
                   {t.label}
                 </Button>
               ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-destructive/60 hover:text-destructive hover:bg-destructive/10"
+                onClick={deleteLead}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
             </div>
           </div>
 
