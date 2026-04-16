@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,6 +90,7 @@ interface CrmTask {
 
 export default function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: crmStages = [] } = useCrmStages();
   const [lead, setLead] = useState<LeadData | null>(null);
@@ -302,6 +303,25 @@ export default function CRMLeadDetail() {
     if (error) { toast.error("Fehler beim Löschen"); return; }
     setActivities(prev => prev.filter(a => a.id !== activityId));
     toast.success("Eintrag gelöscht");
+  };
+
+  const deleteLead = async () => {
+    if (!id) return;
+    if (!confirm("Lead wirklich endgültig löschen? Alle zugehörigen Daten werden ebenfalls entfernt.")) return;
+    // Delete related data first
+    await Promise.all([
+      supabase.from("crm_activities").delete().eq("lead_id", id),
+      supabase.from("crm_contacts").delete().eq("lead_id", id),
+      supabase.from("crm_notes").delete().eq("lead_id", id),
+      supabase.from("crm_tasks").delete().eq("lead_id", id),
+      supabase.from("crm_files").delete().eq("lead_id", id),
+      supabase.from("crm_opportunities").delete().eq("lead_id", id),
+      supabase.from("crm_emails").delete().eq("lead_id", id),
+    ]);
+    const { error } = await supabase.from("crm_leads").delete().eq("id", id);
+    if (error) { toast.error("Fehler beim Löschen des Leads"); return; }
+    toast.success("Lead gelöscht");
+    navigate("/crm");
   };
 
   const addCrmTask = async () => {
@@ -641,6 +661,14 @@ export default function CRMLeadDetail() {
                   {t.label}
                 </Button>
               ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-destructive/60 hover:text-destructive hover:bg-destructive/10"
+                onClick={deleteLead}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
             </div>
           </div>
 
