@@ -68,7 +68,7 @@ export default function TimeTracking() {
             <TabsTrigger value="zeiten">Zeiten</TabsTrigger>
             <TabsTrigger value="urlaub">Urlaub</TabsTrigger>
             <TabsTrigger value="reisekosten">Reisekosten</TabsTrigger>
-            <TabsTrigger value="kpis">KPIs</TabsTrigger>
+            <TabsTrigger value="kpis">Ziele</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zeiten" className="space-y-6 mt-4">
