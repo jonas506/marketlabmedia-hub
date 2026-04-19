@@ -255,75 +255,107 @@ function KpiCard({
   weekStart: Date;
   onSave: (kpi: KpiDef, dateStr: string, value: number, note?: string) => Promise<void>;
 }) {
+  if (kpi.cadence === "weekly") {
+    return <WeeklyCard kpi={kpi} entries={entries} weekStart={weekStart} onSave={onSave} />;
+  }
+  return <DailyCard kpi={kpi} entries={entries} weekStart={weekStart} onSave={onSave} />;
+}
+
+function WeeklyCard({
+  kpi,
+  entries,
+  weekStart,
+  onSave,
+}: {
+  kpi: KpiDef;
+  entries: KpiEntry[];
+  weekStart: Date;
+  onSave: (kpi: KpiDef, dateStr: string, value: number, note?: string) => Promise<void>;
+}) {
   const myEntries = entries.filter(e => e.kpi_id === kpi.id);
   const total = myEntries.reduce((s, e) => s + Number(e.value), 0);
   const pct = Math.min(100, Math.round((total / kpi.target_value) * 100));
   const reached = total >= kpi.target_value;
+  const weekStr = format(weekStart, "yyyy-MM-dd");
+  const existing = myEntries.find(e => e.date === weekStr);
+  const [val, setVal] = useState<string>(existing ? String(existing.value) : "");
+  const [note, setNote] = useState<string>(existing?.note ?? "");
 
-  // For weekly: single input for the week (date = weekStart)
-  // For daily: input per day
-  if (kpi.cadence === "weekly") {
-    const weekStr = format(weekStart, "yyyy-MM-dd");
-    const existing = myEntries.find(e => e.date === weekStr);
-    const [val, setVal] = useState<string>(existing ? String(existing.value) : "");
-    const [note, setNote] = useState<string>(existing?.note ?? "");
+  useMemo(() => {
+    setVal(existing ? String(existing.value) : "");
+    setNote(existing?.note ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existing?.id, weekStr]);
 
-    return (
-      <div className="rounded-xl border bg-card p-4 space-y-3 transition-shadow hover:shadow-sm">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-2xl">{kpi.emoji}</span>
-            <div className="min-w-0">
-              <div className="font-semibold truncate">{kpi.name}</div>
-              <div className="text-xs text-muted-foreground">Ziel: {kpi.target_value}{kpi.unit ? ` ${kpi.unit}` : ""} / Woche</div>
-            </div>
+  return (
+    <div className="rounded-xl border bg-card p-4 space-y-3 transition-shadow hover:shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-2xl">{kpi.emoji}</span>
+          <div className="min-w-0">
+            <div className="font-semibold truncate">{kpi.name}</div>
+            <div className="text-xs text-muted-foreground">Ziel: {kpi.target_value}{kpi.unit ? ` ${kpi.unit}` : ""} / Woche</div>
           </div>
-          {reached && <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">✓</Badge>}
         </div>
-
-        <div className="space-y-2">
-          <div className="flex items-baseline justify-between text-sm">
-            <span className={cn("font-bold tabular-nums", reached ? "text-emerald-600 dark:text-emerald-400" : "text-foreground")}>
-              {total}
-            </span>
-            <span className="text-xs text-muted-foreground">{pct}%</span>
-          </div>
-          <Progress value={pct} className="h-2" />
-        </div>
-
-        <div className="flex gap-2">
-          <Input
-            type="number"
-            inputMode="decimal"
-            placeholder="Wert"
-            value={val}
-            onChange={(e) => setVal(e.target.value)}
-            className="h-9"
-          />
-          <Button
-            size="sm"
-            onClick={async () => {
-              const n = parseFloat(val);
-              if (isNaN(n) || n < 0) { toast.error("Ungültiger Wert"); return; }
-              await onSave(kpi, weekStr, n, note);
-              toast.success("Gespeichert");
-            }}
-          >
-            Speichern
-          </Button>
-        </div>
-        <Textarea
-          placeholder="Notiz (optional)"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          rows={2}
-          className="text-xs resize-none"
-        />
+        {reached && <Badge variant="secondary" className="shrink-0">✓</Badge>}
       </div>
-    );
-  }
 
-  // Daily KPI: 7 inputs
+      <div className="space-y-2">
+        <div className="flex items-baseline justify-between text-sm">
+          <span className={cn("font-bold tabular-nums", reached && "text-primary")}>{total}</span>
+          <span className="text-xs text-muted-foreground">{pct}%</span>
+        </div>
+        <Progress value={pct} className="h-2" />
+      </div>
+
+      <div className="flex gap-2">
+        <Input
+          type="number"
+          inputMode="decimal"
+          placeholder="Wert"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          className="h-9"
+        />
+        <Button
+          size="sm"
+          onClick={async () => {
+            const n = parseFloat(val);
+            if (isNaN(n) || n < 0) { toast.error("Ungültiger Wert"); return; }
+            await onSave(kpi, weekStr, n, note);
+            toast.success("Gespeichert");
+          }}
+        >
+          Speichern
+        </Button>
+      </div>
+      <Textarea
+        placeholder="Notiz (optional)"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        rows={2}
+        className="text-xs resize-none"
+      />
+    </div>
+  );
+}
+
+function DailyCard({
+  kpi,
+  entries,
+  weekStart,
+  onSave,
+}: {
+  kpi: KpiDef;
+  entries: KpiEntry[];
+  weekStart: Date;
+  onSave: (kpi: KpiDef, dateStr: string, value: number, note?: string) => Promise<void>;
+}) {
+  const myEntries = entries.filter(e => e.kpi_id === kpi.id);
+  const total = myEntries.reduce((s, e) => s + Number(e.value), 0);
+  const weekTarget = kpi.target_value * 7;
+  const pct = Math.min(100, Math.round((total / weekTarget) * 100));
+
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
     d.setDate(d.getDate() + i);
@@ -342,11 +374,11 @@ function KpiCard({
         </div>
         <div className="text-right shrink-0">
           <div className="text-xs text-muted-foreground">Woche gesamt</div>
-          <div className="font-bold tabular-nums">{total} / {(kpi.target_value * 7).toFixed(0)}</div>
+          <div className="font-bold tabular-nums">{total} / {weekTarget.toFixed(0)}</div>
         </div>
       </div>
 
-      <Progress value={Math.min(100, Math.round((total / (kpi.target_value * 7)) * 100))} className="h-2" />
+      <Progress value={pct} className="h-2" />
 
       <div className="grid grid-cols-7 gap-2">
         {days.map((d) => {
