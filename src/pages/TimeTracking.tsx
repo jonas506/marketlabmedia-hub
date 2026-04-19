@@ -11,6 +11,7 @@ import WeeklyView from "@/components/time-tracking/WeeklyView";
 import MonthlyStats from "@/components/time-tracking/MonthlyStats";
 import VacationTab from "@/components/time-tracking/VacationTab";
 import TravelExpensesTab from "@/components/time-tracking/TravelExpensesTab";
+import KPITab from "@/components/time-tracking/KPITab";
 
 export default function TimeTracking() {
   const { user, role } = useAuth();
@@ -67,6 +68,7 @@ export default function TimeTracking() {
             <TabsTrigger value="zeiten">Zeiten</TabsTrigger>
             <TabsTrigger value="urlaub">Urlaub</TabsTrigger>
             <TabsTrigger value="reisekosten">Reisekosten</TabsTrigger>
+            <TabsTrigger value="kpis">KPIs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zeiten" className="space-y-6 mt-4">
@@ -105,6 +107,10 @@ export default function TimeTracking() {
 
           <TabsContent value="reisekosten" className="mt-4">
             <TravelExpensesTab isAdmin={isAdmin} profiles={profiles} memberFilter={memberFilter} />
+          </TabsContent>
+
+          <TabsContent value="kpis" className="mt-4">
+            <KPITab profiles={profiles} />
           </TabsContent>
         </Tabs>
       </div>
