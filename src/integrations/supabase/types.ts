@@ -1800,6 +1800,86 @@ export type Database = {
           },
         ]
       }
+      kpi_definitions: {
+        Row: {
+          cadence: string
+          created_at: string
+          created_by: string
+          emoji: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          target_value: number
+          unit: string | null
+          user_id: string
+        }
+        Insert: {
+          cadence?: string
+          created_at?: string
+          created_by: string
+          emoji?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          target_value: number
+          unit?: string | null
+          user_id: string
+        }
+        Update: {
+          cadence?: string
+          created_at?: string
+          created_by?: string
+          emoji?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          target_value?: number
+          unit?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      kpi_entries: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          kpi_id: string
+          note: string | null
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          kpi_id: string
+          note?: string | null
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          kpi_id?: string
+          note?: string | null
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_entries_kpi_id_fkey"
+            columns: ["kpi_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_page_templates: {
         Row: {
           category: string | null
