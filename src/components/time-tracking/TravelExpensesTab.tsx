@@ -441,6 +441,16 @@ export default function TravelExpensesTab({ isAdmin, profiles, memberFilter }: P
           </div>
         </Card>
       )}
+
+      <Separator className="my-4" />
+
+      <ExpenseReimbursementsSection
+        isAdmin={isAdmin}
+        profiles={profiles}
+        memberFilter={memberFilter}
+        month={month}
+        year={year}
+      />
     </div>
   );
 }
