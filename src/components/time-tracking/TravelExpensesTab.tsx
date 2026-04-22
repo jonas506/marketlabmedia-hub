@@ -21,6 +21,8 @@ import {
   TRANSPORT_LABELS,
 } from "@/lib/travel-expense-utils";
 import { generateTravelExpensePdf } from "@/lib/generate-travel-expense-pdf";
+import ExpenseReimbursementsSection from "./ExpenseReimbursementsSection";
+import { Separator } from "@/components/ui/separator";
 
 interface Props {
   isAdmin: boolean;
