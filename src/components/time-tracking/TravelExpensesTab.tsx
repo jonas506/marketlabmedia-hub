@@ -21,6 +21,8 @@ import {
   TRANSPORT_LABELS,
 } from "@/lib/travel-expense-utils";
 import { generateTravelExpensePdf } from "@/lib/generate-travel-expense-pdf";
+import ExpenseReimbursementsSection from "./ExpenseReimbursementsSection";
+import { Separator } from "@/components/ui/separator";
 
 interface Props {
   isAdmin: boolean;
@@ -439,6 +441,16 @@ export default function TravelExpensesTab({ isAdmin, profiles, memberFilter }: P
           </div>
         </Card>
       )}
+
+      <Separator className="my-4" />
+
+      <ExpenseReimbursementsSection
+        isAdmin={isAdmin}
+        profiles={profiles}
+        memberFilter={memberFilter}
+        month={month}
+        year={year}
+      />
     </div>
   );
 }

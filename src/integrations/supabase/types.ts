@@ -1765,6 +1765,63 @@ export type Database = {
         }
         Relationships: []
       }
+      expense_reimbursements: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          category: string
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+          month: number
+          note: string | null
+          receipt_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          vendor: string | null
+          year: number
+        }
+        Insert: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          created_at?: string
+          description: string
+          expense_date: string
+          id?: string
+          month: number
+          note?: string | null
+          receipt_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          vendor?: string | null
+          year: number
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          month?: number
+          note?: string | null
+          receipt_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          vendor?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       follower_snapshots: {
         Row: {
           client_id: string
