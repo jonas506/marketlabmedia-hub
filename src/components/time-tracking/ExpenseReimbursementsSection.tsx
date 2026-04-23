@@ -280,6 +280,55 @@ export default function ExpenseReimbursementsSection({ isAdmin, profiles, member
         </Button>
       </Card>
 
+      {/* Admin Overview */}
+      {isAdmin && overview && items.length > 0 && (
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Übersicht — Auslagen pro Mitarbeiter</h3>
+            <span className="text-xs text-muted-foreground">{items.length} Einträge</span>
+          </div>
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Mitarbeiter</TableHead>
+                  <TableHead className="text-xs text-right">Anzahl</TableHead>
+                  <TableHead className="text-xs text-right">Entwurf</TableHead>
+                  <TableHead className="text-xs text-right">Eingereicht</TableHead>
+                  <TableHead className="text-xs text-right">Genehmigt</TableHead>
+                  <TableHead className="text-xs text-right">Gesamt</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(overview.perUser)
+                  .sort((a, b) => b[1].total - a[1].total)
+                  .map(([uid, v]) => (
+                    <TableRow key={uid}>
+                      <TableCell className="text-xs font-medium">{profileMap[uid] || "—"}</TableCell>
+                      <TableCell className="text-xs text-right">{v.count}</TableCell>
+                      <TableCell className="text-xs text-right text-muted-foreground">{fmt(v.draft)}</TableCell>
+                      <TableCell className="text-xs text-right text-yellow-700">{fmt(v.submitted)}</TableCell>
+                      <TableCell className="text-xs text-right text-green-700">{fmt(v.approved)}</TableCell>
+                      <TableCell className="text-xs text-right font-bold">{fmt(v.total)}</TableCell>
+                    </TableRow>
+                  ))}
+                <TableRow className="bg-muted/50">
+                  <TableCell className="text-xs font-bold">Σ Alle</TableCell>
+                  <TableCell className="text-xs text-right font-bold">{items.length}</TableCell>
+                  <TableCell className="text-xs text-right font-semibold">{fmt(overview.totals.draft)}</TableCell>
+                  <TableCell className="text-xs text-right font-semibold text-yellow-700">{fmt(overview.totals.submitted)}</TableCell>
+                  <TableCell className="text-xs text-right font-semibold text-green-700">{fmt(overview.totals.approved)}</TableCell>
+                  <TableCell className="text-xs text-right font-bold text-base">{fmt(overview.totals.total)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Tipp: Nutze den Mitarbeiter-Filter oben, um die Detailliste auf eine Person einzugrenzen.
+          </p>
+        </Card>
+      )}
+
       {/* List */}
       {isLoading ? (
         <p className="text-sm text-muted-foreground text-center py-6">Laden…</p>
