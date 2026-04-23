@@ -170,6 +170,30 @@ export default function ExpenseReimbursementsSection({ isAdmin, profiles, member
 
   const total = useMemo(() => items.reduce((s: number, i: any) => s + Number(i.amount), 0), [items]);
 
+  // Admin overview: Summen pro Mitarbeiter & Status
+  const overview = useMemo(() => {
+    if (!isAdmin) return null;
+    const perUser: Record<string, { total: number; draft: number; submitted: number; approved: number; count: number }> = {};
+    items.forEach((i: any) => {
+      const uid = i.user_id;
+      if (!perUser[uid]) perUser[uid] = { total: 0, draft: 0, submitted: 0, approved: 0, count: 0 };
+      const amt = Number(i.amount);
+      perUser[uid].total += amt;
+      perUser[uid].count++;
+      if (i.status === "draft") perUser[uid].draft += amt;
+      else if (i.status === "submitted") perUser[uid].submitted += amt;
+      else if (i.status === "approved") perUser[uid].approved += amt;
+    });
+    const totals = { draft: 0, submitted: 0, approved: 0, total: 0 };
+    Object.values(perUser).forEach(v => {
+      totals.draft += v.draft;
+      totals.submitted += v.submitted;
+      totals.approved += v.approved;
+      totals.total += v.total;
+    });
+    return { perUser, totals };
+  }, [items, isAdmin]);
+
   const fmt = (n: number) => n.toFixed(2).replace(".", ",") + " €";
   const fmtDate = (d: string) => new Date(d + "T00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" });
 
@@ -255,6 +279,55 @@ export default function ExpenseReimbursementsSection({ isAdmin, profiles, member
           {addMutation.isPending ? "Speichern…" : "Auslage erfassen"}
         </Button>
       </Card>
+
+      {/* Admin Overview */}
+      {isAdmin && overview && items.length > 0 && (
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Übersicht — Auslagen pro Mitarbeiter</h3>
+            <span className="text-xs text-muted-foreground">{items.length} Einträge</span>
+          </div>
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Mitarbeiter</TableHead>
+                  <TableHead className="text-xs text-right">Anzahl</TableHead>
+                  <TableHead className="text-xs text-right">Entwurf</TableHead>
+                  <TableHead className="text-xs text-right">Eingereicht</TableHead>
+                  <TableHead className="text-xs text-right">Genehmigt</TableHead>
+                  <TableHead className="text-xs text-right">Gesamt</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(overview.perUser)
+                  .sort((a, b) => b[1].total - a[1].total)
+                  .map(([uid, v]) => (
+                    <TableRow key={uid}>
+                      <TableCell className="text-xs font-medium">{profileMap[uid] || "—"}</TableCell>
+                      <TableCell className="text-xs text-right">{v.count}</TableCell>
+                      <TableCell className="text-xs text-right text-muted-foreground">{fmt(v.draft)}</TableCell>
+                      <TableCell className="text-xs text-right text-yellow-700">{fmt(v.submitted)}</TableCell>
+                      <TableCell className="text-xs text-right text-green-700">{fmt(v.approved)}</TableCell>
+                      <TableCell className="text-xs text-right font-bold">{fmt(v.total)}</TableCell>
+                    </TableRow>
+                  ))}
+                <TableRow className="bg-muted/50">
+                  <TableCell className="text-xs font-bold">Σ Alle</TableCell>
+                  <TableCell className="text-xs text-right font-bold">{items.length}</TableCell>
+                  <TableCell className="text-xs text-right font-semibold">{fmt(overview.totals.draft)}</TableCell>
+                  <TableCell className="text-xs text-right font-semibold text-yellow-700">{fmt(overview.totals.submitted)}</TableCell>
+                  <TableCell className="text-xs text-right font-semibold text-green-700">{fmt(overview.totals.approved)}</TableCell>
+                  <TableCell className="text-xs text-right font-bold text-base">{fmt(overview.totals.total)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Tipp: Nutze den Mitarbeiter-Filter oben, um die Detailliste auf eine Person einzugrenzen.
+          </p>
+        </Card>
+      )}
 
       {/* List */}
       {isLoading ? (
