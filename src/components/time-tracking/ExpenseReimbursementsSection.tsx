@@ -170,6 +170,30 @@ export default function ExpenseReimbursementsSection({ isAdmin, profiles, member
 
   const total = useMemo(() => items.reduce((s: number, i: any) => s + Number(i.amount), 0), [items]);
 
+  // Admin overview: Summen pro Mitarbeiter & Status
+  const overview = useMemo(() => {
+    if (!isAdmin) return null;
+    const perUser: Record<string, { total: number; draft: number; submitted: number; approved: number; count: number }> = {};
+    items.forEach((i: any) => {
+      const uid = i.user_id;
+      if (!perUser[uid]) perUser[uid] = { total: 0, draft: 0, submitted: 0, approved: 0, count: 0 };
+      const amt = Number(i.amount);
+      perUser[uid].total += amt;
+      perUser[uid].count++;
+      if (i.status === "draft") perUser[uid].draft += amt;
+      else if (i.status === "submitted") perUser[uid].submitted += amt;
+      else if (i.status === "approved") perUser[uid].approved += amt;
+    });
+    const totals = { draft: 0, submitted: 0, approved: 0, total: 0 };
+    Object.values(perUser).forEach(v => {
+      totals.draft += v.draft;
+      totals.submitted += v.submitted;
+      totals.approved += v.approved;
+      totals.total += v.total;
+    });
+    return { perUser, totals };
+  }, [items, isAdmin]);
+
   const fmt = (n: number) => n.toFixed(2).replace(".", ",") + " €";
   const fmtDate = (d: string) => new Date(d + "T00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" });
 
