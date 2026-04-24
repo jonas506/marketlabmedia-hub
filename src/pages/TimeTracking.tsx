@@ -11,7 +11,6 @@ import WeeklyView from "@/components/time-tracking/WeeklyView";
 import MonthlyStats from "@/components/time-tracking/MonthlyStats";
 import VacationTab from "@/components/time-tracking/VacationTab";
 import TravelExpensesTab from "@/components/time-tracking/TravelExpensesTab";
-import KPITab from "@/components/time-tracking/KPITab";
 
 export default function TimeTracking() {
   const { user, role } = useAuth();
