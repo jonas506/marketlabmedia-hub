@@ -106,10 +106,6 @@ export default function TimeTracking() {
           <TabsContent value="reisekosten" className="mt-4">
             <TravelExpensesTab isAdmin={isAdmin} profiles={profiles} memberFilter={memberFilter} />
           </TabsContent>
-
-          <TabsContent value="kpis" className="mt-4">
-            <KPITab profiles={profiles} />
-          </TabsContent>
         </Tabs>
       </div>
     </AppLayout>
