@@ -297,7 +297,7 @@ export default function VacationTab() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d || undefined); if (!endDate && d) setEndDate(d); setStartCalOpen(false); }} locale={de} />
+                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d || undefined); if (!endDate && d) setEndDate(d); setStartCalOpen(false); }} locale={de} disabled={(date) => isWeekend(date)} />
                 </PopoverContent>
               </Popover>
             </div>
