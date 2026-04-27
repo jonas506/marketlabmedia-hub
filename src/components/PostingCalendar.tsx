@@ -497,7 +497,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[320px] shrink-0 rounded-lg border border-border bg-card overflow-hidden self-start sticky top-6"
+            className="w-full shrink-0 rounded-lg border border-border bg-card overflow-hidden self-start sm:sticky sm:top-6 sm:w-[320px]"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2 min-w-0">
@@ -510,11 +510,11 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setSelectedPiece(null)}>
+              <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 sm:h-7 sm:w-7 sm:min-h-7" onClick={() => setSelectedPiece(null)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto sm:max-h-[calc(100vh-200px)]">
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded-md bg-muted/30 px-3 py-2">
                   <p className="text-muted-foreground text-[10px]">Datum</p>
