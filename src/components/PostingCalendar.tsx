@@ -209,23 +209,23 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
     : [];
 
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="rounded-lg border border-border bg-card overflow-hidden flex-1 min-w-0"
       >
         {/* Header */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <div className="flex flex-wrap items-center gap-2 px-3 py-3 sm:px-4 border-b border-border">
           <CalendarIcon className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold">Posting-Kalender</h2>
 
           {/* View toggle */}
-          <div className="flex items-center ml-3 rounded-md border border-border overflow-hidden">
+          <div className="order-3 flex w-full items-center rounded-md border border-border overflow-hidden sm:order-none sm:ml-3 sm:w-auto">
             <button
               onClick={() => setViewMode("calendar")}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 text-[10px] transition-colors",
+                "flex min-h-[44px] flex-1 items-center justify-center gap-1 px-3 py-2 text-xs transition-colors sm:min-h-0 sm:flex-none sm:px-2 sm:py-1 sm:text-[10px]",
                 viewMode === "calendar"
                   ? "bg-primary/15 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -237,7 +237,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
             <button
               onClick={() => setViewMode("timeline")}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 text-[10px] border-l border-border transition-colors",
+                "flex min-h-[44px] flex-1 items-center justify-center gap-1 px-3 py-2 text-xs border-l border-border transition-colors sm:min-h-0 sm:flex-none sm:px-2 sm:py-1 sm:text-[10px]",
                 viewMode === "timeline"
                   ? "bg-primary/15 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -264,16 +264,16 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
           )}
 
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setWeekOffset((w) => w - 4)}>
+            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 sm:min-h-7" onClick={() => setWeekOffset((w) => w - 4)}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <button
               onClick={() => setWeekOffset(0)}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50"
+              className="min-h-[44px] text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50 sm:min-h-0"
             >
               {weekOffset === 0 ? "Heute" : currentMonth}
             </button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setWeekOffset((w) => w + 4)}>
+            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 sm:min-h-7" onClick={() => setWeekOffset((w) => w + 4)}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
