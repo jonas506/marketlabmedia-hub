@@ -289,11 +289,11 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
           <>
             {/* Client filter chips (calendar view) */}
             {viewMode === "calendar" && clientStats.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 px-4 py-2.5 border-b border-border">
+              <div className="flex gap-2 overflow-x-auto px-3 py-2.5 sm:flex-wrap sm:px-4 border-b border-border">
                 <button
                   onClick={() => setActiveClientFilter(null)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1 transition-all border",
+                    "inline-flex min-h-[36px] shrink-0 items-center gap-1.5 text-xs sm:text-[11px] rounded-full px-3 sm:px-2.5 py-1 transition-all border",
                     !activeClientFilter
                       ? "bg-primary/15 border-primary/30 text-primary font-medium"
                       : "bg-muted/30 border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -309,7 +309,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                       key={c.client_id}
                       onClick={() => setActiveClientFilter(isActive ? null : c.client_id)}
                       className={cn(
-                        "inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1 transition-all border",
+                        "inline-flex min-h-[36px] shrink-0 items-center gap-1.5 text-xs sm:text-[11px] rounded-full px-3 sm:px-2.5 py-1 transition-all border",
                         isActive
                           ? `${color.bg} ${color.border} ${color.text} font-medium`
                           : "bg-muted/30 border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -326,8 +326,8 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
 
             {/* ===== CALENDAR VIEW ===== */}
             {viewMode === "calendar" && (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[600px]">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse min-w-[720px] sm:min-w-[600px]">
                   <thead>
                     <tr>
                       {weekdayHeaders.map((d) => (
@@ -366,7 +366,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                                       key={piece.id}
                                       onClick={() => setSelectedPiece(isSelected ? null : piece)}
                                       className={cn(
-                                        "flex items-center gap-1 w-full text-[10px] rounded px-1.5 py-0.5 truncate transition-all border text-left",
+                                        "flex min-h-[30px] items-center gap-1 w-full text-[10px] rounded px-1.5 py-1 truncate transition-all border text-left sm:min-h-0 sm:py-0.5",
                                         color.bg, color.border, color.text,
                                         isSelected && "ring-1 ring-primary scale-[1.02]",
                                         "hover:brightness-125"
