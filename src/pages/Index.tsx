@@ -27,10 +27,10 @@ const Dashboard = () => {
 
   const clientGrid = (compact = false) => (
     <>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold">Kunden</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h2 className="text-lg sm:text-base font-semibold">Kunden</h2>
+          <p className="text-sm sm:text-xs text-muted-foreground mt-0.5">
             {compact ? "Deine Kunden im Überblick" : "Sortiert nach Content-Runway — dringendste Kunden zuerst"}
           </p>
         </div>
@@ -66,10 +66,12 @@ const Dashboard = () => {
   return (
     <AppLayout>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-        <Greeting name={profile?.name} />
+        <div className="mb-4 sm:mb-0">
+          <Greeting name={profile?.name} />
+        </div>
 
         {role === "admin" && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
             <ErrorBoundary level="widget"><ContractRunwayWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
@@ -82,7 +84,7 @@ const Dashboard = () => {
         )}
 
         {role === "head_of_content" && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
             <ErrorBoundary level="widget"><ReviewQueue /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
@@ -94,7 +96,7 @@ const Dashboard = () => {
         )}
 
         {role === "cutter" && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <ErrorBoundary level="section"><CutterFocusBoard /></ErrorBoundary>
             <ErrorBoundary level="section"><PostingCalendar filterUserId={user?.id} /></ErrorBoundary>
             {clientGrid(true)}
@@ -103,7 +105,7 @@ const Dashboard = () => {
 
         {/* Fallback for unknown roles */}
         {!role && !isCutter && role !== "admin" && role !== "head_of_content" && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {clientGrid()}
             <PostingCalendar />
           </div>
