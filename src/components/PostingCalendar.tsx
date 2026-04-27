@@ -209,23 +209,23 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
     : [];
 
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="rounded-lg border border-border bg-card overflow-hidden flex-1 min-w-0"
       >
         {/* Header */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <div className="flex flex-wrap items-center gap-2 px-3 py-3 sm:px-4 border-b border-border">
           <CalendarIcon className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold">Posting-Kalender</h2>
 
           {/* View toggle */}
-          <div className="flex items-center ml-3 rounded-md border border-border overflow-hidden">
+          <div className="order-3 flex w-full items-center rounded-md border border-border overflow-hidden sm:order-none sm:ml-3 sm:w-auto">
             <button
               onClick={() => setViewMode("calendar")}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 text-[10px] transition-colors",
+                "flex min-h-[44px] flex-1 items-center justify-center gap-1 px-3 py-2 text-xs transition-colors sm:min-h-0 sm:flex-none sm:px-2 sm:py-1 sm:text-[10px]",
                 viewMode === "calendar"
                   ? "bg-primary/15 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -237,7 +237,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
             <button
               onClick={() => setViewMode("timeline")}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 text-[10px] border-l border-border transition-colors",
+                "flex min-h-[44px] flex-1 items-center justify-center gap-1 px-3 py-2 text-xs border-l border-border transition-colors sm:min-h-0 sm:flex-none sm:px-2 sm:py-1 sm:text-[10px]",
                 viewMode === "timeline"
                   ? "bg-primary/15 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
@@ -264,16 +264,16 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
           )}
 
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setWeekOffset((w) => w - 4)}>
+            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 sm:min-h-7" onClick={() => setWeekOffset((w) => w - 4)}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <button
               onClick={() => setWeekOffset(0)}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50"
+              className="min-h-[44px] text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50 sm:min-h-0"
             >
               {weekOffset === 0 ? "Heute" : currentMonth}
             </button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setWeekOffset((w) => w + 4)}>
+            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-7 sm:w-7 sm:min-h-7" onClick={() => setWeekOffset((w) => w + 4)}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -289,11 +289,11 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
           <>
             {/* Client filter chips (calendar view) */}
             {viewMode === "calendar" && clientStats.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 px-4 py-2.5 border-b border-border">
+              <div className="flex gap-2 overflow-x-auto px-3 py-2.5 sm:flex-wrap sm:px-4 border-b border-border">
                 <button
                   onClick={() => setActiveClientFilter(null)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1 transition-all border",
+                    "inline-flex min-h-[36px] shrink-0 items-center gap-1.5 text-xs sm:text-[11px] rounded-full px-3 sm:px-2.5 py-1 transition-all border",
                     !activeClientFilter
                       ? "bg-primary/15 border-primary/30 text-primary font-medium"
                       : "bg-muted/30 border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -309,7 +309,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                       key={c.client_id}
                       onClick={() => setActiveClientFilter(isActive ? null : c.client_id)}
                       className={cn(
-                        "inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1 transition-all border",
+                        "inline-flex min-h-[36px] shrink-0 items-center gap-1.5 text-xs sm:text-[11px] rounded-full px-3 sm:px-2.5 py-1 transition-all border",
                         isActive
                           ? `${color.bg} ${color.border} ${color.text} font-medium`
                           : "bg-muted/30 border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -326,8 +326,8 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
 
             {/* ===== CALENDAR VIEW ===== */}
             {viewMode === "calendar" && (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[600px]">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse min-w-[720px] sm:min-w-[600px]">
                   <thead>
                     <tr>
                       {weekdayHeaders.map((d) => (
@@ -366,7 +366,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                                       key={piece.id}
                                       onClick={() => setSelectedPiece(isSelected ? null : piece)}
                                       className={cn(
-                                        "flex items-center gap-1 w-full text-[10px] rounded px-1.5 py-0.5 truncate transition-all border text-left",
+                                        "flex min-h-[30px] items-center gap-1 w-full text-[10px] rounded px-1.5 py-1 truncate transition-all border text-left sm:min-h-0 sm:py-0.5",
                                         color.bg, color.border, color.text,
                                         isSelected && "ring-1 ring-primary scale-[1.02]",
                                         "hover:brightness-125"
@@ -497,7 +497,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.2 }}
-            className="w-[320px] shrink-0 rounded-lg border border-border bg-card overflow-hidden self-start sticky top-6"
+            className="w-full shrink-0 rounded-lg border border-border bg-card overflow-hidden self-start sm:sticky sm:top-6 sm:w-[320px]"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2 min-w-0">
@@ -510,11 +510,11 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setSelectedPiece(null)}>
+              <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 sm:h-7 sm:w-7 sm:min-h-7" onClick={() => setSelectedPiece(null)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto sm:max-h-[calc(100vh-200px)]">
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded-md bg-muted/30 px-3 py-2">
                   <p className="text-muted-foreground text-[10px]">Datum</p>

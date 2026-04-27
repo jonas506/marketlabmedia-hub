@@ -88,14 +88,14 @@ const QuickAddTask = () => {
       {/* FAB */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
+        className="fixed bottom-5 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl sm:bottom-6 sm:right-6 sm:h-12 sm:w-12"
         title="Neue Aufgabe (Cmd+Shift+T)"
       >
         <Plus className="h-5 w-5" />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100vw-24px)] rounded-lg sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-display text-lg">Neue Aufgabe</DialogTitle>
           </DialogHeader>
@@ -108,9 +108,9 @@ const QuickAddTask = () => {
               autoFocus
               onKeyDown={e => { if (e.key === "Enter" && title.trim()) handleSave(); }}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Select value={clientId} onValueChange={setClientId}>
-                <SelectTrigger className="text-xs">
+                <SelectTrigger className="min-h-[44px] text-xs">
                   <SelectValue placeholder="Kunde…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -120,7 +120,7 @@ const QuickAddTask = () => {
                 </SelectContent>
               </Select>
               <Select value={assignedTo} onValueChange={setAssignedTo}>
-                <SelectTrigger className="text-xs">
+                <SelectTrigger className="min-h-[44px] text-xs">
                   <SelectValue placeholder="Zuweisen…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -130,10 +130,10 @@ const QuickAddTask = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="text-xs justify-start gap-2 h-9">
+                  <Button variant="outline" className="h-11 justify-start gap-2 text-xs sm:h-9 sm:min-h-9">
                     <CalendarIcon className="h-3 w-3" />
                     {deadline ? format(deadline, "dd. MMM", { locale: de }) : "Deadline"}
                   </Button>
@@ -143,7 +143,7 @@ const QuickAddTask = () => {
                 </PopoverContent>
               </Popover>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="text-xs h-9">
+                <SelectTrigger className="h-11 min-h-[44px] text-xs sm:h-9 sm:min-h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,9 +155,9 @@ const QuickAddTask = () => {
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)} className="font-mono text-xs">Abbrechen</Button>
-            <Button onClick={handleSave} disabled={!title.trim() || saving} className="font-mono text-xs">
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setOpen(false)} className="w-full font-mono text-xs sm:w-auto">Abbrechen</Button>
+            <Button onClick={handleSave} disabled={!title.trim() || saving} className="w-full font-mono text-xs sm:w-auto">
               {saving ? "Erstelle…" : "Erstellen"}
             </Button>
           </DialogFooter>

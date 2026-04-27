@@ -55,25 +55,25 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, compact = false }) => {
       )}
 
       <Link to={`/client/${client.id}`} className="block">
-        <div className="p-4">
+        <div className="p-4 sm:p-4">
           {/* Header */}
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-start gap-3 mb-4">
             {client.logo_url ? (
-              <img src={client.logo_url} alt={client.name} className="h-9 w-9 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
+              <img src={client.logo_url} alt={client.name} className="h-11 w-11 sm:h-9 sm:w-9 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">
+              <div className="flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">
                 {client.name.charAt(0)}
               </div>
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold truncate">{client.name}</h3>
+                <h3 className="text-base sm:text-sm font-semibold truncate pr-8 sm:pr-0">{client.name}</h3>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-primary transition-all shrink-0" />
               </div>
               {(() => {
                 const lc = lifecycleConfig[client.lifecyclePhase];
                 return (
-                  <span className={`inline-flex items-center gap-1 text-[10px] py-0.5 px-2 rounded-full border font-semibold ${lc.className}`}>
+                  <span className={`inline-flex min-h-6 items-center gap-1 text-[11px] sm:text-[10px] py-0.5 px-2 rounded-full border font-semibold ${lc.className}`}>
                     {lc.icon}
                     {lc.label}
                   </span>
@@ -92,13 +92,13 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, compact = false }) => {
           )}
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-border/50">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-border/50">
             <div className="flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-              <span className="text-[11px] text-muted-foreground">{client.pipelineCounts.inPipeline} in Pipeline</span>
+              <span className="text-xs sm:text-[11px] text-muted-foreground">{client.pipelineCounts.inPipeline} in Pipeline</span>
             </div>
             {client.nextShootDay && (
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1 text-xs sm:text-[11px] text-muted-foreground">
                 <Calendar className="h-3 w-3" />
                 {format(new Date(client.nextShootDay), "dd. MMM", { locale: de })}
               </span>
