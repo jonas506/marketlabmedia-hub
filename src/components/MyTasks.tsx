@@ -249,7 +249,7 @@ const MyTasks = () => {
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-surface-elevated border-b border-border">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 bg-surface-elevated border-b border-border">
         <div className="w-1 h-5 rounded-full bg-secondary" />
         <h3 className="font-display text-sm font-semibold">Meine Aufgaben</h3>
         <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{totalCount}</span>
@@ -258,7 +258,7 @@ const MyTasks = () => {
             {dedupedReviewCount} zur Freigabe
           </span>
         )}
-        <Link to="/tasks" className="ml-auto text-[10px] font-mono text-primary hover:text-primary/80 transition-colors">
+        <Link to="/tasks" className="ml-auto min-h-[36px] inline-flex items-center text-xs sm:text-[10px] font-mono text-primary hover:text-primary/80 transition-colors">
           Alle Aufgaben →
         </Link>
       </div>
@@ -273,7 +273,7 @@ const MyTasks = () => {
                 {/* Client group header */}
                 <Link
                   to={`/client/${clientId}`}
-                  className="monday-group-header border-b border-border/30 hover:bg-surface-hover transition-colors"
+                  className="monday-group-header min-h-[44px] border-b border-border/30 hover:bg-surface-hover transition-colors"
                 >
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs font-display font-semibold">{clientMap[clientId] || "—"}</span>
@@ -289,7 +289,7 @@ const MyTasks = () => {
                       <Link
                         key={`${item.kind}-${piece.id}`}
                         to={`/client/${piece.client_id}`}
-                        className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors"
+                        className="monday-row flex min-h-[52px] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-4 sm:pl-10 hover:bg-surface-hover transition-colors"
                       >
                         <PhaseIcon phase={piece.phase} />
                         <span className={cn("monday-status text-[9px] py-0.5 px-2 min-w-0 hidden sm:inline-block", meta.css)}>{meta.label}</span>
@@ -319,7 +319,7 @@ const MyTasks = () => {
                       <Link
                         key={`sop-${step.id}`}
                         to={`/client/${step.client_id}`}
-                        className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors"
+                        className="monday-row flex min-h-[52px] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-4 sm:pl-10 hover:bg-surface-hover transition-colors"
                       >
                         <Checkbox
                           checked={false}
@@ -343,7 +343,7 @@ const MyTasks = () => {
                   const sc = STATUS_LABELS[task.status || "not_started"] || STATUS_LABELS.not_started;
 
                   return (
-                    <div key={`t-${task.id}`} className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10">
+                    <div key={`t-${task.id}`} className="monday-row flex min-h-[52px] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-4 sm:pl-10">
                       <Checkbox checked={false} onCheckedChange={() => completeTask(task.id, task.client_id)} className="shrink-0" />
                       {task.tag && (
                         <Badge variant="secondary" className={cn("text-[9px] font-mono px-1.5 py-0 h-[18px] rounded border-0 shrink-0 hidden sm:inline-flex", getTagColor(task.tag))}>
@@ -369,7 +369,7 @@ const MyTasks = () => {
             {/* CRM Tasks */}
             {crmTasks.length > 0 && (
               <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <div className="monday-group-header border-b border-border/30">
+                  <div className="monday-group-header min-h-[44px] border-b border-border/30">
                   <ChevronRight className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs font-display font-semibold">CRM To-Dos</span>
                   <span className="text-[10px] font-mono text-muted-foreground">{crmTasks.length}</span>
@@ -377,7 +377,7 @@ const MyTasks = () => {
                 {crmTasks.map(ct => {
                   const isOverdue = ct.due_date && ct.due_date < today;
                     return (
-                      <Link key={`crm-${ct.id}`} to={`/crm/lead/${ct.lead_id}`} className="monday-row flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-6 sm:pl-10 hover:bg-surface-hover transition-colors">
+                       <Link key={`crm-${ct.id}`} to={`/crm/lead/${ct.lead_id}`} className="monday-row flex min-h-[52px] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 pl-4 sm:pl-10 hover:bg-surface-hover transition-colors">
                         <Checkbox
                           checked={false}
                           onCheckedChange={() => completeCrmTask(ct.id)}
