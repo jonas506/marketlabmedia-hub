@@ -55,7 +55,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
       <div className="flex flex-col min-h-screen bg-background">
         {/* Mobile top bar */}
-        <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 bg-sidebar border-b border-sidebar-border">
+        <header className="sticky top-0 z-40 flex min-h-[60px] items-center justify-between gap-2 px-4 bg-sidebar border-b border-sidebar-border">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center h-8 w-8 rounded-lg overflow-hidden">
               <img src={marketlabLogo} alt="Marketlab" className="h-8 w-8 object-cover" />
@@ -65,20 +65,20 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="flex items-center gap-1">
             <button
               onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-              className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 transition-all"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-all"
             >
               <Search className="h-4 w-4" />
             </button>
             <NotificationBell />
             <button
               onClick={toggleTheme}
-              className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/40 hover:text-sidebar-foreground/80 transition-all"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-sidebar-foreground/50 hover:text-sidebar-foreground/80 transition-all"
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="flex items-center justify-center h-9 w-9 rounded-lg text-sidebar-foreground/60 hover:text-sidebar-foreground transition-all"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground transition-all"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -87,7 +87,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         {/* Mobile menu sheet */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="right" className="w-64 p-0">
+          <SheetContent side="right" className="w-[82vw] max-w-80 p-0">
             <VisuallyHidden.Root><SheetTitle>Menü</SheetTitle></VisuallyHidden.Root>
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-3 p-4 border-b border-border">
@@ -108,7 +108,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       key={to}
                       to={linkTo}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                      className={`flex min-h-[44px] items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                         active
                           ? "bg-primary/15 text-primary font-semibold"
                           : "text-foreground/70 hover:bg-surface-elevated hover:text-foreground"
@@ -123,7 +123,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <div className="p-4 border-t border-border">
                 <button
                   onClick={() => { signOut(); setMobileMenuOpen(false); }}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
+                  className="flex min-h-[44px] items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
                 >
                   <LogOut className="h-4 w-4" />
                   Abmelden
@@ -134,7 +134,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Sheet>
 
         {/* Main content */}
-        <main className="flex-1 p-4">
+        <main className="flex-1 px-3 py-4 sm:p-4">
           {children}
         </main>
         <QuickAddTask />
