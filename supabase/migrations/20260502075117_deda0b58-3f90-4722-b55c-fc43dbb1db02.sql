@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Authenticated users can read activity logs" ON public.activity_log;
