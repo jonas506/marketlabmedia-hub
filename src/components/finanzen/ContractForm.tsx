@@ -70,13 +70,13 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
 
   const months = useMemo(() => {
     const arr: { num: number; label: string }[] = [];
-    const start = new Date(startDate);
+    const start = new Date(billingStartDate || startDate);
     for (let i = 0; i < duration; i++) {
       const d = addMonths(start, i);
       arr.push({ num: i + 1, label: format(d, "LLL yyyy", { locale: de }) });
     }
     return arr;
-  }, [startDate, duration]);
+  }, [billingStartDate, startDate, duration]);
 
   const availableClients = useMemo(() => {
     const blocked = new Set(
