@@ -39,6 +39,7 @@ export default function ClientBillingDetail({
   const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
+  const [extendOpen, setExtendOpen] = useState(false);
 
   if (!contract) return null;
 
