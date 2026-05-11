@@ -333,6 +333,11 @@ export default function ClientBillingDetail({
         clients={clients}
         defaultClientId={contract.client_id}
       />
+      <ExtendContractDialog
+        open={extendOpen}
+        onOpenChange={setExtendOpen}
+        contract={contract}
+      />
     </>
   );
 }
