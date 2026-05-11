@@ -11,6 +11,7 @@ import BottleneckAlert from "@/components/BottleneckAlert";
 import ReviewQueue from "@/components/ReviewQueue";
 import CutterFocusBoard from "@/components/CutterFocusBoard";
 import ContractRunwayWidget from "@/components/ContractRunwayWidget";
+import FinanzenAlertWidget from "@/components/FinanzenAlertWidget";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
@@ -72,6 +73,7 @@ const Dashboard = () => {
 
         {role === "admin" && (
           <div className="space-y-4 sm:space-y-6">
+            <ErrorBoundary level="widget"><FinanzenAlertWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
             <ErrorBoundary level="widget"><ContractRunwayWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>

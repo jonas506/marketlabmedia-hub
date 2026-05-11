@@ -34,6 +34,7 @@ import NotFound from "./pages/NotFound";
 import TimeTracking from "./pages/TimeTracking";
 import ClientsList from "./pages/ClientsList";
 import PostingCalendarPage from "./pages/PostingCalendarPage";
+import Finanzen from "./pages/Finanzen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,6 +107,7 @@ const App = () => (
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
                   <Route path="/crm/pipelines" element={<Navigate to="/crm" replace />} />
                   <Route path="/crm/campaigns" element={<Navigate to="/crm?tab=kampagnen" replace />} />
+                  <Route path="/finanzen" element={<ProtectedRoute><Finanzen /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
