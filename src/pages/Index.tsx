@@ -73,6 +73,7 @@ const Dashboard = () => {
 
         {role === "admin" && (
           <div className="space-y-4 sm:space-y-6">
+            <ErrorBoundary level="widget"><FinanzenAlertWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
             <ErrorBoundary level="widget"><ContractRunwayWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
