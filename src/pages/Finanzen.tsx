@@ -121,21 +121,45 @@ export default function Finanzen() {
 
         <BillingSummaryCards {...summary} />
 
-        <div className="flex flex-wrap gap-2">
-          {FILTERS.map((f) => (
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="inline-flex rounded-md border p-0.5 bg-card">
             <Button
-              key={f.key}
               size="sm"
-              variant={filter === f.key ? "default" : "outline"}
-              onClick={() => setFilter(f.key)}
+              variant={view === "matrix" ? "default" : "ghost"}
+              onClick={() => setView("matrix")}
+              className="h-7"
             >
-              {f.label}
+              Monatsübersicht
             </Button>
-          ))}
+            <Button
+              size="sm"
+              variant={view === "list" ? "default" : "ghost"}
+              onClick={() => setView("list")}
+              className="h-7"
+            >
+              Vertragsliste
+            </Button>
+          </div>
+          {view === "list" && (
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map((f) => (
+                <Button
+                  key={f.key}
+                  size="sm"
+                  variant={filter === f.key ? "default" : "outline"}
+                  onClick={() => setFilter(f.key)}
+                >
+                  {f.label}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
 
         {isLoading || !data ? (
           <div className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">Lade Daten…</div>
+        ) : view === "matrix" ? (
+          <MonthlyOverview clients={data.clients} contracts={data.contracts} />
         ) : (
           <ClientBillingTable
             contracts={data.contracts}
