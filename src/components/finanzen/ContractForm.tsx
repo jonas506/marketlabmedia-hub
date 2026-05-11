@@ -217,8 +217,18 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Startdatum</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Label className="text-xs">Vertragsstart (Laufzeit)</Label>
+              <Input type="date" value={startDate} onChange={(e) => {
+                const v = e.target.value;
+                // Wenn Abrechnungsstart noch synchron war, mitziehen
+                if (billingStartDate === startDate) setBillingStartDate(v);
+                setStartDate(v);
+              }} />
+            </div>
+            <div>
+              <Label className="text-xs">Abrechnungsstart (Monat 1 der Rechnung)</Label>
+              <Input type="date" value={billingStartDate} onChange={(e) => setBillingStartDate(e.target.value)} />
+              <p className="text-[10px] text-muted-foreground mt-1">z. B. ein paar Tage vor dem ersten Drehtag</p>
             </div>
             <div>
               <Label className="text-xs">Laufzeit (Monate)</Label>
