@@ -132,6 +132,11 @@ export default function ClientBillingDetail({
               <div className="text-sm">Davon bezahlt: <span className="font-medium">{formatEur(paidValue)}</span> ({paidPct}%)</div>
               <Progress value={paidPct} className="h-2" />
               {contract.note && <div className="text-xs text-muted-foreground italic">„{contract.note}"</div>}
+
+              <div className="pt-3 border-t mt-3">
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">Monatsverlauf</div>
+                <AmountSparkline months={contract.months} />
+              </div>
             </div>
 
             {/* Monthly Invoices */}
