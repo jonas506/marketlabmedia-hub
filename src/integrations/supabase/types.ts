@@ -768,6 +768,7 @@ export type Database = {
           drive_uploaded_at: string | null
           has_script: boolean | null
           id: string
+          internal_note: string | null
           phase: string
           preview_link: string | null
           priority: string | null
@@ -800,6 +801,7 @@ export type Database = {
           drive_uploaded_at?: string | null
           has_script?: boolean | null
           id?: string
+          internal_note?: string | null
           phase: string
           preview_link?: string | null
           priority?: string | null
@@ -832,6 +834,7 @@ export type Database = {
           drive_uploaded_at?: string | null
           has_script?: boolean | null
           id?: string
+          internal_note?: string | null
           phase?: string
           preview_link?: string | null
           priority?: string | null
