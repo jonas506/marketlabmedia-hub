@@ -25,7 +25,6 @@ export default function ClientBillingTable({ contracts, clients, filter, onSelec
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
   const rows: Row[] = contracts
-    .filter((c) => c.status === "active" || c.status === "completed")
     .map((contract) => {
       const now = new Date();
       const curMonthKey = now.getFullYear() * 12 + now.getMonth();
