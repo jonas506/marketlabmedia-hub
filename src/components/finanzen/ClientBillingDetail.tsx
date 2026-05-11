@@ -10,7 +10,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Trash2, Pencil, XCircle, Plus, Clock } from "lucide-react";
+import { CheckCircle2, Trash2, Pencil, XCircle, Plus, Clock, CalendarPlus } from "lucide-react";
 import { format } from "date-fns";
 import {
   effectiveStatus, formatDateDe, formatEur, formatMonthDe, STATUS_BADGE, STATUS_LABEL,
@@ -18,6 +18,9 @@ import {
 import type { ClientLite, ClientProject, Contract, ContractMonth } from "@/hooks/useFinanzenData";
 import ContractForm from "./ContractForm";
 import ProjectForm from "./ProjectForm";
+import ExtendContractDialog from "./ExtendContractDialog";
+import AmountSparkline from "./AmountSparkline";
+import { cn } from "@/lib/utils";
 
 interface Props {
   open: boolean;
@@ -36,6 +39,7 @@ export default function ClientBillingDetail({
   const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
+  const [extendOpen, setExtendOpen] = useState(false);
 
   if (!contract) return null;
 
@@ -128,32 +132,47 @@ export default function ClientBillingDetail({
               <div className="text-sm">Davon bezahlt: <span className="font-medium">{formatEur(paidValue)}</span> ({paidPct}%)</div>
               <Progress value={paidPct} className="h-2" />
               {contract.note && <div className="text-xs text-muted-foreground italic">„{contract.note}"</div>}
+
+              <div className="pt-3 border-t mt-3">
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">Monatsverlauf</div>
+                <AmountSparkline months={contract.months} />
+              </div>
             </div>
 
             {/* Monthly Invoices */}
             <div>
               <div className="text-sm font-medium mb-2">Monatliche Rechnungen</div>
               <div className="space-y-1.5">
-                {contract.months.map((m) => {
-                  const eff = effectiveStatus({
-                    storedStatus: m.invoice_status,
-                    billingMonth: m.billing_month,
-                    billingYear: m.billing_year,
-                    invoiceSentAt: m.invoice_sent_at,
-                  });
-                  return (
-                    <div key={m.id} className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm">
-                          Monat {m.month_number} · {formatMonthDe(m.billing_month, m.billing_year)} · <span className="font-medium">{formatEur(m.amount_netto)}</span>
-                        </div>
-                        {(m.invoice_sent_at || m.invoice_paid_at) && (
-                          <div className="text-[11px] text-muted-foreground">
-                            {m.invoice_sent_at && <>Gestellt: {formatDateDe(m.invoice_sent_at)} </>}
-                            {m.invoice_paid_at && <>· Bezahlt: {formatDateDe(m.invoice_paid_at)}</>}
-                          </div>
-                        )}
+                {(() => {
+                  const maxAmount = Math.max(...contract.months.map((m) => m.amount_netto), 1);
+                  return contract.months.map((m) => {
+                    const eff = effectiveStatus({
+                      storedStatus: m.invoice_status,
+                      billingMonth: m.billing_month,
+                      billingYear: m.billing_year,
+                      invoiceSentAt: m.invoice_sent_at,
+                    });
+                    const widthPct = (m.amount_netto / maxAmount) * 100;
+                    return (
+                  <div key={m.id} className="relative flex items-center gap-2 rounded-md border bg-card px-3 py-2 overflow-hidden">
+                    <div
+                      className={cn(
+                        "absolute inset-y-0 left-0 opacity-[0.07]",
+                        m.invoice_status === "paid" ? "bg-green-500" : m.invoice_status === "sent" ? "bg-blue-500" : "bg-foreground",
+                      )}
+                      style={{ width: `${widthPct}%` }}
+                    />
+                    <div className="flex-1 min-w-0 relative">
+                      <div className="text-sm">
+                        Monat {m.month_number} · {formatMonthDe(m.billing_month, m.billing_year)} · <span className="font-medium">{formatEur(m.amount_netto)}</span>
                       </div>
+                      {(m.invoice_sent_at || m.invoice_paid_at) && (
+                        <div className="text-[11px] text-muted-foreground">
+                          {m.invoice_sent_at && <>Gestellt: {formatDateDe(m.invoice_sent_at)} </>}
+                          {m.invoice_paid_at && <>· Bezahlt: {formatDateDe(m.invoice_paid_at)}</>}
+                        </div>
+                      )}
+                    </div>
                       <Badge className={STATUS_BADGE[eff]} variant="outline">{STATUS_LABEL[eff]}</Badge>
                       {m.invoice_status !== "paid" && m.invoice_status !== "sent" && (
                         <Button size="sm" variant="outline" onClick={() => updateMonth(m, { invoice_status: "sent", invoice_sent_at: today })}>
@@ -177,7 +196,8 @@ export default function ClientBillingDetail({
                       )}
                     </div>
                   );
-                })}
+                  });
+                })()}
               </div>
             </div>
 
@@ -258,6 +278,9 @@ export default function ClientBillingDetail({
               <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
                 <Pencil className="h-3 w-3 mr-1" /> Vertrag bearbeiten
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setExtendOpen(true)}>
+                <CalendarPlus className="h-3 w-3 mr-1" /> Verlängern
+              </Button>
               {contract.status === "active" && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -309,6 +332,11 @@ export default function ClientBillingDetail({
         onOpenChange={setProjectFormOpen}
         clients={clients}
         defaultClientId={contract.client_id}
+      />
+      <ExtendContractDialog
+        open={extendOpen}
+        onOpenChange={setExtendOpen}
+        contract={contract}
       />
     </>
   );
