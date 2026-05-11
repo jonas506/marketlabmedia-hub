@@ -10,6 +10,7 @@ import ClientBillingTable from "@/components/finanzen/ClientBillingTable";
 import ClientBillingDetail from "@/components/finanzen/ClientBillingDetail";
 import ContractForm from "@/components/finanzen/ContractForm";
 import ProjectForm from "@/components/finanzen/ProjectForm";
+import MonthlyOverview from "@/components/finanzen/MonthlyOverview";
 import { effectiveStatus, type InvoiceStatus } from "@/lib/finanzen-utils";
 
 const FILTERS: { key: "all" | InvoiceStatus; label: string }[] = [
