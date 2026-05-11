@@ -160,7 +160,7 @@ export default function ClientBillingDetail({
                   <div key={m.id} className="relative flex items-center gap-2 rounded-md border bg-card px-3 py-2 overflow-hidden">
                     <div
                       className={cn(
-                        "absolute inset-y-0 left-0 opacity-[0.07]",
+                        "absolute inset-y-0 left-0 opacity-[0.07] pointer-events-none",
                         m.invoice_status === "paid" ? "bg-green-500" : m.invoice_status === "sent" ? "bg-blue-500" : "bg-foreground",
                       )}
                       style={{ width: `${widthPct}%` }}
