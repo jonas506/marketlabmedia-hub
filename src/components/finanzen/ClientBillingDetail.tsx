@@ -85,8 +85,9 @@ export default function ClientBillingDetail({
   };
 
   const deleteContract = async () => {
-    if (hasIssued) {
-      toast({ title: "Nicht möglich", description: "Es gibt bereits gestellte oder bezahlte Rechnungen.", variant: "destructive" });
+    const { error: e1 } = await supabase.from("client_contract_months").delete().eq("contract_id", contract.id);
+    if (e1) {
+      toast({ title: "Fehler", description: e1.message, variant: "destructive" });
       return;
     }
     const { error } = await supabase.from("client_contracts").delete().eq("id", contract.id);
