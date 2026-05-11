@@ -278,6 +278,9 @@ export default function ClientBillingDetail({
               <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
                 <Pencil className="h-3 w-3 mr-1" /> Vertrag bearbeiten
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setExtendOpen(true)}>
+                <CalendarPlus className="h-3 w-3 mr-1" /> Verlängern
+              </Button>
               {contract.status === "active" && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
