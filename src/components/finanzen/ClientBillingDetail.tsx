@@ -41,6 +41,8 @@ export default function ClientBillingDetail({
   const [editOpen, setEditOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
   const [extendOpen, setExtendOpen] = useState(false);
+  const [editingAmountId, setEditingAmountId] = useState<string | null>(null);
+  const [editingAmountValue, setEditingAmountValue] = useState<string>("");
 
   if (!contract) return null;
 
