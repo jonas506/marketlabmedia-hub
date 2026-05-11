@@ -92,7 +92,9 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   onPreviewLinkChange,
   localTitle,
 }) => {
-  const isLatePhase = activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
+  const isLatePhase = activePhase === "internal_review" || activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
+  const isInternalReview = activePhase === "internal_review";
+  const isAdminLike = userRole === "admin" || userRole === "head_of_content";
 
   return (
     <motion.div
@@ -198,7 +200,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
       )}
 
       {/* Carousel slide images */}
-      {activeType === "carousel" && (activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script" || activePhase === "feedback") && (
+      {activeType === "carousel" && (activePhase === "internal_review" || activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script" || activePhase === "feedback") && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
