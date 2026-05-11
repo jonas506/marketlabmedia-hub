@@ -196,7 +196,8 @@ export default function ClientBillingDetail({
                       )}
                     </div>
                   );
-                })}
+                  });
+                })()}
               </div>
             </div>
 
