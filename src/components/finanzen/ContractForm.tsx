@@ -26,6 +26,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
   const [saving, setSaving] = useState(false);
   const [clientId, setClientId] = useState<string>("");
   const [startDate, setStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [billingStartDate, setBillingStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [duration, setDuration] = useState<number>(6);
   const [note, setNote] = useState<string>("");
   const [amounts, setAmounts] = useState<number[]>(Array(6).fill(2500));
