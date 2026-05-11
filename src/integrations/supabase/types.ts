@@ -399,6 +399,103 @@ export type Database = {
           },
         ]
       }
+      client_contract_months: {
+        Row: {
+          amount_netto: number
+          billing_month: number
+          billing_year: number
+          contract_id: string
+          created_at: string
+          id: string
+          invoice_paid_at: string | null
+          invoice_sent_at: string | null
+          invoice_status: string
+          month_number: number
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_netto: number
+          billing_month: number
+          billing_year: number
+          contract_id: string
+          created_at?: string
+          id?: string
+          invoice_paid_at?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string
+          month_number: number
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_netto?: number
+          billing_month?: number
+          billing_year?: number
+          contract_id?: string
+          created_at?: string
+          id?: string
+          invoice_paid_at?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string
+          month_number?: number
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contract_months_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "client_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_contracts: {
+        Row: {
+          client_id: string
+          created_at: string
+          duration_months: number
+          end_date: string
+          id: string
+          note: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          duration_months: number
+          end_date: string
+          id?: string
+          note?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          duration_months?: number
+          end_date?: string
+          id?: string
+          note?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contracts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_inspirations: {
         Row: {
           ai_analysis: string | null
@@ -492,6 +589,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "client_knowledge_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_projects: {
+        Row: {
+          amount_netto: number
+          client_id: string
+          created_at: string
+          due_date: string | null
+          id: string
+          invoice_paid_at: string | null
+          invoice_sent_at: string | null
+          invoice_status: string
+          name: string
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_netto: number
+          client_id: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          invoice_paid_at?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string
+          name: string
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_netto?: number
+          client_id?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          invoice_paid_at?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string
+          name?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_projects_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
