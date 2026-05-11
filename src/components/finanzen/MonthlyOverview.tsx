@@ -263,7 +263,7 @@ export default function MonthlyOverview({ clients, contracts }: Props) {
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                onClick={() => cycleStatus(m)}
+                                onClick={() => cycleStatus(m, c.name, col.label)}
                                 className={cn(
                                   "h-9 w-full rounded flex flex-col items-center justify-center transition-colors px-1 leading-tight",
                                   CELL_STYLES[eff],
