@@ -26,6 +26,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
   const [saving, setSaving] = useState(false);
   const [clientId, setClientId] = useState<string>("");
   const [startDate, setStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [billingStartDate, setBillingStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [duration, setDuration] = useState<number>(6);
   const [note, setNote] = useState<string>("");
   const [amounts, setAmounts] = useState<number[]>(Array(6).fill(2500));
@@ -41,13 +42,16 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
     if (editContract) {
       setClientId(editContract.client_id);
       setStartDate(editContract.start_date);
+      setBillingStartDate(editContract.billing_start_date ?? editContract.start_date);
       setDuration(editContract.duration_months);
       setNote(editContract.note ?? "");
       const sorted = [...editContract.months].sort((a, b) => a.month_number - b.month_number);
       setAmounts(sorted.map((m) => m.amount_netto));
     } else {
       setClientId("");
-      setStartDate(format(new Date(), "yyyy-MM-dd"));
+      const today = format(new Date(), "yyyy-MM-dd");
+      setStartDate(today);
+      setBillingStartDate(today);
       setDuration(6);
       setNote("");
       setAmounts(Array(6).fill(2500));
@@ -66,13 +70,13 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
 
   const months = useMemo(() => {
     const arr: { num: number; label: string }[] = [];
-    const start = new Date(startDate);
+    const start = new Date(billingStartDate || startDate);
     for (let i = 0; i < duration; i++) {
       const d = addMonths(start, i);
       arr.push({ num: i + 1, label: format(d, "LLL yyyy", { locale: de }) });
     }
     return arr;
-  }, [startDate, duration]);
+  }, [billingStartDate, startDate, duration]);
 
   const availableClients = useMemo(() => {
     const blocked = new Set(
@@ -110,8 +114,9 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
     }
     setSaving(true);
     try {
-      const start = new Date(startDate);
-      const end = addMonths(start, duration);
+      
+      const billingStart = new Date(billingStartDate || startDate);
+      const end = addMonths(billingStart, duration);
       end.setDate(end.getDate() - 1);
       const endStr = format(end, "yyyy-MM-dd");
 
@@ -123,6 +128,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
           .update({
             client_id: clientId,
             start_date: startDate,
+            billing_start_date: billingStartDate || startDate,
             end_date: endStr,
             duration_months: duration,
             note: note || null,
@@ -135,6 +141,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
           .insert({
             client_id: clientId,
             start_date: startDate,
+            billing_start_date: billingStartDate || startDate,
             end_date: endStr,
             duration_months: duration,
             note: note || null,
@@ -152,7 +159,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
       }
 
       const monthRows = amounts.map((amount, i) => {
-        const d = addMonths(start, i);
+        const d = addMonths(billingStart, i);
         return {
           contract_id: contractId!,
           month_number: i + 1,
@@ -210,8 +217,18 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Startdatum</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Label className="text-xs">Vertragsstart (Laufzeit)</Label>
+              <Input type="date" value={startDate} onChange={(e) => {
+                const v = e.target.value;
+                // Wenn Abrechnungsstart noch synchron war, mitziehen
+                if (billingStartDate === startDate) setBillingStartDate(v);
+                setStartDate(v);
+              }} />
+            </div>
+            <div>
+              <Label className="text-xs">Abrechnungsstart (Monat 1 der Rechnung)</Label>
+              <Input type="date" value={billingStartDate} onChange={(e) => setBillingStartDate(e.target.value)} />
+              <p className="text-[10px] text-muted-foreground mt-1">z. B. ein paar Tage vor dem ersten Drehtag</p>
             </div>
             <div>
               <Label className="text-xs">Laufzeit (Monate)</Label>

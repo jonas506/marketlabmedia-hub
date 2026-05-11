@@ -18,6 +18,7 @@ export interface Contract {
   id: string;
   client_id: string;
   start_date: string;
+  billing_start_date: string | null;
   end_date: string;
   duration_months: number;
   status: "active" | "completed" | "cancelled";

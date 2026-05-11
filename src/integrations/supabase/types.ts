@@ -454,6 +454,7 @@ export type Database = {
       }
       client_contracts: {
         Row: {
+          billing_start_date: string | null
           client_id: string
           created_at: string
           duration_months: number
@@ -465,6 +466,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          billing_start_date?: string | null
           client_id: string
           created_at?: string
           duration_months: number
@@ -476,6 +478,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          billing_start_date?: string | null
           client_id?: string
           created_at?: string
           duration_months?: number
