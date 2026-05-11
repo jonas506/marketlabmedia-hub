@@ -217,8 +217,18 @@ export default function ClientBillingDetail({
                           </Button>
                         )}
                         {p.invoice_status === "sent" && (
-                          <Button size="sm" onClick={() => updateProject(p, { invoice_status: "paid", invoice_paid_at: today })}>
-                            Bezahlt
+                          <>
+                            <Button size="sm" variant="ghost" onClick={() => updateProject(p, { invoice_status: "upcoming", invoice_sent_at: null })}>
+                              Rückgängig
+                            </Button>
+                            <Button size="sm" onClick={() => updateProject(p, { invoice_status: "paid", invoice_paid_at: today })}>
+                              Bezahlt
+                            </Button>
+                          </>
+                        )}
+                        {p.invoice_status === "paid" && (
+                          <Button size="sm" variant="ghost" onClick={() => updateProject(p, { invoice_status: "sent", invoice_paid_at: null })}>
+                            Rückgängig
                           </Button>
                         )}
                         <AlertDialog>
