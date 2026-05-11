@@ -25,6 +25,7 @@ export default function Finanzen() {
   const { role, loading } = useAuth();
   const { data, isLoading } = useFinanzenData();
   const [filter, setFilter] = useState<"all" | InvoiceStatus>("all");
+  const [view, setView] = useState<"list" | "matrix">("matrix");
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [contractFormOpen, setContractFormOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
