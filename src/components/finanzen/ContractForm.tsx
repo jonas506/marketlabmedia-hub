@@ -29,7 +29,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
   const [billingStartDate, setBillingStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [duration, setDuration] = useState<number>(6);
   const [note, setNote] = useState<string>("");
-  const [amounts, setAmounts] = useState<number[]>(Array(6).fill(2500));
+  const [amounts, setAmounts] = useState<number[]>(Array(6).fill(0));
 
   // Bulk-fill helpers
   const [bulkAmount, setBulkAmount] = useState<string>("");
@@ -54,7 +54,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
       setBillingStartDate(today);
       setDuration(6);
       setNote("");
-      setAmounts(Array(6).fill(2500));
+      setAmounts(Array(6).fill(0));
     }
   }, [open, editContract]);
 
@@ -63,7 +63,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
     setAmounts((prev) => {
       if (prev.length === duration) return prev;
       if (prev.length > duration) return prev.slice(0, duration);
-      const last = prev[prev.length - 1] ?? 2500;
+      const last = prev[prev.length - 1] ?? 0;
       return [...prev, ...Array(duration - prev.length).fill(last)];
     });
   }, [duration]);
