@@ -96,6 +96,12 @@ export default function MonthlyOverview({ clients, contracts }: Props) {
     });
   }, [months, visibleClients, lookup]);
 
+  // Undo stack: records previous state of each cell change
+  type UndoEntry = { id: string; patch: Partial<ContractMonth>; label: string };
+  const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
+  const undoStackRef = useRef<UndoEntry[]>([]);
+  useEffect(() => { undoStackRef.current = undoStack; }, [undoStack]);
+
   const applyPatch = async (id: string, patch: Partial<ContractMonth>) => {
     const { error } = await supabase.from("client_contract_months").update(patch).eq("id", id);
     if (error) {
@@ -106,7 +112,33 @@ export default function MonthlyOverview({ clients, contracts }: Props) {
     return true;
   };
 
-  const cycleStatus = async (m: ContractMonth) => {
+  const performUndo = async () => {
+    const stack = undoStackRef.current;
+    if (stack.length === 0) {
+      toast({ title: "Nichts zum Rückgängig machen" });
+      return;
+    }
+    const last = stack[stack.length - 1];
+    setUndoStack((s) => s.slice(0, -1));
+    const ok = await applyPatch(last.id, last.patch);
+    if (ok) toast({ title: "Rückgängig", description: last.label });
+  };
+
+  // Global Cmd/Ctrl+Z handler
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        const target = e.target as HTMLElement | null;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+        e.preventDefault();
+        performUndo();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const cycleStatus = async (m: ContractMonth, clientName: string, colLabel: string) => {
     // Cycle: upcoming/due → sent → paid → upcoming
     const todayStr = format(new Date(), "yyyy-MM-dd");
     let patch: Partial<ContractMonth> = {};
@@ -124,15 +156,14 @@ export default function MonthlyOverview({ clients, contracts }: Props) {
     };
     const ok = await applyPatch(m.id, patch);
     if (!ok) return;
-    toast({
-      title: `Status: ${STATUS_LABEL[patch.invoice_status as InvoiceStatus]}`,
-      description: `${STATUS_LABEL[m.invoice_status]} → ${STATUS_LABEL[patch.invoice_status as InvoiceStatus]}`,
-      action: (
-        <ToastAction altText="Rückgängig" onClick={() => applyPatch(m.id, prevPatch)}>
-          Rückgängig
-        </ToastAction>
-      ),
-    });
+    setUndoStack((s) => [
+      ...s.slice(-19),
+      {
+        id: m.id,
+        patch: prevPatch,
+        label: `${clientName} · ${colLabel}: ${STATUS_LABEL[patch.invoice_status as InvoiceStatus]} → ${STATUS_LABEL[m.invoice_status]}`,
+      },
+    ]);
   };
 
   return (
@@ -141,9 +172,22 @@ export default function MonthlyOverview({ clients, contracts }: Props) {
       <div className="flex items-center justify-between gap-2 px-4 py-3 border-b">
         <div>
           <h2 className="text-sm font-semibold">Monatsübersicht</h2>
-          <p className="text-xs text-muted-foreground">Klick auf eine Zelle wechselt den Status.</p>
+          <p className="text-xs text-muted-foreground">Klick auf eine Zelle wechselt den Status. Rückgängig mit Strg/Cmd+Z.</p>
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={performUndo}
+            disabled={undoStack.length === 0}
+            title="Rückgängig (Strg/Cmd+Z)"
+          >
+            <Undo2 className="h-4 w-4 mr-1" />
+            Rückgängig
+            {undoStack.length > 0 && (
+              <span className="ml-1 text-[10px] text-muted-foreground">({undoStack.length})</span>
+            )}
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setOffset((o) => o - 3)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
