@@ -34,6 +34,7 @@ import NotFound from "./pages/NotFound";
 import TimeTracking from "./pages/TimeTracking";
 import ClientsList from "./pages/ClientsList";
 import PostingCalendarPage from "./pages/PostingCalendarPage";
+import Finanzen from "./pages/Finanzen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
