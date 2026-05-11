@@ -11,6 +11,7 @@ import BottleneckAlert from "@/components/BottleneckAlert";
 import ReviewQueue from "@/components/ReviewQueue";
 import CutterFocusBoard from "@/components/CutterFocusBoard";
 import ContractRunwayWidget from "@/components/ContractRunwayWidget";
+import FinanzenAlertWidget from "@/components/FinanzenAlertWidget";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
