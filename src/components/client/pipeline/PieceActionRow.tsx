@@ -85,23 +85,35 @@ const PieceActionRow: React.FC<PieceActionRowProps> = React.memo(({
       <div className="flex-1" />
 
       {/* Move to next phase */}
-      {nextPhase && (
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            size="sm"
-            variant={nextPhase === "handed_over" ? "default" : "outline"}
-            className={`h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs gap-1 font-mono ${
-              nextPhase === "handed_over"
-                ? "bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] shadow-sm shadow-primary/20 border-0"
-                : ""
-            }`}
-            onClick={() => onMovePiece(piece.id, nextPhase)}
-          >
-            → {(() => { const NIcon = icons[config.phases.find((p) => p.key === nextPhase)?.emoji as keyof typeof icons]; return NIcon ? <NIcon size={12} /> : null; })()}
-            <span className="hidden sm:inline"> {config.phases.find((p) => p.key === nextPhase)?.label}</span>
-          </Button>
-        </motion.div>
-      )}
+      {nextPhase && (() => {
+        const isAdminLike = userRole === "admin" || userRole === "head_of_content";
+        // Block non-admins from pushing internal_review → review (client send)
+        const blocked = activePhase === "internal_review" && nextPhase === "review" && !isAdminLike;
+        if (blocked) {
+          return (
+            <span className="text-[10px] font-mono text-muted-foreground/70 italic px-2">
+              Wartet auf Jonas
+            </span>
+          );
+        }
+        return (
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              size="sm"
+              variant={nextPhase === "handed_over" ? "default" : "outline"}
+              className={`h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs gap-1 font-mono ${
+                nextPhase === "handed_over"
+                  ? "bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] shadow-sm shadow-primary/20 border-0"
+                  : ""
+              }`}
+              onClick={() => onMovePiece(piece.id, nextPhase)}
+            >
+              → {(() => { const NIcon = icons[config.phases.find((p) => p.key === nextPhase)?.emoji as keyof typeof icons]; return NIcon ? <NIcon size={12} /> : null; })()}
+              <span className="hidden sm:inline"> {config.phases.find((p) => p.key === nextPhase)?.label}</span>
+            </Button>
+          </motion.div>
+        );
+      })()}
 
       {/* Admin: Direct approve from review */}
       {activePhase === "review" && (userRole === "admin" || userRole === "head_of_content") && (
