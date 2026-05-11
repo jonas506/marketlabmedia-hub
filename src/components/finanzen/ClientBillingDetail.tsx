@@ -166,8 +166,45 @@ export default function ClientBillingDetail({
                       style={{ width: `${widthPct}%` }}
                     />
                     <div className="flex-1 min-w-0 relative">
-                      <div className="text-sm">
-                        Monat {m.month_number} · {formatMonthDe(m.billing_month, m.billing_year)} · <span className="font-medium">{formatEur(m.amount_netto)}</span>
+                      <div className="text-sm flex items-center gap-1.5 flex-wrap">
+                        <span>Monat {m.month_number} · {formatMonthDe(m.billing_month, m.billing_year)} ·</span>
+                        {editingAmountId === m.id ? (
+                          <Input
+                            autoFocus
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={editingAmountValue}
+                            onChange={(e) => setEditingAmountValue(e.target.value)}
+                            onBlur={async () => {
+                              const v = parseFloat(editingAmountValue.replace(",", "."));
+                              const newVal = Number.isFinite(v) && v >= 0 ? v : 0;
+                              if (newVal !== m.amount_netto) {
+                                await updateMonth(m, { amount_netto: newVal } as any);
+                              }
+                              setEditingAmountId(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                              if (e.key === "Escape") setEditingAmountId(null);
+                            }}
+                            className="h-6 w-24 px-1.5 text-sm"
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingAmountId(m.id);
+                              setEditingAmountValue(m.amount_netto > 0 ? String(m.amount_netto) : "");
+                            }}
+                            className={cn(
+                              "font-medium hover:underline rounded px-1 -mx-1",
+                              m.amount_netto > 0 ? "" : "text-muted-foreground italic font-normal",
+                            )}
+                          >
+                            {m.amount_netto > 0 ? formatEur(m.amount_netto) : "Betrag offen — klicken zum Eintragen"}
+                          </button>
+                        )}
                       </div>
                       {(m.invoice_sent_at || m.invoice_paid_at) && (
                         <div className="text-[11px] text-muted-foreground">
