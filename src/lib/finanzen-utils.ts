@@ -4,8 +4,8 @@ import { de } from "date-fns/locale";
 export type InvoiceStatus = "upcoming" | "due" | "sent" | "paid" | "overdue";
 
 export const STATUS_LABEL: Record<InvoiceStatus, string> = {
-  upcoming: "Upcoming",
-  due: "Offen",
+  upcoming: "Nicht gestellt",
+  due: "Nicht gestellt",
   sent: "Gestellt",
   paid: "Bezahlt",
   overdue: "Überfällig",
