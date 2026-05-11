@@ -36,6 +36,7 @@ export const PIPELINE_CONFIG: Record<string, PipelineConfig> = {
       { key: "script", label: "Skript", emoji: "FileText" },
       { key: "filmed", label: "Gedreht", emoji: "Video" },
       { key: "editing", label: "Im Schnitt", emoji: "Scissors" },
+      { key: "internal_review", label: "Interne Freigabe", emoji: "ShieldCheck" },
       { key: "review", label: "Zur Freigabe", emoji: "Eye" },
       { key: "feedback", label: "Feedback", emoji: "MessageSquare" },
       { key: "approved", label: "Freigegeben", emoji: "CheckCircle" },
@@ -48,6 +49,7 @@ export const PIPELINE_CONFIG: Record<string, PipelineConfig> = {
     emoji: "LayoutGrid",
     phases: [
       { key: "script", label: "Skript", emoji: "FileText" },
+      { key: "internal_review", label: "Interne Freigabe", emoji: "ShieldCheck" },
       { key: "review", label: "Zur Freigabe", emoji: "Eye" },
       { key: "feedback", label: "Feedback", emoji: "MessageSquare" },
       { key: "approved", label: "Freigegeben", emoji: "CheckCircle" },
@@ -61,6 +63,7 @@ export const PIPELINE_CONFIG: Record<string, PipelineConfig> = {
     phases: [
       { key: "filmed", label: "Gedreht", emoji: "Video" },
       { key: "editing", label: "Im Schnitt", emoji: "Scissors" },
+      { key: "internal_review", label: "Interne Freigabe", emoji: "ShieldCheck" },
       { key: "review", label: "Zur Freigabe", emoji: "Eye" },
       { key: "feedback", label: "Feedback", emoji: "MessageSquare" },
       { key: "approved", label: "Freigegeben", emoji: "CheckCircle" },
@@ -74,6 +77,7 @@ export const PIPELINE_CONFIG: Record<string, PipelineConfig> = {
     phases: [
       { key: "filmed", label: "Gedreht", emoji: "Video" },
       { key: "editing", label: "Im Schnitt", emoji: "Scissors" },
+      { key: "internal_review", label: "Interne Freigabe", emoji: "ShieldCheck" },
       { key: "review", label: "Zur Freigabe", emoji: "Eye" },
       { key: "feedback", label: "Feedback", emoji: "MessageSquare" },
       { key: "approved", label: "Freigegeben", emoji: "CheckCircle" },

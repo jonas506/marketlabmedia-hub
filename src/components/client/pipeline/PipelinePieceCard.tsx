@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, FileText, MessageSquare, LayoutGrid, Send, Check } from "lucide-react";
+import { Trash2, FileText, MessageSquare, LayoutGrid, Send, Check, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { relativeTime } from "./constants";
@@ -92,7 +92,9 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   onPreviewLinkChange,
   localTitle,
 }) => {
-  const isLatePhase = activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
+  const isLatePhase = activePhase === "internal_review" || activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
+  const isInternalReview = activePhase === "internal_review";
+  const isAdminLike = userRole === "admin" || userRole === "head_of_content";
 
   return (
     <motion.div
@@ -198,7 +200,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
       )}
 
       {/* Carousel slide images */}
-      {activeType === "carousel" && (activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script" || activePhase === "feedback") && (
+      {activeType === "carousel" && (activePhase === "internal_review" || activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script" || activePhase === "feedback") && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
@@ -267,6 +269,37 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           onOpenDetail={onOpenDetail}
           onPreviewLinkChange={onPreviewLinkChange}
         />
+      )}
+
+      {/* Internal note — only visible internally, never shown to clients */}
+      {isInternalReview && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="pl-7 sm:pl-9"
+        >
+          <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 p-2">
+            <ShieldCheck className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-1" />
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-amber-500/80">
+                Interne Notiz {isAdminLike ? "(nur Team — nie an Kunde)" : "(geht an Jonas)"}
+              </div>
+              <textarea
+                defaultValue={piece.internal_note || ""}
+                placeholder="Hinweis für Jonas / interne Bemerkungen…"
+                disabled={!canEdit}
+                className="w-full text-xs font-body bg-transparent border-0 focus:outline-none resize-none placeholder:text-muted-foreground/40"
+                rows={2}
+                onBlur={(e) => {
+                  const val = e.target.value.trim();
+                  if ((val || null) !== (piece.internal_note || null)) {
+                    onUpdatePiece(piece.id, { internal_note: val || null });
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {/* Client comment + Team reply */}
