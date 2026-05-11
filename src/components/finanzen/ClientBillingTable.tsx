@@ -25,7 +25,6 @@ export default function ClientBillingTable({ contracts, clients, filter, onSelec
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
   const rows: Row[] = contracts
-    .filter((c) => c.status === "active" || c.status === "completed")
     .map((contract) => {
       const now = new Date();
       const curMonthKey = now.getFullYear() * 12 + now.getMonth();
@@ -76,6 +75,11 @@ export default function ClientBillingTable({ contracts, clients, filter, onSelec
                 <Link to={`/client/${r.contract.client_id}`} className="hover:underline font-medium">
                   {r.client?.name ?? "Unbekannt"}
                 </Link>
+                {r.contract.status !== "active" && (
+                  <Badge variant="secondary" className="ml-2 text-[10px]">
+                    {r.contract.status === "completed" ? "Abgeschlossen" : "Beendet"}
+                  </Badge>
+                )}
               </td>
               <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
                 {r.contract.duration_months} Mo ({r.currentMonth?.month_number ?? "—"}/{r.contract.duration_months})

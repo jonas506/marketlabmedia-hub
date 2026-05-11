@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import ClientInfoPanel from "@/components/client/ClientInfoPanel";
+import ClientContractsCard from "@/components/client/ClientContractsCard";
 import KontingentTracker from "@/components/client/KontingentTracker";
 import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
@@ -233,7 +234,10 @@ const ClientDetail = () => {
       case "info":
         return (
           <ErrorBoundary level="section">
-            <ClientInfoPanel client={client} canEdit={canEdit} />
+            <div className="space-y-4">
+              <ClientInfoPanel client={client} canEdit={canEdit} />
+              <ClientContractsCard clientId={client.id} />
+            </div>
           </ErrorBoundary>
         );
       case "documents":
