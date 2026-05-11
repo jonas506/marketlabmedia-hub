@@ -271,6 +271,37 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
         />
       )}
 
+      {/* Internal note — only visible internally, never shown to clients */}
+      {isInternalReview && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="pl-7 sm:pl-9"
+        >
+          <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 p-2">
+            <ShieldCheck className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-1" />
+            <div className="flex-1 space-y-1">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-amber-500/80">
+                Interne Notiz {isAdminLike ? "(nur Team — nie an Kunde)" : "(geht an Jonas)"}
+              </div>
+              <textarea
+                defaultValue={piece.internal_note || ""}
+                placeholder="Hinweis für Jonas / interne Bemerkungen…"
+                disabled={!canEdit}
+                className="w-full text-xs font-body bg-transparent border-0 focus:outline-none resize-none placeholder:text-muted-foreground/40"
+                rows={2}
+                onBlur={(e) => {
+                  const val = e.target.value.trim();
+                  if ((val || null) !== (piece.internal_note || null)) {
+                    onUpdatePiece(piece.id, { internal_note: val || null });
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Client comment + Team reply */}
       {piece.client_comment && (
         <motion.div
