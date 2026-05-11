@@ -85,8 +85,9 @@ export default function ClientBillingDetail({
   };
 
   const deleteContract = async () => {
-    if (hasIssued) {
-      toast({ title: "Nicht möglich", description: "Es gibt bereits gestellte oder bezahlte Rechnungen.", variant: "destructive" });
+    const { error: e1 } = await supabase.from("client_contract_months").delete().eq("contract_id", contract.id);
+    if (e1) {
+      toast({ title: "Fehler", description: e1.message, variant: "destructive" });
       return;
     }
     const { error } = await supabase.from("client_contracts").delete().eq("id", contract.id);
@@ -256,14 +257,14 @@ export default function ClientBillingDetail({
               )}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" disabled={hasIssued}>
+                  <Button variant="destructive" size="sm">
                     <Trash2 className="h-3 w-3 mr-1" /> Vertrag löschen
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Vertrag löschen?</AlertDialogTitle>
-                    <AlertDialogDescription>Der gesamte Vertrag inkl. aller Monate wird unwiderruflich gelöscht.</AlertDialogDescription>
+                    <AlertDialogTitle>Vertrag wirklich komplett löschen?</AlertDialogTitle>
+                    <AlertDialogDescription>Der Vertrag inkl. <strong>aller Monate, gestellten und bezahlten Rechnungen</strong> wird unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Abbrechen</AlertDialogCancel>
