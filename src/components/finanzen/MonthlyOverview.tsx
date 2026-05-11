@@ -95,6 +95,16 @@ export default function MonthlyOverview({ clients, contracts }: Props) {
     });
   }, [months, visibleClients, lookup]);
 
+  const applyPatch = async (id: string, patch: Partial<ContractMonth>) => {
+    const { error } = await supabase.from("client_contract_months").update(patch).eq("id", id);
+    if (error) {
+      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+      return false;
+    }
+    qc.invalidateQueries({ queryKey: ["finanzen-data"] });
+    return true;
+  };
+
   const cycleStatus = async (m: ContractMonth) => {
     // Cycle: upcoming/due → sent → paid → upcoming
     const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -106,12 +116,22 @@ export default function MonthlyOverview({ clients, contracts }: Props) {
     } else {
       patch = { invoice_status: "sent", invoice_sent_at: todayStr };
     }
-    const { error } = await supabase.from("client_contract_months").update(patch).eq("id", m.id);
-    if (error) {
-      toast({ title: "Fehler", description: error.message, variant: "destructive" });
-      return;
-    }
-    qc.invalidateQueries({ queryKey: ["finanzen-data"] });
+    const prevPatch: Partial<ContractMonth> = {
+      invoice_status: m.invoice_status,
+      invoice_sent_at: m.invoice_sent_at,
+      invoice_paid_at: m.invoice_paid_at,
+    };
+    const ok = await applyPatch(m.id, patch);
+    if (!ok) return;
+    toast({
+      title: `Status: ${STATUS_LABEL[patch.invoice_status as InvoiceStatus]}`,
+      description: `${STATUS_LABEL[m.invoice_status]} → ${STATUS_LABEL[patch.invoice_status as InvoiceStatus]}`,
+      action: (
+        <ToastAction altText="Rückgängig" onClick={() => applyPatch(m.id, prevPatch)}>
+          Rückgängig
+        </ToastAction>
+      ),
+    });
   };
 
   return (
