@@ -233,7 +233,10 @@ const ClientDetail = () => {
       case "info":
         return (
           <ErrorBoundary level="section">
-            <ClientInfoPanel client={client} canEdit={canEdit} />
+            <div className="space-y-4">
+              <ClientInfoPanel client={client} canEdit={canEdit} />
+              <ClientContractsCard clientId={client.id} />
+            </div>
           </ErrorBoundary>
         );
       case "documents":
