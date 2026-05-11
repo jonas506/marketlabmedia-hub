@@ -307,23 +307,35 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                           </div>
 
                           {/* Move to next phase button */}
-                          {canEdit && nextPhaseMap[piece.phase] && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="w-full mt-2 h-7 text-[10px] font-mono gap-1 text-muted-foreground hover:text-primary hover:bg-primary/5"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onMovePiece(piece.id, nextPhaseMap[piece.phase]);
-                              }}
-                            >
-                              → {phases.find(p => p.key === nextPhaseMap[piece.phase])?.emoji}{" "}
-                              {phases.find(p => p.key === nextPhaseMap[piece.phase])?.label}
-                            </Button>
-                          )}
+                          {canEdit && nextPhaseMap[piece.phase] && (() => {
+                            const isAdminLike = userRole === "admin" || userRole === "head_of_content";
+                            const next = nextPhaseMap[piece.phase];
+                            const blocked = piece.phase === "internal_review" && next === "review" && !isAdminLike;
+                            if (blocked) {
+                              return (
+                                <div className="w-full mt-2 h-7 flex items-center justify-center text-[10px] font-mono text-muted-foreground/70 italic">
+                                  Wartet auf Jonas
+                                </div>
+                              );
+                            }
+                            return (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="w-full mt-2 h-7 text-[10px] font-mono gap-1 text-muted-foreground hover:text-primary hover:bg-primary/5"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onMovePiece(piece.id, next);
+                                }}
+                              >
+                                → {phases.find(p => p.key === next)?.emoji}{" "}
+                                {phases.find(p => p.key === next)?.label}
+                              </Button>
+                            );
+                          })()}
 
-                          {/* Admin: Direct approve from review */}
-                          {piece.phase === "review" && (userRole === "admin" || userRole === "head_of_content") && (
+                          {/* Admin: Direct approve from review or internal_review */}
+                          {(piece.phase === "review" || piece.phase === "internal_review") && (userRole === "admin" || userRole === "head_of_content") && (
                             <Button
                               size="sm"
                               variant="default"
