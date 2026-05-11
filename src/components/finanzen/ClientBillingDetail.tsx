@@ -143,26 +143,36 @@ export default function ClientBillingDetail({
             <div>
               <div className="text-sm font-medium mb-2">Monatliche Rechnungen</div>
               <div className="space-y-1.5">
-                {contract.months.map((m) => {
-                  const eff = effectiveStatus({
-                    storedStatus: m.invoice_status,
-                    billingMonth: m.billing_month,
-                    billingYear: m.billing_year,
-                    invoiceSentAt: m.invoice_sent_at,
-                  });
-                  return (
-                    <div key={m.id} className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm">
-                          Monat {m.month_number} · {formatMonthDe(m.billing_month, m.billing_year)} · <span className="font-medium">{formatEur(m.amount_netto)}</span>
-                        </div>
-                        {(m.invoice_sent_at || m.invoice_paid_at) && (
-                          <div className="text-[11px] text-muted-foreground">
-                            {m.invoice_sent_at && <>Gestellt: {formatDateDe(m.invoice_sent_at)} </>}
-                            {m.invoice_paid_at && <>· Bezahlt: {formatDateDe(m.invoice_paid_at)}</>}
-                          </div>
-                        )}
+                {(() => {
+                  const maxAmount = Math.max(...contract.months.map((m) => m.amount_netto), 1);
+                  return contract.months.map((m) => {
+                    const eff = effectiveStatus({
+                      storedStatus: m.invoice_status,
+                      billingMonth: m.billing_month,
+                      billingYear: m.billing_year,
+                      invoiceSentAt: m.invoice_sent_at,
+                    });
+                    const widthPct = (m.amount_netto / maxAmount) * 100;
+                    return (
+                  <div key={m.id} className="relative flex items-center gap-2 rounded-md border bg-card px-3 py-2 overflow-hidden">
+                    <div
+                      className={cn(
+                        "absolute inset-y-0 left-0 opacity-[0.07]",
+                        m.invoice_status === "paid" ? "bg-green-500" : m.invoice_status === "sent" ? "bg-blue-500" : "bg-foreground",
+                      )}
+                      style={{ width: `${widthPct}%` }}
+                    />
+                    <div className="flex-1 min-w-0 relative">
+                      <div className="text-sm">
+                        Monat {m.month_number} · {formatMonthDe(m.billing_month, m.billing_year)} · <span className="font-medium">{formatEur(m.amount_netto)}</span>
                       </div>
+                      {(m.invoice_sent_at || m.invoice_paid_at) && (
+                        <div className="text-[11px] text-muted-foreground">
+                          {m.invoice_sent_at && <>Gestellt: {formatDateDe(m.invoice_sent_at)} </>}
+                          {m.invoice_paid_at && <>· Bezahlt: {formatDateDe(m.invoice_paid_at)}</>}
+                        </div>
+                      )}
+                    </div>
                       <Badge className={STATUS_BADGE[eff]} variant="outline">{STATUS_LABEL[eff]}</Badge>
                       {m.invoice_status !== "paid" && m.invoice_status !== "sent" && (
                         <Button size="sm" variant="outline" onClick={() => updateMonth(m, { invoice_status: "sent", invoice_sent_at: today })}>
