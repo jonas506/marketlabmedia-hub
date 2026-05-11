@@ -10,7 +10,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Trash2, Pencil, XCircle, Plus, Clock } from "lucide-react";
+import { CheckCircle2, Trash2, Pencil, XCircle, Plus, Clock, CalendarPlus } from "lucide-react";
 import { format } from "date-fns";
 import {
   effectiveStatus, formatDateDe, formatEur, formatMonthDe, STATUS_BADGE, STATUS_LABEL,
@@ -18,6 +18,9 @@ import {
 import type { ClientLite, ClientProject, Contract, ContractMonth } from "@/hooks/useFinanzenData";
 import ContractForm from "./ContractForm";
 import ProjectForm from "./ProjectForm";
+import ExtendContractDialog from "./ExtendContractDialog";
+import AmountSparkline from "./AmountSparkline";
+import { cn } from "@/lib/utils";
 
 interface Props {
   open: boolean;
