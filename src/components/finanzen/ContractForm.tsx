@@ -42,13 +42,16 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
     if (editContract) {
       setClientId(editContract.client_id);
       setStartDate(editContract.start_date);
+      setBillingStartDate(editContract.billing_start_date ?? editContract.start_date);
       setDuration(editContract.duration_months);
       setNote(editContract.note ?? "");
       const sorted = [...editContract.months].sort((a, b) => a.month_number - b.month_number);
       setAmounts(sorted.map((m) => m.amount_netto));
     } else {
       setClientId("");
-      setStartDate(format(new Date(), "yyyy-MM-dd"));
+      const today = format(new Date(), "yyyy-MM-dd");
+      setStartDate(today);
+      setBillingStartDate(today);
       setDuration(6);
       setNote("");
       setAmounts(Array(6).fill(2500));
