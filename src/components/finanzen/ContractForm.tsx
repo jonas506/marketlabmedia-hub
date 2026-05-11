@@ -114,7 +114,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
     }
     setSaving(true);
     try {
-      const start = new Date(startDate);
+      
       const billingStart = new Date(billingStartDate || startDate);
       const end = addMonths(billingStart, duration);
       end.setDate(end.getDate() - 1);
