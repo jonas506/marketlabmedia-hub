@@ -115,7 +115,8 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
     setSaving(true);
     try {
       const start = new Date(startDate);
-      const end = addMonths(start, duration);
+      const billingStart = new Date(billingStartDate || startDate);
+      const end = addMonths(billingStart, duration);
       end.setDate(end.getDate() - 1);
       const endStr = format(end, "yyyy-MM-dd");
 
@@ -127,6 +128,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
           .update({
             client_id: clientId,
             start_date: startDate,
+            billing_start_date: billingStartDate || startDate,
             end_date: endStr,
             duration_months: duration,
             note: note || null,
@@ -139,6 +141,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
           .insert({
             client_id: clientId,
             start_date: startDate,
+            billing_start_date: billingStartDate || startDate,
             end_date: endStr,
             duration_months: duration,
             note: note || null,
@@ -156,7 +159,7 @@ export default function ContractForm({ open, onOpenChange, clients, existingCont
       }
 
       const monthRows = amounts.map((amount, i) => {
-        const d = addMonths(start, i);
+        const d = addMonths(billingStart, i);
         return {
           contract_id: contractId!,
           month_number: i + 1,
