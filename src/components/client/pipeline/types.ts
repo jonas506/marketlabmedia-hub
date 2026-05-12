@@ -23,6 +23,7 @@ export interface ContentPiece {
   slide_images?: string[] | null;
   team_reply?: string | null;
   internal_note?: string | null;
+  funnel_stage?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 }
