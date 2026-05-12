@@ -81,6 +81,37 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           {noDeadlineCount} ohne Deadline
         </span>
       )}
+      {funnelSummary && (funnelSummary.tofu + funnelSummary.mofu + funnelSummary.bofu + funnelSummary.none) > 0 && (
+        <div className="flex items-center gap-1">
+          {FUNNEL_STAGES.map((s) => {
+            const count = funnelSummary[s.value as "tofu" | "mofu" | "bofu"];
+            return (
+              <Tooltip key={s.value}>
+                <TooltipTrigger asChild>
+                  <span className={cn(
+                    "inline-flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded-md border tabular-nums",
+                    s.className,
+                    count === 0 && "opacity-40"
+                  )}>
+                    {s.label} <span className="font-semibold">{count}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">{s.description}</TooltipContent>
+              </Tooltip>
+            );
+          })}
+          {funnelSummary.none > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded-md border border-dashed border-border text-muted-foreground tabular-nums">
+                  ? <span className="font-semibold">{funnelSummary.none}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">Ohne Funnel-Stage</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      )}
       <div className="flex-1" />
       <div className="flex items-center gap-1.5 flex-wrap">
         {/* Drive Links */}
