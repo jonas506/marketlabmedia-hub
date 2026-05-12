@@ -347,19 +347,15 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     }
     .link-item a:hover { text-decoration: underline; }
     .page-footer {
-      padding: 1.5rem 3rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
       border-top: 1px solid #eee;
       text-align: center;
       font-size: 11px;
       color: #bbb;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
     }
     @media print {
-      .page-footer { position: fixed; bottom: 0; }
-      .content { padding-bottom: 4rem; }
+      .script-block { break-inside: avoid; page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -376,8 +372,7 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     <div class="doc-subtitle">Vorbereitet von Marketlab Media</div>
     ${printContent}
   </div>
-  <div class="page-footer">Marketlab Media · Vertraulich</div>
-  <script>window.onload = function() { window.print(); }</script>
+  <script>window.onload = function() { setTimeout(function(){ window.print(); }, 150); }</script>
 </body>
 </html>`);
     win.document.close();
