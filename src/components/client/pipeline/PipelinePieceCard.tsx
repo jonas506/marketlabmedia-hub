@@ -165,33 +165,36 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           canEdit={canEdit}
           onChange={(v) => onUpdatePiece(piece.id, { raw_footage_link: v })}
         />
-        {activeType === "story" && (
-          <Select
-            value={piece.cta_label || ""}
-            onValueChange={(v) => onUpdatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
-            disabled={!canEdit}
-          >
-            <SelectTrigger className={cn(
-              "h-7 w-auto min-w-[7rem] text-xs font-mono border-0 px-2.5 rounded-full gap-1.5",
-              piece.cta_label ? "bg-secondary/15 text-secondary" : "bg-muted/60 text-muted-foreground"
-            )}>
-              <SelectValue placeholder="📢 CTA" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
-              <SelectItem value="Community">🏠 Community</SelectItem>
-              <SelectItem value="Kurs">📚 Kurs</SelectItem>
-              <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
-              <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
-              <SelectItem value="Freebie">🎁 Freebie</SelectItem>
-              <SelectItem value="Produkt">🛒 Produkt</SelectItem>
-              <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
-              <SelectItem value="Coaching">🎯 Coaching</SelectItem>
-              <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
-              <SelectItem value="App">📱 App</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
+        <Select
+          value={piece.cta_label || ""}
+          onValueChange={(v) => onUpdatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
+          disabled={!canEdit}
+        >
+          <SelectTrigger className={cn(
+            "h-7 w-auto min-w-[7rem] text-xs font-mono border-0 px-2.5 rounded-full gap-1.5 transition-colors",
+            piece.cta_label === "Kommentiere"
+              ? "bg-[hsl(var(--runway-green))]/15 text-[hsl(var(--runway-green))] ring-1 ring-[hsl(var(--runway-green))]/30"
+              : piece.cta_label
+              ? "bg-secondary/15 text-secondary"
+              : "bg-muted/60 text-muted-foreground"
+          )}>
+            <SelectValue placeholder="💬 CTA?" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
+            <SelectItem value="Kommentiere">💬 Kommentiere</SelectItem>
+            <SelectItem value="Community">🏠 Community</SelectItem>
+            <SelectItem value="Kurs">📚 Kurs</SelectItem>
+            <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
+            <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
+            <SelectItem value="Freebie">🎁 Freebie</SelectItem>
+            <SelectItem value="Produkt">🛒 Produkt</SelectItem>
+            <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
+            <SelectItem value="Coaching">🎯 Coaching</SelectItem>
+            <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
+            <SelectItem value="App">📱 App</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Zone 3 — Form grid: Assignee | Deadline | Priority */}
