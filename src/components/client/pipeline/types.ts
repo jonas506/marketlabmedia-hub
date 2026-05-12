@@ -24,6 +24,7 @@ export interface ContentPiece {
   team_reply?: string | null;
   internal_note?: string | null;
   funnel_stage?: string | null;
+  raw_footage_link?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 }
