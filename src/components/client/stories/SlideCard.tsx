@@ -170,7 +170,7 @@ const SlideCard: React.FC<SlideCardProps> = React.memo(({
             </div>
           </div>
         </div>
-        {isPosted && (
+        {(isPosted || (slide.slide_views || 0) > 0 || (slide.slide_replies || 0) > 0 || (slide.slide_clicks || 0) > 0 || canEdit) && (
           <div className="flex items-center gap-2.5 pt-1.5 mt-1.5 border-t border-border/30 flex-wrap">
             <div className="flex items-center gap-1">
               <span className="text-[9px] text-muted-foreground">👁</span>
