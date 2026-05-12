@@ -183,16 +183,6 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           <SelectContent>
             <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
             <SelectItem value="Kommentiere">💬 Kommentiere</SelectItem>
-            <SelectItem value="Community">🏠 Community</SelectItem>
-            <SelectItem value="Kurs">📚 Kurs</SelectItem>
-            <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
-            <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
-            <SelectItem value="Freebie">🎁 Freebie</SelectItem>
-            <SelectItem value="Produkt">🛒 Produkt</SelectItem>
-            <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
-            <SelectItem value="Coaching">🎯 Coaching</SelectItem>
-            <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
-            <SelectItem value="App">📱 App</SelectItem>
           </SelectContent>
         </Select>
       </div>
