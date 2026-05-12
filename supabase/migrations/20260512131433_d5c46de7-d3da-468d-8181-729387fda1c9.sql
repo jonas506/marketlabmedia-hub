@@ -1,0 +1,1 @@
+ALTER TABLE public.content_pieces ADD COLUMN IF NOT EXISTS script_images text[] DEFAULT '{}'::text[];
