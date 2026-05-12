@@ -113,6 +113,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setHooks(parsed.hooks);
     setBody(parsed.body);
     setLinks(Array.isArray(piece.script_links) ? piece.script_links : []);
+    setImages(Array.isArray(piece.script_images) ? piece.script_images : []);
   }
 
   const addHook = () => setHooks((prev) => [...prev, ""]);
