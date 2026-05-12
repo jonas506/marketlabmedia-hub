@@ -31,7 +31,24 @@ interface ScriptPiece {
   has_script?: boolean;
   tag?: string | null;
   script_links?: ScriptLink[] | null;
+  script_images?: string[] | null;
 }
+
+const urlToDataUrl = async (url: string): Promise<string | null> => {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
 
 interface PrintScriptsDialogProps {
   open: boolean;
@@ -122,7 +139,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 
   const handlePrint = async () => {
     const logoBase64 = await getLogoBase64();
-    const printContent = scriptPieces.map((piece, idx) => {
+
+    const blocks = await Promise.all(scriptPieces.map(async (piece, idx) => {
       const { hooks, body } = parseScript(piece.script_text);
       const typeLabel = TYPE_CONFIG.find((t) => t.key === piece.type)?.label ?? piece.type;
       const num = String(idx + 1).padStart(2, "0");
@@ -151,6 +169,19 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
         html += `<div class="body-section"><div class="body-text" style="color:#aaa;font-style:italic;">Kein Skript hinterlegt</div></div>`;
       }
 
+      const images = (piece.script_images || []).filter(Boolean);
+      if (images.length > 0) {
+        const dataUrls = await Promise.all(images.map(urlToDataUrl));
+        const valid = dataUrls.filter((u): u is string => !!u);
+        if (valid.length > 0) {
+          html += `<div class="images-section"><div class="images-label">BILDER</div><div class="images-grid">`;
+          valid.forEach((src) => {
+            html += `<div class="image-item"><img src="${src}" alt="" /></div>`;
+          });
+          html += `</div></div>`;
+        }
+      }
+
       const links = (piece.script_links || []) as ScriptLink[];
       if (links.length > 0) {
         html += `<div class="links-section"><div class="links-label">LINKS</div>`;
@@ -163,7 +194,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 
       html += `</div>`;
       return html;
-    }).join("");
+    }));
+    const printContent = blocks.join("");
 
     const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -319,6 +351,36 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       font-size: 14px;
       line-height: 1.8;
       color: #333;
+    }
+    .images-section {
+      padding: 0.75rem 1.25rem 1rem;
+      border-top: 1px solid #eee;
+    }
+    .images-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #aaa;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .image-item {
+      border: 1px solid #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+    .image-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 280px;
+      object-fit: contain;
     }
     .links-section {
       padding: 0.75rem 1.25rem 1rem;
