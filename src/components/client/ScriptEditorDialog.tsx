@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Save, Plus, Trash2, Copy, Check, FileText, Link as LinkIcon, X, ExternalLink } from "lucide-react";
+import { Save, Plus, Trash2, Copy, Check, FileText, Link as LinkIcon, X, ExternalLink, Image as ImageIcon, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
