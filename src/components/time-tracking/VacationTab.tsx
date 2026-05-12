@@ -208,6 +208,7 @@ export default function VacationTab() {
   const typeColor = (type: string) => {
     if (type === "vacation") return "bg-green-500";
     if (type === "sick") return "bg-red-500";
+    if (type === "holiday") return "bg-blue-500";
     return "bg-gray-400";
   };
 

@@ -49,7 +49,55 @@ export default function TimeTracking() {
     enabled: !!user,
   });
 
-  const filteredEntries = useMemo(() => entries as any[], [entries]);
+  // Approved absences (vacation / sick / holiday) — credited as virtual time entries (8h/day)
+  const { data: absences = [] } = useQuery({
+    queryKey: ["absences-approved", user?.id, isAdmin, memberFilter],
+    queryFn: async () => {
+      if (!user) return [];
+      let q = supabase.from("vacation_requests").select("*").eq("status", "approved");
+      if (!isAdmin) {
+        q = q.eq("user_id", user.id);
+      } else if (memberFilter !== "__all__") {
+        q = q.eq("user_id", memberFilter);
+      }
+      const { data } = await q;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const filteredEntries = useMemo(() => {
+    const ABSENCE_HOURS = 8;
+    const ABSENCE_LABEL: Record<string, string> = {
+      vacation: "Urlaub",
+      sick: "Krank",
+      holiday: "Feiertag",
+      personal: "Persönlich",
+    };
+    const virtualEntries: any[] = [];
+    for (const a of absences as any[]) {
+      const start = new Date(a.start_date);
+      const end = new Date(a.end_date);
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dow = d.getDay(); // skip weekends
+        if (dow === 0 || dow === 6) continue;
+        const dateStr = d.toISOString().slice(0, 10);
+        virtualEntries.push({
+          id: `abs-${a.id}-${dateStr}`,
+          user_id: a.user_id,
+          date: dateStr,
+          hours: ABSENCE_HOURS,
+          activity_type: "other",
+          note: ABSENCE_LABEL[a.type] || a.type,
+          client_id: null,
+          clients: { name: ABSENCE_LABEL[a.type] || a.type },
+          is_absence: true,
+          absence_type: a.type,
+        });
+      }
+    }
+    return [...(entries as any[]), ...virtualEntries];
+  }, [entries, absences]);
 
   return (
     <AppLayout>
