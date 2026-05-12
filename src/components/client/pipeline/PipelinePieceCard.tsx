@@ -165,26 +165,62 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           canEdit={canEdit}
           onChange={(v) => onUpdatePiece(piece.id, { raw_footage_link: v })}
         />
-        <Select
-          value={piece.cta_label || ""}
-          onValueChange={(v) => onUpdatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
-          disabled={!canEdit}
-        >
-          <SelectTrigger className={cn(
-            "h-7 w-auto min-w-[7rem] text-xs font-mono border-0 px-2.5 rounded-full gap-1.5 transition-colors",
-            piece.cta_label === "Kommentiere"
-              ? "bg-[hsl(var(--runway-green))]/15 text-[hsl(var(--runway-green))] ring-1 ring-[hsl(var(--runway-green))]/30"
-              : piece.cta_label
-              ? "bg-secondary/15 text-secondary"
-              : "bg-muted/60 text-muted-foreground"
-          )}>
-            <SelectValue placeholder="💬 CTA?" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
-            <SelectItem value="Kommentiere">💬 Kommentiere</SelectItem>
-          </SelectContent>
-        </Select>
+        {(() => {
+          const isComment = (piece.cta_label || "").startsWith("Kommentiere");
+          const currentKeyword = isComment ? ((piece.cta_label || "").split(":")[1]?.trim() ?? "") : "";
+          const lsKey = `cta_kw_${clientId}`;
+          return (
+            <>
+              <Select
+                value={isComment ? "Kommentiere" : (piece.cta_label || "")}
+                onValueChange={(v) => {
+                  if (v === "_clear") {
+                    onUpdatePiece(piece.id, { cta_label: null });
+                  } else if (v === "Kommentiere") {
+                    const remembered = typeof window !== "undefined" ? localStorage.getItem(lsKey) || "" : "";
+                    onUpdatePiece(piece.id, { cta_label: remembered ? `Kommentiere:${remembered}` : "Kommentiere" });
+                  }
+                }}
+                disabled={!canEdit}
+              >
+                <SelectTrigger className={cn(
+                  "h-7 w-auto min-w-[7rem] text-xs font-mono border-0 px-2.5 rounded-full gap-1.5 transition-colors",
+                  isComment
+                    ? "bg-[hsl(var(--runway-green))]/15 text-[hsl(var(--runway-green))] ring-1 ring-[hsl(var(--runway-green))]/30"
+                    : "bg-muted/60 text-muted-foreground"
+                )}>
+                  <SelectValue placeholder="💬 CTA?" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
+                  <SelectItem value="Kommentiere">💬 Kommentiere</SelectItem>
+                </SelectContent>
+              </Select>
+              {isComment && (
+                <Input
+                  key={piece.id + ":" + currentKeyword}
+                  defaultValue={currentKeyword}
+                  placeholder="Wort eingeben…"
+                  disabled={!canEdit}
+                  className="h-7 w-36 text-xs font-mono bg-[hsl(var(--runway-green))]/5 border-[hsl(var(--runway-green))]/30 rounded-full px-3"
+                  onBlur={(e) => {
+                    const word = e.target.value.trim();
+                    const next = word ? `Kommentiere:${word}` : "Kommentiere";
+                    if (next !== piece.cta_label) {
+                      onUpdatePiece(piece.id, { cta_label: next });
+                    }
+                    if (word && typeof window !== "undefined") {
+                      localStorage.setItem(lsKey, word);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                  }}
+                />
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* Zone 3 — Assignee */}
