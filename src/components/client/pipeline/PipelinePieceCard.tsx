@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { relativeTime } from "./constants";
 import PieceTagsRow from "./PieceTagsRow";
 import FunnelStageSelector from "./FunnelStageSelector";
+import RawFootageLink from "./RawFootageLink";
 import PieceActionRow from "./PieceActionRow";
 import PieceEditingControls from "./PieceEditingControls";
 import PieceDeadlinePriorityRow from "./PieceDeadlinePriorityRow";
@@ -145,6 +146,11 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           value={piece.funnel_stage}
           canEdit={canEdit}
           onChange={(v) => onUpdatePiece(piece.id, { funnel_stage: v })}
+        />
+        <RawFootageLink
+          value={piece.raw_footage_link}
+          canEdit={canEdit}
+          onChange={(v) => onUpdatePiece(piece.id, { raw_footage_link: v })}
         />
         <PieceActionRow
           piece={piece}
