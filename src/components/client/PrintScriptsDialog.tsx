@@ -107,11 +107,7 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 
   const filteredPieces = useMemo(() => {
     return pieces.filter(
-      (p) =>
-        selectedTypes.has(p.type) &&
-        selectedPhases.has(p.phase) &&
-        p.has_script &&
-        p.script_text?.trim()
+      (p) => selectedTypes.has(p.type) && selectedPhases.has(p.phase)
     );
   }, [pieces, selectedTypes, selectedPhases]);
 
@@ -120,7 +116,7 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
   }, [filteredPieces, excludedIds]);
 
   const availablePhases = useMemo(() => {
-    const phases = new Set(pieces.filter((p) => p.has_script && p.script_text?.trim()).map((p) => p.phase));
+    const phases = new Set(pieces.map((p) => p.phase));
     return PHASE_CONFIG.filter((ph) => phases.has(ph.key));
   }, [pieces]);
 
@@ -392,7 +388,7 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
           <div className="flex flex-wrap gap-1.5">
             {availablePhases.map((ph) => {
               const count = pieces.filter(
-                (p) => p.phase === ph.key && selectedTypes.has(p.type) && p.has_script && p.script_text?.trim()
+                (p) => p.phase === ph.key && selectedTypes.has(p.type)
               ).length;
               return (
                 <button
@@ -420,7 +416,7 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
           <div className="flex flex-wrap gap-1.5">
             {TYPE_CONFIG.map((t) => {
               const count = pieces.filter(
-                (p) => p.type === t.key && selectedPhases.has(p.phase) && p.has_script && p.script_text?.trim()
+                (p) => p.type === t.key && selectedPhases.has(p.phase)
               ).length;
               return (
                 <button
