@@ -139,7 +139,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 
   const handlePrint = async () => {
     const logoBase64 = await getLogoBase64();
-    const printContent = scriptPieces.map((piece, idx) => {
+
+    const blocks = await Promise.all(scriptPieces.map(async (piece, idx) => {
       const { hooks, body } = parseScript(piece.script_text);
       const typeLabel = TYPE_CONFIG.find((t) => t.key === piece.type)?.label ?? piece.type;
       const num = String(idx + 1).padStart(2, "0");
@@ -168,6 +169,19 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
         html += `<div class="body-section"><div class="body-text" style="color:#aaa;font-style:italic;">Kein Skript hinterlegt</div></div>`;
       }
 
+      const images = (piece.script_images || []).filter(Boolean);
+      if (images.length > 0) {
+        const dataUrls = await Promise.all(images.map(urlToDataUrl));
+        const valid = dataUrls.filter((u): u is string => !!u);
+        if (valid.length > 0) {
+          html += `<div class="images-section"><div class="images-label">BILDER</div><div class="images-grid">`;
+          valid.forEach((src) => {
+            html += `<div class="image-item"><img src="${src}" alt="" /></div>`;
+          });
+          html += `</div></div>`;
+        }
+      }
+
       const links = (piece.script_links || []) as ScriptLink[];
       if (links.length > 0) {
         html += `<div class="links-section"><div class="links-label">LINKS</div>`;
@@ -180,7 +194,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 
       html += `</div>`;
       return html;
-    }).join("");
+    }));
+    const printContent = blocks.join("");
 
     const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
 
