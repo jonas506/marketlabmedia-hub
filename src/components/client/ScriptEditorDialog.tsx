@@ -27,6 +27,7 @@ interface ScriptEditorDialogProps {
     script_text?: string | null;
     has_script?: boolean;
     script_links?: ScriptLink[] | null;
+    script_images?: string[] | null;
   } | null;
   clientId: string;
   canEdit: boolean;
