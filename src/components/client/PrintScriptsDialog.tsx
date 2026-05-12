@@ -147,6 +147,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
 
       if (body.trim()) {
         html += `<div class="body-section"><div class="body-label">SKRIPT</div><div class="body-text">${escapeHtml(body).replace(/\n/g, "<br/>")}</div></div>`;
+      } else if (hooks.length === 0) {
+        html += `<div class="body-section"><div class="body-text" style="color:#aaa;font-style:italic;">Kein Skript hinterlegt</div></div>`;
       }
 
       const links = (piece.script_links || []) as ScriptLink[];
