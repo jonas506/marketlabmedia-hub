@@ -197,26 +197,32 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
                 </SelectContent>
               </Select>
               {isComment && (
-                <Input
-                  key={piece.id + ":" + currentKeyword}
-                  defaultValue={currentKeyword}
-                  placeholder="Wort eingeben…"
-                  disabled={!canEdit}
-                  className="h-7 w-36 text-xs font-mono bg-[hsl(var(--runway-green))]/5 border-[hsl(var(--runway-green))]/30 rounded-full px-3"
-                  onBlur={(e) => {
-                    const word = e.target.value.trim();
-                    const next = word ? `Kommentiere:${word}` : "Kommentiere";
-                    if (next !== piece.cta_label) {
-                      onUpdatePiece(piece.id, { cta_label: next });
-                    }
-                    if (word && typeof window !== "undefined") {
-                      localStorage.setItem(lsKey, word);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
+                <div className="flex items-center h-7 rounded-full bg-[hsl(var(--runway-green))]/5 border border-[hsl(var(--runway-green))]/30 overflow-hidden">
+                  <span className="px-2.5 text-[11px] font-mono text-[hsl(var(--runway-green))] bg-[hsl(var(--runway-green))]/10 h-full flex items-center border-r border-[hsl(var(--runway-green))]/20">
+                    Kommentiere „
+                  </span>
+                  <Input
+                    key={piece.id + ":" + currentKeyword}
+                    defaultValue={currentKeyword}
+                    placeholder="Wort…"
+                    disabled={!canEdit}
+                    className="h-7 w-28 text-xs font-mono font-semibold bg-transparent border-0 rounded-none px-2 text-[hsl(var(--runway-green))] placeholder:text-[hsl(var(--runway-green))]/40 focus-visible:ring-0"
+                    onBlur={(e) => {
+                      const word = e.target.value.trim();
+                      const next = word ? `Kommentiere:${word}` : "Kommentiere";
+                      if (next !== piece.cta_label) {
+                        onUpdatePiece(piece.id, { cta_label: next });
+                      }
+                      if (word && typeof window !== "undefined") {
+                        localStorage.setItem(lsKey, word);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                    }}
+                  />
+                  <span className="pr-2.5 text-[11px] font-mono text-[hsl(var(--runway-green))]">"</span>
+                </div>
               )}
             </>
           );
