@@ -2,16 +2,18 @@ import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, FileText, MessageSquare, LayoutGrid, Send, Check, ShieldCheck } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Trash2, FileText, MessageSquare, LayoutGrid, Send, Check, ShieldCheck, CalendarIcon, AlertTriangle, icons } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { relativeTime } from "./constants";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import { relativeTime, PRIORITY_OPTIONS } from "./constants";
 import PieceTagsRow from "./PieceTagsRow";
 import FunnelStageSelector from "./FunnelStageSelector";
 import RawFootageLink from "./RawFootageLink";
-import PieceActionRow from "./PieceActionRow";
-import PieceEditingControls from "./PieceEditingControls";
-import PieceDeadlinePriorityRow from "./PieceDeadlinePriorityRow";
 import PieceLatePhaseRow from "./PieceLatePhaseRow";
 import CarouselSlideUpload from "../CarouselSlideUpload";
 import type { ContentPiece, TeamMember, PipelineConfig, MonthOption } from "./types";
@@ -42,6 +44,12 @@ const TeamReplyInput: React.FC<{ pieceId: string; currentReply: string; onSave: 
     </div>
   );
 };
+
+const FieldLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold mb-1 block ml-0.5">
+    {children}
+  </span>
+);
 
 interface PipelinePieceCardProps {
   piece: ContentPiece;
@@ -97,6 +105,11 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   const isLatePhase = activePhase === "internal_review" || activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
   const isInternalReview = activePhase === "internal_review";
   const isAdminLike = userRole === "admin" || userRole === "head_of_content";
+  const showDeadlinePriority = ["script", "filmed", "review", "editing"].includes(activePhase);
+
+  const priorityOption = PRIORITY_OPTIONS.find(p => p.value === (piece.priority || "normal"));
+  const NextIcon = nextPhase ? icons[config.phases.find((p) => p.key === nextPhase)?.emoji as keyof typeof icons] : null;
+  const moveBlocked = activePhase === "internal_review" && nextPhase === "review" && !isAdminLike;
 
   return (
     <motion.div
@@ -109,19 +122,19 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
         transition: { delay: index * 0.03 },
       }}
       exit={{ opacity: 0, x: 30, scale: 0.9, transition: { duration: 0.2 } }}
-      className={`flex flex-col gap-2 rounded-lg border p-2.5 sm:p-3.5 transition-all ${
+      className={`flex flex-col gap-4 rounded-xl border p-3 sm:p-4 transition-all ${
         isSelected
           ? "border-primary/40 bg-primary/5 shadow-sm shadow-primary/10"
           : "border-border hover:border-primary/20 hover:bg-card/80"
       }`}
     >
-      {/* Row 1: Checkbox + Title + Delete */}
+      {/* Zone 1 — Header: Checkbox + Title + Delete */}
       <div className="flex items-center gap-2 sm:gap-3">
         <Checkbox checked={isSelected} onCheckedChange={() => onToggleSelect(piece.id)} />
         <Input
           value={localTitle ?? piece.title ?? ""}
           placeholder="Titel eingeben..."
-          className="h-7 flex-1 min-w-0 border-0 bg-transparent text-sm px-1.5 placeholder:text-muted-foreground/40 focus-visible:bg-muted/30 rounded"
+          className="h-8 flex-1 min-w-0 border-0 bg-transparent text-base font-medium px-1.5 placeholder:text-muted-foreground/40 focus-visible:bg-muted/30 rounded"
           onChange={(e) => onTitleChange(piece.id, e.target.value)}
           disabled={!canEdit}
         />
@@ -133,7 +146,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
         )}
       </div>
 
-      {/* Row 2: Tag, CTA, Assign, Target month, Move button */}
+      {/* Zone 2 — Metadata pills (Tag, Funnel, Footage, optional CTA) */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap pl-7 sm:pl-9">
         <PieceTagsRow
           pieceId={piece.id}
@@ -152,72 +165,121 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           canEdit={canEdit}
           onChange={(v) => onUpdatePiece(piece.id, { raw_footage_link: v })}
         />
-        <PieceActionRow
-          piece={piece}
-          activePhase={activePhase}
-          activeType={activeType}
-          isLatePhase={isLatePhase}
-          config={config}
-          nextPhase={nextPhase}
-          team={team}
-          canEdit={canEdit}
-          monthOptions={monthOptions}
-          userRole={userRole}
-          onUpdatePiece={onUpdatePiece}
-          onMovePiece={onMovePiece}
-        />
+        {activeType === "story" && (
+          <Select
+            value={piece.cta_label || ""}
+            onValueChange={(v) => onUpdatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
+            disabled={!canEdit}
+          >
+            <SelectTrigger className={cn(
+              "h-7 w-auto min-w-[7rem] text-xs font-mono border-0 px-2.5 rounded-full gap-1.5",
+              piece.cta_label ? "bg-secondary/15 text-secondary" : "bg-muted/60 text-muted-foreground"
+            )}>
+              <SelectValue placeholder="📢 CTA" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
+              <SelectItem value="Community">🏠 Community</SelectItem>
+              <SelectItem value="Kurs">📚 Kurs</SelectItem>
+              <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
+              <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
+              <SelectItem value="Freebie">🎁 Freebie</SelectItem>
+              <SelectItem value="Produkt">🛒 Produkt</SelectItem>
+              <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
+              <SelectItem value="Coaching">🎯 Coaching</SelectItem>
+              <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
+              <SelectItem value="App">📱 App</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
-      {/* Script button — shown in script phase */}
-      {activePhase === "script" && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="pl-9"
-        >
-          <Button
-            size="sm"
-            variant="outline"
-            className={cn(
-              "h-7 text-xs font-mono gap-1.5",
-              piece.script_text
-                ? "text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/30 bg-[hsl(var(--runway-green))]/5"
-                : "text-muted-foreground"
-            )}
-            onClick={() => onOpenScript(piece)}
-          >
-            <FileText className="h-3 w-3" />
-            {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
-          </Button>
-        </motion.div>
-      )}
+      {/* Zone 3 — Form grid: Assignee | Deadline | Priority */}
+      <div className={cn(
+        "grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pl-7 sm:pl-9",
+        !showDeadlinePriority && "sm:grid-cols-1 sm:max-w-xs"
+      )}>
+        <div>
+          <FieldLabel>Zuständig</FieldLabel>
+          <Select value={piece.assigned_to || ""} onValueChange={(v) => onUpdatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
+            <SelectTrigger className="h-9 text-xs font-mono bg-muted/30 border border-border/60 hover:bg-muted/50 rounded-lg">
+              <SelectValue placeholder="Zuweisen" />
+            </SelectTrigger>
+            <SelectContent>
+              {team.map((t) => (
+                <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Carousel Builder button */}
-      {activeType === "carousel" && activePhase === "script" && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="pl-9"
-        >
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-xs font-mono gap-1.5 text-primary border-primary/30 bg-primary/5"
-            onClick={() => onOpenCarouselBuilder(piece)}
-          >
-            <LayoutGrid className="h-3 w-3" />
-            Carousel Builder
-          </Button>
-        </motion.div>
-      )}
+        {showDeadlinePriority && (
+          <>
+            <div>
+              <FieldLabel>Deadline</FieldLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={!canEdit}
+                    className={cn(
+                      "h-9 w-full justify-start text-xs font-mono bg-muted/30 border border-border/60 hover:bg-muted/50 rounded-lg gap-2",
+                      !piece.deadline && "text-muted-foreground/60",
+                      piece.deadline && new Date(piece.deadline) < new Date() && "text-destructive bg-destructive/10 border-destructive/30"
+                    )}
+                  >
+                    <CalendarIcon className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                    {piece.deadline
+                      ? format(new Date(piece.deadline), "dd. MMM yyyy", { locale: de })
+                      : "Datum setzen"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={piece.deadline ? new Date(piece.deadline) : undefined}
+                    onSelect={(date) => onUpdatePiece(piece.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
+                    initialFocus
+                    locale={de}
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-      {/* Carousel slide images */}
+            <div>
+              <FieldLabel>Priorität</FieldLabel>
+              <Select
+                value={piece.priority || "normal"}
+                onValueChange={(v) => onUpdatePiece(piece.id, { priority: v })}
+                disabled={!canEdit}
+              >
+                <SelectTrigger className={cn(
+                  "h-9 text-xs font-mono border border-border/60 rounded-lg gap-1.5",
+                  priorityOption?.bg || "bg-muted/30",
+                  priorityOption?.color,
+                )}>
+                  {(piece.priority === "high" || piece.priority === "urgent") && (
+                    <AlertTriangle className="h-3 w-3 shrink-0" />
+                  )}
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_OPTIONS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>
+                      <span className={p.color}>{p.label}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Carousel slide images (full-width content) */}
       {activeType === "carousel" && (activePhase === "internal_review" || activePhase === "review" || activePhase === "approved" || activePhase === "handed_over" || activePhase === "script" || activePhase === "feedback") && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="pl-7 sm:pl-9"
-        >
+        <div className="pl-7 sm:pl-9">
           <CarouselSlideUpload
             pieceId={piece.id}
             clientId={clientId}
@@ -225,51 +287,10 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
             canEdit={canEdit}
             onUpdate={(id, images) => onUpdatePiece(id, { slide_images: images })}
           />
-        </motion.div>
+        </div>
       )}
 
-      {activePhase === "filmed" && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="pl-9"
-        >
-          <Button
-            size="sm"
-            variant="ghost"
-            className={cn(
-              "h-7 text-xs font-mono gap-1.5",
-              piece.script_text
-                ? "text-[hsl(var(--runway-green))] hover:text-[hsl(var(--runway-green))]"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-            onClick={() => onOpenScript(piece)}
-          >
-            <FileText className="h-3 w-3" />
-            {piece.script_text ? "Skript ansehen" : "Skript hinzufügen"}
-          </Button>
-        </motion.div>
-      )}
-
-      {activePhase === "editing" && (
-        <PieceEditingControls
-          piece={piece}
-          canEdit={canEdit}
-          onOpenScript={onOpenScript}
-          onUpdatePiece={onUpdatePiece}
-        />
-      )}
-
-      {/* Deadline + Priority controls for non-editing active phases */}
-      {["script", "filmed", "review"].includes(activePhase) && (
-        <PieceDeadlinePriorityRow
-          piece={piece}
-          canEdit={canEdit}
-          onUpdatePiece={onUpdatePiece}
-        />
-      )}
-
-      {/* Bottom action row — link + caption + posting date */}
+      {/* Late-phase row (link + caption + posting date) */}
       {isLatePhase && (
         <PieceLatePhaseRow
           piece={piece}
@@ -283,13 +304,9 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
         />
       )}
 
-      {/* Internal note — only visible internally, never shown to clients */}
+      {/* Internal note */}
       {isInternalReview && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="pl-7 sm:pl-9"
-        >
+        <div className="pl-7 sm:pl-9">
           <div className="flex items-start gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 p-2">
             <ShieldCheck className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-1" />
             <div className="flex-1 space-y-1">
@@ -311,16 +328,12 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
               />
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Client comment + Team reply */}
       {piece.client_comment && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="space-y-2 pl-7 sm:pl-9"
-        >
+        <div className="space-y-2 pl-7 sm:pl-9">
           <div className="flex items-start gap-2">
             <MessageSquare className="h-3.5 w-3.5 text-[hsl(var(--runway-yellow))] shrink-0 mt-0.5" />
             <span className="text-xs text-[hsl(var(--runway-yellow))] font-body bg-[hsl(var(--runway-yellow))]/10 rounded px-2 py-1 flex-1">
@@ -334,7 +347,6 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
                 onClick={() => onUpdatePiece(piece.id, { client_comment: null })}>✕</Button>
             )}
           </div>
-          {/* Team reply */}
           {canEdit && (
             <TeamReplyInput
               pieceId={piece.id}
@@ -349,8 +361,107 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
               </span>
             </div>
           )}
-        </motion.div>
+        </div>
       )}
+
+      {/* Zone 4 — Action footer */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
+        {/* Left: primary contextual action */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {activePhase === "script" && (
+            <Button
+              size="sm"
+              variant="outline"
+              className={cn(
+                "h-8 text-xs font-mono gap-1.5 rounded-lg",
+                piece.script_text
+                  ? "text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/30 bg-[hsl(var(--runway-green))]/5 hover:bg-[hsl(var(--runway-green))]/10"
+                  : "text-muted-foreground"
+              )}
+              onClick={() => onOpenScript(piece)}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              {piece.script_text ? "Skript bearbeiten" : "Skript schreiben"}
+            </Button>
+          )}
+          {activeType === "carousel" && activePhase === "script" && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs font-mono gap-1.5 text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-lg"
+              onClick={() => onOpenCarouselBuilder(piece)}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Carousel Builder
+            </Button>
+          )}
+          {(activePhase === "filmed" || activePhase === "editing") && (
+            <Button
+              size="sm"
+              variant="outline"
+              className={cn(
+                "h-8 text-xs font-mono gap-1.5 rounded-lg",
+                piece.script_text
+                  ? "text-[hsl(var(--runway-green))] border-[hsl(var(--runway-green))]/30 bg-[hsl(var(--runway-green))]/5"
+                  : "text-muted-foreground"
+              )}
+              onClick={() => onOpenScript(piece)}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              {piece.script_text ? "Skript ansehen" : "Skript hinzufügen"}
+            </Button>
+          )}
+        </div>
+
+        {/* Right: timestamp + admin approve + move next */}
+        <div className="flex items-center gap-3 ml-auto">
+          {piece.updated_at && (
+            <span
+              className="text-[11px] text-muted-foreground/60 italic font-light hidden sm:inline"
+              title={`Seit ${format(new Date(piece.updated_at), "dd. MMM yyyy, HH:mm", { locale: de })} Uhr`}
+            >
+              {relativeTime(piece.updated_at)}
+            </span>
+          )}
+          {activePhase === "review" && isAdminLike && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="sm"
+                variant="default"
+                className="h-8 px-3 text-xs gap-1.5 font-mono bg-[hsl(var(--runway-green))] hover:bg-[hsl(var(--runway-green))]/90 text-white border-0 rounded-lg"
+                onClick={() => onMovePiece(piece.id, "approved")}
+              >
+                <Check className="h-3.5 w-3.5" /> Freigeben
+              </Button>
+            </motion.div>
+          )}
+          {nextPhase && (
+            moveBlocked ? (
+              <span className="text-[10px] font-mono text-muted-foreground/70 italic px-2">
+                Wartet auf Jonas
+              </span>
+            ) : (
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button
+                  size="sm"
+                  variant={nextPhase === "handed_over" ? "default" : "secondary"}
+                  className={cn(
+                    "h-8 px-3 text-xs gap-1.5 font-mono rounded-lg",
+                    nextPhase === "handed_over"
+                      ? "bg-gradient-to-r from-primary to-[hsl(var(--runway-green))] shadow-sm shadow-primary/20 border-0 text-primary-foreground"
+                      : "bg-foreground text-background hover:bg-foreground/90"
+                  )}
+                  onClick={() => onMovePiece(piece.id, nextPhase)}
+                >
+                  <span className="opacity-70">→</span>
+                  {NextIcon ? <NextIcon size={13} /> : null}
+                  <span>{config.phases.find((p) => p.key === nextPhase)?.label}</span>
+                </Button>
+              </motion.div>
+            )
+          )}
+        </div>
+      </div>
     </motion.div>
   );
 });
