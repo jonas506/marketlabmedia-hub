@@ -916,6 +916,7 @@ export type Database = {
           drive_file_id: string | null
           drive_file_name: string | null
           drive_uploaded_at: string | null
+          funnel_stage: string | null
           has_script: boolean | null
           id: string
           internal_note: string | null
@@ -950,6 +951,7 @@ export type Database = {
           drive_file_id?: string | null
           drive_file_name?: string | null
           drive_uploaded_at?: string | null
+          funnel_stage?: string | null
           has_script?: boolean | null
           id?: string
           internal_note?: string | null
@@ -984,6 +986,7 @@ export type Database = {
           drive_file_id?: string | null
           drive_file_name?: string | null
           drive_uploaded_at?: string | null
+          funnel_stage?: string | null
           has_script?: boolean | null
           id?: string
           internal_note?: string | null
