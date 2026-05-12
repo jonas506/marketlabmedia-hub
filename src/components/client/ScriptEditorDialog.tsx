@@ -145,6 +145,36 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setTimeout(() => setCopiedLinkIdx(null), 1500);
   };
 
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!piece || !e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    setUploading(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${clientId}/${piece.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error } = await supabase.storage.from("reference-images").upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (error) throw error;
+        const { data } = supabase.storage.from("reference-images").getPublicUrl(path);
+        uploaded.push(data.publicUrl);
+      }
+      setImages((prev) => [...prev, ...uploaded]);
+      toast.success(`${uploaded.length} Bild(er) hochgeladen`);
+    } catch (err: any) {
+      toast.error("Upload fehlgeschlagen: " + (err?.message || "Unbekannter Fehler"));
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeImage = (idx: number) => setImages((prev) => prev.filter((_, i) => i !== idx));
+
   const save = useCallback(async () => {
     if (!piece) return;
     const scriptText = serializeScript(hooks, body);
@@ -153,13 +183,13 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
     await supabase
       .from("content_pieces")
-      .update({ script_text: scriptText, has_script: hasScript, script_links: cleanLinks } as any)
+      .update({ script_text: scriptText, has_script: hasScript, script_links: cleanLinks, script_images: images } as any)
       .eq("id", piece.id);
 
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     qc.invalidateQueries({ queryKey: ["script-link-tags", clientId] });
     toast.success("Skript gespeichert!");
-  }, [piece, hooks, body, links, clientId, qc]);
+  }, [piece, hooks, body, links, images, clientId, qc]);
 
   if (!piece) return null;
 
