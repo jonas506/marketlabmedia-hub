@@ -37,8 +37,12 @@ export function formatHoursMinutes(decimal: number): string {
 export const VACATION_TYPES = [
   { value: 'vacation', label: 'Urlaub' },
   { value: 'sick', label: 'Krank' },
+  { value: 'holiday', label: 'Feiertag' },
   { value: 'personal', label: 'Persönlich' },
 ] as const;
+
+// Default working hours per day used to credit absences (vacation/sick/holiday) into stats
+export const ABSENCE_HOURS_PER_DAY = 8;
 
 export const VACATION_STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
