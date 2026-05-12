@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { PipelineConfig } from "./types";
+import { FUNNEL_STAGES } from "./FunnelStageSelector";
 
 interface DriveLinks {
   drive_folder_id?: string | null;
@@ -27,6 +28,7 @@ interface PipelineHeaderProps {
   canEdit: boolean;
   hasPieces: boolean;
   noDeadlineCount?: number;
+  funnelSummary?: { tofu: number; mofu: number; bofu: number; none: number };
   driveLinks?: DriveLinks;
 }
 
@@ -49,6 +51,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   canEdit,
   hasPieces,
   noDeadlineCount = 0,
+  funnelSummary,
   driveLinks,
 }) => {
   const activeDriveLinks = DRIVE_LINK_ITEMS.filter(item => driveLinks?.[item.key]);
@@ -77,6 +80,37 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
           <AlertTriangle className="h-3 w-3" />
           {noDeadlineCount} ohne Deadline
         </span>
+      )}
+      {funnelSummary && (funnelSummary.tofu + funnelSummary.mofu + funnelSummary.bofu + funnelSummary.none) > 0 && (
+        <div className="flex items-center gap-1">
+          {FUNNEL_STAGES.map((s) => {
+            const count = funnelSummary[s.value as "tofu" | "mofu" | "bofu"];
+            return (
+              <Tooltip key={s.value}>
+                <TooltipTrigger asChild>
+                  <span className={cn(
+                    "inline-flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded-md border tabular-nums",
+                    s.className,
+                    count === 0 && "opacity-40"
+                  )}>
+                    {s.label} <span className="font-semibold">{count}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">{s.description}</TooltipContent>
+              </Tooltip>
+            );
+          })}
+          {funnelSummary.none > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded-md border border-dashed border-border text-muted-foreground tabular-nums">
+                  ? <span className="font-semibold">{funnelSummary.none}</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">Ohne Funnel-Stage</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       )}
       <div className="flex-1" />
       <div className="flex items-center gap-1.5 flex-wrap">
