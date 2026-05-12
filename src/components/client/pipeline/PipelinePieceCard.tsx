@@ -165,116 +165,51 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           canEdit={canEdit}
           onChange={(v) => onUpdatePiece(piece.id, { raw_footage_link: v })}
         />
-        {activeType === "story" && (
-          <Select
-            value={piece.cta_label || ""}
-            onValueChange={(v) => onUpdatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
-            disabled={!canEdit}
-          >
-            <SelectTrigger className={cn(
-              "h-7 w-auto min-w-[7rem] text-xs font-mono border-0 px-2.5 rounded-full gap-1.5",
-              piece.cta_label ? "bg-secondary/15 text-secondary" : "bg-muted/60 text-muted-foreground"
-            )}>
-              <SelectValue placeholder="📢 CTA" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
-              <SelectItem value="Community">🏠 Community</SelectItem>
-              <SelectItem value="Kurs">📚 Kurs</SelectItem>
-              <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
-              <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
-              <SelectItem value="Freebie">🎁 Freebie</SelectItem>
-              <SelectItem value="Produkt">🛒 Produkt</SelectItem>
-              <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
-              <SelectItem value="Coaching">🎯 Coaching</SelectItem>
-              <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
-              <SelectItem value="App">📱 App</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
+        <Select
+          value={piece.cta_label || ""}
+          onValueChange={(v) => onUpdatePiece(piece.id, { cta_label: v === "_clear" ? null : v })}
+          disabled={!canEdit}
+        >
+          <SelectTrigger className={cn(
+            "h-7 w-auto min-w-[7rem] text-xs font-mono border-0 px-2.5 rounded-full gap-1.5 transition-colors",
+            piece.cta_label === "Kommentiere"
+              ? "bg-[hsl(var(--runway-green))]/15 text-[hsl(var(--runway-green))] ring-1 ring-[hsl(var(--runway-green))]/30"
+              : piece.cta_label
+              ? "bg-secondary/15 text-secondary"
+              : "bg-muted/60 text-muted-foreground"
+          )}>
+            <SelectValue placeholder="💬 CTA?" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_clear"><span className="text-muted-foreground">— Kein CTA</span></SelectItem>
+            <SelectItem value="Kommentiere">💬 Kommentiere</SelectItem>
+            <SelectItem value="Community">🏠 Community</SelectItem>
+            <SelectItem value="Kurs">📚 Kurs</SelectItem>
+            <SelectItem value="Erstgespräch">📞 Erstgespräch</SelectItem>
+            <SelectItem value="Webinar">🎙️ Webinar</SelectItem>
+            <SelectItem value="Freebie">🎁 Freebie</SelectItem>
+            <SelectItem value="Produkt">🛒 Produkt</SelectItem>
+            <SelectItem value="Newsletter">📧 Newsletter</SelectItem>
+            <SelectItem value="Coaching">🎯 Coaching</SelectItem>
+            <SelectItem value="Workshop">🛠️ Workshop</SelectItem>
+            <SelectItem value="App">📱 App</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Zone 3 — Form grid: Assignee | Deadline | Priority */}
-      <div className={cn(
-        "grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pl-7 sm:pl-9",
-        !showDeadlinePriority && "sm:grid-cols-1 sm:max-w-xs"
-      )}>
-        <div>
-          <FieldLabel>Zuständig</FieldLabel>
-          <Select value={piece.assigned_to || ""} onValueChange={(v) => onUpdatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
-            <SelectTrigger className="h-9 text-xs font-mono bg-muted/30 border border-border/60 hover:bg-muted/50 rounded-lg">
-              <SelectValue placeholder="Zuweisen" />
-            </SelectTrigger>
-            <SelectContent>
-              {team.map((t) => (
-                <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {showDeadlinePriority && (
-          <>
-            <div>
-              <FieldLabel>Deadline</FieldLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    disabled={!canEdit}
-                    className={cn(
-                      "h-9 w-full justify-start text-xs font-mono bg-muted/30 border border-border/60 hover:bg-muted/50 rounded-lg gap-2",
-                      !piece.deadline && "text-muted-foreground/60",
-                      piece.deadline && new Date(piece.deadline) < new Date() && "text-destructive bg-destructive/10 border-destructive/30"
-                    )}
-                  >
-                    <CalendarIcon className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                    {piece.deadline
-                      ? format(new Date(piece.deadline), "dd. MMM yyyy", { locale: de })
-                      : "Datum setzen"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={piece.deadline ? new Date(piece.deadline) : undefined}
-                    onSelect={(date) => onUpdatePiece(piece.id, { deadline: date ? format(date, "yyyy-MM-dd") : null })}
-                    initialFocus
-                    locale={de}
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div>
-              <FieldLabel>Priorität</FieldLabel>
-              <Select
-                value={piece.priority || "normal"}
-                onValueChange={(v) => onUpdatePiece(piece.id, { priority: v })}
-                disabled={!canEdit}
-              >
-                <SelectTrigger className={cn(
-                  "h-9 text-xs font-mono border border-border/60 rounded-lg gap-1.5",
-                  priorityOption?.bg || "bg-muted/30",
-                  priorityOption?.color,
-                )}>
-                  {(piece.priority === "high" || piece.priority === "urgent") && (
-                    <AlertTriangle className="h-3 w-3 shrink-0" />
-                  )}
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRIORITY_OPTIONS.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
-                      <span className={p.color}>{p.label}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
+      {/* Zone 3 — Assignee */}
+      <div className="pl-7 sm:pl-9 max-w-xs">
+        <FieldLabel>Zuständig</FieldLabel>
+        <Select value={piece.assigned_to || ""} onValueChange={(v) => onUpdatePiece(piece.id, { assigned_to: v })} disabled={!canEdit}>
+          <SelectTrigger className="h-9 text-xs font-mono bg-muted/30 border border-border/60 hover:bg-muted/50 rounded-lg">
+            <SelectValue placeholder="Zuweisen" />
+          </SelectTrigger>
+          <SelectContent>
+            {team.map((t) => (
+              <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Carousel slide images (full-width content) */}
