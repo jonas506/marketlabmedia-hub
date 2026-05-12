@@ -369,13 +369,13 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
 
   const funnelSummary = useMemo(() => {
     const s = { tofu: 0, mofu: 0, bofu: 0, none: 0 };
-    for (const p of monthPieces) {
+    for (const p of phasePieces) {
       const v = (p as { funnel_stage?: string | null }).funnel_stage;
       if (v === "tofu" || v === "mofu" || v === "bofu") s[v]++;
       else s.none++;
     }
     return s;
-  }, [monthPieces]);
+  }, [phasePieces]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-border bg-card overflow-hidden">
