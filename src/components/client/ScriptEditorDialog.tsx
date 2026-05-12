@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Save, Plus, Trash2, Copy, Check, FileText, Link as LinkIcon, X, ExternalLink } from "lucide-react";
+import { Save, Plus, Trash2, Copy, Check, FileText, Link as LinkIcon, X, ExternalLink, Image as ImageIcon, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ interface ScriptEditorDialogProps {
     script_text?: string | null;
     has_script?: boolean;
     script_links?: ScriptLink[] | null;
+    script_images?: string[] | null;
   } | null;
   clientId: string;
   canEdit: boolean;
@@ -76,6 +77,8 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
   const [hooks, setHooks] = useState<string[]>([""]);
   const [body, setBody] = useState("");
   const [links, setLinks] = useState<ScriptLink[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [copiedLinkIdx, setCopiedLinkIdx] = useState<number | null>(null);
   const [lastPieceId, setLastPieceId] = useState<string | null>(null);
@@ -110,6 +113,7 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setHooks(parsed.hooks);
     setBody(parsed.body);
     setLinks(Array.isArray(piece.script_links) ? piece.script_links : []);
+    setImages(Array.isArray(piece.script_images) ? piece.script_images : []);
   }
 
   const addHook = () => setHooks((prev) => [...prev, ""]);
@@ -141,6 +145,36 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setTimeout(() => setCopiedLinkIdx(null), 1500);
   };
 
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!piece || !e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    setUploading(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${clientId}/${piece.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error } = await supabase.storage.from("reference-images").upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (error) throw error;
+        const { data } = supabase.storage.from("reference-images").getPublicUrl(path);
+        uploaded.push(data.publicUrl);
+      }
+      setImages((prev) => [...prev, ...uploaded]);
+      toast.success(`${uploaded.length} Bild(er) hochgeladen`);
+    } catch (err: any) {
+      toast.error("Upload fehlgeschlagen: " + (err?.message || "Unbekannter Fehler"));
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeImage = (idx: number) => setImages((prev) => prev.filter((_, i) => i !== idx));
+
   const save = useCallback(async () => {
     if (!piece) return;
     const scriptText = serializeScript(hooks, body);
@@ -149,13 +183,13 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
 
     await supabase
       .from("content_pieces")
-      .update({ script_text: scriptText, has_script: hasScript, script_links: cleanLinks } as any)
+      .update({ script_text: scriptText, has_script: hasScript, script_links: cleanLinks, script_images: images } as any)
       .eq("id", piece.id);
 
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     qc.invalidateQueries({ queryKey: ["script-link-tags", clientId] });
     toast.success("Skript gespeichert!");
-  }, [piece, hooks, body, links, clientId, qc]);
+  }, [piece, hooks, body, links, images, clientId, qc]);
 
   if (!piece) return null;
 
@@ -276,6 +310,60 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
                     >
                       {tag}
                     </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Images section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  <span className="text-sm font-semibold font-display">Bilder</span>
+                  <span className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                    {images.length}
+                  </span>
+                </div>
+                {canEdit && (
+                  <label className="inline-flex">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                    <span className={cn(
+                      "inline-flex items-center gap-1 h-7 px-2.5 text-xs font-mono rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors",
+                      uploading && "opacity-50 cursor-not-allowed"
+                    )}>
+                      {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                      {uploading ? "Lädt…" : "Bild hochladen"}
+                    </span>
+                  </label>
+                )}
+              </div>
+
+              {images.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {images.map((url, idx) => (
+                    <div key={idx} className="relative group aspect-square rounded-md overflow-hidden bg-muted/30 border border-border">
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <img src={url} alt={`Bild ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                      </a>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                          aria-label="Bild entfernen"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}

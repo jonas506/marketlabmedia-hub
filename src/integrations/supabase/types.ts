@@ -924,6 +924,7 @@ export type Database = {
           priority: string | null
           revision_count: number
           scheduled_post_date: string | null
+          script_images: string[] | null
           script_links: Json | null
           script_text: string | null
           shoot_day_id: string | null
@@ -957,6 +958,7 @@ export type Database = {
           priority?: string | null
           revision_count?: number
           scheduled_post_date?: string | null
+          script_images?: string[] | null
           script_links?: Json | null
           script_text?: string | null
           shoot_day_id?: string | null
@@ -990,6 +992,7 @@ export type Database = {
           priority?: string | null
           revision_count?: number
           scheduled_post_date?: string | null
+          script_images?: string[] | null
           script_links?: Json | null
           script_text?: string | null
           shoot_day_id?: string | null
