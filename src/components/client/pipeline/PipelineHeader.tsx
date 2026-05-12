@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { PipelineConfig } from "./types";
+import { FUNNEL_STAGES } from "./FunnelStageSelector";
 
 interface DriveLinks {
   drive_folder_id?: string | null;
@@ -27,6 +28,7 @@ interface PipelineHeaderProps {
   canEdit: boolean;
   hasPieces: boolean;
   noDeadlineCount?: number;
+  funnelSummary?: { tofu: number; mofu: number; bofu: number; none: number };
   driveLinks?: DriveLinks;
 }
 
@@ -49,6 +51,7 @@ const PipelineHeader: React.FC<PipelineHeaderProps> = React.memo(({
   canEdit,
   hasPieces,
   noDeadlineCount = 0,
+  funnelSummary,
   driveLinks,
 }) => {
   const activeDriveLinks = DRIVE_LINK_ITEMS.filter(item => driveLinks?.[item.key]);
