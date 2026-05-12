@@ -923,6 +923,7 @@ export type Database = {
           phase: string
           preview_link: string | null
           priority: string | null
+          raw_footage_link: string | null
           revision_count: number
           scheduled_post_date: string | null
           script_images: string[] | null
@@ -958,6 +959,7 @@ export type Database = {
           phase: string
           preview_link?: string | null
           priority?: string | null
+          raw_footage_link?: string | null
           revision_count?: number
           scheduled_post_date?: string | null
           script_images?: string[] | null
@@ -993,6 +995,7 @@ export type Database = {
           phase?: string
           preview_link?: string | null
           priority?: string | null
+          raw_footage_link?: string | null
           revision_count?: number
           scheduled_post_date?: string | null
           script_images?: string[] | null
