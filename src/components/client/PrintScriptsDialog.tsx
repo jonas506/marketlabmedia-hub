@@ -352,6 +352,36 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       line-height: 1.8;
       color: #333;
     }
+    .images-section {
+      padding: 0.75rem 1.25rem 1rem;
+      border-top: 1px solid #eee;
+    }
+    .images-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #aaa;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .image-item {
+      border: 1px solid #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+    .image-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 280px;
+      object-fit: contain;
+    }
     .links-section {
       padding: 0.75rem 1.25rem 1rem;
       border-top: 1px solid #eee;
