@@ -11,6 +11,7 @@ import WeeklyView from "@/components/time-tracking/WeeklyView";
 import MonthlyStats from "@/components/time-tracking/MonthlyStats";
 import VacationTab from "@/components/time-tracking/VacationTab";
 import TravelExpensesTab from "@/components/time-tracking/TravelExpensesTab";
+import SickDayQuickButton from "@/components/time-tracking/SickDayQuickButton";
 
 export default function TimeTracking() {
   const { user, role } = useAuth();
@@ -136,7 +137,10 @@ export default function TimeTracking() {
 
             {/* Quick entry */}
             <div className="rounded-lg border bg-card p-4">
-              <h3 className="text-sm font-semibold mb-3">Schnelleingabe</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold">Schnelleingabe</h3>
+                <SickDayQuickButton />
+              </div>
               <TimeEntryForm clients={clients} onEntryAdded={() => refetchEntries()} />
             </div>
 
