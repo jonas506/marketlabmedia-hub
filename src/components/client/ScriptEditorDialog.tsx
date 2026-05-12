@@ -315,6 +315,60 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
               )}
             </div>
 
+            {/* Images section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  <span className="text-sm font-semibold font-display">Bilder</span>
+                  <span className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                    {images.length}
+                  </span>
+                </div>
+                {canEdit && (
+                  <label className="inline-flex">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                    <span className={cn(
+                      "inline-flex items-center gap-1 h-7 px-2.5 text-xs font-mono rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors",
+                      uploading && "opacity-50 cursor-not-allowed"
+                    )}>
+                      {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                      {uploading ? "Lädt…" : "Bild hochladen"}
+                    </span>
+                  </label>
+                )}
+              </div>
+
+              {images.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {images.map((url, idx) => (
+                    <div key={idx} className="relative group aspect-square rounded-md overflow-hidden bg-muted/30 border border-border">
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <img src={url} alt={`Bild ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                      </a>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                          aria-label="Bild entfernen"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Hooks section */}
             <div>
               <div className="flex items-center justify-between mb-3">
