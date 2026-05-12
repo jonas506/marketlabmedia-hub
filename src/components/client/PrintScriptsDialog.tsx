@@ -177,7 +177,15 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
   <title>Skripte – Marketlab Media</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    @page { margin: 0; }
+    @page {
+      margin: 18mm 16mm 20mm 16mm;
+      @bottom-center {
+        content: "Marketlab Media · Vertraulich · Seite " counter(page) " / " counter(pages);
+        font-family: 'Inter', sans-serif;
+        font-size: 9pt;
+        color: #bbb;
+      }
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -187,20 +195,21 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       background: #fff;
     }
     .page-header {
-      padding: 2.5rem 3rem 2rem;
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
       border-bottom: 1px solid #e5e5e5;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .logo { height: 28px; }
+    .logo { height: 26px; }
     .header-right {
       text-align: right;
-      font-size: 12px;
+      font-size: 11px;
       color: #888;
     }
     .header-right .date { margin-top: 2px; }
-    .content { padding: 2rem 3rem 3rem; }
+    .content { padding: 0; }
     .doc-title {
       font-size: 22px;
       font-weight: 700;
@@ -338,19 +347,15 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     }
     .link-item a:hover { text-decoration: underline; }
     .page-footer {
-      padding: 1.5rem 3rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
       border-top: 1px solid #eee;
       text-align: center;
       font-size: 11px;
       color: #bbb;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
     }
     @media print {
-      .page-footer { position: fixed; bottom: 0; }
-      .content { padding-bottom: 4rem; }
+      .script-block { break-inside: avoid; page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -367,8 +372,7 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     <div class="doc-subtitle">Vorbereitet von Marketlab Media</div>
     ${printContent}
   </div>
-  <div class="page-footer">Marketlab Media · Vertraulich</div>
-  <script>window.onload = function() { window.print(); }</script>
+  <script>window.onload = function() { setTimeout(function(){ window.print(); }, 150); }</script>
 </body>
 </html>`);
     win.document.close();
