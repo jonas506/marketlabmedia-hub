@@ -126,12 +126,10 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
         if (b.scheduled_post_date) return 1;
         return 0;
       }
-      const pa = PRIORITY_WEIGHT[a.priority || "normal"] ?? 2;
-      const pb = PRIORITY_WEIGHT[b.priority || "normal"] ?? 2;
-      if (pa !== pb) return pa - pb;
-      if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
-      if (a.deadline) return -1;
-      if (b.deadline) return 1;
+      // Sort by when piece was moved into this phase (most recently moved last → matches forwarding order)
+      const ua = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+      const ub = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+      if (ua !== ub) return ua - ub;
       return 0;
     });
   }, [monthPieces, activePhase, filterPerson]);
