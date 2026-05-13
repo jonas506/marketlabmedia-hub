@@ -119,18 +119,11 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     }
     if (filterPerson !== "all") filtered = filtered.filter((c) => c.assigned_to === filterPerson);
     return [...filtered].sort((a, b) => {
-      // For handed_over: sort by scheduled_post_date ascending, no-date at end
-      if (activePhase === "handed_over") {
-        if (a.scheduled_post_date && b.scheduled_post_date) return a.scheduled_post_date.localeCompare(b.scheduled_post_date);
-        if (a.scheduled_post_date) return -1;
-        if (b.scheduled_post_date) return 1;
-        return 0;
-      }
-      // Sort by when piece was moved into this phase (most recently moved last → matches forwarding order)
+      // Sort by when piece was moved into this phase (forwarding order)
       const ua = a.updated_at ? new Date(a.updated_at).getTime() : 0;
       const ub = b.updated_at ? new Date(b.updated_at).getTime() : 0;
-      if (ua !== ub) return ua - ub;
-      return 0;
+      return ua - ub;
+    });
     });
   }, [monthPieces, activePhase, filterPerson]);
 
