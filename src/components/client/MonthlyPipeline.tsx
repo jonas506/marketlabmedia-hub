@@ -124,7 +124,6 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       const ub = b.updated_at ? new Date(b.updated_at).getTime() : 0;
       return ua - ub;
     });
-    });
   }, [monthPieces, activePhase, filterPerson]);
 
   // Archive pieces for handed_over phase
