@@ -16,7 +16,9 @@ const RawFootageLink: React.FC<Props> = ({ value, canEdit, onChange }) => {
   const [draft, setDraft] = useState(value ?? "");
   const has = !!value && value.trim().length > 0;
 
-  const preview = has ? value!.trim().split("\n")[0].slice(0, 24) : "";
+  const lines = has ? value!.trim().split("\n").filter((l) => l.trim().length > 0) : [];
+  const lineCount = lines.length;
+  const preview = has ? lines[0].slice(0, 24) : "";
 
   const trigger = (
     <button
@@ -32,6 +34,11 @@ const RawFootageLink: React.FC<Props> = ({ value, canEdit, onChange }) => {
     >
       <Film className="h-3 w-3 shrink-0" />
       <span className="truncate">{has ? preview : "Footage +"}</span>
+      {lineCount > 1 && (
+        <span className="shrink-0 text-[9px] sm:text-[10px] font-semibold px-1 rounded bg-amber-500/20 border border-amber-500/30">
+          +{lineCount - 1}
+        </span>
+      )}
     </button>
   );
 
@@ -50,6 +57,11 @@ const RawFootageLink: React.FC<Props> = ({ value, canEdit, onChange }) => {
       >
         <Film className="h-3 w-3 shrink-0" />
         <span className="truncate">{preview}</span>
+        {lineCount > 1 && (
+          <span className="shrink-0 text-[9px] sm:text-[10px] font-semibold px-1 rounded bg-amber-500/20 border border-amber-500/30">
+            +{lineCount - 1}
+          </span>
+        )}
       </span>
     );
   }
