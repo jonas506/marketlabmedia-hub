@@ -169,11 +169,11 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
 
   const saveAll = useCallback(async () => {
     if (!piece) return;
-    await supabase.from("content_pieces").update({ caption, transcript }).eq("id", piece.id);
+    await supabase.from("content_pieces").update({ caption, transcript, format_id: formatId }).eq("id", piece.id);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     toast.success("Gespeichert!");
     onOpenChange(false);
-  }, [piece, caption, transcript, clientId, qc, onOpenChange]);
+  }, [piece, caption, transcript, formatId, clientId, qc, onOpenChange]);
 
   const copyText = (field: string, text: string) => {
     navigator.clipboard.writeText(text);
