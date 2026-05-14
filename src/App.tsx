@@ -35,6 +35,7 @@ import TimeTracking from "./pages/TimeTracking";
 import ClientsList from "./pages/ClientsList";
 import PostingCalendarPage from "./pages/PostingCalendarPage";
 import Finanzen from "./pages/Finanzen";
+import InternalReview from "./pages/InternalReview";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,6 +109,7 @@ const App = () => (
                   <Route path="/crm/pipelines" element={<Navigate to="/crm" replace />} />
                   <Route path="/crm/campaigns" element={<Navigate to="/crm?tab=kampagnen" replace />} />
                   <Route path="/finanzen" element={<ProtectedRoute><Finanzen /></ProtectedRoute>} />
+                  <Route path="/interne-freigabe" element={<ProtectedRoute><InternalReview /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
