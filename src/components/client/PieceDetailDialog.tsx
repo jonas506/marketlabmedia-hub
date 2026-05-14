@@ -53,6 +53,7 @@ interface PieceDetailDialogProps {
     preview_link?: string | null;
     phase: string;
     client_id: string;
+    format_id?: string | null;
   } | null;
   clientId: string;
 }
