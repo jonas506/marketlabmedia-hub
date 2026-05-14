@@ -36,6 +36,7 @@ import ClientsList from "./pages/ClientsList";
 import PostingCalendarPage from "./pages/PostingCalendarPage";
 import Finanzen from "./pages/Finanzen";
 import InternalReview from "./pages/InternalReview";
+import Referenzen from "./pages/Referenzen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
