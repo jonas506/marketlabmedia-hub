@@ -26,6 +26,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
   { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
   { to: "/content-base", label: "Content Base", icon: Database },
+  { to: "/referenzen", label: "Referenzen", icon: Library },
   { to: "/crew", label: "Crew", icon: Users },
   { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
   { to: "/finanzen", label: "Finanzen", icon: Banknote, roles: ["admin"] },
