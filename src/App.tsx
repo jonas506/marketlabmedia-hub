@@ -36,6 +36,7 @@ import ClientsList from "./pages/ClientsList";
 import PostingCalendarPage from "./pages/PostingCalendarPage";
 import Finanzen from "./pages/Finanzen";
 import InternalReview from "./pages/InternalReview";
+import Referenzen from "./pages/Referenzen";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -110,6 +111,8 @@ const App = () => (
                   <Route path="/crm/campaigns" element={<Navigate to="/crm?tab=kampagnen" replace />} />
                   <Route path="/finanzen" element={<ProtectedRoute><Finanzen /></ProtectedRoute>} />
                   <Route path="/interne-freigabe" element={<ProtectedRoute><InternalReview /></ProtectedRoute>} />
+                  <Route path="/referenzen" element={<ProtectedRoute><Referenzen /></ProtectedRoute>} />
+                  <Route path="/referenzen/:formatId" element={<ProtectedRoute><Referenzen /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>

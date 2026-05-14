@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sparkles, Copy, Check, Loader2, Wand2, Save, BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
 import PieceActivityLog from "@/components/client/PieceActivityLog";
+import FormatPicker from "@/components/referenzen/FormatPicker";
 
 // Helper to call edge function with extended timeout (5 min) for heavy operations
 async function invokeWithTimeout(functionName: string, body: Record<string, unknown>, timeoutMs = 300_000) {
@@ -52,6 +53,7 @@ interface PieceDetailDialogProps {
     preview_link?: string | null;
     phase: string;
     client_id: string;
+    format_id?: string | null;
   } | null;
   clientId: string;
 }
@@ -69,7 +71,8 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const [autoStep, setAutoStep] = useState<"transcribe" | "caption" | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedPromptId, setSelectedPromptId] = useState("");
-  
+  const [formatId, setFormatId] = useState<string | null>(null);
+
 
   const { data: savedPrompts = [] } = useQuery({
     queryKey: ["saved-prompts"],
@@ -87,7 +90,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     setTranscript(piece.transcript || "");
     setPromptInput("");
     setSelectedPromptId("");
-    
+    setFormatId(piece.format_id || null);
   }
 
   const runAutoGenerate = async (pieceId: string) => {
@@ -166,11 +169,11 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
 
   const saveAll = useCallback(async () => {
     if (!piece) return;
-    await supabase.from("content_pieces").update({ caption, transcript }).eq("id", piece.id);
+    await supabase.from("content_pieces").update({ caption, transcript, format_id: formatId }).eq("id", piece.id);
     qc.invalidateQueries({ queryKey: ["content-pieces", clientId] });
     toast.success("Gespeichert!");
     onOpenChange(false);
-  }, [piece, caption, transcript, clientId, qc, onOpenChange]);
+  }, [piece, caption, transcript, formatId, clientId, qc, onOpenChange]);
 
   const copyText = (field: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -202,7 +205,12 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
 
         <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-5 space-y-5">
-            {/* Auto-generating indicator */}
+            {/* Content-Format */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2 block">Content-Format</label>
+              <FormatPicker value={formatId} onChange={setFormatId} />
+            </div>
+
             {autoGenerating && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
                 <div className="flex items-center gap-3">

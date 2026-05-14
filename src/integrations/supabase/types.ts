@@ -862,6 +862,45 @@ export type Database = {
           },
         ]
       }
+      content_formats: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          emoji: string | null
+          funnel_stage: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          tag: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          emoji?: string | null
+          funnel_stage: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          tag: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          emoji?: string | null
+          funnel_stage?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          tag?: string
+        }
+        Relationships: []
+      }
       content_piece_comments: {
         Row: {
           client_id: string
@@ -916,6 +955,7 @@ export type Database = {
           drive_file_id: string | null
           drive_file_name: string | null
           drive_uploaded_at: string | null
+          format_id: string | null
           funnel_stage: string | null
           has_script: boolean | null
           id: string
@@ -953,6 +993,7 @@ export type Database = {
           drive_file_id?: string | null
           drive_file_name?: string | null
           drive_uploaded_at?: string | null
+          format_id?: string | null
           funnel_stage?: string | null
           has_script?: boolean | null
           id?: string
@@ -990,6 +1031,7 @@ export type Database = {
           drive_file_id?: string | null
           drive_file_name?: string | null
           drive_uploaded_at?: string | null
+          format_id?: string | null
           funnel_stage?: string | null
           has_script?: boolean | null
           id?: string
@@ -1022,6 +1064,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_pieces_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "content_formats"
             referencedColumns: ["id"]
           },
           {
@@ -2018,6 +2067,50 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      format_references: {
+        Row: {
+          created_at: string
+          format_id: string
+          id: string
+          is_own: boolean
+          sort_order: number
+          source_type: string
+          thumbnail_url: string | null
+          title: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          format_id: string
+          id?: string
+          is_own?: boolean
+          sort_order?: number
+          source_type?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          format_id?: string
+          id?: string
+          is_own?: boolean
+          sort_order?: number
+          source_type?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "format_references_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "content_formats"
             referencedColumns: ["id"]
           },
         ]
