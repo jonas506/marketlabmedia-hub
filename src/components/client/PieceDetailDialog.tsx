@@ -71,7 +71,8 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
   const [autoStep, setAutoStep] = useState<"transcribe" | "caption" | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedPromptId, setSelectedPromptId] = useState("");
-  
+  const [formatId, setFormatId] = useState<string | null>(null);
+
 
   const { data: savedPrompts = [] } = useQuery({
     queryKey: ["saved-prompts"],
