@@ -102,7 +102,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   onPreviewLinkChange,
   localTitle,
 }) => {
-  const isLatePhase = activePhase === "internal_review" || activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
+  const isLatePhase = activePhase === "editing" || activePhase === "internal_review" || activePhase === "review" || activePhase === "feedback" || activePhase === "approved" || activePhase === "handed_over";
   const isInternalReview = activePhase === "internal_review";
   const isAdminLike = userRole === "admin" || userRole === "head_of_content";
   const showDeadlinePriority = ["script", "filmed", "review", "editing"].includes(activePhase);
