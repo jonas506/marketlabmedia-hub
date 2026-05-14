@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sparkles, Copy, Check, Loader2, Wand2, Save, BookmarkIcon } from "lucide-react";
 import { toast } from "sonner";
 import PieceActivityLog from "@/components/client/PieceActivityLog";
+import FormatPicker from "@/components/referenzen/FormatPicker";
 
 // Helper to call edge function with extended timeout (5 min) for heavy operations
 async function invokeWithTimeout(functionName: string, body: Record<string, unknown>, timeoutMs = 300_000) {
