@@ -14,10 +14,11 @@ import NotificationBell from "@/components/NotificationBell";
 import GlobalSearch from "@/components/GlobalSearch";
 
 // roles: which roles can see this nav item (undefined = all)
-const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[] }[] = [
+const navItems: { to: string; label: string; icon: React.ComponentType<any>; roles?: string[]; badgeKey?: string }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/clients", label: "Kunden", icon: Users },
   { to: "/posting-kalender", label: "Posting-Kalender", icon: CalendarRange },
+  { to: "/interne-freigabe", label: "Interne Freigabe", icon: ShieldCheck, roles: ["admin", "head_of_content"], badgeKey: "internal_review" },
 
   { to: "/my-todos", label: "Meine To-Dos", icon: ListTodo },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
