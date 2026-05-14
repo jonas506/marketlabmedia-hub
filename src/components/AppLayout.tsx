@@ -38,6 +38,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const internalReviewCount = useInternalReviewCount();
+  const badgeFor = (key?: string) => (key === "internal_review" ? internalReviewCount : 0);
 
   const isClientRoute = location.pathname.startsWith("/client/");
   const collapsed = isClientRoute && !isMobile;
@@ -103,13 +105,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </div>
               </div>
               <nav className="flex-1 p-2 space-y-0.5">
-                {filteredNav.map(({ to, label, icon: Icon }) => {
+                {filteredNav.map(({ to, label, icon: Icon, badgeKey }) => {
                   const active = isNavActive(to);
-                  const linkTo = to;
+                  const badge = badgeFor(badgeKey);
                   return (
                     <Link
                       key={to}
-                      to={linkTo}
+                      to={to}
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex min-h-[44px] items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                         active
@@ -118,7 +120,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       }`}
                     >
                       <Icon className="h-4 w-4" />
-                      {label}
+                      <span className="flex-1">{label}</span>
+                      {badge > 0 && (
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold">
+                          {badge}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -187,14 +194,14 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         {/* Navigation */}
         <nav className={`flex-1 ${collapsed ? "px-1.5" : "px-3"} py-2 space-y-0.5 overflow-y-auto`}>
-          {filteredNav.map(({ to, label, icon: Icon }) => {
+          {filteredNav.map(({ to, label, icon: Icon, badgeKey }) => {
             const active = isNavActive(to);
-            const linkTo = to;
+            const badge = badgeFor(badgeKey);
             return (
               <Link
                 key={to}
-                to={linkTo}
-                title={collapsed ? label : undefined}
+                to={to}
+                title={collapsed ? `${label}${badge > 0 ? ` (${badge})` : ""}` : undefined}
                 className={`relative flex items-center ${collapsed ? "justify-center" : "gap-3"} h-9 ${collapsed ? "px-0" : "px-3"} rounded-lg text-[13px] font-medium transition-all duration-150 ${
                   active
                     ? "bg-primary/12 text-primary font-semibold"
@@ -205,7 +212,17 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
                 )}
                 <Icon className="h-4 w-4 flex-shrink-0" />
-                {!collapsed && <span>{label}</span>}
+                {!collapsed && <span className="flex-1">{label}</span>}
+                {badge > 0 && !collapsed && (
+                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
+                    {badge}
+                  </span>
+                )}
+                {badge > 0 && collapsed && (
+                  <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold ring-2 ring-sidebar">
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}
