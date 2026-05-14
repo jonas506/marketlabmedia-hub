@@ -921,6 +921,7 @@ export type Database = {
           id: string
           internal_note: string | null
           phase: string
+          phase_changed_at: string
           preview_link: string | null
           priority: string | null
           raw_footage_link: string | null
@@ -957,6 +958,7 @@ export type Database = {
           id?: string
           internal_note?: string | null
           phase: string
+          phase_changed_at?: string
           preview_link?: string | null
           priority?: string | null
           raw_footage_link?: string | null
@@ -993,6 +995,7 @@ export type Database = {
           id?: string
           internal_note?: string | null
           phase?: string
+          phase_changed_at?: string
           preview_link?: string | null
           priority?: string | null
           raw_footage_link?: string | null
