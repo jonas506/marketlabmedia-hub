@@ -205,7 +205,12 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
 
         <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-5 space-y-5">
-            {/* Auto-generating indicator */}
+            {/* Content-Format */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2 block">Content-Format</label>
+              <FormatPicker value={formatId} onChange={setFormatId} />
+            </div>
+
             {autoGenerating && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
                 <div className="flex items-center gap-3">
