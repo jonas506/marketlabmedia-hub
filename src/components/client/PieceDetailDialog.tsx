@@ -90,7 +90,7 @@ const PieceDetailDialog: React.FC<PieceDetailDialogProps> = ({ open, onOpenChang
     setTranscript(piece.transcript || "");
     setPromptInput("");
     setSelectedPromptId("");
-    
+    setFormatId(piece.format_id || null);
   }
 
   const runAutoGenerate = async (pieceId: string) => {
