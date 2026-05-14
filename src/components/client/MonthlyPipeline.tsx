@@ -119,9 +119,9 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     }
     if (filterPerson !== "all") filtered = filtered.filter((c) => c.assigned_to === filterPerson);
     return [...filtered].sort((a, b) => {
-      // Sort by when piece was moved into this phase (forwarding order)
-      const ua = a.updated_at ? new Date(a.updated_at).getTime() : 0;
-      const ub = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+      // Sort by when piece was moved into this phase (forwarding order, stable across edits)
+      const ua = (a as any).phase_changed_at ? new Date((a as any).phase_changed_at).getTime() : (a.updated_at ? new Date(a.updated_at).getTime() : 0);
+      const ub = (b as any).phase_changed_at ? new Date((b as any).phase_changed_at).getTime() : (b.updated_at ? new Date(b.updated_at).getTime() : 0);
       return ua - ub;
     });
   }, [monthPieces, activePhase, filterPerson]);
