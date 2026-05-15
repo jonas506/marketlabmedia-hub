@@ -118,6 +118,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedPiece, setSelectedPiece] = useState<ScheduledPiece | null>(null);
   const [activeClientFilter, setActiveClientFilter] = useState<string | null>(null);
+  const [activeFunnelFilter, setActiveFunnelFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("calendar");
 
   const baseMonday = startOfWeek(new Date(), { weekStartsOn: 1 });
