@@ -427,7 +427,11 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                                         isSelected && "ring-1 ring-primary scale-[1.02]",
                                         "hover:brightness-125"
                                       )}
+                                      title={piece.funnel_stage ? `${FUNNEL_STYLES[piece.funnel_stage.toLowerCase()]?.label ?? piece.funnel_stage} · ${piece.client_name}` : piece.client_name}
                                     >
+                                      {piece.funnel_stage && FUNNEL_STYLES[piece.funnel_stage.toLowerCase()] && (
+                                        <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", FUNNEL_STYLES[piece.funnel_stage.toLowerCase()].dot)} />
+                                      )}
                                       <Icon className="h-3 w-3 shrink-0" />
                                       <span className="truncate">{piece.client_name}</span>
                                     </button>
