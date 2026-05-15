@@ -343,6 +343,43 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
               </div>
             )}
 
+            {/* Funnel-stage filter chips */}
+            {(pieces?.length ?? 0) > 0 && (
+              <div className="flex gap-2 overflow-x-auto px-3 py-2 sm:flex-wrap sm:px-4 border-b border-border bg-muted/10">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 self-center mr-1">Funnel</span>
+                <button
+                  onClick={() => setActiveFunnelFilter(null)}
+                  className={cn(
+                    "inline-flex min-h-[32px] shrink-0 items-center gap-1.5 text-[11px] rounded-full px-3 py-1 transition-all border",
+                    !activeFunnelFilter
+                      ? "bg-foreground/10 border-foreground/30 text-foreground font-medium"
+                      : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Alle
+                </button>
+                {(["tofu", "mofu", "bofu"] as const).map((s) => {
+                  const style = FUNNEL_STYLES[s];
+                  const isActive = activeFunnelFilter === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setActiveFunnelFilter(isActive ? null : s)}
+                      className={cn(
+                        "inline-flex min-h-[32px] shrink-0 items-center gap-1.5 text-[11px] rounded-full px-3 py-1 transition-all border",
+                        isActive
+                          ? `${style.bg} ${style.border} ${style.text} font-medium`
+                          : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <span className={cn("h-2 w-2 rounded-full", style.dot)} />
+                      {style.label}
+                      <span className="opacity-60">{funnelStats[s]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {/* ===== CALENDAR VIEW ===== */}
             {viewMode === "calendar" && (
                 <div className="overflow-x-auto">
