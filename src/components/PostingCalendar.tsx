@@ -522,14 +522,17 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                                           key={piece.id}
                                           onClick={() => setSelectedPiece(isSelected ? null : piece)}
                                           className={cn(
-                                            "h-6 w-6 rounded-md flex items-center justify-center transition-all border",
+                                            "relative h-6 w-6 rounded-md flex items-center justify-center transition-all border",
                                             style.bg, style.text, style.border,
                                             isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-card scale-110",
                                             "hover:scale-110 hover:brightness-125"
                                           )}
-                                          title={`${TYPE_LABELS[piece.type]} · ${piece.title || "Ohne Titel"}`}
+                                          title={`${TYPE_LABELS[piece.type]}${piece.funnel_stage ? ` · ${FUNNEL_STYLES[piece.funnel_stage.toLowerCase()]?.label ?? piece.funnel_stage}` : ""} · ${piece.title || "Ohne Titel"}`}
                                         >
                                           <Icon className="h-3 w-3" />
+                                          {piece.funnel_stage && FUNNEL_STYLES[piece.funnel_stage.toLowerCase()] && (
+                                            <span className={cn("absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ring-1 ring-card", FUNNEL_STYLES[piece.funnel_stage.toLowerCase()].dot)} />
+                                          )}
                                         </button>
                                       );
                                     })}
