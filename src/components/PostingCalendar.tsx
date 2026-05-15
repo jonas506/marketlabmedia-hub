@@ -179,9 +179,20 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
   );
 
   const filteredPieces = useMemo(() => {
-    if (!activeClientFilter) return pieces || [];
-    return (pieces || []).filter((p) => p.client_id === activeClientFilter);
-  }, [pieces, activeClientFilter]);
+    let list = pieces || [];
+    if (activeClientFilter) list = list.filter((p) => p.client_id === activeClientFilter);
+    if (activeFunnelFilter) list = list.filter((p) => (p.funnel_stage || "").toLowerCase() === activeFunnelFilter);
+    return list;
+  }, [pieces, activeClientFilter, activeFunnelFilter]);
+
+  const funnelStats = useMemo(() => {
+    const counts: Record<string, number> = { tofu: 0, mofu: 0, bofu: 0 };
+    for (const p of pieces || []) {
+      const s = (p.funnel_stage || "").toLowerCase();
+      if (s in counts) counts[s]++;
+    }
+    return counts;
+  }, [pieces]);
 
   const clientStats = useMemo(() => {
     if (!pieces?.length) return [];
