@@ -46,7 +46,14 @@ interface ScheduledPiece {
   preview_link: string | null;
   slide_images: string[] | null;
   caption: string | null;
+  funnel_stage: string | null;
 }
+
+const FUNNEL_STYLES: Record<string, { dot: string; bg: string; text: string; border: string; label: string; subtitle: string }> = {
+  tofu: { dot: "bg-blue-500", bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/40", label: "TOFU", subtitle: "Reichweite" },
+  mofu: { dot: "bg-violet-500", bg: "bg-violet-500/15", text: "text-violet-400", border: "border-violet-500/40", label: "MOFU", subtitle: "Vertrauen" },
+  bofu: { dot: "bg-emerald-500", bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/40", label: "BOFU", subtitle: "Conversion" },
+};
 
 const TYPE_ICON: Record<string, React.ComponentType<any>> = {
   reel: Film,
@@ -111,6 +118,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedPiece, setSelectedPiece] = useState<ScheduledPiece | null>(null);
   const [activeClientFilter, setActiveClientFilter] = useState<string | null>(null);
+  const [activeFunnelFilter, setActiveFunnelFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("calendar");
 
   const baseMonday = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -124,7 +132,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
     queryFn: async (): Promise<ScheduledPiece[]> => {
       let query = supabase
         .from("content_pieces")
-        .select("id, title, type, phase, client_id, scheduled_post_date, assigned_to, preview_link, slide_images, caption")
+        .select("id, title, type, phase, client_id, scheduled_post_date, assigned_to, preview_link, slide_images, caption, funnel_stage")
         .not("scheduled_post_date", "is", null)
         .gte("scheduled_post_date", format(rangeStart, "yyyy-MM-dd"))
         .lte("scheduled_post_date", format(rangeEnd, "yyyy-MM-dd"))
@@ -171,9 +179,20 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
   );
 
   const filteredPieces = useMemo(() => {
-    if (!activeClientFilter) return pieces || [];
-    return (pieces || []).filter((p) => p.client_id === activeClientFilter);
-  }, [pieces, activeClientFilter]);
+    let list = pieces || [];
+    if (activeClientFilter) list = list.filter((p) => p.client_id === activeClientFilter);
+    if (activeFunnelFilter) list = list.filter((p) => (p.funnel_stage || "").toLowerCase() === activeFunnelFilter);
+    return list;
+  }, [pieces, activeClientFilter, activeFunnelFilter]);
+
+  const funnelStats = useMemo(() => {
+    const counts: Record<string, number> = { tofu: 0, mofu: 0, bofu: 0 };
+    for (const p of pieces || []) {
+      const s = (p.funnel_stage || "").toLowerCase();
+      if (s in counts) counts[s]++;
+    }
+    return counts;
+  }, [pieces]);
 
   const clientStats = useMemo(() => {
     if (!pieces?.length) return [];
@@ -324,6 +343,43 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
               </div>
             )}
 
+            {/* Funnel-stage filter chips */}
+            {(pieces?.length ?? 0) > 0 && (
+              <div className="flex gap-2 overflow-x-auto px-3 py-2 sm:flex-wrap sm:px-4 border-b border-border bg-muted/10">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 self-center mr-1">Funnel</span>
+                <button
+                  onClick={() => setActiveFunnelFilter(null)}
+                  className={cn(
+                    "inline-flex min-h-[32px] shrink-0 items-center gap-1.5 text-[11px] rounded-full px-3 py-1 transition-all border",
+                    !activeFunnelFilter
+                      ? "bg-foreground/10 border-foreground/30 text-foreground font-medium"
+                      : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Alle
+                </button>
+                {(["tofu", "mofu", "bofu"] as const).map((s) => {
+                  const style = FUNNEL_STYLES[s];
+                  const isActive = activeFunnelFilter === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setActiveFunnelFilter(isActive ? null : s)}
+                      className={cn(
+                        "inline-flex min-h-[32px] shrink-0 items-center gap-1.5 text-[11px] rounded-full px-3 py-1 transition-all border",
+                        isActive
+                          ? `${style.bg} ${style.border} ${style.text} font-medium`
+                          : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <span className={cn("h-2 w-2 rounded-full", style.dot)} />
+                      {style.label}
+                      <span className="opacity-60">{funnelStats[s]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {/* ===== CALENDAR VIEW ===== */}
             {viewMode === "calendar" && (
                 <div className="overflow-x-auto">
@@ -371,7 +427,11 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                                         isSelected && "ring-1 ring-primary scale-[1.02]",
                                         "hover:brightness-125"
                                       )}
+                                      title={piece.funnel_stage ? `${FUNNEL_STYLES[piece.funnel_stage.toLowerCase()]?.label ?? piece.funnel_stage} · ${piece.client_name}` : piece.client_name}
                                     >
+                                      {piece.funnel_stage && FUNNEL_STYLES[piece.funnel_stage.toLowerCase()] && (
+                                        <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", FUNNEL_STYLES[piece.funnel_stage.toLowerCase()].dot)} />
+                                      )}
                                       <Icon className="h-3 w-3 shrink-0" />
                                       <span className="truncate">{piece.client_name}</span>
                                     </button>
@@ -462,14 +522,17 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                                           key={piece.id}
                                           onClick={() => setSelectedPiece(isSelected ? null : piece)}
                                           className={cn(
-                                            "h-6 w-6 rounded-md flex items-center justify-center transition-all border",
+                                            "relative h-6 w-6 rounded-md flex items-center justify-center transition-all border",
                                             style.bg, style.text, style.border,
                                             isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-card scale-110",
                                             "hover:scale-110 hover:brightness-125"
                                           )}
-                                          title={`${TYPE_LABELS[piece.type]} · ${piece.title || "Ohne Titel"}`}
+                                          title={`${TYPE_LABELS[piece.type]}${piece.funnel_stage ? ` · ${FUNNEL_STYLES[piece.funnel_stage.toLowerCase()]?.label ?? piece.funnel_stage}` : ""} · ${piece.title || "Ohne Titel"}`}
                                         >
                                           <Icon className="h-3 w-3" />
+                                          {piece.funnel_stage && FUNNEL_STYLES[piece.funnel_stage.toLowerCase()] && (
+                                            <span className={cn("absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ring-1 ring-card", FUNNEL_STYLES[piece.funnel_stage.toLowerCase()].dot)} />
+                                          )}
                                         </button>
                                       );
                                     })}
@@ -525,6 +588,27 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                   <p className="font-medium">{PHASE_LABELS[selectedPiece.phase] || selectedPiece.phase}</p>
                 </div>
               </div>
+
+              {(() => {
+                const stageKey = selectedPiece.funnel_stage?.toLowerCase();
+                const stage = stageKey ? FUNNEL_STYLES[stageKey] : null;
+                return (
+                  <div
+                    className={cn(
+                      "rounded-md border px-3 py-2.5 flex items-center gap-2.5",
+                      stage ? `${stage.bg} ${stage.border}` : "bg-muted/20 border-border"
+                    )}
+                  >
+                    <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", stage ? stage.dot : "bg-muted-foreground/40")} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Funnel-Stage</p>
+                      <p className={cn("text-xs font-semibold", stage?.text ?? "text-muted-foreground")}>
+                        {stage ? `${stage.label} · ${stage.subtitle}` : "Nicht zugeordnet"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {selectedPiece.type === "carousel" && selectedPiece.slide_images && selectedPiece.slide_images.length > 0 && (
                 <div className="space-y-2">
