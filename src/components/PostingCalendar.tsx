@@ -589,6 +589,27 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
                 </div>
               </div>
 
+              {(() => {
+                const stageKey = selectedPiece.funnel_stage?.toLowerCase();
+                const stage = stageKey ? FUNNEL_STYLES[stageKey] : null;
+                return (
+                  <div
+                    className={cn(
+                      "rounded-md border px-3 py-2.5 flex items-center gap-2.5",
+                      stage ? `${stage.bg} ${stage.border}` : "bg-muted/20 border-border"
+                    )}
+                  >
+                    <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", stage ? stage.dot : "bg-muted-foreground/40")} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Funnel-Stage</p>
+                      <p className={cn("text-xs font-semibold", stage?.text ?? "text-muted-foreground")}>
+                        {stage ? `${stage.label} · ${stage.subtitle}` : "Nicht zugeordnet"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {selectedPiece.type === "carousel" && selectedPiece.slide_images && selectedPiece.slide_images.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Slides</p>
