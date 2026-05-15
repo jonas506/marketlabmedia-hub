@@ -46,7 +46,14 @@ interface ScheduledPiece {
   preview_link: string | null;
   slide_images: string[] | null;
   caption: string | null;
+  funnel_stage: string | null;
 }
+
+const FUNNEL_STYLES: Record<string, { dot: string; bg: string; text: string; border: string; label: string; subtitle: string }> = {
+  tofu: { dot: "bg-blue-500", bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/40", label: "TOFU", subtitle: "Reichweite" },
+  mofu: { dot: "bg-violet-500", bg: "bg-violet-500/15", text: "text-violet-400", border: "border-violet-500/40", label: "MOFU", subtitle: "Vertrauen" },
+  bofu: { dot: "bg-emerald-500", bg: "bg-emerald-500/15", text: "text-emerald-400", border: "border-emerald-500/40", label: "BOFU", subtitle: "Conversion" },
+};
 
 const TYPE_ICON: Record<string, React.ComponentType<any>> = {
   reel: Film,
