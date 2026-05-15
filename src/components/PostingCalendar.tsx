@@ -131,7 +131,7 @@ export default function PostingCalendar({ filterUserId }: PostingCalendarProps =
     queryFn: async (): Promise<ScheduledPiece[]> => {
       let query = supabase
         .from("content_pieces")
-        .select("id, title, type, phase, client_id, scheduled_post_date, assigned_to, preview_link, slide_images, caption")
+        .select("id, title, type, phase, client_id, scheduled_post_date, assigned_to, preview_link, slide_images, caption, funnel_stage")
         .not("scheduled_post_date", "is", null)
         .gte("scheduled_post_date", format(rangeStart, "yyyy-MM-dd"))
         .lte("scheduled_post_date", format(rangeEnd, "yyyy-MM-dd"))
