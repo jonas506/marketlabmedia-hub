@@ -20,6 +20,7 @@ import StorySequences from "@/components/client/StorySequences";
 import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
 import ClientDashboard from "@/components/client/ClientDashboard";
+import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
 import OnboardingBanner from "@/components/OnboardingBanner";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -46,6 +47,7 @@ const MODULE_ITEMS = [
   { key: "inspo", label: "Inspirationen", icon: Sparkles },
   { key: "marketing", label: "Marketing", icon: TrendingUp },
   { key: "landing", label: "Landing Pages", icon: Globe },
+  { key: "stunden", label: "Stunden", icon: Clock, adminOnly: true },
   { key: "activity", label: "Verlauf", icon: Clock },
   { key: "info", label: "Info", icon: Info },
 ];
@@ -240,6 +242,12 @@ const ClientDetail = () => {
             </div>
           </ErrorBoundary>
         );
+      case "stunden":
+        return (
+          <ErrorBoundary level="section">
+            <ClientTimeInvestment clientId={client.id} />
+          </ErrorBoundary>
+        );
       case "documents":
         return (
           <ErrorBoundary level="section">
@@ -357,7 +365,7 @@ const ClientDetail = () => {
         <div className="flex min-h-[calc(100vh-120px)]">
           {/* Module Sidebar - desktop */}
           <nav className="hidden lg:flex flex-col w-[200px] shrink-0 border-r border-border bg-card/30 py-2">
-            {MODULE_ITEMS.map((item) => {
+            {MODULE_ITEMS.filter(i => !i.adminOnly || role === "admin").map((item) => {
               const Icon = item.icon;
               const isActive = activeModule === item.key;
               return (
@@ -387,7 +395,7 @@ const ClientDetail = () => {
               className="lg:hidden absolute left-0 right-0 z-30 bg-card border-b border-border shadow-lg"
             >
               <div className="grid grid-cols-3 gap-1 p-2">
-                {MODULE_ITEMS.map((item) => {
+                {MODULE_ITEMS.filter(i => !i.adminOnly || role === "admin").map((item) => {
                   const Icon = item.icon;
                   const isActive = activeModule === item.key;
                   return (
