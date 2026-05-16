@@ -37,6 +37,7 @@ import PostingCalendarPage from "./pages/PostingCalendarPage";
 import Finanzen from "./pages/Finanzen";
 import InternalReview from "./pages/InternalReview";
 import Referenzen from "./pages/Referenzen";
+import StundenUebersicht from "./pages/StundenUebersicht";
 
 const queryClient = new QueryClient({
   defaultOptions: {
