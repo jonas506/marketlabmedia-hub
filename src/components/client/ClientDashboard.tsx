@@ -7,6 +7,8 @@ import { Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, AlertTriangl
 import { cn } from "@/lib/utils";
 import { isUpcomingHandedOver } from "@/lib/pipeline-utils";
 import KontingentTracker from "./KontingentTracker";
+import ClientTimeInvestment from "./ClientTimeInvestment";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ClientDashboardProps {
   client: any;
