@@ -114,6 +114,7 @@ const App = () => (
                   <Route path="/interne-freigabe" element={<ProtectedRoute><InternalReview /></ProtectedRoute>} />
                   <Route path="/referenzen" element={<ProtectedRoute><Referenzen /></ProtectedRoute>} />
                   <Route path="/referenzen/:formatId" element={<ProtectedRoute><Referenzen /></ProtectedRoute>} />
+                  <Route path="/stunden-uebersicht" element={<ProtectedRoute><StundenUebersicht /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
