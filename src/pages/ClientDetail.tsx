@@ -47,6 +47,7 @@ const MODULE_ITEMS = [
   { key: "inspo", label: "Inspirationen", icon: Sparkles },
   { key: "marketing", label: "Marketing", icon: TrendingUp },
   { key: "landing", label: "Landing Pages", icon: Globe },
+  { key: "stunden", label: "Stunden", icon: Clock, adminOnly: true },
   { key: "activity", label: "Verlauf", icon: Clock },
   { key: "info", label: "Info", icon: Info },
 ];
