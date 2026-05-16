@@ -242,6 +242,12 @@ const ClientDetail = () => {
             </div>
           </ErrorBoundary>
         );
+      case "stunden":
+        return (
+          <ErrorBoundary level="section">
+            <ClientTimeInvestment clientId={client.id} />
+          </ErrorBoundary>
+        );
       case "documents":
         return (
           <ErrorBoundary level="section">
