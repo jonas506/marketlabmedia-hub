@@ -20,6 +20,7 @@ import StorySequences from "@/components/client/StorySequences";
 import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
 import ClientDashboard from "@/components/client/ClientDashboard";
+import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
 import OnboardingBanner from "@/components/OnboardingBanner";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
