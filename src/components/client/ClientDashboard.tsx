@@ -29,6 +29,8 @@ const PHASE_LABELS: Record<string, string> = {
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces, canEdit, onNavigate }) => {
   const now = new Date();
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
 
   // Pipeline summary — 30-day rolling
   const pipelineStats = useMemo(() => {
