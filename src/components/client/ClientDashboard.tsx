@@ -279,6 +279,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces
           </div>
         </div>
       </div>
+
+      {isAdmin && (
+        <div>
+          <div className="text-sm font-medium mb-2 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            Investierte Stunden
+          </div>
+          <ClientTimeInvestment clientId={client.id} />
+        </div>
+      )}
     </div>
   );
 };
