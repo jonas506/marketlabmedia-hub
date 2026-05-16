@@ -7,6 +7,8 @@ import { Clapperboard, LayoutGrid, Youtube, Megaphone, CheckCircle, AlertTriangl
 import { cn } from "@/lib/utils";
 import { isUpcomingHandedOver } from "@/lib/pipeline-utils";
 import KontingentTracker from "./KontingentTracker";
+import ClientTimeInvestment from "./ClientTimeInvestment";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ClientDashboardProps {
   client: any;
@@ -27,6 +29,8 @@ const PHASE_LABELS: Record<string, string> = {
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces, canEdit, onNavigate }) => {
   const now = new Date();
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
 
   // Pipeline summary — 30-day rolling
   const pipelineStats = useMemo(() => {
@@ -275,6 +279,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ client, contentPieces
           </div>
         </div>
       </div>
+
+      {isAdmin && (
+        <div>
+          <div className="text-sm font-medium mb-2 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            Investierte Stunden
+          </div>
+          <ClientTimeInvestment clientId={client.id} />
+        </div>
+      )}
     </div>
   );
 };
