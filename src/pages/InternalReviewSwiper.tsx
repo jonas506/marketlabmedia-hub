@@ -355,6 +355,14 @@ export default function InternalReviewSwiper() {
                         />
                       ))}
                     </div>
+                  ) : currentEmbed ? (
+                    <iframe
+                      key={currentPiece.id}
+                      src={currentEmbed}
+                      className="w-full h-full"
+                      allow="autoplay"
+                      allowFullScreen
+                    />
                   ) : currentVideoSrc ? (
                     <video
                       ref={videoRef}
@@ -363,14 +371,6 @@ export default function InternalReviewSwiper() {
                       controls
                       playsInline
                       className="w-full h-full object-contain bg-black"
-                    />
-                  ) : currentEmbed ? (
-                    <iframe
-                      key={currentPiece.id}
-                      src={currentEmbed}
-                      className="w-full h-full"
-                      allow="autoplay"
-                      allowFullScreen
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-white/30 text-sm gap-3">
