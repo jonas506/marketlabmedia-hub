@@ -101,11 +101,24 @@ export default function InternalReview() {
               </p>
             </div>
           </div>
-          {pieces.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-destructive text-destructive-foreground text-sm font-semibold">
-              {pieces.length}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {pieces.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => setOpenPiece(pieces[0])}
+              >
+                <PlayCircle className="h-4 w-4" />
+                Alle durchgehen
+              </Button>
+            )}
+            {pieces.length > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-destructive text-destructive-foreground text-sm font-semibold">
+                {pieces.length}
+              </span>
+            )}
+          </div>
         </header>
 
         {isLoading ? (
