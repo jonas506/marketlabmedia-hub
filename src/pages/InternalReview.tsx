@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
-import { ShieldCheck, ExternalLink, Clock, Film, LayoutGrid, Megaphone, Youtube, Image as ImageIcon, Send, Loader2, CheckSquare, Square } from "lucide-react";
+import { ShieldCheck, ExternalLink, Clock, Film, LayoutGrid, Megaphone, Youtube, Image as ImageIcon, Send, Loader2, CheckSquare, Square, ChevronLeft, ChevronRight, PlayCircle, Check } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -101,11 +101,24 @@ export default function InternalReview() {
               </p>
             </div>
           </div>
-          {pieces.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-destructive text-destructive-foreground text-sm font-semibold">
-              {pieces.length}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {pieces.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => setOpenPiece(pieces[0])}
+              >
+                <PlayCircle className="h-4 w-4" />
+                Alle durchgehen
+              </Button>
+            )}
+            {pieces.length > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-destructive text-destructive-foreground text-sm font-semibold">
+                {pieces.length}
+              </span>
+            )}
+          </div>
         </header>
 
         {isLoading ? (
@@ -236,6 +249,56 @@ export default function InternalReview() {
         piece={openPiece}
         clientId={openPiece?.client_id ?? ""}
       />
+
+      {openPiece && (() => {
+        const idx = pieces.findIndex((p: any) => p.id === openPiece.id);
+        const total = pieces.length;
+        const prev = idx > 0 ? pieces[idx - 1] : null;
+        const next = idx >= 0 && idx < total - 1 ? pieces[idx + 1] : null;
+        return (
+          <div className="fixed inset-x-0 bottom-6 z-[60] flex justify-center pointer-events-none">
+            <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-border bg-card/95 backdrop-blur px-3 py-2 shadow-2xl">
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={!prev}
+                onClick={() => prev && setOpenPiece(prev)}
+                className="gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Zurück
+              </Button>
+              <span className="text-xs font-mono text-muted-foreground px-2 tabular-nums">
+                {idx + 1} / {total}
+              </span>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const id = openPiece.id;
+                  bulkApprove.mutate([id]);
+                  if (next) setOpenPiece(next);
+                  else setOpenPiece(null);
+                }}
+                disabled={bulkApprove.isPending}
+                className="gap-1.5 bg-[hsl(var(--runway-green))] hover:bg-[hsl(var(--runway-green))]/90 text-white border-0"
+              >
+                <Check className="h-4 w-4" />
+                Freigeben{next ? " & weiter" : ""}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={!next}
+                onClick={() => next && setOpenPiece(next)}
+                className="gap-1"
+              >
+                Weiter
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+      })()}
     </AppLayout>
   );
 }
