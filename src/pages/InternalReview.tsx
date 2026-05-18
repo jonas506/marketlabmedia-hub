@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
-import { ShieldCheck, ExternalLink, Clock, Film, LayoutGrid, Megaphone, Youtube, Image as ImageIcon, Send, Loader2, CheckSquare, Square } from "lucide-react";
+import { ShieldCheck, ExternalLink, Clock, Film, LayoutGrid, Megaphone, Youtube, Image as ImageIcon, Send, Loader2, CheckSquare, Square, ChevronLeft, ChevronRight, PlayCircle, Check } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
