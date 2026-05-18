@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { ShieldCheck, ExternalLink, Clock, Film, LayoutGrid, Megaphone, Youtube, Image as ImageIcon, Send, Loader2, CheckSquare, Square, ChevronLeft, ChevronRight, PlayCircle, Check } from "lucide-react";
@@ -23,6 +23,8 @@ export default function InternalReview() {
   const [openPiece, setOpenPiece] = useState<any | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const qc = useQueryClient();
+  const navigate = useNavigate();
+
 
   const { data: pieces = [], isLoading } = useQuery({
     queryKey: ["internal-review-list"],
@@ -107,7 +109,7 @@ export default function InternalReview() {
                 size="sm"
                 variant="outline"
                 className="gap-1.5"
-                onClick={() => setOpenPiece(pieces[0])}
+                onClick={() => navigate("/interne-freigabe/swiper")}
               >
                 <PlayCircle className="h-4 w-4" />
                 Alle durchgehen
