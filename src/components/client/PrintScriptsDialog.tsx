@@ -158,6 +158,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       html += `<div class="script-meta">`;
       html += `<h2>${escapeHtml(piece.title || "Ohne Titel")}</h2>`;
       html += `<div class="badges"><span class="type-badge">${typeLabel}</span>`;
+      const funnel = piece.funnel_stage ? FUNNEL_BADGE[piece.funnel_stage] : null;
+      if (funnel) html += `<span class="funnel-badge" style="background:${funnel.bg};">${funnel.label}</span>`;
       if (piece.tag) html += `<span class="tag-badge">${escapeHtml(piece.tag)}</span>`;
       html += `</div></div></div>`;
 
