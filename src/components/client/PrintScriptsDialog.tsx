@@ -30,9 +30,16 @@ interface ScriptPiece {
   script_text?: string | null;
   has_script?: boolean;
   tag?: string | null;
+  funnel_stage?: string | null;
   script_links?: ScriptLink[] | null;
   script_images?: string[] | null;
 }
+
+const FUNNEL_BADGE: Record<string, { label: string; bg: string }> = {
+  tofu: { label: "TOFU · Reichweite", bg: "#3b82f6" },
+  mofu: { label: "MOFU · Vertrauen", bg: "#8b5cf6" },
+  bofu: { label: "BOFU · Conversion", bg: "#10b981" },
+};
 
 const urlToDataUrl = async (url: string): Promise<string | null> => {
   try {
