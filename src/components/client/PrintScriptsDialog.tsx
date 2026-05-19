@@ -316,6 +316,14 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       padding: 2px 8px;
       border-radius: 4px;
     }
+    .funnel-badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+    }
     .hooks-section {
       padding: 1rem 1.25rem;
       border-bottom: 1px solid #eee;
