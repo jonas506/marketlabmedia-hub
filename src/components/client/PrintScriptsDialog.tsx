@@ -30,9 +30,16 @@ interface ScriptPiece {
   script_text?: string | null;
   has_script?: boolean;
   tag?: string | null;
+  funnel_stage?: string | null;
   script_links?: ScriptLink[] | null;
   script_images?: string[] | null;
 }
+
+const FUNNEL_BADGE: Record<string, { label: string; bg: string }> = {
+  tofu: { label: "TOFU · Reichweite", bg: "#3b82f6" },
+  mofu: { label: "MOFU · Vertrauen", bg: "#8b5cf6" },
+  bofu: { label: "BOFU · Conversion", bg: "#10b981" },
+};
 
 const urlToDataUrl = async (url: string): Promise<string | null> => {
   try {
@@ -151,6 +158,8 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       html += `<div class="script-meta">`;
       html += `<h2>${escapeHtml(piece.title || "Ohne Titel")}</h2>`;
       html += `<div class="badges"><span class="type-badge">${typeLabel}</span>`;
+      const funnel = piece.funnel_stage ? FUNNEL_BADGE[piece.funnel_stage] : null;
+      if (funnel) html += `<span class="funnel-badge" style="background:${funnel.bg};">${funnel.label}</span>`;
       if (piece.tag) html += `<span class="tag-badge">${escapeHtml(piece.tag)}</span>`;
       html += `</div></div></div>`;
 
@@ -306,6 +315,14 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
       color: #555;
       padding: 2px 8px;
       border-radius: 4px;
+    }
+    .funnel-badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
     }
     .hooks-section {
       padding: 1rem 1.25rem;
