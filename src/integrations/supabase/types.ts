@@ -2371,6 +2371,36 @@ export type Database = {
         }
         Relationships: []
       }
+      piece_internal_comments: {
+        Row: {
+          author_id: string
+          body: string
+          client_id: string
+          content_piece_id: string
+          created_at: string
+          id: string
+          mentioned_user_ids: string[]
+        }
+        Insert: {
+          author_id: string
+          body: string
+          client_id: string
+          content_piece_id: string
+          created_at?: string
+          id?: string
+          mentioned_user_ids?: string[]
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          client_id?: string
+          content_piece_id?: string
+          created_at?: string
+          id?: string
+          mentioned_user_ids?: string[]
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
