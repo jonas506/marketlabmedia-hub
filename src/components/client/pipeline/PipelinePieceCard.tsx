@@ -16,6 +16,7 @@ import FunnelStageSelector from "./FunnelStageSelector";
 import RawFootageLink from "./RawFootageLink";
 import PieceLatePhaseRow from "./PieceLatePhaseRow";
 import CarouselSlideUpload from "../CarouselSlideUpload";
+import PieceInternalComments from "./PieceInternalComments";
 import type { ContentPiece, TeamMember, PipelineConfig, MonthOption } from "./types";
 
 const TeamReplyInput: React.FC<{ pieceId: string; currentReply: string; onSave: (reply: string) => void }> = ({ pieceId, currentReply, onSave }) => {
