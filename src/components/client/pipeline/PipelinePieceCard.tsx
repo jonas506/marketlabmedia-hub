@@ -332,6 +332,9 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
         </div>
       )}
 
+      {/* Internal comments with @mentions */}
+      <PieceInternalComments pieceId={piece.id} clientId={clientId} team={team} />
+
       {/* Zone 4 — Action footer */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
         {/* Left: primary contextual action */}
