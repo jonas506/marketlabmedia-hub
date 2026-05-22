@@ -16,6 +16,7 @@ import FunnelStageSelector from "./FunnelStageSelector";
 import RawFootageLink from "./RawFootageLink";
 import PieceLatePhaseRow from "./PieceLatePhaseRow";
 import CarouselSlideUpload from "../CarouselSlideUpload";
+import PieceInternalComments from "./PieceInternalComments";
 import type { ContentPiece, TeamMember, PipelineConfig, MonthOption } from "./types";
 
 const TeamReplyInput: React.FC<{ pieceId: string; currentReply: string; onSave: (reply: string) => void }> = ({ pieceId, currentReply, onSave }) => {
@@ -330,6 +331,9 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
           )}
         </div>
       )}
+
+      {/* Internal comments with @mentions */}
+      <PieceInternalComments pieceId={piece.id} clientId={clientId} team={team} />
 
       {/* Zone 4 — Action footer */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/60">
