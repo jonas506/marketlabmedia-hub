@@ -1490,6 +1490,11 @@ export type Database = {
           instagram_handle: string | null
           last_activity_at: string | null
           linkedin_url: string | null
+          meta_ad_name: string | null
+          meta_adset_name: string | null
+          meta_campaign_name: string | null
+          meta_form_id: string | null
+          meta_lead_id: string | null
           name: string
           next_step: string | null
           next_step_date: string | null
@@ -1514,6 +1519,11 @@ export type Database = {
           instagram_handle?: string | null
           last_activity_at?: string | null
           linkedin_url?: string | null
+          meta_ad_name?: string | null
+          meta_adset_name?: string | null
+          meta_campaign_name?: string | null
+          meta_form_id?: string | null
+          meta_lead_id?: string | null
           name: string
           next_step?: string | null
           next_step_date?: string | null
@@ -1538,6 +1548,11 @@ export type Database = {
           instagram_handle?: string | null
           last_activity_at?: string | null
           linkedin_url?: string | null
+          meta_ad_name?: string | null
+          meta_adset_name?: string | null
+          meta_campaign_name?: string | null
+          meta_form_id?: string | null
+          meta_lead_id?: string | null
           name?: string
           next_step?: string | null
           next_step_date?: string | null
