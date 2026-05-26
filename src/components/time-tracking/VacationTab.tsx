@@ -19,10 +19,11 @@ import { toast } from "sonner";
 import { VACATION_TYPES, VACATION_STATUS_COLORS, VACATION_STATUS_LABELS } from "@/lib/time-tracking-constants";
 import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { isGermanHoliday } from "@/lib/german-holidays";
 
 function countWorkdays(start: Date, end: Date): number {
   const days = eachDayOfInterval({ start, end });
-  return days.filter(d => !isWeekend(d)).length;
+  return days.filter(d => !isWeekend(d) && !isGermanHoliday(d)).length;
 }
 
 export default function VacationTab() {
@@ -136,10 +137,8 @@ export default function VacationTab() {
     setHalfDay(false);
     qc.invalidateQueries({ queryKey: ["vacation-requests"] });
 
-    // Notify admins
+    // Notify admins (in-app + email)
     try {
-      const { data: adminUsers } = await supabase.rpc("get_user_role", { _user_id: user.id }) as any;
-      // Use profiles to find admins - simplified approach
       const { data: allProfiles } = await supabase.from("profiles").select("user_id");
       if (allProfiles) {
         for (const p of allProfiles) {
@@ -154,6 +153,17 @@ export default function VacationTab() {
           }
         }
       }
+      await supabase.functions.invoke("notify-vacation-request", {
+        body: {
+          requester_name: getName(user.id),
+          start_date: format(startDate, "yyyy-MM-dd"),
+          end_date: format(endDate, "yyyy-MM-dd"),
+          days: computedDays,
+          type: vacType,
+          note: note.trim() || null,
+          half_day: halfDay && isSingleDay,
+        },
+      });
     } catch { /* silent */ }
   };
 
@@ -298,7 +308,7 @@ export default function VacationTab() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d || undefined); if (!endDate && d) setEndDate(d); setStartCalOpen(false); }} locale={de} disabled={(date) => isWeekend(date)} />
+                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d || undefined); if (!endDate && d) setEndDate(d); setStartCalOpen(false); }} locale={de} disabled={(date) => isWeekend(date) || isGermanHoliday(date)} />
                 </PopoverContent>
               </Popover>
             </div>
@@ -312,7 +322,7 @@ export default function VacationTab() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d || undefined); setEndCalOpen(false); }} locale={de} disabled={(date) => isWeekend(date) || (startDate ? date < startDate : false)} />
+                  <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d || undefined); setEndCalOpen(false); }} locale={de} disabled={(date) => isWeekend(date) || isGermanHoliday(date) || (startDate ? date < startDate : false)} />
                 </PopoverContent>
               </Popover>
             </div>
