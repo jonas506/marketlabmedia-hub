@@ -137,10 +137,8 @@ export default function VacationTab() {
     setHalfDay(false);
     qc.invalidateQueries({ queryKey: ["vacation-requests"] });
 
-    // Notify admins
+    // Notify admins (in-app + email)
     try {
-      const { data: adminUsers } = await supabase.rpc("get_user_role", { _user_id: user.id }) as any;
-      // Use profiles to find admins - simplified approach
       const { data: allProfiles } = await supabase.from("profiles").select("user_id");
       if (allProfiles) {
         for (const p of allProfiles) {
@@ -155,6 +153,17 @@ export default function VacationTab() {
           }
         }
       }
+      await supabase.functions.invoke("notify-vacation-request", {
+        body: {
+          requester_name: getName(user.id),
+          start_date: format(startDate, "yyyy-MM-dd"),
+          end_date: format(endDate, "yyyy-MM-dd"),
+          days: computedDays,
+          type: vacType,
+          note: note.trim() || null,
+          half_day: halfDay && isSingleDay,
+        },
+      });
     } catch { /* silent */ }
   };
 
