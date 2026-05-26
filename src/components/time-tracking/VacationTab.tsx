@@ -19,10 +19,11 @@ import { toast } from "sonner";
 import { VACATION_TYPES, VACATION_STATUS_COLORS, VACATION_STATUS_LABELS } from "@/lib/time-tracking-constants";
 import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { isGermanHoliday } from "@/lib/german-holidays";
 
 function countWorkdays(start: Date, end: Date): number {
   const days = eachDayOfInterval({ start, end });
-  return days.filter(d => !isWeekend(d)).length;
+  return days.filter(d => !isWeekend(d) && !isGermanHoliday(d)).length;
 }
 
 export default function VacationTab() {
