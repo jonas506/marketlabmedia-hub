@@ -3,6 +3,7 @@ import { icons } from "lucide-react";
 import { PIPELINE_CONFIG } from "./constants";
 import type { ContentPiece } from "./types";
 import { cn } from "@/lib/utils";
+import { isArchivedHandedOver } from "@/lib/pipeline-utils";
 
 interface PipelineTypeTabsProps {
   activeType: string;
