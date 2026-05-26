@@ -12,21 +12,22 @@ function getClient() {
   );
 }
 
-async function callAI(apiKey: string, systemPrompt: string, userPrompt: string): Promise<string> {
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+async function callAI(_apiKey: string, systemPrompt: string, userPrompt: string): Promise<string> {
+  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY not configured");
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      "x-api-key": anthropicKey,
+      "anthropic-version": "2023-06-01",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.7,
+      model: "claude-sonnet-4-5",
       max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
     }),
   });
 
@@ -35,11 +36,12 @@ async function callAI(apiKey: string, systemPrompt: string, userPrompt: string):
     const errText = await response.text();
     if (status === 429) throw new Error("RATE_LIMITED");
     if (status === 402) throw new Error("PAYMENT_REQUIRED");
-    throw new Error(`AI failed [${status}]: ${errText}`);
+    throw new Error(`Claude failed [${status}]: ${errText}`);
   }
 
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
+  const textBlock = data.content?.find((c: any) => c.type === "text");
+  return textBlock?.text || "";
 }
 
 async function getClientContext(supabase: any, clientId: string): Promise<string> {
