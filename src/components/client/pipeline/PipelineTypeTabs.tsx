@@ -19,7 +19,9 @@ const PipelineTypeTabs: React.FC<PipelineTypeTabsProps> = React.memo(({
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       {Object.entries(PIPELINE_CONFIG).map(([key, cfg]) => {
-        const typeCount = contentPieces.filter((c) => c.type === key).length;
+        const typeCount = contentPieces.filter(
+          (c) => c.type === key && !(c.phase === "handed_over" && isArchivedHandedOver(c.scheduled_post_date))
+        ).length;
         const Icon = icons[cfg.emoji as keyof typeof icons];
         const isActive = activeType === key;
         return (
