@@ -107,6 +107,73 @@ const getGoogleDriveVideoUrl = (url: string): string | null => {
   return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null;
 };
 
+const CaptionEditor = ({
+  pieceId,
+  initialCaption,
+  token,
+  onSaved,
+}: {
+  pieceId: string;
+  initialCaption: string;
+  token: string;
+  onSaved: (newCaption: string) => void;
+}) => {
+  const [value, setValue] = useState(initialCaption);
+  const [saving, setSaving] = useState(false);
+  const dirty = value !== initialCaption;
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase.rpc("update_client_piece_caption", {
+        _token: token,
+        _piece_id: pieceId,
+        _caption: value,
+      });
+      if (error) throw error;
+      onSaved(value);
+      toast.success("Caption gespeichert");
+    } catch (err: any) {
+      toast.error(err.message || "Fehler beim Speichern");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-3.5"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest">
+          Caption
+        </span>
+        {dirty && (
+          <Button
+            size="sm"
+            onClick={save}
+            disabled={saving}
+            className="h-7 min-h-7 px-3 text-xs bg-[#0083F7] hover:bg-[#0083F7]/90 text-white"
+          >
+            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Speichern"}
+          </Button>
+        )}
+      </div>
+      <Textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        rows={6}
+        className="text-sm bg-transparent border-white/10 text-white/80 leading-relaxed resize-y focus-visible:ring-[#0083F7]/40"
+        placeholder="Caption bearbeiten…"
+      />
+    </motion.div>
+  );
+};
+
+
+
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
   const isMobile = useIsMobile();
@@ -544,17 +611,18 @@ const ClientApproval = () => {
                 </div>
               )}
 
-              {currentPiece && currentPiece.caption && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-3.5"
-                >
-                  <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest block mb-2">
-                    Caption
-                  </span>
-                  <p className="text-sm text-white/60 leading-relaxed whitespace-pre-line">{currentPiece.caption}</p>
-                </motion.div>
+              {currentPiece && currentPiece.caption != null && (
+                <CaptionEditor
+                  key={currentPiece.id}
+                  pieceId={currentPiece.id}
+                  initialCaption={currentPiece.caption ?? ""}
+                  token={token!}
+                  onSaved={(newCaption) =>
+                    setPieces((prev) =>
+                      prev.map((p) => (p.id === currentPiece.id ? { ...p, caption: newCaption } : p))
+                    )
+                  }
+                />
               )}
 
               {currentPiece && (
