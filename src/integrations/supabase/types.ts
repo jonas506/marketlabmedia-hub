@@ -685,6 +685,7 @@ export type Database = {
           monthly_stories: number
           monthly_youtube_longform: number
           name: string
+          require_caption_for_review: boolean
           review_notify_emails: string[]
           sector: string | null
           services: string[]
@@ -735,6 +736,7 @@ export type Database = {
           monthly_stories?: number
           monthly_youtube_longform?: number
           name: string
+          require_caption_for_review?: boolean
           review_notify_emails?: string[]
           sector?: string | null
           services?: string[]
@@ -785,6 +787,7 @@ export type Database = {
           monthly_stories?: number
           monthly_youtube_longform?: number
           name?: string
+          require_caption_for_review?: boolean
           review_notify_emails?: string[]
           sector?: string | null
           services?: string[]
@@ -3369,6 +3372,10 @@ export type Database = {
           _token: string
         }
         Returns: boolean
+      }
+      update_client_piece_caption: {
+        Args: { _caption: string; _piece_id: string; _token: string }
+        Returns: undefined
       }
     }
     Enums: {
