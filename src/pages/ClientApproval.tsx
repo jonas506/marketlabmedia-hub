@@ -172,6 +172,53 @@ const CaptionEditor = ({
   );
 };
 
+/**
+ * Mobile-first video player.
+ * Tries a native <video> element first (we control loop / inline / no oversized Drive overlays).
+ * Falls back to the Google Drive iframe if the direct stream fails.
+ */
+const PreviewVideoPlayer = ({
+  videoSrc,
+  embedSrc,
+  title,
+  videoRef,
+}: {
+  videoSrc: string | null;
+  embedSrc: string;
+  title: string;
+  videoRef?: (el: HTMLVideoElement | null) => void;
+}) => {
+  const [useFallback, setUseFallback] = useState(!videoSrc);
+
+  if (useFallback) {
+    return (
+      <iframe
+        src={embedSrc}
+        className="absolute inset-0 h-full w-full"
+        allow="autoplay; encrypted-media"
+        allowFullScreen
+        title={title}
+        style={{ border: 0 }}
+      />
+    );
+  }
+
+  return (
+    <video
+      ref={videoRef}
+      src={videoSrc!}
+      className="absolute inset-0 h-full w-full object-contain bg-black"
+      controls
+      loop
+      playsInline
+      preload="metadata"
+      onError={() => setUseFallback(true)}
+    />
+  );
+};
+
+
+
 
 
 const ClientApproval = () => {
@@ -548,13 +595,13 @@ const ClientApproval = () => {
                       <div className="p-2.5 sm:p-3">
                         <div className="mx-auto w-full max-w-[22rem] sm:max-w-md">
                           <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[75vh]"}`}>
-                            <iframe
-                              src={currentEmbed}
-                              className="absolute inset-0 h-full w-full"
-                              allow="autoplay; encrypted-media"
-                              allowFullScreen
+                            <PreviewVideoPlayer
+                              videoSrc={currentVideoSrc}
+                              embedSrc={currentEmbed}
                               title={currentPiece.title || "Preview"}
-                              style={{ border: 0 }}
+                              videoRef={(el) => {
+                                videoRefs.current[currentPiece.id] = el;
+                              }}
                             />
                           </div>
                         </div>
