@@ -595,13 +595,13 @@ const ClientApproval = () => {
                       <div className="p-2.5 sm:p-3">
                         <div className="mx-auto w-full max-w-[22rem] sm:max-w-md">
                           <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[75vh]"}`}>
-                            <iframe
-                              src={currentEmbed}
-                              className="absolute inset-0 h-full w-full"
-                              allow="autoplay; encrypted-media"
-                              allowFullScreen
+                            <PreviewVideoPlayer
+                              videoSrc={currentVideoSrc}
+                              embedSrc={currentEmbed}
                               title={currentPiece.title || "Preview"}
-                              style={{ border: 0 }}
+                              videoRef={(el) => {
+                                videoRefs.current[currentPiece.id] = el;
+                              }}
                             />
                           </div>
                         </div>
