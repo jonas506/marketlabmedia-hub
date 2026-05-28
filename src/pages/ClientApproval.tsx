@@ -172,6 +172,53 @@ const CaptionEditor = ({
   );
 };
 
+/**
+ * Mobile-first video player.
+ * Tries a native <video> element first (we control loop / inline / no oversized Drive overlays).
+ * Falls back to the Google Drive iframe if the direct stream fails.
+ */
+const PreviewVideoPlayer = ({
+  videoSrc,
+  embedSrc,
+  title,
+  videoRef,
+}: {
+  videoSrc: string | null;
+  embedSrc: string;
+  title: string;
+  videoRef?: (el: HTMLVideoElement | null) => void;
+}) => {
+  const [useFallback, setUseFallback] = useState(!videoSrc);
+
+  if (useFallback) {
+    return (
+      <iframe
+        src={embedSrc}
+        className="absolute inset-0 h-full w-full"
+        allow="autoplay; encrypted-media"
+        allowFullScreen
+        title={title}
+        style={{ border: 0 }}
+      />
+    );
+  }
+
+  return (
+    <video
+      ref={videoRef}
+      src={videoSrc!}
+      className="absolute inset-0 h-full w-full object-contain bg-black"
+      controls
+      loop
+      playsInline
+      preload="metadata"
+      onError={() => setUseFallback(true)}
+    />
+  );
+};
+
+
+
 
 
 const ClientApproval = () => {
