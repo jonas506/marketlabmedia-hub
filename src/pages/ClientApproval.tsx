@@ -671,7 +671,7 @@ const ClientApproval = () => {
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="mb-4 sm:mb-5 text-lg sm:text-2xl font-bold tracking-tight leading-tight break-words"
+                  className="mb-2 sm:mb-5 text-sm sm:text-2xl font-semibold sm:font-bold tracking-tight leading-tight break-words line-clamp-1 sm:line-clamp-none text-white/75 sm:text-white"
                 >
                   {currentPiece.title || "Ohne Titel"}
                 </motion.h2>
@@ -684,18 +684,18 @@ const ClientApproval = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.25 }}
-                  className="rounded-[28px] overflow-hidden border border-white/[0.05] bg-[#17181d] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]"
+                  className="rounded-2xl sm:rounded-[28px] overflow-hidden border border-white/[0.05] bg-[#17181d] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]"
                 >
                   {/* Carousel slides gallery */}
                   {isCarousel && carouselSlides.length > 0 ? (
                     <CarouselSlideGallery slides={carouselSlides} scriptText={currentPiece?.script_text} />
                   ) : currentEmbed ? (
                     <>
-                      <div className="p-2 sm:p-3">
+                      <div className="p-1.5 sm:p-3">
                         <div
-                          className="mx-auto relative aspect-[9/16] bg-black rounded-[20px] sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden sm:max-h-[48vh]"
+                          className="mx-auto relative aspect-[9/16] bg-black rounded-2xl sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden sm:max-h-[48vh]"
                           style={{
-                            height: "min(75vh, calc((100vw - 24px) * 16 / 9))",
+                            height: "min(calc(100dvh - 260px), calc((100vw - 24px) * 16 / 9))",
                           }}
                         >
 
