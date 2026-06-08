@@ -9,3 +9,5 @@ project_id = "winsekbpsgwtwfdehyms"
     verify_jwt = false
   [functions.generate-sop-flow]
     verify_jwt = false
+  [functions.client-video-proxy]
+    verify_jwt = false
