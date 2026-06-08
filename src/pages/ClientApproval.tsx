@@ -881,6 +881,28 @@ const ClientApproval = () => {
                               </button>
                             </div>
 
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] uppercase tracking-widest text-white/25 font-semibold mr-0.5">Tag</span>
+                              {(["video", "caption", "general"] as CommentCategory[]).map((cat) => {
+                                const active = commentCategory === cat;
+                                return (
+                                  <button
+                                    key={cat}
+                                    type="button"
+                                    onClick={() => setCommentCategory(cat)}
+                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                                      active
+                                        ? CATEGORY_META[cat].classes
+                                        : "bg-white/[0.04] text-white/30 hover:bg-white/[0.08] hover:text-white/50"
+                                    }`}
+                                  >
+                                    {CATEGORY_META[cat].label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+
                             <div className="flex gap-2">
                               <Textarea
                                 value={commentText}
