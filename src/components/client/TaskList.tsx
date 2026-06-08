@@ -206,25 +206,7 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     },
   });
 
-  const notifyTaskAssignment = useCallback(async (assignedTo: string, taskTitle: string, tag?: string | null, taskCount?: number) => {
-    try {
-      const { data: client } = await supabase.from("clients").select("name").eq("id", clientId).single();
-      await supabase.functions.invoke("notify-task-assignment", {
-        body: {
-          assigned_to: assignedTo,
-          task_title: taskTitle,
-          task_count: taskCount || 1,
-          client_name: client?.name || null,
-          tag: tag || null,
-        },
-      });
-    } catch (e) {
-      console.error("Slack task notification failed:", e);
-    }
-  }, [clientId]);
-
-  const updateTask = useCallback(async (taskId: string, updates: Record<string, any>, task?: Task) => {
-    const isNewAssignment = updates.assigned_to && updates.assigned_to !== "unassigned" && task && updates.assigned_to !== task.assigned_to;
+  const updateTask = useCallback(async (taskId: string, updates: Record<string, any>, _task?: Task) => {
 
     await supabase.from("tasks" as any).update(updates as any).eq("id", taskId);
     qc.invalidateQueries({ queryKey: ["tasks", clientId] });
