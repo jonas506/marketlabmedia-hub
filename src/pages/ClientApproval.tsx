@@ -131,9 +131,11 @@ const getGoogleDriveEmbedUrl = (url: string): string | null => {
   return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
 };
 
-const getGoogleDriveVideoUrl = (url: string): string | null => {
+const getGoogleDriveVideoUrl = (url: string, token: string): string | null => {
   const fileId = getGoogleDriveFileId(url);
-  return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null;
+  if (!fileId || !token) return null;
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  return `${base}/functions/v1/client-video-proxy?token=${encodeURIComponent(token)}&file_id=${encodeURIComponent(fileId)}`;
 };
 
 const CaptionBlock = ({
@@ -262,18 +264,18 @@ const PreviewVideoPlayer = ({
 
   if (useFallback) {
     return (
-      <div className="absolute inset-0">
-        <iframe
-          src={embedSrc}
-          className="absolute inset-0 h-full w-full"
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-          title={title}
-          style={{ border: 0 }}
-        />
-        {/* Maskiert die störenden Google-Drive-Overlay-Buttons (Popout, Vollbild, Neuer Tab) */}
-        <div className="pointer-events-auto absolute top-0 left-0 h-12 w-28 bg-black" aria-hidden />
-        <div className="pointer-events-auto absolute top-0 right-0 h-12 w-16 bg-black" aria-hidden />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black p-6 text-center">
+        <p className="text-sm text-white/80">
+          Video konnte nicht geladen werden.
+        </p>
+        <a
+          href={embedSrc}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-primary underline"
+        >
+          In Google Drive öffnen
+        </a>
       </div>
     );
   }
@@ -284,6 +286,7 @@ const PreviewVideoPlayer = ({
       src={videoSrc!}
       className="absolute inset-0 h-full w-full object-contain bg-black"
       controls
+      controlsList="nodownload"
       loop
       playsInline
       preload="metadata"
@@ -551,7 +554,7 @@ const ClientApproval = () => {
   const isCarousel = currentPiece?.type === "carousel" || (currentPiece?.type === "story" && hasSlideImages);
   const carouselSlides = currentPiece?.slide_images || [];
   const currentEmbed = !isCarousel && currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
-  const currentVideoSrc = !isCarousel && currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
+  const currentVideoSrc = !isCarousel && currentPiece?.preview_link && token ? getGoogleDriveVideoUrl(currentPiece.preview_link, token) : null;
   const currentPreviewLink = currentPiece?.preview_link ?? null;
   const allPreviewLinks = (currentPiece?.preview_link ?? "").split("\n").map(l => l.trim()).filter(Boolean);
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
