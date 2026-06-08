@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send, AlertCircle } from "lucide-react";
+import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send, AlertCircle, Calendar, Pencil, ChevronDown, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -54,11 +54,31 @@ interface MarketingSummary {
   year: number;
 }
 
+interface UpcomingPost {
+  id: string;
+  title: string | null;
+  type: string;
+  scheduled_post_date: string;
+  preview_link: string | null;
+}
+
+interface InProgressPiece {
+  id: string;
+  title: string | null;
+  type: string;
+  phase: string;
+  scheduled_post_date: string | null;
+  updated_at: string;
+}
+
 interface ApprovalPayload {
   client: ClientInfo;
   pieces: Piece[];
   comments: TimestampComment[];
   marketing: MarketingSummary | null;
+  upcoming_posts: UpcomingPost[];
+  in_progress: InProgressPiece[];
+  pipeline_summary: Record<string, number>;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -107,7 +127,7 @@ const getGoogleDriveVideoUrl = (url: string): string | null => {
   return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null;
 };
 
-const CaptionEditor = ({
+const CaptionBlock = ({
   pieceId,
   initialCaption,
   token,
@@ -119,10 +139,15 @@ const CaptionEditor = ({
   onSaved: (newCaption: string) => void;
 }) => {
   const [value, setValue] = useState(initialCaption);
+  const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const dirty = value !== initialCaption;
 
   const save = async () => {
+    if (!dirty) {
+      setEditing(false);
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase.rpc("update_client_piece_caption", {
@@ -133,6 +158,7 @@ const CaptionEditor = ({
       if (error) throw error;
       onSaved(value);
       toast.success("Caption gespeichert");
+      setEditing(false);
     } catch (err: any) {
       toast.error(err.message || "Fehler beim Speichern");
     } finally {
@@ -140,34 +166,69 @@ const CaptionEditor = ({
     }
   };
 
+  const characterCount = value.length;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-3.5"
+      className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] overflow-hidden"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest">
-          Caption
-        </span>
-        {dirty && (
-          <Button
-            size="sm"
-            onClick={save}
-            disabled={saving}
-            className="h-7 min-h-7 px-3 text-xs bg-[#0083F7] hover:bg-[#0083F7]/90 text-white"
+      <div className="flex items-center justify-between px-3.5 pt-3 pb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+            Caption
+          </span>
+          <span className="text-[10px] font-mono text-white/20 tabular-nums">{characterCount}</span>
+        </div>
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => { setValue(initialCaption); setEditing(false); }}
+              disabled={saving}
+              className="h-7 min-h-7 px-2 text-xs text-white/40 hover:text-white/80"
+            >
+              Abbrechen
+            </Button>
+            <Button
+              size="sm"
+              onClick={save}
+              disabled={saving || !dirty}
+              className="h-7 min-h-7 px-3 text-xs bg-[#0083F7] hover:bg-[#0083F7]/90 text-white"
+            >
+              {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Speichern"}
+            </Button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            className="inline-flex items-center gap-1 text-[11px] text-white/40 hover:text-[#0083F7] transition-colors px-2 py-0.5 rounded-md hover:bg-white/[0.04]"
           >
-            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Speichern"}
-          </Button>
+            <Pencil className="h-3 w-3" />
+            Bearbeiten
+          </button>
         )}
       </div>
-      <Textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        rows={6}
-        className="text-sm bg-transparent border-white/10 text-white/80 leading-relaxed resize-y focus-visible:ring-[#0083F7]/40"
-        placeholder="Caption bearbeiten…"
-      />
+      {editing ? (
+        <div className="px-3.5 pb-3.5">
+          <Textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            rows={8}
+            autoFocus
+            className="text-sm bg-transparent border-white/10 text-white/85 leading-relaxed resize-y focus-visible:ring-[#0083F7]/40 whitespace-pre-wrap"
+            placeholder="Caption bearbeiten…"
+          />
+        </div>
+      ) : (
+        <div className="px-3.5 pb-3.5">
+          <p className="text-[13px] text-white/65 leading-relaxed whitespace-pre-wrap">
+            {value || <span className="text-white/25 italic">Keine Caption</span>}
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -223,11 +284,15 @@ const PreviewVideoPlayer = ({
 
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
-  const isMobile = useIsMobile();
+  useIsMobile();
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [comments, setComments] = useState<TimestampComment[]>([]);
   const [marketing, setMarketing] = useState<MarketingSummary | null>(null);
+  const [upcomingPosts, setUpcomingPosts] = useState<UpcomingPost[]>([]);
+  const [inProgress, setInProgress] = useState<InProgressPiece[]>([]);
+  const [pipelineSummary, setPipelineSummary] = useState<Record<string, number>>({});
+  const [overviewOpen, setOverviewOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -259,6 +324,9 @@ const ClientApproval = () => {
       setPieces(payload.pieces || []);
       setComments(payload.comments || []);
       setMarketing(payload.marketing || null);
+      setUpcomingPosts(payload.upcoming_posts || []);
+      setInProgress(payload.in_progress || []);
+      setPipelineSummary(payload.pipeline_summary || {});
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
@@ -512,6 +580,16 @@ const ClientApproval = () => {
         <MarketingSummaryBar marketing={marketing} />
       )}
 
+      {(upcomingPosts.length > 0 || inProgress.length > 0 || Object.values(pipelineSummary).reduce((a, b) => a + b, 0) > 0) && (
+        <OverviewPanel
+          open={overviewOpen}
+          onToggle={() => setOverviewOpen((v) => !v)}
+          upcoming={upcomingPosts}
+          inProgress={inProgress}
+          pipeline={pipelineSummary}
+        />
+      )}
+
       <div className="flex-1 flex flex-col" ref={scrollRef}>
         {pieces.length === 0 ? (
           <motion.div
@@ -592,32 +670,41 @@ const ClientApproval = () => {
                     <CarouselSlideGallery slides={carouselSlides} scriptText={currentPiece?.script_text} />
                   ) : currentEmbed ? (
                     <>
-                      <div className="p-2.5 sm:p-3">
-                        <div className="mx-auto w-full max-w-[22rem] sm:max-w-md">
-                          <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[75vh]"}`}>
-                            <PreviewVideoPlayer
-                              videoSrc={currentVideoSrc}
-                              embedSrc={currentEmbed}
-                              title={currentPiece.title || "Preview"}
-                              videoRef={(el) => {
-                                videoRefs.current[currentPiece.id] = el;
-                              }}
-                            />
-                          </div>
+                      <div className="p-2 sm:p-3">
+                        <div className="mx-auto relative aspect-[9/16] max-h-[50vh] sm:max-h-[70vh] w-auto bg-black rounded-[20px] sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden" style={{ width: "min(100%, calc(50vh * 9 / 16))" }}>
+                          <PreviewVideoPlayer
+                            videoSrc={currentVideoSrc}
+                            embedSrc={currentEmbed}
+                            title={currentPiece.title || "Preview"}
+                            videoRef={(el) => {
+                              videoRefs.current[currentPiece.id] = el;
+                            }}
+                          />
+                          {allPreviewLinks.length > 1 && (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-white text-[10px] font-mono">
+                                <Layers className="h-2.5 w-2.5" />
+                                {allPreviewLinks.length} Varianten
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      {allPreviewLinks.length > 1 && currentPreviewLink && (
-                        <div className="border-t border-white/[0.05] px-3 py-3 sm:px-4">
-                          <a
-                            href={currentPreviewLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3 py-3 text-sm font-medium text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white/80"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            Alle Varianten ansehen
-                          </a>
+                      {allPreviewLinks.length > 1 && (
+                        <div className="border-t border-white/[0.05] px-3 py-2.5 sm:px-4 flex gap-1.5 overflow-x-auto">
+                          {allPreviewLinks.map((link, i) => (
+                            <a
+                              key={i}
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-white/60 hover:bg-white/[0.06] hover:text-white/80 transition-colors"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Variante {i + 1}
+                            </a>
+                          ))}
                         </div>
                       )}
                     </>
@@ -659,7 +746,7 @@ const ClientApproval = () => {
               )}
 
               {currentPiece && currentPiece.caption != null && (
-                <CaptionEditor
+                <CaptionBlock
                   key={currentPiece.id}
                   pieceId={currentPiece.id}
                   initialCaption={currentPiece.caption ?? ""}
@@ -722,30 +809,6 @@ const ClientApproval = () => {
                     </motion.div>
                   )}
 
-                  {allPreviewLinks.length > 1 && (
-                    <div className="mb-3 space-y-1.5">
-                      <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest px-1">
-                        {allPreviewLinks.length === 1 ? "Preview-Link" : "Preview-Links"}
-                      </span>
-                      {allPreviewLinks.map((link, i) => (
-                        <a
-                          key={i}
-                          href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2.5 py-2.5 px-3 rounded-2xl bg-white/[0.03] border border-white/[0.04] hover:bg-white/[0.06] hover:border-white/[0.08] transition-colors group/link"
-                        >
-                          <div className="w-7 h-7 rounded-lg bg-[#0083F7]/10 border border-[#0083F7]/20 flex items-center justify-center shrink-0">
-                            <Play className="h-3 w-3 text-[#0083F7] ml-px" />
-                          </div>
-                          <span className="text-sm text-white/50 group-hover/link:text-white/70 transition-colors flex-1 truncate">
-                            {allPreviewLinks.length > 1 ? `Variante ${i + 1}` : "Preview öffnen"}
-                          </span>
-                          <ExternalLink className="h-3.5 w-3.5 text-white/20 group-hover/link:text-white/40 transition-colors shrink-0" />
-                        </a>
-                      ))}
-                    </div>
-                  )}
 
                   {isRevisionBlocked ? (
                     <motion.div
@@ -987,7 +1050,147 @@ const ClientApproval = () => {
   );
 };
 
+const PHASE_LABELS: Record<string, string> = {
+  idea: "Idee",
+  script: "Skript",
+  shooting: "Dreh",
+  editing: "Schnitt",
+  review: "Freigabe",
+  approved: "Freigegeben",
+};
+
+const TYPE_DOT_BG: Record<string, string> = {
+  reel: "bg-blue-400",
+  story: "bg-purple-400",
+  carousel: "bg-amber-400",
+  ad: "bg-violet-400",
+  youtube_longform: "bg-red-400",
+};
+
+function OverviewPanel({
+  open,
+  onToggle,
+  upcoming,
+  inProgress,
+  pipeline,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  upcoming: UpcomingPost[];
+  inProgress: InProgressPiece[];
+  pipeline: Record<string, number>;
+}) {
+  const totalPipeline = Object.values(pipeline).reduce((a, b) => a + b, 0);
+  return (
+    <div className="border-b border-white/[0.04]">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-2.5">
+        <button
+          onClick={onToggle}
+          className="w-full flex items-center justify-between gap-3 text-left group"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-[#0083F7]/70" />
+              <span className="text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+                Übersicht
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-white/40 truncate">
+              <span><span className="text-white/70 font-semibold">{upcoming.length}</span> geplant</span>
+              <span className="text-white/15">·</span>
+              <span><span className="text-white/70 font-semibold">{inProgress.length}</span> in Arbeit</span>
+              <span className="text-white/15">·</span>
+              <span><span className="text-white/70 font-semibold">{totalPipeline}</span> Pipeline</span>
+            </div>
+          </div>
+          <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 pb-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Upcoming */}
+                <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-3 w-3 text-emerald-400" />
+                    <span className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Demnächst online</span>
+                  </div>
+                  {upcoming.length === 0 ? (
+                    <p className="text-[11px] text-white/25">Keine geplanten Posts</p>
+                  ) : (
+                    <ul className="space-y-1.5 max-h-44 overflow-y-auto">
+                      {upcoming.slice(0, 8).map((p) => {
+                        const d = new Date(p.scheduled_post_date);
+                        const label = d.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
+                        return (
+                          <li key={p.id} className="flex items-center gap-2 text-[12px]">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${TYPE_DOT_BG[p.type] || "bg-white/30"}`} />
+                            <span className="text-white/30 font-mono text-[10px] tabular-nums shrink-0 w-[68px]">{label}</span>
+                            <span className="text-white/65 truncate flex-1">{p.title || "Ohne Titel"}</span>
+                          </li>
+                        );
+                      })}
+                      {upcoming.length > 8 && (
+                        <li className="text-[10px] text-white/25 pt-1">+ {upcoming.length - 8} weitere</li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+
+                {/* Pipeline */}
+                <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Layers className="h-3 w-3 text-[#0083F7]" />
+                    <span className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">In der Pipeline</span>
+                  </div>
+                  {totalPipeline === 0 ? (
+                    <p className="text-[11px] text-white/25">Aktuell nichts in Produktion</p>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {Object.entries(PHASE_LABELS).map(([phase, label]) => {
+                        const c = pipeline[phase] || 0;
+                        return (
+                          <div key={phase} className={`rounded-xl border px-2 py-1.5 text-center ${c > 0 ? "bg-white/[0.03] border-white/[0.06]" : "bg-transparent border-white/[0.03]"}`}>
+                            <div className={`text-base font-bold font-mono tabular-nums ${c > 0 ? "text-white/80" : "text-white/15"}`}>{c}</div>
+                            <div className="text-[9px] text-white/35 uppercase tracking-wider truncate">{label}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {inProgress.length > 0 && (
+                    <div className="mt-2.5 pt-2.5 border-t border-white/[0.04]">
+                      <div className="text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-1.5">Nach Feedback in Arbeit</div>
+                      <ul className="space-y-1 max-h-24 overflow-y-auto">
+                        {inProgress.slice(0, 5).map((p) => (
+                          <li key={p.id} className="flex items-center gap-2 text-[11px]">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${TYPE_DOT_BG[p.type] || "bg-white/30"}`} />
+                            <span className="text-white/55 truncate flex-1">{p.title || "Ohne Titel"}</span>
+                            <span className="text-[9px] text-white/30 uppercase">{PHASE_LABELS[p.phase] || p.phase}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
 const MONTH_NAMES = ["", "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+
 
 function MarketingSummaryBar({ marketing }: { marketing: MarketingSummary }) {
   const cpf = marketing.new_followers > 0 ? (marketing.ad_spend / marketing.new_followers) : null;
