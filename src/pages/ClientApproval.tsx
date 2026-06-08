@@ -580,6 +580,16 @@ const ClientApproval = () => {
         <MarketingSummaryBar marketing={marketing} />
       )}
 
+      {(upcomingPosts.length > 0 || inProgress.length > 0 || Object.values(pipelineSummary).reduce((a, b) => a + b, 0) > 0) && (
+        <OverviewPanel
+          open={overviewOpen}
+          onToggle={() => setOverviewOpen((v) => !v)}
+          upcoming={upcomingPosts}
+          inProgress={inProgress}
+          pipeline={pipelineSummary}
+        />
+      )}
+
       <div className="flex-1 flex flex-col" ref={scrollRef}>
         {pieces.length === 0 ? (
           <motion.div
