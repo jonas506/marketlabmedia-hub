@@ -324,6 +324,9 @@ const ClientApproval = () => {
       setPieces(payload.pieces || []);
       setComments(payload.comments || []);
       setMarketing(payload.marketing || null);
+      setUpcomingPosts(payload.upcoming_posts || []);
+      setInProgress(payload.in_progress || []);
+      setPipelineSummary(payload.pipeline_summary || {});
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
