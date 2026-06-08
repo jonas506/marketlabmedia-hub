@@ -433,7 +433,7 @@ Deno.serve(async (req) => {
 
     // ── Bulk generate ──
     if (action === "bulk_generate") {
-      const { piece_ids } = body;
+      const { piece_ids, custom_prompt } = body;
       if (!piece_ids?.length) {
         return new Response(JSON.stringify({ error: "piece_ids required" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -452,7 +452,7 @@ Deno.serve(async (req) => {
       }
 
       const clientContext = await getClientContext(supabase, pieces[0].client_id);
-      const captionSystemPrompt = buildCaptionSystemPrompt(clientContext);
+      const captionSystemPrompt = buildCaptionSystemPrompt(clientContext, custom_prompt);
 
       const results: { id: string; caption: string; error?: string }[] = [];
 
