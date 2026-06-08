@@ -887,7 +887,7 @@ const ClientApproval = () => {
                                 onChange={(e) => {
                                   setCommentText(e.target.value);
                                   if (currentPiece && e.target.value.trim()) {
-                                    pendingCommentRef.current = { pieceId: currentPiece.id, text: e.target.value, timestamp: commentTimestamp };
+                                    pendingCommentRef.current = { pieceId: currentPiece.id, text: e.target.value, timestamp: commentTimestamp, category: commentCategory };
                                   } else {
                                     pendingCommentRef.current = null;
                                   }
