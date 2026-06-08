@@ -54,11 +54,31 @@ interface MarketingSummary {
   year: number;
 }
 
+interface UpcomingPost {
+  id: string;
+  title: string | null;
+  type: string;
+  scheduled_post_date: string;
+  preview_link: string | null;
+}
+
+interface InProgressPiece {
+  id: string;
+  title: string | null;
+  type: string;
+  phase: string;
+  scheduled_post_date: string | null;
+  updated_at: string;
+}
+
 interface ApprovalPayload {
   client: ClientInfo;
   pieces: Piece[];
   comments: TimestampComment[];
   marketing: MarketingSummary | null;
+  upcoming_posts: UpcomingPost[];
+  in_progress: InProgressPiece[];
+  pipeline_summary: Record<string, number>;
 }
 
 const TYPE_LABELS: Record<string, string> = {
