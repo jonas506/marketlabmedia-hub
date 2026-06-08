@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+
 import { supabase } from "@/integrations/supabase/client";
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
@@ -83,7 +83,6 @@ const FormatPicker: React.FC<Props> = ({ value, onChange }) => {
             <PopoverContent className="w-80 p-2 max-h-80 overflow-y-auto">
               <div className="px-2 py-1.5 mb-1 border-b border-border flex items-center justify-between">
                 <span className="text-xs font-semibold">{selected.emoji} {selected.name}</span>
-                <Link to={`/referenzen/${selected.id}`} className="text-[10px] text-primary hover:underline">Alle →</Link>
               </div>
               {refs.length === 0 && <p className="text-xs text-muted-foreground px-2 py-3">Keine Referenzen.</p>}
               <div className="space-y-1">
