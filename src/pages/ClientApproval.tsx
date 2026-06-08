@@ -307,6 +307,7 @@ const ClientApproval = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [commentText, setCommentText] = useState("");
   const [commentTimestamp, setCommentTimestamp] = useState<number | null>(null);
+  const [commentCategory, setCommentCategory] = useState<CommentCategory>("video");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [addingComment, setAddingComment] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
