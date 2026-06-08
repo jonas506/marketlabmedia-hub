@@ -131,9 +131,11 @@ const getGoogleDriveEmbedUrl = (url: string): string | null => {
   return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
 };
 
-const getGoogleDriveVideoUrl = (url: string): string | null => {
+const getGoogleDriveVideoUrl = (url: string, token: string): string | null => {
   const fileId = getGoogleDriveFileId(url);
-  return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null;
+  if (!fileId || !token) return null;
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  return `${base}/functions/v1/client-video-proxy?token=${encodeURIComponent(token)}&file_id=${encodeURIComponent(fileId)}`;
 };
 
 const CaptionBlock = ({
