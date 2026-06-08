@@ -264,18 +264,18 @@ const PreviewVideoPlayer = ({
 
   if (useFallback) {
     return (
-      <div className="absolute inset-0">
-        <iframe
-          src={embedSrc}
-          className="absolute inset-0 h-full w-full"
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-          title={title}
-          style={{ border: 0 }}
-        />
-        {/* Maskiert die störenden Google-Drive-Overlay-Buttons (Popout, Vollbild, Neuer Tab) */}
-        <div className="pointer-events-auto absolute top-0 left-0 h-12 w-28 bg-black" aria-hidden />
-        <div className="pointer-events-auto absolute top-0 right-0 h-12 w-16 bg-black" aria-hidden />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black p-6 text-center">
+        <p className="text-sm text-white/80">
+          Video konnte nicht geladen werden.
+        </p>
+        <a
+          href={embedSrc}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-primary underline"
+        >
+          In Google Drive öffnen
+        </a>
       </div>
     );
   }
@@ -286,6 +286,7 @@ const PreviewVideoPlayer = ({
       src={videoSrc!}
       className="absolute inset-0 h-full w-full object-contain bg-black"
       controls
+      controlsList="nodownload"
       loop
       playsInline
       preload="metadata"
