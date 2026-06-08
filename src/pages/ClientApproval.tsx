@@ -1050,7 +1050,147 @@ const ClientApproval = () => {
   );
 };
 
+const PHASE_LABELS: Record<string, string> = {
+  idea: "Idee",
+  script: "Skript",
+  shooting: "Dreh",
+  editing: "Schnitt",
+  review: "Freigabe",
+  approved: "Freigegeben",
+};
+
+const TYPE_DOT_BG: Record<string, string> = {
+  reel: "bg-blue-400",
+  story: "bg-purple-400",
+  carousel: "bg-amber-400",
+  ad: "bg-violet-400",
+  youtube_longform: "bg-red-400",
+};
+
+function OverviewPanel({
+  open,
+  onToggle,
+  upcoming,
+  inProgress,
+  pipeline,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  upcoming: UpcomingPost[];
+  inProgress: InProgressPiece[];
+  pipeline: Record<string, number>;
+}) {
+  const totalPipeline = Object.values(pipeline).reduce((a, b) => a + b, 0);
+  return (
+    <div className="border-b border-white/[0.04]">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-2.5">
+        <button
+          onClick={onToggle}
+          className="w-full flex items-center justify-between gap-3 text-left group"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-[#0083F7]/70" />
+              <span className="text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+                Übersicht
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-white/40 truncate">
+              <span><span className="text-white/70 font-semibold">{upcoming.length}</span> geplant</span>
+              <span className="text-white/15">·</span>
+              <span><span className="text-white/70 font-semibold">{inProgress.length}</span> in Arbeit</span>
+              <span className="text-white/15">·</span>
+              <span><span className="text-white/70 font-semibold">{totalPipeline}</span> Pipeline</span>
+            </div>
+          </div>
+          <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 pb-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Upcoming */}
+                <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-3 w-3 text-emerald-400" />
+                    <span className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">Demnächst online</span>
+                  </div>
+                  {upcoming.length === 0 ? (
+                    <p className="text-[11px] text-white/25">Keine geplanten Posts</p>
+                  ) : (
+                    <ul className="space-y-1.5 max-h-44 overflow-y-auto">
+                      {upcoming.slice(0, 8).map((p) => {
+                        const d = new Date(p.scheduled_post_date);
+                        const label = d.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
+                        return (
+                          <li key={p.id} className="flex items-center gap-2 text-[12px]">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${TYPE_DOT_BG[p.type] || "bg-white/30"}`} />
+                            <span className="text-white/30 font-mono text-[10px] tabular-nums shrink-0 w-[68px]">{label}</span>
+                            <span className="text-white/65 truncate flex-1">{p.title || "Ohne Titel"}</span>
+                          </li>
+                        );
+                      })}
+                      {upcoming.length > 8 && (
+                        <li className="text-[10px] text-white/25 pt-1">+ {upcoming.length - 8} weitere</li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+
+                {/* Pipeline */}
+                <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Layers className="h-3 w-3 text-[#0083F7]" />
+                    <span className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">In der Pipeline</span>
+                  </div>
+                  {totalPipeline === 0 ? (
+                    <p className="text-[11px] text-white/25">Aktuell nichts in Produktion</p>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {Object.entries(PHASE_LABELS).map(([phase, label]) => {
+                        const c = pipeline[phase] || 0;
+                        return (
+                          <div key={phase} className={`rounded-xl border px-2 py-1.5 text-center ${c > 0 ? "bg-white/[0.03] border-white/[0.06]" : "bg-transparent border-white/[0.03]"}`}>
+                            <div className={`text-base font-bold font-mono tabular-nums ${c > 0 ? "text-white/80" : "text-white/15"}`}>{c}</div>
+                            <div className="text-[9px] text-white/35 uppercase tracking-wider truncate">{label}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {inProgress.length > 0 && (
+                    <div className="mt-2.5 pt-2.5 border-t border-white/[0.04]">
+                      <div className="text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-1.5">Nach Feedback in Arbeit</div>
+                      <ul className="space-y-1 max-h-24 overflow-y-auto">
+                        {inProgress.slice(0, 5).map((p) => (
+                          <li key={p.id} className="flex items-center gap-2 text-[11px]">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${TYPE_DOT_BG[p.type] || "bg-white/30"}`} />
+                            <span className="text-white/55 truncate flex-1">{p.title || "Ohne Titel"}</span>
+                            <span className="text-[9px] text-white/30 uppercase">{PHASE_LABELS[p.phase] || p.phase}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
 const MONTH_NAMES = ["", "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+
 
 function MarketingSummaryBar({ marketing }: { marketing: MarketingSummary }) {
   const cpf = marketing.new_followers > 0 ? (marketing.ad_spend / marketing.new_followers) : null;
