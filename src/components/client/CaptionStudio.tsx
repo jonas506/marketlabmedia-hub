@@ -39,6 +39,8 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [globalPrompt, setGlobalPrompt] = useState("");
+  const [showPrompt, setShowPrompt] = useState(false);
 
   const { data: savedPrompts = [] } = useQuery({
     queryKey: ["saved-prompts-caption"],
@@ -77,9 +79,9 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
   const generateSingle = useCallback(async (pieceId: string) => {
     setGenerating(prev => new Set(prev).add(pieceId));
     try {
-      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "generate", piece_id: pieceId },
-      });
+      const body: any = { action: "generate", piece_id: pieceId };
+      if (globalPrompt.trim()) body.custom_prompt = globalPrompt.trim();
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", { body });
       if (error) throw error;
       if (data?.caption) {
         setEditingCaption(prev => ({ ...prev, [pieceId]: data.caption }));
@@ -90,16 +92,16 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
     } finally {
       setGenerating(prev => { const s = new Set(prev); s.delete(pieceId); return s; });
     }
-  }, [clientId, qc]);
+  }, [clientId, qc, globalPrompt]);
 
   const bulkGenerate = useCallback(async () => {
     const ids = [...selected];
     if (!ids.length) { toast.error("Bitte mindestens ein Piece auswählen"); return; }
     setBulkGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "bulk_generate", piece_ids: ids },
-      });
+      const body: any = { action: "bulk_generate", piece_ids: ids };
+      if (globalPrompt.trim()) body.custom_prompt = globalPrompt.trim();
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", { body });
       if (error) throw error;
       if (data?.results) {
         const newCaptions: Record<string, string> = {};
@@ -116,7 +118,7 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
     } finally {
       setBulkGenerating(false);
     }
-  }, [selected, clientId, qc]);
+  }, [selected, clientId, qc, globalPrompt]);
 
   const refineSingle = useCallback(async (pieceId: string) => {
     const instruction = refineInput[pieceId];
@@ -204,6 +206,83 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
                 ? "Generiere..."
                 : `${selected.size} Caption${selected.size !== 1 ? "s" : ""} generieren`}
             </Button>
+          </div>
+
+          {/* Custom Prompt toggle */}
+          <div className="mt-3">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs font-mono gap-1 text-muted-foreground hover:text-foreground px-2"
+              onClick={() => setShowPrompt(s => !s)}
+            >
+              <Wand2 className="h-3 w-3" />
+              Prompt anpassen
+              {globalPrompt.trim() && (
+                <span className="ml-1 h-4 px-1.5 rounded-full bg-primary/15 text-primary text-[9px] flex items-center">aktiv</span>
+              )}
+              {showPrompt ? <ChevronUp className="h-3 w-3 ml-0.5" /> : <ChevronDown className="h-3 w-3 ml-0.5" />}
+            </Button>
+            <AnimatePresence>
+              {showPrompt && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2 space-y-2">
+                    <Textarea
+                      value={globalPrompt}
+                      onChange={(e) => setGlobalPrompt(e.target.value)}
+                      placeholder="Zusätzliche Anweisung für die Generierung – z.B. 'Lockerer Ton, weniger Hashtags, Fokus auf Storytelling'..."
+                      className="text-xs bg-background/50 resize-y min-h-[70px] max-h-[160px]"
+                      rows={3}
+                    />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {savedPrompts.length > 0 && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button size="sm" variant="outline" className="h-7 text-xs font-mono gap-1">
+                              <BookmarkIcon className="h-3 w-3" />
+                              Gespeicherten Prompt einfügen
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 p-2" align="start">
+                            <p className="text-[10px] font-mono uppercase text-muted-foreground px-2 py-1">Gespeicherte Prompts</p>
+                            <div className="max-h-48 overflow-y-auto space-y-0.5">
+                              {savedPrompts.map((sp) => (
+                                <button
+                                  key={sp.id}
+                                  className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-accent transition-colors truncate"
+                                  onClick={() => setGlobalPrompt(sp.prompt_text)}
+                                >
+                                  {sp.name}
+                                </button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      {globalPrompt && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs font-mono gap-1 text-muted-foreground"
+                          onClick={() => setGlobalPrompt("")}
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          Zurücksetzen
+                        </Button>
+                      )}
+                      <span className="text-[10px] text-muted-foreground font-mono ml-auto">
+                        Wirkt auf Bulk & Einzel-Generierung
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </DialogHeader>
 
