@@ -12,13 +12,22 @@ import confetti from "canvas-confetti";
 import logoDark from "@/assets/logo-dark.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+type CommentCategory = "video" | "caption" | "general";
+
 interface TimestampComment {
   id: string;
   content_piece_id: string;
   timestamp_seconds: number | null;
   comment_text: string;
+  category?: CommentCategory;
   created_at: string;
 }
+
+const CATEGORY_META: Record<CommentCategory, { label: string; classes: string }> = {
+  video: { label: "Video", classes: "bg-[#0083F7]/15 text-[#0083F7]" },
+  caption: { label: "Caption", classes: "bg-fuchsia-500/15 text-fuchsia-300" },
+  general: { label: "Allgemein", classes: "bg-white/10 text-white/60" },
+};
 
 interface Piece {
   id: string;
