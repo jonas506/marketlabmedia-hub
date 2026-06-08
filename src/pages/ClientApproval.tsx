@@ -284,7 +284,7 @@ const PreviewVideoPlayer = ({
 
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
-  const isMobile = useIsMobile();
+  useIsMobile();
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [comments, setComments] = useState<TimestampComment[]>([]);
