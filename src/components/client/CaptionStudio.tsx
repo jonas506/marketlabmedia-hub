@@ -99,9 +99,9 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
     if (!ids.length) { toast.error("Bitte mindestens ein Piece auswählen"); return; }
     setBulkGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "bulk_generate", piece_ids: ids },
-      });
+      const body: any = { action: "bulk_generate", piece_ids: ids };
+      if (globalPrompt.trim()) body.custom_prompt = globalPrompt.trim();
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", { body });
       if (error) throw error;
       if (data?.results) {
         const newCaptions: Record<string, string> = {};
