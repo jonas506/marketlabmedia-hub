@@ -316,7 +316,7 @@ const ClientApproval = () => {
   const [confirmApprove, setConfirmApprove] = useState(false);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
-  const pendingCommentRef = useRef<{ pieceId: string; text: string; timestamp: number | null } | null>(null);
+  const pendingCommentRef = useRef<{ pieceId: string; text: string; timestamp: number | null; category: CommentCategory } | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!token || token === ":token") {
