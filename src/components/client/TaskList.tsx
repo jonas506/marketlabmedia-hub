@@ -230,10 +230,8 @@ const TaskList: React.FC<TaskListProps> = ({ clientId, canEdit }) => {
     qc.invalidateQueries({ queryKey: ["tasks", clientId] });
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
 
-    if (isNewAssignment && task) {
-      notifyTaskAssignment(updates.assigned_to, task.title, task.tag);
-    }
-  }, [qc, clientId, notifyTaskAssignment]);
+    // Slack assignment notification is sent automatically by the DB trigger trg_notify_task_assignment_slack
+  }, [qc, clientId]);
 
   const setGroupDeadline = useCallback(async (group: TaskGroup, date: Date | undefined) => {
     const deadline = date ? format(date, "yyyy-MM-dd") : null;
