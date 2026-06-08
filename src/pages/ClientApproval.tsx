@@ -627,7 +627,8 @@ const ClientApproval = () => {
         ) : (
           <>
             <div className="max-w-2xl sm:max-w-6xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-4 flex-1 flex flex-col sm:grid sm:grid-cols-[1fr_380px] sm:gap-8 sm:items-start">
-              <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wider border bg-gradient-to-r ${TYPE_COLORS[currentPiece.type] || "from-white/5 to-white/5 text-white/50 border-white/10"}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
