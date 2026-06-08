@@ -79,9 +79,9 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
   const generateSingle = useCallback(async (pieceId: string) => {
     setGenerating(prev => new Set(prev).add(pieceId));
     try {
-      const { data, error } = await supabase.functions.invoke("transcribe-caption", {
-        body: { action: "generate", piece_id: pieceId },
-      });
+      const body: any = { action: "generate", piece_id: pieceId };
+      if (globalPrompt.trim()) body.custom_prompt = globalPrompt.trim();
+      const { data, error } = await supabase.functions.invoke("transcribe-caption", { body });
       if (error) throw error;
       if (data?.caption) {
         setEditingCaption(prev => ({ ...prev, [pieceId]: data.caption }));
@@ -92,7 +92,7 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
     } finally {
       setGenerating(prev => { const s = new Set(prev); s.delete(pieceId); return s; });
     }
-  }, [clientId, qc]);
+  }, [clientId, qc, globalPrompt]);
 
   const bulkGenerate = useCallback(async () => {
     const ids = [...selected];
