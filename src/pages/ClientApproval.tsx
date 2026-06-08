@@ -720,7 +720,7 @@ const ClientApproval = () => {
               )}
 
               {currentPiece && currentPiece.caption != null && (
-                <CaptionEditor
+                <CaptionBlock
                   key={currentPiece.id}
                   pieceId={currentPiece.id}
                   initialCaption={currentPiece.caption ?? ""}
