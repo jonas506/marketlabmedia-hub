@@ -660,32 +660,41 @@ const ClientApproval = () => {
                     <CarouselSlideGallery slides={carouselSlides} scriptText={currentPiece?.script_text} />
                   ) : currentEmbed ? (
                     <>
-                      <div className="p-2.5 sm:p-3">
-                        <div className="mx-auto w-full max-w-[22rem] sm:max-w-md">
-                          <div className={`relative overflow-hidden bg-black ${isMobile ? "aspect-[9/16] rounded-[24px] ring-1 ring-white/10" : "aspect-[9/16] max-h-[75vh]"}`}>
-                            <PreviewVideoPlayer
-                              videoSrc={currentVideoSrc}
-                              embedSrc={currentEmbed}
-                              title={currentPiece.title || "Preview"}
-                              videoRef={(el) => {
-                                videoRefs.current[currentPiece.id] = el;
-                              }}
-                            />
-                          </div>
+                      <div className="p-2 sm:p-3">
+                        <div className="mx-auto relative aspect-[9/16] max-h-[50vh] sm:max-h-[70vh] w-auto bg-black rounded-[20px] sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden" style={{ width: "min(100%, calc(50vh * 9 / 16))" }}>
+                          <PreviewVideoPlayer
+                            videoSrc={currentVideoSrc}
+                            embedSrc={currentEmbed}
+                            title={currentPiece.title || "Preview"}
+                            videoRef={(el) => {
+                              videoRefs.current[currentPiece.id] = el;
+                            }}
+                          />
+                          {allPreviewLinks.length > 1 && (
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-white text-[10px] font-mono">
+                                <Layers className="h-2.5 w-2.5" />
+                                {allPreviewLinks.length} Varianten
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      {allPreviewLinks.length > 1 && currentPreviewLink && (
-                        <div className="border-t border-white/[0.05] px-3 py-3 sm:px-4">
-                          <a
-                            href={currentPreviewLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3 py-3 text-sm font-medium text-white/60 transition-colors hover:bg-white/[0.04] hover:text-white/80"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            Alle Varianten ansehen
-                          </a>
+                      {allPreviewLinks.length > 1 && (
+                        <div className="border-t border-white/[0.05] px-3 py-2.5 sm:px-4 flex gap-1.5 overflow-x-auto">
+                          {allPreviewLinks.map((link, i) => (
+                            <a
+                              key={i}
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-white/60 hover:bg-white/[0.06] hover:text-white/80 transition-colors"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Variante {i + 1}
+                            </a>
+                          ))}
                         </div>
                       )}
                     </>
