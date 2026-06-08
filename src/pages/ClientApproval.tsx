@@ -683,7 +683,13 @@ const ClientApproval = () => {
                   ) : currentEmbed ? (
                     <>
                       <div className="p-2 sm:p-3">
-                        <div className="mx-auto relative aspect-[9/16] max-h-[50vh] sm:max-h-[70vh] w-auto bg-black rounded-[20px] sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden" style={{ width: "min(100%, calc(50vh * 9 / 16))" }}>
+                        <div
+                          className="mx-auto relative aspect-[9/16] bg-black rounded-[20px] sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden"
+                          style={{
+                            height: "min(75vh, calc((100vw - 24px) * 16 / 9))",
+                          }}
+                        >
+
                           <PreviewVideoPlayer
                             videoSrc={currentVideoSrc}
                             embedSrc={currentEmbed}
