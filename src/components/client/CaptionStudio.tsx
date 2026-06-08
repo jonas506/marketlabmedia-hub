@@ -43,12 +43,12 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
   const [showPrompt, setShowPrompt] = useState(false);
 
   const { data: savedPrompts = [] } = useQuery({
-    queryKey: ["saved-prompts-caption"],
+    queryKey: ["saved-prompts-caption-all"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("saved_prompts")
         .select("id, name, prompt_text, category")
-        .in("category", ["caption", "refine"])
+        .order("category")
         .order("name");
       if (error) throw error;
       return data ?? [];
