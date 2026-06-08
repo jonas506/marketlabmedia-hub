@@ -554,7 +554,7 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
