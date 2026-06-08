@@ -19,7 +19,7 @@ import TeamOverview from "./pages/TeamOverview";
 import Checklists from "./pages/Checklists";
 import SOPs from "./pages/SOPs";
 import PromptLibrary from "./pages/PromptLibrary";
-import ContentBase from "./pages/ContentBase";
+
 import MarketingDashboard from "./pages/MarketingDashboard";
 import CRMHome from "./pages/crm/CRMHome";
 import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
@@ -37,7 +37,7 @@ import PostingCalendarPage from "./pages/PostingCalendarPage";
 import Finanzen from "./pages/Finanzen";
 import InternalReview from "./pages/InternalReview";
 import InternalReviewSwiper from "./pages/InternalReviewSwiper";
-import Referenzen from "./pages/Referenzen";
+
 import StundenUebersicht from "./pages/StundenUebersicht";
 
 const queryClient = new QueryClient({
@@ -99,7 +99,7 @@ const App = () => (
                   <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
                   <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
                   <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
-                  <Route path="/content-base" element={<ProtectedRoute><ContentBase /></ProtectedRoute>} />
+                  
                   <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />
                   <Route path="/strategy-boards" element={<ProtectedRoute><StrategyBoards /></ProtectedRoute>} />
                   <Route path="/strategy-boards/:id" element={<ProtectedRoute><StrategyBoardEditor /></ProtectedRoute>} />
@@ -114,8 +114,6 @@ const App = () => (
                   <Route path="/finanzen" element={<ProtectedRoute><Finanzen /></ProtectedRoute>} />
                   <Route path="/interne-freigabe" element={<ProtectedRoute><InternalReview /></ProtectedRoute>} />
                   <Route path="/interne-freigabe/swiper" element={<ProtectedRoute><InternalReviewSwiper /></ProtectedRoute>} />
-                  <Route path="/referenzen" element={<ProtectedRoute><Referenzen /></ProtectedRoute>} />
-                  <Route path="/referenzen/:formatId" element={<ProtectedRoute><Referenzen /></ProtectedRoute>} />
                   <Route path="/stunden-uebersicht" element={<ProtectedRoute><StundenUebersicht /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
