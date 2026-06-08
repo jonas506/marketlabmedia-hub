@@ -118,7 +118,7 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
     } finally {
       setBulkGenerating(false);
     }
-  }, [selected, clientId, qc]);
+  }, [selected, clientId, qc, globalPrompt]);
 
   const refineSingle = useCallback(async (pieceId: string) => {
     const instruction = refineInput[pieceId];
