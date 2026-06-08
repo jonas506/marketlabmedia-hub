@@ -43,12 +43,12 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
   const [showPrompt, setShowPrompt] = useState(false);
 
   const { data: savedPrompts = [] } = useQuery({
-    queryKey: ["saved-prompts-caption"],
+    queryKey: ["saved-prompts-caption-all"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("saved_prompts")
         .select("id, name, prompt_text, category")
-        .in("category", ["caption", "refine"])
+        .order("category")
         .order("name");
       if (error) throw error;
       return data ?? [];
@@ -330,7 +330,7 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-4 space-y-2">
             <AnimatePresence initial={false}>
               {pieces.map((piece, idx) => {
@@ -554,7 +554,7 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
