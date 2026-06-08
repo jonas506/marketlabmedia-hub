@@ -207,6 +207,83 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
                 : `${selected.size} Caption${selected.size !== 1 ? "s" : ""} generieren`}
             </Button>
           </div>
+
+          {/* Custom Prompt toggle */}
+          <div className="mt-3">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs font-mono gap-1 text-muted-foreground hover:text-foreground px-2"
+              onClick={() => setShowPrompt(s => !s)}
+            >
+              <Wand2 className="h-3 w-3" />
+              Prompt anpassen
+              {globalPrompt.trim() && (
+                <span className="ml-1 h-4 px-1.5 rounded-full bg-primary/15 text-primary text-[9px] flex items-center">aktiv</span>
+              )}
+              {showPrompt ? <ChevronUp className="h-3 w-3 ml-0.5" /> : <ChevronDown className="h-3 w-3 ml-0.5" />}
+            </Button>
+            <AnimatePresence>
+              {showPrompt && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2 space-y-2">
+                    <Textarea
+                      value={globalPrompt}
+                      onChange={(e) => setGlobalPrompt(e.target.value)}
+                      placeholder="Zusätzliche Anweisung für die Generierung – z.B. 'Lockerer Ton, weniger Hashtags, Fokus auf Storytelling'..."
+                      className="text-xs bg-background/50 resize-y min-h-[70px] max-h-[160px]"
+                      rows={3}
+                    />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {savedPrompts.length > 0 && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button size="sm" variant="outline" className="h-7 text-xs font-mono gap-1">
+                              <BookmarkIcon className="h-3 w-3" />
+                              Gespeicherten Prompt einfügen
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 p-2" align="start">
+                            <p className="text-[10px] font-mono uppercase text-muted-foreground px-2 py-1">Gespeicherte Prompts</p>
+                            <div className="max-h-48 overflow-y-auto space-y-0.5">
+                              {savedPrompts.map((sp) => (
+                                <button
+                                  key={sp.id}
+                                  className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-accent transition-colors truncate"
+                                  onClick={() => setGlobalPrompt(sp.prompt_text)}
+                                >
+                                  {sp.name}
+                                </button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      {globalPrompt && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs font-mono gap-1 text-muted-foreground"
+                          onClick={() => setGlobalPrompt("")}
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          Zurücksetzen
+                        </Button>
+                      )}
+                      <span className="text-[10px] text-muted-foreground font-mono ml-auto">
+                        Wirkt auf Bulk & Einzel-Generierung
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </DialogHeader>
 
         <ScrollArea className="flex-1 min-h-0">
