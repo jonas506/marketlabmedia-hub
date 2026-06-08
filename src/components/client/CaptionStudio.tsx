@@ -39,6 +39,8 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [globalPrompt, setGlobalPrompt] = useState("");
+  const [showPrompt, setShowPrompt] = useState(false);
 
   const { data: savedPrompts = [] } = useQuery({
     queryKey: ["saved-prompts-caption"],
