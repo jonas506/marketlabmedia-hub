@@ -553,7 +553,7 @@ const ClientApproval = () => {
   const isCarousel = currentPiece?.type === "carousel" || (currentPiece?.type === "story" && hasSlideImages);
   const carouselSlides = currentPiece?.slide_images || [];
   const currentEmbed = !isCarousel && currentPiece?.preview_link ? getGoogleDriveEmbedUrl(currentPiece.preview_link) : null;
-  const currentVideoSrc = !isCarousel && currentPiece?.preview_link ? getGoogleDriveVideoUrl(currentPiece.preview_link) : null;
+  const currentVideoSrc = !isCarousel && currentPiece?.preview_link && token ? getGoogleDriveVideoUrl(currentPiece.preview_link, token) : null;
   const currentPreviewLink = currentPiece?.preview_link ?? null;
   const allPreviewLinks = (currentPiece?.preview_link ?? "").split("\n").map(l => l.trim()).filter(Boolean);
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
