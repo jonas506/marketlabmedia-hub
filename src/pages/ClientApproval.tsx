@@ -12,13 +12,22 @@ import confetti from "canvas-confetti";
 import logoDark from "@/assets/logo-dark.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+type CommentCategory = "video" | "caption" | "general";
+
 interface TimestampComment {
   id: string;
   content_piece_id: string;
   timestamp_seconds: number | null;
   comment_text: string;
+  category?: CommentCategory;
   created_at: string;
 }
+
+const CATEGORY_META: Record<CommentCategory, { label: string; classes: string }> = {
+  video: { label: "Video", classes: "bg-[#0083F7]/15 text-[#0083F7]" },
+  caption: { label: "Caption", classes: "bg-fuchsia-500/15 text-fuchsia-300" },
+  general: { label: "Allgemein", classes: "bg-white/10 text-white/60" },
+};
 
 interface Piece {
   id: string;
@@ -298,6 +307,7 @@ const ClientApproval = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [commentText, setCommentText] = useState("");
   const [commentTimestamp, setCommentTimestamp] = useState<number | null>(null);
+  const [commentCategory, setCommentCategory] = useState<CommentCategory>("video");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [addingComment, setAddingComment] = useState(false);
   const [approvedCount, setApprovedCount] = useState(0);
@@ -306,7 +316,7 @@ const ClientApproval = () => {
   const [confirmApprove, setConfirmApprove] = useState(false);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
-  const pendingCommentRef = useRef<{ pieceId: string; text: string; timestamp: number | null } | null>(null);
+  const pendingCommentRef = useRef<{ pieceId: string; text: string; timestamp: number | null; category: CommentCategory } | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!token || token === ":token") {
@@ -356,7 +366,8 @@ const ClientApproval = () => {
         _piece_id: pending.pieceId,
         _comment: pending.text.trim(),
         _timestamp_seconds: pending.timestamp,
-      });
+        _category: pending.category,
+      } as any);
       if (error) throw error;
       setComments((prev) => [...prev, data as unknown as TimestampComment]);
       setCommentText("");
@@ -376,15 +387,16 @@ const ClientApproval = () => {
         _piece_id: pieceId,
         _comment: commentText.trim(),
         _timestamp_seconds: commentTimestamp,
-      });
+        _category: commentCategory,
+      } as any);
       if (error) throw error;
       setComments((prev) => [...prev, data as unknown as TimestampComment]);
       setCommentText("");
       setCommentTimestamp(null);
       toast.success(
         commentTimestamp != null
-          ? `Kommentar bei ${formatTimestamp(commentTimestamp)} hinzugefügt`
-          : "Kommentar hinzugefügt"
+          ? `${CATEGORY_META[commentCategory].label}-Feedback bei ${formatTimestamp(commentTimestamp)} hinzugefügt`
+          : `${CATEGORY_META[commentCategory].label}-Feedback hinzugefügt`
       );
     } catch (err: any) {
       toast.error(err.message);
@@ -778,6 +790,14 @@ const ClientApproval = () => {
                           animate={{ opacity: 1, y: 0 }}
                           className="flex items-start gap-2.5 py-2.5 px-3 rounded-2xl bg-white/[0.03] border border-white/[0.04] group/c"
                         >
+                          {(() => {
+                            const cat = (c.category ?? "video") as CommentCategory;
+                            return (
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide shrink-0 mt-px ${CATEGORY_META[cat].classes}`}>
+                                {CATEGORY_META[cat].label}
+                              </span>
+                            );
+                          })()}
                           {c.timestamp_seconds != null && (
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#0083F7]/10 text-[#0083F7] text-[11px] font-mono font-bold shrink-0 mt-px">
                               {formatTimestamp(c.timestamp_seconds)}
@@ -869,13 +889,35 @@ const ClientApproval = () => {
                               </button>
                             </div>
 
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] uppercase tracking-widest text-white/25 font-semibold mr-0.5">Tag</span>
+                              {(["video", "caption", "general"] as CommentCategory[]).map((cat) => {
+                                const active = commentCategory === cat;
+                                return (
+                                  <button
+                                    key={cat}
+                                    type="button"
+                                    onClick={() => setCommentCategory(cat)}
+                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                                      active
+                                        ? CATEGORY_META[cat].classes
+                                        : "bg-white/[0.04] text-white/30 hover:bg-white/[0.08] hover:text-white/50"
+                                    }`}
+                                  >
+                                    {CATEGORY_META[cat].label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+
                             <div className="flex gap-2">
                               <Textarea
                                 value={commentText}
                                 onChange={(e) => {
                                   setCommentText(e.target.value);
                                   if (currentPiece && e.target.value.trim()) {
-                                    pendingCommentRef.current = { pieceId: currentPiece.id, text: e.target.value, timestamp: commentTimestamp };
+                                    pendingCommentRef.current = { pieceId: currentPiece.id, text: e.target.value, timestamp: commentTimestamp, category: commentCategory };
                                   } else {
                                     pendingCommentRef.current = null;
                                   }

@@ -906,6 +906,7 @@ export type Database = {
       }
       content_piece_comments: {
         Row: {
+          category: string
           client_id: string
           comment_text: string
           content_piece_id: string
@@ -914,6 +915,7 @@ export type Database = {
           timestamp_seconds: number | null
         }
         Insert: {
+          category?: string
           client_id: string
           comment_text: string
           content_piece_id: string
@@ -922,6 +924,7 @@ export type Database = {
           timestamp_seconds?: number | null
         }
         Update: {
+          category?: string
           client_id?: string
           comment_text?: string
           content_piece_id?: string
@@ -3307,15 +3310,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      add_client_piece_comment: {
-        Args: {
-          _comment: string
-          _piece_id: string
-          _timestamp_seconds?: number
-          _token: string
-        }
-        Returns: Json
-      }
+      add_client_piece_comment:
+        | {
+            Args: {
+              _comment: string
+              _piece_id: string
+              _timestamp_seconds?: number
+              _token: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _category?: string
+              _comment: string
+              _piece_id: string
+              _timestamp_seconds?: number
+              _token: string
+            }
+            Returns: Json
+          }
       cleanup_old_activity_logs: { Args: never; Returns: undefined }
       cleanup_old_notifications: { Args: never; Returns: undefined }
       create_sop_tasks_for_trigger: {
