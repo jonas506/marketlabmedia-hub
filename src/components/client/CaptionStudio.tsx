@@ -330,7 +330,7 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-4 space-y-2">
             <AnimatePresence initial={false}>
               {pieces.map((piece, idx) => {
