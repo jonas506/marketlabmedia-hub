@@ -790,6 +790,14 @@ const ClientApproval = () => {
                           animate={{ opacity: 1, y: 0 }}
                           className="flex items-start gap-2.5 py-2.5 px-3 rounded-2xl bg-white/[0.03] border border-white/[0.04] group/c"
                         >
+                          {(() => {
+                            const cat = (c.category ?? "video") as CommentCategory;
+                            return (
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide shrink-0 mt-px ${CATEGORY_META[cat].classes}`}>
+                                {CATEGORY_META[cat].label}
+                              </span>
+                            );
+                          })()}
                           {c.timestamp_seconds != null && (
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#0083F7]/10 text-[#0083F7] text-[11px] font-mono font-bold shrink-0 mt-px">
                               {formatTimestamp(c.timestamp_seconds)}
