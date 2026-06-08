@@ -194,10 +194,54 @@ const CaptionStudio: React.FC<CaptionStudioProps> = ({ open, onOpenChange, piece
                 Ohne Caption ({piecesWithoutCaptions.length})
               </Button>
             )}
+            {savedPrompts.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className={cn(
+                      "h-7 text-xs font-mono gap-1 ml-auto",
+                      globalPrompt.trim() && "border-primary/40 text-primary",
+                    )}
+                    title="Prompt für Generierung wählen"
+                  >
+                    <BookmarkIcon className="h-3 w-3" />
+                    {globalPrompt.trim()
+                      ? (savedPrompts.find(sp => sp.prompt_text === globalPrompt)?.name || "Custom Prompt")
+                      : "Prompt wählen"}
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-2" align="end">
+                  <p className="text-[10px] font-mono uppercase text-muted-foreground px-2 py-1">Gespeicherte Prompts</p>
+                  <div className="max-h-48 overflow-y-auto space-y-0.5">
+                    <button
+                      className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-accent transition-colors text-muted-foreground"
+                      onClick={() => setGlobalPrompt("")}
+                    >
+                      — Kein Prompt —
+                    </button>
+                    {savedPrompts.map((sp) => (
+                      <button
+                        key={sp.id}
+                        className={cn(
+                          "w-full text-left px-2 py-1.5 text-xs rounded hover:bg-accent transition-colors truncate",
+                          globalPrompt === sp.prompt_text && "bg-accent/60",
+                        )}
+                        onClick={() => setGlobalPrompt(sp.prompt_text)}
+                      >
+                        {sp.name}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
             <Button
               size="sm"
               variant="default"
-              className="h-7 text-xs font-mono gap-1.5 ml-auto"
+              className={cn("h-7 text-xs font-mono gap-1.5", savedPrompts.length === 0 && "ml-auto")}
               disabled={selected.size === 0 || bulkGenerating}
               onClick={bulkGenerate}
             >
