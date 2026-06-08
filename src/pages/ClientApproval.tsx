@@ -366,7 +366,8 @@ const ClientApproval = () => {
         _piece_id: pending.pieceId,
         _comment: pending.text.trim(),
         _timestamp_seconds: pending.timestamp,
-      });
+        _category: pending.category,
+      } as any);
       if (error) throw error;
       setComments((prev) => [...prev, data as unknown as TimestampComment]);
       setCommentText("");
@@ -386,15 +387,16 @@ const ClientApproval = () => {
         _piece_id: pieceId,
         _comment: commentText.trim(),
         _timestamp_seconds: commentTimestamp,
-      });
+        _category: commentCategory,
+      } as any);
       if (error) throw error;
       setComments((prev) => [...prev, data as unknown as TimestampComment]);
       setCommentText("");
       setCommentTimestamp(null);
       toast.success(
         commentTimestamp != null
-          ? `Kommentar bei ${formatTimestamp(commentTimestamp)} hinzugefügt`
-          : "Kommentar hinzugefügt"
+          ? `${CATEGORY_META[commentCategory].label}-Feedback bei ${formatTimestamp(commentTimestamp)} hinzugefügt`
+          : `${CATEGORY_META[commentCategory].label}-Feedback hinzugefügt`
       );
     } catch (err: any) {
       toast.error(err.message);
