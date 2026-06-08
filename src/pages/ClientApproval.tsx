@@ -127,7 +127,7 @@ const getGoogleDriveVideoUrl = (url: string): string | null => {
   return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null;
 };
 
-const CaptionEditor = ({
+const CaptionBlock = ({
   pieceId,
   initialCaption,
   token,
@@ -139,10 +139,15 @@ const CaptionEditor = ({
   onSaved: (newCaption: string) => void;
 }) => {
   const [value, setValue] = useState(initialCaption);
+  const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const dirty = value !== initialCaption;
 
   const save = async () => {
+    if (!dirty) {
+      setEditing(false);
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase.rpc("update_client_piece_caption", {
@@ -153,6 +158,7 @@ const CaptionEditor = ({
       if (error) throw error;
       onSaved(value);
       toast.success("Caption gespeichert");
+      setEditing(false);
     } catch (err: any) {
       toast.error(err.message || "Fehler beim Speichern");
     } finally {
@@ -160,34 +166,69 @@ const CaptionEditor = ({
     }
   };
 
+  const characterCount = value.length;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] p-3.5"
+      className="mt-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] overflow-hidden"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-semibold text-white/25 uppercase tracking-widest">
-          Caption
-        </span>
-        {dirty && (
-          <Button
-            size="sm"
-            onClick={save}
-            disabled={saving}
-            className="h-7 min-h-7 px-3 text-xs bg-[#0083F7] hover:bg-[#0083F7]/90 text-white"
+      <div className="flex items-center justify-between px-3.5 pt-3 pb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+            Caption
+          </span>
+          <span className="text-[10px] font-mono text-white/20 tabular-nums">{characterCount}</span>
+        </div>
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => { setValue(initialCaption); setEditing(false); }}
+              disabled={saving}
+              className="h-7 min-h-7 px-2 text-xs text-white/40 hover:text-white/80"
+            >
+              Abbrechen
+            </Button>
+            <Button
+              size="sm"
+              onClick={save}
+              disabled={saving || !dirty}
+              className="h-7 min-h-7 px-3 text-xs bg-[#0083F7] hover:bg-[#0083F7]/90 text-white"
+            >
+              {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Speichern"}
+            </Button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            className="inline-flex items-center gap-1 text-[11px] text-white/40 hover:text-[#0083F7] transition-colors px-2 py-0.5 rounded-md hover:bg-white/[0.04]"
           >
-            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Speichern"}
-          </Button>
+            <Pencil className="h-3 w-3" />
+            Bearbeiten
+          </button>
         )}
       </div>
-      <Textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        rows={6}
-        className="text-sm bg-transparent border-white/10 text-white/80 leading-relaxed resize-y focus-visible:ring-[#0083F7]/40"
-        placeholder="Caption bearbeiten…"
-      />
+      {editing ? (
+        <div className="px-3.5 pb-3.5">
+          <Textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            rows={8}
+            autoFocus
+            className="text-sm bg-transparent border-white/10 text-white/85 leading-relaxed resize-y focus-visible:ring-[#0083F7]/40 whitespace-pre-wrap"
+            placeholder="Caption bearbeiten…"
+          />
+        </div>
+      ) : (
+        <div className="px-3.5 pb-3.5">
+          <p className="text-[13px] text-white/65 leading-relaxed whitespace-pre-wrap">
+            {value || <span className="text-white/25 italic">Keine Caption</span>}
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -197,6 +238,45 @@ const CaptionEditor = ({
  * Tries a native <video> element first (we control loop / inline / no oversized Drive overlays).
  * Falls back to the Google Drive iframe if the direct stream fails.
  */
+const PreviewVideoPlayer = ({
+  videoSrc,
+  embedSrc,
+  title,
+  videoRef,
+}: {
+  videoSrc: string | null;
+  embedSrc: string;
+  title: string;
+  videoRef?: (el: HTMLVideoElement | null) => void;
+}) => {
+  const [useFallback, setUseFallback] = useState(!videoSrc);
+
+  if (useFallback) {
+    return (
+      <iframe
+        src={embedSrc}
+        className="absolute inset-0 h-full w-full"
+        allow="autoplay; encrypted-media"
+        allowFullScreen
+        title={title}
+        style={{ border: 0 }}
+      />
+    );
+  }
+
+  return (
+    <video
+      ref={videoRef}
+      src={videoSrc!}
+      className="absolute inset-0 h-full w-full object-contain bg-black"
+      controls
+      loop
+      playsInline
+      preload="metadata"
+      onError={() => setUseFallback(true)}
+    />
+  );
+};
 const PreviewVideoPlayer = ({
   videoSrc,
   embedSrc,
