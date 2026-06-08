@@ -555,7 +555,7 @@ const ClientApproval = () => {
   const hasEmbedPreview = !!currentEmbed;
 
   return (
-    <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-[100dvh] sm:h-screen sm:overflow-hidden bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Inter, sans-serif" }}>
       <Sonner />
 
       {/* Header - slim & clean */}
@@ -602,7 +602,7 @@ const ClientApproval = () => {
         />
       )}
 
-      <div className="flex-1 flex flex-col" ref={scrollRef}>
+      <div className="flex-1 flex flex-col sm:flex-row sm:overflow-hidden" ref={scrollRef}>
         {pieces.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -626,8 +626,9 @@ const ClientApproval = () => {
           </motion.div>
         ) : (
           <>
-            <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-4 flex-1 flex flex-col">
-              <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
+            <div className="max-w-2xl sm:max-w-6xl mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-4 flex-1 flex flex-col sm:grid sm:grid-cols-[1fr_380px] sm:gap-8 sm:items-start">
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wider border bg-gradient-to-r ${TYPE_COLORS[currentPiece.type] || "from-white/5 to-white/5 text-white/50 border-white/10"}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${TYPE_DOT[currentPiece.type] || "bg-white/30"}`} />
@@ -684,7 +685,7 @@ const ClientApproval = () => {
                     <>
                       <div className="p-2 sm:p-3">
                         <div
-                          className="mx-auto relative aspect-[9/16] bg-black rounded-[20px] sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden"
+                          className="mx-auto relative aspect-[9/16] bg-black rounded-[20px] sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden sm:max-h-[48vh]"
                           style={{
                             height: "min(75vh, calc((100vw - 24px) * 16 / 9))",
                           }}
@@ -762,6 +763,10 @@ const ClientApproval = () => {
                   ))}
                 </div>
               )}
+              </div>
+
+              {/* RIGHT COLUMN: Actions */}
+              <div className="flex flex-col min-w-0 sm:h-[calc(100vh-7rem)] sm:overflow-y-auto">
 
               {currentPiece && currentPiece.caption != null && (
                 <CaptionBlock
@@ -975,9 +980,98 @@ const ClientApproval = () => {
                   )}
                 </div>
               )}
+
+              {/* Desktop Buttons */}
+              <div className="hidden sm:block mt-6 space-y-2">
+                {!confirmApprove ? (
+                  <>
+                    <div className="flex gap-2">
+                      {isTyping ? (
+                        <div className="flex-1 flex items-center justify-center h-[52px] rounded-[20px] border border-dashed border-white/[0.06] text-white/20 text-xs gap-2">
+                          <Send className="h-3.5 w-3.5" />
+                          Kommentar wird automatisch gespeichert
+                        </div>
+                      ) : currentComments.length > 0 && !isRevisionBlocked ? (
+                        <>
+                          <Button
+                            className="flex-1 gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold h-[52px] rounded-[20px] shadow-xl shadow-amber-500/20 text-base active:scale-[0.98] transition-transform"
+                            onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                            disabled={isCurrentLoading}
+                          >
+                            {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                            Überarbeiten
+                            <span className="text-xs opacity-60">({currentComments.length})</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 h-[52px] rounded-[20px] px-4 font-medium text-sm"
+                            onClick={() => setConfirmApprove(true)}
+                            disabled={isCurrentLoading}
+                          >
+                            <Check className="h-4 w-4" />
+                            Freigeben
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-[52px] rounded-[20px] shadow-xl shadow-emerald-500/20 text-base active:scale-[0.98] transition-transform"
+                          onClick={() => currentPiece && handleAction(currentPiece.id, "approve")}
+                          disabled={isCurrentLoading}
+                        >
+                          {isCurrentLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
+                          Freigeben
+                        </Button>
+                      )}
+                    </div>
+                    {pieces.length > 1 && (
+                      <button
+                        onClick={handleBulkApprove}
+                        disabled={bulkApproving}
+                        className="w-full mt-1.5 py-2.5 text-center text-xs text-white/25 hover:text-white/45 transition-colors flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                      >
+                        {bulkApproving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCheck className="h-3.5 w-3.5" />}
+                        Alle {pieces.length} freigeben
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3"
+                  >
+                    <div className="flex items-start gap-2 mb-3">
+                      <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-200/80">
+                        Du hast {currentComments.length} Kommentar{currentComments.length > 1 ? "e" : ""} geschrieben. Trotzdem freigeben? Kommentare werden gelöscht.
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1 h-10 rounded-xl border-white/10 text-white/60 text-xs"
+                        onClick={() => setConfirmApprove(false)}
+                      >
+                        Abbrechen
+                      </Button>
+                      <Button
+                        className="flex-1 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
+                        onClick={() => { setConfirmApprove(false); currentPiece && handleAction(currentPiece.id, "approve"); }}
+                        disabled={isCurrentLoading}
+                      >
+                        {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                        Ja, freigeben
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+              </div>
             </div>
 
-            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:pt-6 sm:pb-6">
+            {/* MOBILE sticky buttons */}
+            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:hidden">
               <div className="max-w-2xl mx-auto px-4 sm:px-6">
                 <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
                   {/* Confirm approve dialog when comments exist */}
