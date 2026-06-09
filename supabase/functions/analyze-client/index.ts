@@ -53,9 +53,10 @@ serve(async (req) => {
       }
     }
 
-    if (urls && urls.length > 0 && !extractedLogoUrl) {
-      // Try to extract logo from first URL using Firecrawl branding
+    if (urls && urls.length > 0) {
+      // Try to extract logo from first URL using Firecrawl branding (only if Instagram didn't yield one)
       if (firecrawlKey) {
+
 
         try {
           const brandingResp = await fetch("https://api.firecrawl.dev/v1/scrape", {
