@@ -224,7 +224,10 @@ Antworte NUR mit validem JSON, kein Markdown, keine Erklärung.`;
       }
     }
 
+    if (extractedInstagramHandle) parsed.instagram_handle = extractedInstagramHandle;
+
     return new Response(JSON.stringify(parsed), {
+
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
