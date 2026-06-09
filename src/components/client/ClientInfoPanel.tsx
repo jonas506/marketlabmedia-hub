@@ -36,11 +36,19 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const [approvalToken, setApprovalToken] = useState<string | null>(null);
 
   useEffect(() => {
     loadCIAssets();
   }, [client.id]);
+
+  useEffect(() => {
+    if (!client.id || (role !== "admin" && role !== "head_of_content")) { setApprovalToken(null); return; }
+    supabase.rpc("get_client_approval_token", { _client_id: client.id }).then(({ data }) => {
+      setApprovalToken((data as string) || null);
+    });
+  }, [client.id, role]);
 
   const loadCIAssets = async () => {
     setLoadingAssets(true);
