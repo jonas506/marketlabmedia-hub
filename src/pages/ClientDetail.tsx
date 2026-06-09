@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -61,9 +61,11 @@ const ClientDetail = () => {
   const [uploading, setUploading] = useState(false);
   const [activeModule, setActiveModule] = useState("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [approvalToken, setApprovalToken] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const canEdit = role === "admin" || role === "head_of_content" || role === "cutter";
+  const canViewApprovalToken = role === "admin" || role === "head_of_content";
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -112,6 +114,13 @@ const ClientDetail = () => {
     },
     enabled: !!id,
   });
+
+  useEffect(() => {
+    if (!id || !canViewApprovalToken) { setApprovalToken(null); return; }
+    supabase.rpc("get_client_approval_token", { _client_id: id }).then(({ data }) => {
+      setApprovalToken((data as string) || null);
+    });
+  }, [id, canViewApprovalToken]);
 
   const { data: contentPieces } = useQuery({
     queryKey: ["content-pieces", id],
@@ -326,14 +335,14 @@ const ClientDetail = () => {
                 </Button>
               </>
             )}
-            {canEdit && (client as any).approval_token && (
+            {canEdit && approvalToken && (
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
                   onClick={() => {
-                    const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
+                    const url = `${window.location.origin}/approve/${approvalToken}`;
                     window.open(url, '_blank', 'noopener,noreferrer');
                   }}
                 >
@@ -345,7 +354,7 @@ const ClientDetail = () => {
                   size="sm"
                   className={cn("h-7 w-7 p-0 transition-all", copied && "bg-primary text-primary-foreground")}
                   onClick={() => {
-                    const url = `${window.location.origin}/approve/${(client as any).approval_token}`;
+                    const url = `${window.location.origin}/approve/${approvalToken}`;
                     navigator.clipboard.writeText(url);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);

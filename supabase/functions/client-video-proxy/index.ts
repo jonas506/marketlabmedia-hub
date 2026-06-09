@@ -87,14 +87,15 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: client } = await supabase
-      .from("clients")
-      .select("id")
-      .eq("approval_token", token)
+    const { data: tokenRow } = await supabase
+      .from("client_approval_tokens")
+      .select("client_id")
+      .eq("token", token)
       .single();
-    if (!client) {
+    if (!tokenRow) {
       return new Response("Invalid token", { status: 404, headers: corsHeaders });
     }
+    const client = { id: tokenRow.client_id };
 
     // Verify fileId is referenced by a piece of this client (in review)
     const { data: pieces } = await supabase

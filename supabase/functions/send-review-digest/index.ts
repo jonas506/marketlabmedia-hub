@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     for (const [clientId, pieces] of Object.entries(grouped)) {
       const { data: client } = await supabase
         .from('clients')
-        .select('name, review_notify_emails, approval_token')
+        .select('name, review_notify_emails')
         .eq('id', clientId)
         .single()
 
@@ -63,8 +63,14 @@ Deno.serve(async (req) => {
         continue
       }
 
-      const approvalLink = client.approval_token
-        ? `https://marketlabmedia-hub.lovable.app/approve/${client.approval_token}`
+      const { data: tokenRow } = await supabase
+        .from('client_approval_tokens')
+        .select('token')
+        .eq('client_id', clientId)
+        .maybeSingle()
+
+      const approvalLink = tokenRow?.token
+        ? `https://marketlabmedia-hub.lovable.app/approve/${tokenRow.token}`
         : null
 
       const { subject, html, text } = buildEmail(client.name, pieces, approvalLink)

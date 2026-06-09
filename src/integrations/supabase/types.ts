@@ -399,6 +399,32 @@ export type Database = {
           },
         ]
       }
+      client_approval_tokens: {
+        Row: {
+          client_id: string
+          created_at: string
+          token: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          token?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_approval_tokens_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_contract_months: {
         Row: {
           amount_netto: number
@@ -652,7 +678,6 @@ export type Database = {
       clients: {
         Row: {
           additional_products: string[] | null
-          approval_token: string | null
           brand_accent: string | null
           brand_font_style: string | null
           brand_primary: string | null
@@ -703,7 +728,6 @@ export type Database = {
         }
         Insert: {
           additional_products?: string[] | null
-          approval_token?: string | null
           brand_accent?: string | null
           brand_font_style?: string | null
           brand_primary?: string | null
@@ -754,7 +778,6 @@ export type Database = {
         }
         Update: {
           additional_products?: string[] | null
-          approval_token?: string | null
           brand_accent?: string | null
           brand_font_style?: string | null
           brand_primary?: string | null
@@ -3349,6 +3372,10 @@ export type Database = {
         Returns: number
       }
       get_client_approval_data: { Args: { _token: string }; Returns: Json }
+      get_client_approval_token: {
+        Args: { _client_id: string }
+        Returns: string
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

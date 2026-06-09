@@ -26,10 +26,23 @@ Deno.serve(async (req) => {
         });
       }
 
+      const { data: tokenRow } = await supabase
+        .from("client_approval_tokens")
+        .select("client_id")
+        .eq("token", token)
+        .single();
+
+      if (!tokenRow) {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const { data: client, error: clientError } = await supabase
         .from("clients")
         .select("id, name, logo_url")
-        .eq("approval_token", token)
+        .eq("id", tokenRow.client_id)
         .single();
 
       if (clientError || !client) {
@@ -67,18 +80,19 @@ Deno.serve(async (req) => {
       const body = await req.json();
       const { token, piece_id, action, comment, timestamp_seconds, comments: timestampComments } = body;
 
-      const { data: client } = await supabase
-        .from("clients")
-        .select("id")
-        .eq("approval_token", token)
+      const { data: tokenRow } = await supabase
+        .from("client_approval_tokens")
+        .select("client_id")
+        .eq("token", token)
         .single();
 
-      if (!client) {
+      if (!tokenRow) {
         return new Response(JSON.stringify({ error: "Invalid token" }), {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      const client = { id: tokenRow.client_id };
 
       // Handle adding a single timestamp comment
       if (action === "add_comment") {
