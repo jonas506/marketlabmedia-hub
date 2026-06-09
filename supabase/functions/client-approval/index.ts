@@ -26,10 +26,23 @@ Deno.serve(async (req) => {
         });
       }
 
+      const { data: tokenRow } = await supabase
+        .from("client_approval_tokens")
+        .select("client_id")
+        .eq("token", token)
+        .single();
+
+      if (!tokenRow) {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const { data: client, error: clientError } = await supabase
         .from("clients")
         .select("id, name, logo_url")
-        .eq("approval_token", token)
+        .eq("id", tokenRow.client_id)
         .single();
 
       if (clientError || !client) {
