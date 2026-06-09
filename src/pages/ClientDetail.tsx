@@ -115,6 +115,13 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
+  useEffect(() => {
+    if (!id || !canViewApprovalToken) { setApprovalToken(null); return; }
+    supabase.rpc("get_client_approval_token", { _client_id: id }).then(({ data }) => {
+      setApprovalToken((data as string) || null);
+    });
+  }, [id, canViewApprovalToken]);
+
   const { data: contentPieces } = useQuery({
     queryKey: ["content-pieces", id],
     queryFn: async () => {
