@@ -495,16 +495,16 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
                       </p>
                     )}
 
-                    {client.approval_token && (
+                    {approvalToken && (
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5 flex-1" onClick={() => {
-                          window.open(`${window.location.origin}/approve/${client.approval_token}`, '_blank');
+                          window.open(`${window.location.origin}/approve/${approvalToken}`, '_blank');
                         }}>
                           <LinkIcon className="h-3 w-3" />
                           Freigabe-Link öffnen
                         </Button>
                         <Button size="sm" variant="ghost" className="h-7 px-2 shrink-0" onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/approve/${client.approval_token}`);
+                          navigator.clipboard.writeText(`${window.location.origin}/approve/${approvalToken}`);
                           toast.success("Link kopiert");
                         }}><Copy className="h-3 w-3" /></Button>
                       </div>
