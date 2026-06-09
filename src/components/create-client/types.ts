@@ -9,6 +9,8 @@ export interface ClientProfile {
   content_topics: string;
   summary: string;
   logo_url?: string;
+  instagram_handle?: string;
+
 }
 
 export const PROFILE_SECTIONS = [

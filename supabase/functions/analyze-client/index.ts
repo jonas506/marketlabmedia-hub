@@ -17,11 +17,47 @@ serve(async (req) => {
     // Scrape URLs if provided
     const scrapedContents: string[] = [];
     let extractedLogoUrl: string | null = null;
+    let extractedInstagramHandle: string | null = null;
+    const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+
+    // Detect any Instagram URL among the sources and try to grab profile pic (priority over website logo)
+    if (urls && urls.length > 0 && firecrawlKey) {
+      const igUrl = urls.find((u: string) => /instagram\.com\//i.test(u));
+      if (igUrl) {
+        try {
+          const handleMatch = igUrl.match(/instagram\.com\/([^/?#]+)/i);
+          if (handleMatch) extractedInstagramHandle = handleMatch[1].replace(/^@/, "");
+          const fullUrl = igUrl.startsWith("http") ? igUrl : `https://${igUrl}`;
+          const igResp = await fetch("https://api.firecrawl.dev/v1/scrape", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${firecrawlKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ url: fullUrl, formats: ["markdown"], onlyMainContent: false, waitFor: 5000 }),
+          });
+          if (igResp.ok) {
+            const igData = await igResp.json();
+            const md: string = igData?.data?.markdown || "";
+            const metaOg: string | undefined = igData?.data?.metadata?.ogImage;
+            let pic: string | null = metaOg || null;
+            if (!pic) {
+              const m = md.match(/!\[.*?\]\((https:\/\/[^\s)]*(?:cdninstagram|scontent|fbcdn)[^\s)]*)\)/);
+              if (m) pic = m[1];
+            }
+            if (pic) {
+              extractedLogoUrl = pic;
+              console.log("Extracted Instagram profile image:", pic);
+            }
+          }
+        } catch (e) {
+          console.error("Instagram scrape failed:", e);
+        }
+      }
+    }
 
     if (urls && urls.length > 0) {
-      // Try to extract logo from first URL using Firecrawl branding
-      const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+      // Try to extract logo from first URL using Firecrawl branding (only if Instagram didn't yield one)
       if (firecrawlKey) {
+
+
         try {
           const brandingResp = await fetch("https://api.firecrawl.dev/v1/scrape", {
             method: "POST",
@@ -41,11 +77,12 @@ serve(async (req) => {
             const brandingData = await brandingResp.json();
             const branding = brandingData?.data?.branding;
             
-            // Extract logo URL from branding data
-            if (branding?.logo) {
+            // Extract logo URL from branding data (don't overwrite Instagram profile pic)
+            if (branding?.logo && !extractedLogoUrl) {
               extractedLogoUrl = branding.logo;
               console.log("Extracted logo URL:", extractedLogoUrl);
             }
+
             
             // Also use the markdown content for analysis
             const md = brandingData?.data?.markdown;
@@ -187,7 +224,10 @@ Antworte NUR mit validem JSON, kein Markdown, keine Erklärung.`;
       }
     }
 
+    if (extractedInstagramHandle) parsed.instagram_handle = extractedInstagramHandle;
+
     return new Response(JSON.stringify(parsed), {
+
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
