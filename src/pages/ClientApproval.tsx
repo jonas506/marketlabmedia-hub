@@ -693,9 +693,9 @@ const ClientApproval = () => {
                     <>
                       <div className="p-1.5 sm:p-3">
                         <div
-                          className="mx-auto relative aspect-[9/16] bg-black rounded-2xl sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden sm:max-h-[48vh]"
+                          className="mx-auto relative aspect-[9/16] bg-black rounded-2xl sm:rounded-[24px] ring-1 ring-white/10 overflow-hidden sm:max-h-[85vh]"
                           style={{
-                            height: "min(calc(100dvh - 260px), calc((100vw - 24px) * 16 / 9))",
+                            height: "min(calc(100dvh - 180px), calc((100vw - 24px) * 16 / 9))",
                           }}
                         >
 
