@@ -61,9 +61,11 @@ const ClientDetail = () => {
   const [uploading, setUploading] = useState(false);
   const [activeModule, setActiveModule] = useState("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [approvalToken, setApprovalToken] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const canEdit = role === "admin" || role === "head_of_content" || role === "cutter";
+  const canViewApprovalToken = role === "admin" || role === "head_of_content";
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
