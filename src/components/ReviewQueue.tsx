@@ -70,13 +70,9 @@ const ReviewQueue = () => {
   };
 
   const openApprovalPage = async (clientId: string) => {
-    const { data: client } = await supabase
-      .from("clients")
-      .select("approval_token")
-      .eq("id", clientId)
-      .single();
-    if (client?.approval_token) {
-      window.open(`/approval/${client.approval_token}`, "_blank");
+    const { data: token, error } = await supabase.rpc("get_client_approval_token", { _client_id: clientId });
+    if (!error && token) {
+      window.open(`/approval/${token}`, "_blank");
     } else {
       toast.error("Kein Freigabe-Token vorhanden");
     }
