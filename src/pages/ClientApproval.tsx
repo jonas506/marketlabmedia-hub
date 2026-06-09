@@ -289,7 +289,7 @@ const PreviewVideoPlayer = ({
       controlsList="nodownload"
       loop
       playsInline
-      preload="metadata"
+      preload="auto"
       onError={() => setUseFallback(true)}
     />
   );
