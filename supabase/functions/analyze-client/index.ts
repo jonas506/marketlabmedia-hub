@@ -77,11 +77,12 @@ serve(async (req) => {
             const brandingData = await brandingResp.json();
             const branding = brandingData?.data?.branding;
             
-            // Extract logo URL from branding data
-            if (branding?.logo) {
+            // Extract logo URL from branding data (don't overwrite Instagram profile pic)
+            if (branding?.logo && !extractedLogoUrl) {
               extractedLogoUrl = branding.logo;
               console.log("Extracted logo URL:", extractedLogoUrl);
             }
+
             
             // Also use the markdown content for analysis
             const md = brandingData?.data?.markdown;
