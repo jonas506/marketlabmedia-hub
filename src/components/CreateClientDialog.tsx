@@ -170,6 +170,8 @@ Erstelle eine kurze, umsetzbare Strategie (3-5 Sätze): Was ist das Ziel? Welche
         tonality: profile.tonality,
         content_topics: profile.content_topics,
         logo_url: profile.logo_url || null,
+        instagram_handle: profile.instagram_handle || null,
+
         services,
         monthly_reels: reels,
         monthly_carousels: carousels,
