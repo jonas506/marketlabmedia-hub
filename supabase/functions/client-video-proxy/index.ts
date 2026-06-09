@@ -130,7 +130,8 @@ Deno.serve(async (req) => {
       if (v) headers.set(h, v);
     }
     if (!headers.has("accept-ranges")) headers.set("accept-ranges", "bytes");
-    headers.set("cache-control", "private, max-age=300");
+    // Allow browsers/CDN to cache chunks aggressively so seeking back/forth is instant.
+    headers.set("cache-control", "public, max-age=3600, immutable");
 
     return new Response(driveRes.body, {
       status: driveRes.status,
