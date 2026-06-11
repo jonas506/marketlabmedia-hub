@@ -563,7 +563,7 @@ const ClientApproval = () => {
   const hasEmbedPreview = !!currentEmbed;
 
   return (
-    <div className="min-h-[100dvh] sm:h-screen sm:overflow-hidden bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Inter, sans-serif" }}>
       <Sonner />
 
       {/* Header - slim & clean */}
@@ -610,7 +610,7 @@ const ClientApproval = () => {
         />
       )}
 
-      <div className="flex-1 flex flex-col sm:flex-row sm:overflow-hidden" ref={scrollRef}>
+      <div className="flex-1 flex flex-col sm:flex-row" ref={scrollRef}>
         {pieces.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -774,7 +774,7 @@ const ClientApproval = () => {
               </div>
 
               {/* RIGHT COLUMN: Actions */}
-              <div className="flex flex-col min-w-0 sm:h-[calc(100vh-7rem)] sm:overflow-y-auto">
+              <div className="flex flex-col min-w-0">
 
               {currentPiece && currentPiece.caption != null && (
                 <CaptionBlock
