@@ -454,9 +454,8 @@ Deno.serve(async (req) => {
       const clientContext = await getClientContext(supabase, pieces[0].client_id);
       const captionSystemPrompt = buildCaptionSystemPrompt(clientContext, custom_prompt);
 
-      const results: { id: string; caption: string; error?: string }[] = [];
-
-      for (const piece of pieces) {
+      // Parallelize AI calls so we don't hit the edge function wall-time limit
+      const results = await Promise.all(pieces.map(async (piece) => {
         try {
           let userPrompt = `Content-Typ: ${piece.type}. Titel: ${piece.title || "Ohne Titel"}.`;
           if (piece.script_text) userPrompt += `\n\nSkript:\n${piece.script_text}`;
@@ -464,11 +463,12 @@ Deno.serve(async (req) => {
 
           const caption = await callAI(LOVABLE_API_KEY, captionSystemPrompt, userPrompt);
           await supabase.from("content_pieces").update({ caption }).eq("id", piece.id);
-          results.push({ id: piece.id, caption });
+          return { id: piece.id, caption };
         } catch (err) {
-          results.push({ id: piece.id, caption: "", error: err.message });
+          return { id: piece.id, caption: "", error: (err as Error).message };
         }
-      }
+      }));
+
 
       return new Response(JSON.stringify({ success: true, results }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
