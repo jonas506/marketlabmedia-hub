@@ -610,7 +610,7 @@ const ClientApproval = () => {
         />
       )}
 
-      <div className="flex-1 flex flex-col sm:flex-row sm:overflow-hidden" ref={scrollRef}>
+      <div className="flex-1 flex flex-col sm:flex-row" ref={scrollRef}>
         {pieces.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
