@@ -774,7 +774,7 @@ const ClientApproval = () => {
               </div>
 
               {/* RIGHT COLUMN: Actions */}
-              <div className="flex flex-col min-w-0 sm:h-[calc(100vh-7rem)] sm:overflow-y-auto">
+              <div className="flex flex-col min-w-0">
 
               {currentPiece && currentPiece.caption != null && (
                 <CaptionBlock
