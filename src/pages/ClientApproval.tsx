@@ -563,7 +563,7 @@ const ClientApproval = () => {
   const hasEmbedPreview = !!currentEmbed;
 
   return (
-    <div className="min-h-[100dvh] sm:h-screen sm:overflow-hidden bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-[100dvh] bg-[#111115] text-white flex flex-col" style={{ fontFamily: "Inter, sans-serif" }}>
       <Sonner />
 
       {/* Header - slim & clean */}
