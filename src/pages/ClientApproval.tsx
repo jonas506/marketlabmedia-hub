@@ -310,6 +310,7 @@ const ClientApproval = () => {
   const [inProgress, setInProgress] = useState<InProgressPiece[]>([]);
   const [pipelineSummary, setPipelineSummary] = useState<Record<string, number>>({});
   const [overviewOpen, setOverviewOpen] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
