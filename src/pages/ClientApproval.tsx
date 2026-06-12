@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send, AlertCircle, Calendar, Pencil, ChevronDown, Layers } from "lucide-react";
+import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send, AlertCircle, Calendar, Pencil, ChevronDown, Layers, Trophy, Sparkles, ArrowRight, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -310,6 +310,7 @@ const ClientApproval = () => {
   const [inProgress, setInProgress] = useState<InProgressPiece[]>([]);
   const [pipelineSummary, setPipelineSummary] = useState<Record<string, number>>({});
   const [overviewOpen, setOverviewOpen] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -580,6 +581,22 @@ const ClientApproval = () => {
           )}
           <span className="font-medium text-sm truncate">{client.name}</span>
           <div className="flex-1" />
+
+          {/* Referral Badge */}
+          <button
+            onClick={() => setShowReferral(true)}
+            className="group relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
+            style={{
+              background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
+              boxShadow: "0 0 12px rgba(245, 158, 11, 0.4), 0 0 24px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255,255,255,0.25)",
+            }}
+          >
+            <span className="absolute inset-0 rounded-full animate-pulse opacity-40" style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)", filter: "blur(6px)" }} />
+            <Trophy className="relative h-3.5 w-3.5 text-white" />
+            <span className="relative text-white hidden sm:inline">Nächste Rechnung 1.000€ günstiger?</span>
+            <span className="relative text-white sm:hidden">1.000€ sparen</span>
+            <ArrowRight className="relative h-3 w-3 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+          </button>
 
           <div className="flex items-center gap-2 rounded-full bg-white/[0.04] px-2.5 py-1">
             <div className="h-1.5 w-12 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
@@ -1190,12 +1207,103 @@ const ClientApproval = () => {
         )}
       </div>
 
-      {/* Footer - only when all done */}
-      {pieces.length === 0 && (
-        <div className="py-6 text-center">
-          <span className="text-[11px] text-white/10 tracking-wider">MARKETLAB MEDIA</span>
-        </div>
-      )}
+      {/* Referral Dialog */}
+      <AnimatePresence>
+        {showReferral && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+            onClick={() => setShowReferral(false)}
+          >
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md rounded-[28px] border border-amber-500/20 overflow-hidden shadow-2xl"
+              style={{
+                background: "linear-gradient(180deg, #1a1508 0%, #0f0c05 100%)",
+                boxShadow: "0 0 60px rgba(245, 158, 11, 0.15), 0 25px 50px -12px rgba(0,0,0,0.8)",
+              }}
+            >
+              {/* Glowing top border */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
+
+              {/* Sparkle background effect */}
+              <div className="absolute top-4 right-4">
+                <Sparkles className="h-5 w-5 text-amber-400/40 animate-pulse" />
+              </div>
+              <div className="absolute top-12 left-6">
+                <Sparkles className="h-3 w-3 text-amber-400/25 animate-pulse" style={{ animationDelay: "0.5s" }} />
+              </div>
+
+              <div className="p-6 sm:p-8">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-5">
+                  <div
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl"
+                    style={{
+                      background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                      boxShadow: "0 0 20px rgba(245, 158, 11, 0.3)",
+                    }}
+                  >
+                    <Gift className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Empfiehl uns weiter</h3>
+                    <p className="text-sm text-amber-400/80">und spar bares Geld</p>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-[13px] text-white/50 leading-relaxed mb-6">
+                  Für jede Person, die du uns empfiehlst und die einen Vertrag bei uns unterschreibt, bekommst du eine Gutschrift auf deine nächste Rechnung. Sofort. Ohne Haken.
+                </p>
+
+                {/* Reward tiers */}
+                <div className="space-y-2.5 mb-6">
+                  {[
+                    { label: "Empfehlung", reward: "1.000€ Gutschrift", color: "from-amber-500/20 to-amber-600/10", border: "border-amber-500/15", text: "text-amber-300" },
+                    { label: "Empfehlung", reward: "1.500€ Gutschrift", color: "from-amber-500/25 to-amber-600/15", border: "border-amber-500/20", text: "text-amber-200" },
+                    { label: "Empfehlung", reward: "Nächster Monat gratis", color: "from-amber-500/30 to-amber-600/20", border: "border-amber-500/25", text: "text-amber-100 font-semibold" },
+                  ].map((tier, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.1 }}
+                      className={`flex items-center justify-between rounded-xl border ${tier.border} bg-gradient-to-r ${tier.color} px-4 py-3`}
+                    >
+                      <span className="text-xs text-white/40">{tier.label}</span>
+                      <ArrowRight className="h-3 w-3 text-white/20" />
+                      <span className={`text-sm ${tier.text}`}>{tier.reward}</span>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* CTA hint */}
+                <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3 mb-5">
+                  <p className="text-[11px] text-white/30 text-center leading-relaxed">
+                    Sprich uns einfach an — wir kümmern uns um den Rest.
+                  </p>
+                </div>
+
+                {/* Close button */}
+                <button
+                  onClick={() => setShowReferral(false)}
+                  className="w-full rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white/60 hover:text-white text-sm font-medium py-3 transition-all active:scale-[0.98]"
+                >
+                  Verstanden
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
