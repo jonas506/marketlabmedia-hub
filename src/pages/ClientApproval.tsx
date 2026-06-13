@@ -579,24 +579,8 @@ const ClientApproval = () => {
               {client.name.charAt(0)}
             </div>
           )}
-          <span className="font-medium text-sm truncate">{client.name}</span>
-          <div className="flex-1" />
+          <span className="font-medium text-sm truncate min-w-0 flex-1">{client.name}</span>
 
-          {/* Referral Badge - subtle gold */}
-          <button
-            onClick={() => setShowReferral(true)}
-            className="group relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-300 hover:border-amber-300/50"
-            style={{
-              background: "linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(180,83,9,0.06) 100%)",
-              border: "1px solid rgba(245, 158, 11, 0.25)",
-              color: "#fcd34d",
-            }}
-          >
-            <Trophy className="h-3 w-3" />
-            <span className="hidden sm:inline tracking-tight">1.000€ Rabatt sichern</span>
-            <span className="sm:hidden">1.000€</span>
-            <ArrowRight className="h-2.5 w-2.5 opacity-60 group-hover:translate-x-0.5 group-hover:opacity-100 transition-all" />
-          </button>
 
           <div className="flex items-center gap-2 rounded-full bg-white/[0.04] px-2.5 py-1">
             <div className="h-1.5 w-12 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
