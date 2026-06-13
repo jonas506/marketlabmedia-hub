@@ -1422,9 +1422,9 @@ function OverviewPanel({
               </span>
             </div>
             <div className="flex items-center gap-3 text-[11px] text-white/40 truncate">
-              <span><span className="text-white/70 font-semibold">{totalInProgress}</span> in Arbeit</span>
+              <span><span className="text-white/70 font-semibold">{internalReviewCount}</span> in Arbeit</span>
               <span className="text-white/15">·</span>
-              <span><span className="text-white/70 font-semibold">{upcoming.length}</span> geplant</span>
+              <span><span className="text-white/70 font-semibold">{reviewCount}</span> zur Freigabe</span>
             </div>
           </div>
           <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${open ? "rotate-180" : ""}`} />
