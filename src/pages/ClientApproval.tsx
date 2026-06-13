@@ -579,24 +579,8 @@ const ClientApproval = () => {
               {client.name.charAt(0)}
             </div>
           )}
-          <span className="font-medium text-sm truncate">{client.name}</span>
-          <div className="flex-1" />
+          <span className="font-medium text-sm truncate min-w-0 flex-1">{client.name}</span>
 
-          {/* Referral Badge - subtle gold */}
-          <button
-            onClick={() => setShowReferral(true)}
-            className="group relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-300 hover:border-amber-300/50"
-            style={{
-              background: "linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(180,83,9,0.06) 100%)",
-              border: "1px solid rgba(245, 158, 11, 0.25)",
-              color: "#fcd34d",
-            }}
-          >
-            <Trophy className="h-3 w-3" />
-            <span className="hidden sm:inline tracking-tight">1.000€ Rabatt sichern</span>
-            <span className="sm:hidden">1.000€</span>
-            <ArrowRight className="h-2.5 w-2.5 opacity-60 group-hover:translate-x-0.5 group-hover:opacity-100 transition-all" />
-          </button>
 
           <div className="flex items-center gap-2 rounded-full bg-white/[0.04] px-2.5 py-1">
             <div className="h-1.5 w-12 sm:w-24 bg-white/[0.06] rounded-full overflow-hidden">
@@ -1207,6 +1191,29 @@ const ClientApproval = () => {
           </>
         )}
       </div>
+
+      {/* Floating Referral Badge - bottom right */}
+      <motion.button
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ delay: 0.6, type: "spring", damping: 20 }}
+        onClick={() => setShowReferral(true)}
+        className="group fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2 rounded-full pl-3 pr-4 py-2.5 text-xs font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
+        style={{
+          background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 45%, #b45309 100%)",
+          color: "#1a1208",
+          boxShadow:
+            "0 0 0 1px rgba(252, 211, 77, 0.4), 0 8px 24px -4px rgba(245, 158, 11, 0.5), 0 0 40px -8px rgba(251, 191, 36, 0.6), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(120,53,15,0.3)",
+        }}
+      >
+        <span
+          className="absolute inset-0 rounded-full opacity-60 blur-xl -z-10 animate-pulse"
+          style={{ background: "radial-gradient(circle, #fbbf24, transparent 70%)" }}
+        />
+        <Trophy className="h-3.5 w-3.5" />
+        <span className="tracking-tight">1.000€ sparen</span>
+        <ArrowRight className="h-3 w-3 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+      </motion.button>
 
       {/* Referral Dialog */}
       <AnimatePresence>
