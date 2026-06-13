@@ -617,13 +617,14 @@ const ClientApproval = () => {
         <MarketingSummaryBar marketing={marketing} />
       )}
 
-      {(upcomingPosts.length > 0 || inProgress.length > 0 || Object.values(pipelineSummary).reduce((a, b) => a + b, 0) > 0) && (
+      {(upcomingPosts.length > 0 || inProgress.length > 0 || pieces.length > 0) && (
         <OverviewPanel
           open={overviewOpen}
           onToggle={() => setOverviewOpen((v) => !v)}
           upcoming={upcomingPosts}
           inProgress={inProgress}
           pipeline={pipelineSummary}
+          reviewCount={pieces.length}
         />
       )}
 
@@ -1331,14 +1332,16 @@ function OverviewPanel({
   upcoming,
   inProgress,
   pipeline,
+  reviewCount,
 }: {
   open: boolean;
   onToggle: () => void;
   upcoming: UpcomingPost[];
   inProgress: InProgressPiece[];
   pipeline: Record<string, number>;
+  reviewCount: number;
 }) {
-  const totalInProgress = Object.values(pipeline).reduce((a, b) => a + b, 0) + inProgress.length;
+  const internalReviewCount = inProgress.filter((p) => p.phase === "internal_review").length;
 
   // Build mini calendar covering current + next month, mark scheduled posts
   const today = new Date();
@@ -1419,9 +1422,9 @@ function OverviewPanel({
               </span>
             </div>
             <div className="flex items-center gap-3 text-[11px] text-white/40 truncate">
-              <span><span className="text-white/70 font-semibold">{totalInProgress}</span> in Arbeit</span>
+              <span><span className="text-white/70 font-semibold">{internalReviewCount}</span> in Arbeit</span>
               <span className="text-white/15">·</span>
-              <span><span className="text-white/70 font-semibold">{upcoming.length}</span> geplant</span>
+              <span><span className="text-white/70 font-semibold">{reviewCount}</span> zur Freigabe</span>
             </div>
           </div>
           <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${open ? "rotate-180" : ""}`} />
