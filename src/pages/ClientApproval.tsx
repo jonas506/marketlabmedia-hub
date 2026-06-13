@@ -1332,14 +1332,16 @@ function OverviewPanel({
   upcoming,
   inProgress,
   pipeline,
+  reviewCount,
 }: {
   open: boolean;
   onToggle: () => void;
   upcoming: UpcomingPost[];
   inProgress: InProgressPiece[];
   pipeline: Record<string, number>;
+  reviewCount: number;
 }) {
-  const totalInProgress = Object.values(pipeline).reduce((a, b) => a + b, 0) + inProgress.length;
+  const internalReviewCount = inProgress.filter((p) => p.phase === "internal_review").length;
 
   // Build mini calendar covering current + next month, mark scheduled posts
   const today = new Date();
