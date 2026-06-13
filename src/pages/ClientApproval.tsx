@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import confetti from "canvas-confetti";
-import logoDark from "@/assets/logo-dark.png";
+import logoDark from "@/assets/logo-light.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type CommentCategory = "video" | "caption" | "general";
@@ -582,20 +582,20 @@ const ClientApproval = () => {
           <span className="font-medium text-sm truncate">{client.name}</span>
           <div className="flex-1" />
 
-          {/* Referral Badge */}
+          {/* Referral Badge - subtle gold */}
           <button
             onClick={() => setShowReferral(true)}
-            className="group relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-300 hover:scale-105 active:scale-95"
+            className="group relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-300 hover:border-amber-300/50"
             style={{
-              background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
-              boxShadow: "0 0 12px rgba(245, 158, 11, 0.4), 0 0 24px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255,255,255,0.25)",
+              background: "linear-gradient(135deg, rgba(245,158,11,0.10) 0%, rgba(180,83,9,0.06) 100%)",
+              border: "1px solid rgba(245, 158, 11, 0.25)",
+              color: "#fcd34d",
             }}
           >
-            <span className="absolute inset-0 rounded-full animate-pulse opacity-40" style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)", filter: "blur(6px)" }} />
-            <Trophy className="relative h-3.5 w-3.5 text-white" />
-            <span className="relative text-white hidden sm:inline">Nächste Rechnung 1.000€ günstiger?</span>
-            <span className="relative text-white sm:hidden">1.000€ sparen</span>
-            <ArrowRight className="relative h-3 w-3 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+            <Trophy className="h-3 w-3" />
+            <span className="hidden sm:inline tracking-tight">1.000€ Rabatt sichern</span>
+            <span className="sm:hidden">1.000€</span>
+            <ArrowRight className="h-2.5 w-2.5 opacity-60 group-hover:translate-x-0.5 group-hover:opacity-100 transition-all" />
           </button>
 
           <div className="flex items-center gap-2 rounded-full bg-white/[0.04] px-2.5 py-1">
