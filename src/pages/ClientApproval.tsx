@@ -1275,9 +1275,9 @@ const ClientApproval = () => {
                 {/* Reward tiers */}
                 <div className="space-y-2.5 mb-6">
                   {[
-                    { label: "Empfehlung", reward: "1.000€ Gutschrift", color: "from-amber-500/20 to-amber-600/10", border: "border-amber-500/15", text: "text-amber-300" },
-                    { label: "Empfehlung", reward: "1.500€ Gutschrift", color: "from-amber-500/25 to-amber-600/15", border: "border-amber-500/20", text: "text-amber-200" },
-                    { label: "Empfehlung", reward: "Nächster Monat gratis", color: "from-amber-500/30 to-amber-600/20", border: "border-amber-500/25", text: "text-amber-100 font-semibold" },
+                    { label: "1. Empfehlung", reward: "1.000€ Gutschrift", color: "from-amber-500/20 to-amber-600/10", border: "border-amber-500/15", text: "text-amber-300" },
+                    { label: "2. Empfehlung", reward: "1.500€ Gutschrift", color: "from-amber-500/25 to-amber-600/15", border: "border-amber-500/20", text: "text-amber-200" },
+                    { label: "3. Empfehlung", reward: "Nächster Monat gratis", color: "from-amber-500/30 to-amber-600/20", border: "border-amber-500/25", text: "text-amber-100 font-semibold" },
                   ].map((tier, i) => (
                     <motion.div
                       key={i}
