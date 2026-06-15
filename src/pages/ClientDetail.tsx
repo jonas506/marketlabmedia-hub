@@ -342,7 +342,7 @@ const ClientDetail = () => {
                   size="sm"
                   className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
                   onClick={() => {
-                    const url = `${window.location.origin}/approve/${approvalToken}`;
+                    const url = `https://hub.marketlab-media.de/approve/${approvalToken}`;
                     window.open(url, '_blank', 'noopener,noreferrer');
                   }}
                 >
