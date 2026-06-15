@@ -63,12 +63,46 @@ function getGoogleDriveFileId(url: string): string | null {
   return null;
 }
 
-function getGoogleDriveDirectUrl(url: string): string | null {
-  const fileId = getGoogleDriveFileId(url);
-  if (!fileId) return null;
-  const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
-  if (!GOOGLE_API_KEY) return null;
-  return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_API_KEY}`;
+async function getGoogleAccessToken(): Promise<string | null> {
+  const email = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
+  const pkRaw = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
+  if (!email || !pkRaw) return null;
+  const privateKeyPem = pkRaw.replace(/\\n/g, "\n");
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    iss: email,
+    scope: "https://www.googleapis.com/auth/drive.readonly",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now, exp: now + 3600,
+  };
+  const b64url = (obj: unknown) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const unsignedToken = `${b64url(header)}.${b64url(payload)}`;
+  const keyData = privateKeyPem
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\s/g, "");
+  const binaryKey = Uint8Array.from(atob(keyData), (c) => c.charCodeAt(0));
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8", binaryKey,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false, ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5", cryptoKey,
+    new TextEncoder().encode(unsignedToken),
+  );
+  const b64Sig = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const jwt = `${unsignedToken}.${b64Sig}`;
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+  });
+  const tokenData = await tokenRes.json();
+  return tokenData.access_token || null;
 }
 
 // ── Stream video from URL directly to ElevenLabs (no full buffering) ──
@@ -179,20 +213,27 @@ async function parseElevenLabsResponse(response: Response): Promise<string> {
   return data.text || "";
 }
 
-async function transcribeViaStreaming(sourceUrl: string, fileName: string): Promise<string> {
+async function transcribeViaStreaming(
+  sourceUrl: string,
+  fileName: string,
+  authHeader?: string,
+): Promise<string> {
   const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
   if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured. Bitte ElevenLabs verbinden.");
 
   console.log("Fetching video stream from:", sourceUrl.substring(0, 80) + "...");
 
-  const videoResponse = await fetch(sourceUrl, { redirect: "follow" });
+  const fetchHeaders: Record<string, string> = {};
+  if (authHeader) fetchHeaders["Authorization"] = authHeader;
+
+  const videoResponse = await fetch(sourceUrl, { redirect: "follow", headers: fetchHeaders });
   if (!videoResponse.ok) {
     const errText = await videoResponse.text();
     if (videoResponse.status === 404) {
       throw new Error("Datei nicht gefunden. Bitte prüfe ob der Google Drive Link korrekt ist und die Datei freigegeben ist.");
     }
-    if (videoResponse.status === 403) {
-      throw new Error("Zugriff verweigert. Bitte stelle sicher, dass die Datei auf 'Jeder mit dem Link' freigegeben ist.");
+    if (videoResponse.status === 403 || videoResponse.status === 401) {
+      throw new Error("Zugriff verweigert. Die Datei muss entweder mit unserem Service-Account geteilt sein oder auf 'Jeder mit dem Link' stehen.");
     }
     throw new Error(`Download Fehler [${videoResponse.status}]: ${errText.substring(0, 200)}`);
   }
@@ -204,8 +245,19 @@ async function transcribeViaStreaming(sourceUrl: string, fileName: string): Prom
   const contentLength = videoResponse.headers.get("content-length");
   const fileSizeBytes = contentLength ? parseInt(contentLength, 10) : 0;
   const sizeLabel = fileSizeBytes ? `${Math.round(fileSizeBytes / 1024 / 1024)} MB` : "unbekannt";
-  const contentType = (videoResponse.headers.get("content-type") || "video/mp4").split(";")[0].trim();
+  const rawContentType = (videoResponse.headers.get("content-type") || "video/mp4").split(";")[0].trim().toLowerCase();
+
+  // Guard: if Drive returns HTML/JSON instead of media, we'd transcribe garbage.
+  if (rawContentType.startsWith("text/") || rawContentType.includes("html") || rawContentType.includes("json")) {
+    throw new Error(
+      "Der Link zeigt auf keine Video-/Audio-Datei (Content-Type: " + rawContentType +
+      "). Wahrscheinlich ist die Google-Drive-Datei nicht öffentlich freigegeben oder nicht mit dem Service-Account geteilt. Lade das Video direkt hoch oder gib die Datei für 'Jeder mit dem Link' frei.",
+    );
+  }
+
+  const contentType = rawContentType;
   console.log(`Streaming upload to ElevenLabs. Größe: ${sizeLabel}. Content-Type: ${contentType}`);
+
 
   const { boundary, body } = createMultipartFormStream(
     videoResponse.body as ReadableStream<Uint8Array>,
@@ -372,12 +424,28 @@ Deno.serve(async (req) => {
 
       if (piece.preview_link) {
         console.log("Transcribing from preview_link:", piece.preview_link);
-        
-        // Check if it's a Google Drive URL and get direct API URL
-        const directUrl = getGoogleDriveDirectUrl(piece.preview_link);
-        const sourceUrl = directUrl || piece.preview_link;
-        
-        transcript = await transcribeViaStreaming(sourceUrl, "video.mp4");
+
+        const driveFileId = getGoogleDriveFileId(piece.preview_link);
+        let sourceUrl = piece.preview_link;
+        let authHeader: string | undefined;
+
+        if (driveFileId) {
+          // Prefer service-account auth — works for private files shared with the service account
+          // AND for public files. Plain API-key downloads fail for most "anyone with the link" files.
+          const accessToken = await getGoogleAccessToken();
+          if (accessToken) {
+            sourceUrl = `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`;
+            authHeader = `Bearer ${accessToken}`;
+          } else {
+            const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
+            if (GOOGLE_API_KEY) {
+              sourceUrl = `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media&key=${GOOGLE_API_KEY}`;
+            }
+          }
+        }
+
+        transcript = await transcribeViaStreaming(sourceUrl, "video.mp4", authHeader);
+
       } else if (piece.video_path) {
         const { blob, fileName } = await downloadFromStorage(supabase, piece.video_path);
         const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
