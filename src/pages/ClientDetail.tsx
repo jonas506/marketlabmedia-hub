@@ -354,7 +354,7 @@ const ClientDetail = () => {
                   size="sm"
                   className={cn("h-7 w-7 p-0 transition-all", copied && "bg-primary text-primary-foreground")}
                   onClick={() => {
-                    const url = `${window.location.origin}/approve/${approvalToken}`;
+                    const url = `https://hub.marketlab-media.de/approve/${approvalToken}`;
                     navigator.clipboard.writeText(url);
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
