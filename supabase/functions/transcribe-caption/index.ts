@@ -424,12 +424,28 @@ Deno.serve(async (req) => {
 
       if (piece.preview_link) {
         console.log("Transcribing from preview_link:", piece.preview_link);
-        
-        // Check if it's a Google Drive URL and get direct API URL
-        const directUrl = getGoogleDriveDirectUrl(piece.preview_link);
-        const sourceUrl = directUrl || piece.preview_link;
-        
-        transcript = await transcribeViaStreaming(sourceUrl, "video.mp4");
+
+        const driveFileId = getGoogleDriveFileId(piece.preview_link);
+        let sourceUrl = piece.preview_link;
+        let authHeader: string | undefined;
+
+        if (driveFileId) {
+          // Prefer service-account auth — works for private files shared with the service account
+          // AND for public files. Plain API-key downloads fail for most "anyone with the link" files.
+          const accessToken = await getGoogleAccessToken();
+          if (accessToken) {
+            sourceUrl = `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`;
+            authHeader = `Bearer ${accessToken}`;
+          } else {
+            const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
+            if (GOOGLE_API_KEY) {
+              sourceUrl = `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media&key=${GOOGLE_API_KEY}`;
+            }
+          }
+        }
+
+        transcript = await transcribeViaStreaming(sourceUrl, "video.mp4", authHeader);
+
       } else if (piece.video_path) {
         const { blob, fileName } = await downloadFromStorage(supabase, piece.video_path);
         const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
