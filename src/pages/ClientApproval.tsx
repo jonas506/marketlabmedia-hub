@@ -844,7 +844,7 @@ const ClientApproval = () => {
                       className="mb-3 rounded-2xl bg-[#0083F7]/5 border border-[#0083F7]/10 p-3"
                     >
                       <span className="text-[11px] font-semibold text-[#0083F7]/50 uppercase tracking-widest block mb-1.5">
-                        Antwort vom Team
+                        Antwort von Marketlab Media
                       </span>
                       <p className="text-sm text-white/70 leading-snug">{currentPiece.team_reply}</p>
                     </motion.div>
