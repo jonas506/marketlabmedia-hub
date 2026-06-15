@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
         .maybeSingle()
 
       const approvalLink = tokenRow?.token
-        ? `https://marketlabmedia-hub.lovable.app/approve/${tokenRow.token}`
+        ? `https://hub.marketlab-media.de/approve/${tokenRow.token}`
         : null
 
       const { subject, html, text } = buildEmail(client.name, pieces, approvalLink)
