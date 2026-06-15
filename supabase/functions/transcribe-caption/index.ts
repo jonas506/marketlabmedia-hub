@@ -63,12 +63,46 @@ function getGoogleDriveFileId(url: string): string | null {
   return null;
 }
 
-function getGoogleDriveDirectUrl(url: string): string | null {
-  const fileId = getGoogleDriveFileId(url);
-  if (!fileId) return null;
-  const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
-  if (!GOOGLE_API_KEY) return null;
-  return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GOOGLE_API_KEY}`;
+async function getGoogleAccessToken(): Promise<string | null> {
+  const email = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
+  const pkRaw = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY");
+  if (!email || !pkRaw) return null;
+  const privateKeyPem = pkRaw.replace(/\\n/g, "\n");
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    iss: email,
+    scope: "https://www.googleapis.com/auth/drive.readonly",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now, exp: now + 3600,
+  };
+  const b64url = (obj: unknown) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const unsignedToken = `${b64url(header)}.${b64url(payload)}`;
+  const keyData = privateKeyPem
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\s/g, "");
+  const binaryKey = Uint8Array.from(atob(keyData), (c) => c.charCodeAt(0));
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8", binaryKey,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false, ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5", cryptoKey,
+    new TextEncoder().encode(unsignedToken),
+  );
+  const b64Sig = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const jwt = `${unsignedToken}.${b64Sig}`;
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+  });
+  const tokenData = await tokenRes.json();
+  return tokenData.access_token || null;
 }
 
 // ── Stream video from URL directly to ElevenLabs (no full buffering) ──
