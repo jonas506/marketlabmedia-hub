@@ -213,20 +213,27 @@ async function parseElevenLabsResponse(response: Response): Promise<string> {
   return data.text || "";
 }
 
-async function transcribeViaStreaming(sourceUrl: string, fileName: string): Promise<string> {
+async function transcribeViaStreaming(
+  sourceUrl: string,
+  fileName: string,
+  authHeader?: string,
+): Promise<string> {
   const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
   if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY not configured. Bitte ElevenLabs verbinden.");
 
   console.log("Fetching video stream from:", sourceUrl.substring(0, 80) + "...");
 
-  const videoResponse = await fetch(sourceUrl, { redirect: "follow" });
+  const fetchHeaders: Record<string, string> = {};
+  if (authHeader) fetchHeaders["Authorization"] = authHeader;
+
+  const videoResponse = await fetch(sourceUrl, { redirect: "follow", headers: fetchHeaders });
   if (!videoResponse.ok) {
     const errText = await videoResponse.text();
     if (videoResponse.status === 404) {
       throw new Error("Datei nicht gefunden. Bitte prüfe ob der Google Drive Link korrekt ist und die Datei freigegeben ist.");
     }
-    if (videoResponse.status === 403) {
-      throw new Error("Zugriff verweigert. Bitte stelle sicher, dass die Datei auf 'Jeder mit dem Link' freigegeben ist.");
+    if (videoResponse.status === 403 || videoResponse.status === 401) {
+      throw new Error("Zugriff verweigert. Die Datei muss entweder mit unserem Service-Account geteilt sein oder auf 'Jeder mit dem Link' stehen.");
     }
     throw new Error(`Download Fehler [${videoResponse.status}]: ${errText.substring(0, 200)}`);
   }
@@ -238,8 +245,19 @@ async function transcribeViaStreaming(sourceUrl: string, fileName: string): Prom
   const contentLength = videoResponse.headers.get("content-length");
   const fileSizeBytes = contentLength ? parseInt(contentLength, 10) : 0;
   const sizeLabel = fileSizeBytes ? `${Math.round(fileSizeBytes / 1024 / 1024)} MB` : "unbekannt";
-  const contentType = (videoResponse.headers.get("content-type") || "video/mp4").split(";")[0].trim();
+  const rawContentType = (videoResponse.headers.get("content-type") || "video/mp4").split(";")[0].trim().toLowerCase();
+
+  // Guard: if Drive returns HTML/JSON instead of media, we'd transcribe garbage.
+  if (rawContentType.startsWith("text/") || rawContentType.includes("html") || rawContentType.includes("json")) {
+    throw new Error(
+      "Der Link zeigt auf keine Video-/Audio-Datei (Content-Type: " + rawContentType +
+      "). Wahrscheinlich ist die Google-Drive-Datei nicht öffentlich freigegeben oder nicht mit dem Service-Account geteilt. Lade das Video direkt hoch oder gib die Datei für 'Jeder mit dem Link' frei.",
+    );
+  }
+
+  const contentType = rawContentType;
   console.log(`Streaming upload to ElevenLabs. Größe: ${sizeLabel}. Content-Type: ${contentType}`);
+
 
   const { boundary, body } = createMultipartFormStream(
     videoResponse.body as ReadableStream<Uint8Array>,
