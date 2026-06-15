@@ -1003,24 +1003,49 @@ const ClientApproval = () => {
                         </div>
                       ) : currentComments.length > 0 && !isRevisionBlocked ? (
                         <>
-                          <Button
-                            className="flex-1 gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold h-[52px] rounded-[20px] shadow-xl shadow-amber-500/20 text-base active:scale-[0.98] transition-transform"
-                            onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
-                            disabled={isCurrentLoading}
-                          >
-                            {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
-                            Überarbeiten
-                            <span className="text-xs opacity-60">({currentComments.length})</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 h-[52px] rounded-[20px] px-4 font-medium text-sm"
-                            onClick={() => setConfirmApprove(true)}
-                            disabled={isCurrentLoading}
-                          >
-                            <Check className="h-4 w-4" />
-                            Freigeben
-                          </Button>
+                          {currentPiece?.team_reply ? (
+                            <>
+                              <Button
+                                className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-[52px] rounded-[20px] shadow-xl shadow-emerald-500/20 text-base active:scale-[0.98] transition-transform"
+                                onClick={() => setConfirmApprove(true)}
+                                disabled={isCurrentLoading}
+                              >
+                                <Check className="h-5 w-5" />
+                                Freigeben
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-[52px] rounded-[20px] px-4 font-medium text-sm"
+                                onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                                disabled={isCurrentLoading}
+                              >
+                                {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                                Überarbeiten
+                                <span className="text-xs opacity-60">({currentComments.length})</span>
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                className="flex-1 gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold h-[52px] rounded-[20px] shadow-xl shadow-amber-500/20 text-base active:scale-[0.98] transition-transform"
+                                onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                                disabled={isCurrentLoading}
+                              >
+                                {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                                Überarbeiten
+                                <span className="text-xs opacity-60">({currentComments.length})</span>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 h-[52px] rounded-[20px] px-4 font-medium text-sm"
+                                onClick={() => setConfirmApprove(true)}
+                                disabled={isCurrentLoading}
+                              >
+                                <Check className="h-4 w-4" />
+                                Freigeben
+                              </Button>
+                            </>
+                          )}
                         </>
                       ) : (
                         <Button
@@ -1134,27 +1159,54 @@ const ClientApproval = () => {
                           </div>
                         ) : currentComments.length > 0 && !isRevisionBlocked ? (
                           <>
-                            {/* When comments exist: Überarbeiten is primary/big, Freigeben is secondary/small */}
-                            <Button
-                              className="flex-1 gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold h-12 sm:h-[52px] rounded-[20px] shadow-xl shadow-amber-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
-                              onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
-                              disabled={isCurrentLoading}
-                            >
-                              {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
-                              Überarbeiten
-                              <span className="text-xs opacity-60">({currentComments.length})</span>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 h-12 sm:h-[52px] rounded-[20px] px-3 sm:px-4 font-medium text-xs sm:text-sm"
-                              onClick={() => {
-                                setConfirmApprove(true);
-                              }}
-                              disabled={isCurrentLoading}
-                            >
-                              <Check className="h-4 w-4" />
-                              Freigeben
-                            </Button>
+                            {currentPiece?.team_reply ? (
+                              <>
+                                <Button
+                                  className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold h-12 sm:h-[52px] rounded-[20px] shadow-xl shadow-emerald-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
+                                  onClick={() => {
+                                    setConfirmApprove(true);
+                                  }}
+                                  disabled={isCurrentLoading}
+                                >
+                                  <Check className="h-5 w-5" />
+                                  Freigeben
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-amber-500/10 hover:text-amber-400 hover:border-amber-500/20 h-12 sm:h-[52px] rounded-[20px] px-3 sm:px-4 font-medium text-xs sm:text-sm"
+                                  onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                                  disabled={isCurrentLoading}
+                                >
+                                  {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                                  Überarbeiten
+                                  <span className="text-xs opacity-60">({currentComments.length})</span>
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                {/* When comments exist: Überarbeiten is primary/big, Freigeben is secondary/small */}
+                                <Button
+                                  className="flex-1 gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-semibold h-12 sm:h-[52px] rounded-[20px] shadow-xl shadow-amber-500/20 text-sm sm:text-base active:scale-[0.98] transition-transform"
+                                  onClick={() => currentPiece && handleAction(currentPiece.id, "reject")}
+                                  disabled={isCurrentLoading}
+                                >
+                                  {isCurrentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                                  Überarbeiten
+                                  <span className="text-xs opacity-60">({currentComments.length})</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  className="min-w-[6rem] gap-1.5 border-white/[0.08] text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/20 h-12 sm:h-[52px] rounded-[20px] px-3 sm:px-4 font-medium text-xs sm:text-sm"
+                                  onClick={() => {
+                                    setConfirmApprove(true);
+                                  }}
+                                  disabled={isCurrentLoading}
+                                >
+                                  <Check className="h-4 w-4" />
+                                  Freigeben
+                                </Button>
+                              </>
+                            )}
                           </>
                         ) : (
                           /* No comments: Freigeben is primary/big */
