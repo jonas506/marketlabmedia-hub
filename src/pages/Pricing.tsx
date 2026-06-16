@@ -220,18 +220,12 @@ const Pricing = () => {
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-20 md:py-28">
-        <div className="mb-16 flex items-center gap-2 text-sm font-semibold tracking-wide">
-          <span className="inline-block h-2 w-2 rounded-full" style={{ background: BRAND.blue }} />
-          <span className="text-white/80">marketlab media</span>
-        </div>
-
-        {/* HERO */}
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-16 md:py-24">
+        {/* PACKAGES — HERO HEADLINE */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl"
         >
           <p
             className="mb-4 text-sm font-semibold uppercase tracking-[0.18em]"
@@ -239,20 +233,58 @@ const Pricing = () => {
           >
             Social Media Wachstum als System
           </p>
-          <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
-            Was du bekommst:{" "}
+          <h1 className="max-w-4xl text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
+            Unsere Pakete —{" "}
             <span
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: `linear-gradient(90deg, ${BRAND.blue}, #7B5CFF)` }}
             >
-              Reichweite, Vertrauen, qualifizierte Termine.
+              planbar, skalierbar, ohne Werbebudget.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-white/60 md:text-xl">
-            Wir bauen dir eine Content-Maschine die planbar Follower aufbaut —
-            und daraus echte Kundenanfragen macht. Organisch, ohne Werbebudget.
+            Mindestlaufzeit 3 Monate · 12-Monats-Laufzeit ={" "}
+            <span className="font-semibold text-white">10 % Rabatt</span> ·
+            Einmaliges Setup <span className="font-semibold text-white">2.000 €</span>.
           </p>
         </motion.section>
+
+        {/* PACKAGES — 5 COLUMN CARDS */}
+        <section className="mt-12">
+          <div className="flex items-center justify-end">
+            <BillingToggle annual={annual} onChange={setAnnual} />
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {PLANS.map((p, i) => (
+              <PlanCard key={p.key} plan={p} annual={annual} index={i} />
+            ))}
+          </div>
+        </section>
+
+        {/* ADD-ONS — DIRECTLY UNDER PACKAGES */}
+        <section className="mt-20">
+          <SectionHeader eyebrow="Add-Ons" title="Jederzeit zubuchbar" />
+          <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {ADDONS.map((a) => (
+              <div
+                key={a.name}
+                className="rounded-xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-white/20"
+              >
+                <div className="text-sm text-white/70">{a.name}</div>
+                <div className="mt-3 text-lg font-bold" style={{ color: BRAND.blue }}>
+                  {a.price}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* COMPARISON TABLE */}
+        <section className="mt-28">
+          <SectionHeader eyebrow="Vergleich" title="Alles im Detail" />
+          <ComparisonTable annual={annual} />
+        </section>
 
         {/* FUNNEL */}
         <section className="mt-28">
@@ -329,55 +361,6 @@ const Pricing = () => {
                 </motion.div>
               );
             })}
-          </div>
-        </section>
-
-        {/* PACKAGES — OVERVIEW CARDS */}
-        <section className="mt-32">
-          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-            <div>
-              <SectionHeader eyebrow="Pakete" title="Pakete im Überblick" />
-              <p className="mt-3 text-white/60">
-                Mindestlaufzeit 3 Monate · 12-Monats-Laufzeit ={" "}
-                <span className="font-semibold text-white">10 % Rabatt</span> ·
-                Einmaliges Setup <span className="font-semibold text-white">2.000 €</span>.
-              </p>
-            </div>
-            <BillingToggle annual={annual} onChange={setAnnual} />
-          </div>
-
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            {PLANS.map((p, i) => (
-              <PlanCard key={p.key} plan={p} annual={annual} index={i} />
-            ))}
-          </div>
-
-          <p className="mt-8 text-center text-sm text-white/40">
-            Alle Details im direkten Vergleich ↓
-          </p>
-        </section>
-
-        {/* COMPARISON TABLE */}
-        <section className="mt-20">
-          <SectionHeader eyebrow="Vergleich" title="Alles im Detail" />
-          <ComparisonTable annual={annual} />
-        </section>
-
-        {/* ADDONS */}
-        <section className="mt-32">
-          <SectionHeader eyebrow="Add-Ons" title="Add-Ons — jederzeit zubuchbar" />
-          <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {ADDONS.map((a) => (
-              <div
-                key={a.name}
-                className="rounded-xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-white/20"
-              >
-                <div className="text-sm text-white/70">{a.name}</div>
-                <div className="mt-3 text-lg font-bold" style={{ color: BRAND.blue }}>
-                  {a.price}
-                </div>
-              </div>
-            ))}
           </div>
         </section>
 
