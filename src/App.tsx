@@ -41,6 +41,7 @@ import InternalReview from "./pages/InternalReview";
 import InternalReviewSwiper from "./pages/InternalReviewSwiper";
 
 import StundenUebersicht from "./pages/StundenUebersicht";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,6 +92,8 @@ const App = () => (
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/accept-invite" element={<AcceptInvite />} />
                   <Route path="/approve/:token" element={<ClientApproval />} />
+                  <Route path="/pakete" element={<Pricing />} />
+                  <Route path="/pricing" element={<Pricing />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/clients" element={<ProtectedRoute><ClientsList /></ProtectedRoute>} />
                   <Route path="/posting-kalender" element={<ProtectedRoute><PostingCalendarPage /></ProtectedRoute>} />
