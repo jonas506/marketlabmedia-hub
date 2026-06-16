@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useClients } from "@/hooks/useClients";
 import AppLayout from "@/components/AppLayout";
 import CreateClientDialog from "@/components/CreateClientDialog";
@@ -9,6 +10,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import RunwayBadge from "@/components/RunwayBadge";
 import DeleteClientDialog from "@/components/DeleteClientDialog";
+import ArchiveClientButton from "@/components/ArchiveClientButton";
 import type { ClientDashboardData, LifecyclePhase } from "@/hooks/useClients";
 
 const lifecycleConfig: Record<LifecyclePhase, { label: string; className: string; icon?: React.ReactNode }> = {
@@ -54,7 +56,8 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
       className="group relative rounded-lg border border-border bg-card hover:bg-surface-elevated transition-all duration-200"
     >
       {canDelete && (
-        <div className="absolute top-3 right-3 z-10">
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
+          <ArchiveClientButton clientId={client.id} clientName={client.name} isArchived={client.status === "archived"} />
           <DeleteClientDialog clientId={client.id} clientName={client.name} />
         </div>
       )}
@@ -138,9 +141,14 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
 };
 
 const ClientsList = () => {
-  const { data: clients, isLoading } = useClients();
+  const { data: clients, isLoading } = useClients({ includeArchived: true });
   const { role } = useAuth();
   const canCreate = role === "admin" || role === "head_of_content";
+  const [view, setView] = useState<"active" | "archived">("active");
+
+  const activeClients = clients?.filter((c) => c.status !== "archived") ?? [];
+  const archivedClients = clients?.filter((c) => c.status === "archived") ?? [];
+  const visibleClients = view === "active" ? activeClients : archivedClients;
 
   return (
     <AppLayout>
@@ -153,19 +161,40 @@ const ClientsList = () => {
           {canCreate && <CreateClientDialog />}
         </div>
 
+        <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1">
+          <button
+            onClick={() => setView("active")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              view === "active" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Aktiv ({activeClients.length})
+          </button>
+          <button
+            onClick={() => setView("archived")}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              view === "archived" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Archiv ({archivedClients.length})
+          </button>
+        </div>
+
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="h-20 animate-pulse rounded-lg bg-card border border-border" />
             ))}
           </div>
-        ) : clients?.length === 0 ? (
+        ) : visibleClients.length === 0 ? (
           <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card">
-            <p className="text-sm text-muted-foreground">Noch keine Kunden angelegt</p>
+            <p className="text-sm text-muted-foreground">
+              {view === "archived" ? "Keine archivierten Kunden" : "Noch keine Kunden angelegt"}
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
-            {clients?.map((client, i) => (
+            {visibleClients.map((client, i) => (
               <ClientListRow key={client.id} client={client} index={i} />
             ))}
           </div>

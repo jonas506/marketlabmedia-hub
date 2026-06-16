@@ -36,11 +36,14 @@ const getCurrentMonth = () => {
   return { month: d.getMonth() + 1, year: d.getFullYear() };
 };
 
-export const useClients = () => {
+export const useClients = (options?: { includeArchived?: boolean }) => {
+  const includeArchived = options?.includeArchived ?? false;
   return useQuery({
-    queryKey: ["clients-dashboard"],
+    queryKey: ["clients-dashboard", { includeArchived }],
     queryFn: async (): Promise<ClientDashboardData[]> => {
-      const { data: clients, error } = await supabase.from("clients").select("*");
+      let query = supabase.from("clients").select("*");
+      if (!includeArchived) query = query.neq("status", "archived");
+      const { data: clients, error } = await query;
       if (error) throw error;
       if (!clients?.length) return [];
 
