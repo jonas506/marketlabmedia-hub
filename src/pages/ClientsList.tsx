@@ -141,7 +141,7 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
 };
 
 const ClientsList = () => {
-  const { data: clients, isLoading } = useClients();
+  const { data: clients, isLoading } = useClients({ includeArchived: true });
   const { role } = useAuth();
   const canCreate = role === "admin" || role === "head_of_content";
   const [view, setView] = useState<"active" | "archived">("active");
