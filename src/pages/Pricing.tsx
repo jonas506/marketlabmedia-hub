@@ -12,6 +12,8 @@ import {
   Sparkles,
   Eye,
   TrendingUp,
+  GraduationCap,
+  Smartphone,
 } from "lucide-react";
 
 const BRAND = {
