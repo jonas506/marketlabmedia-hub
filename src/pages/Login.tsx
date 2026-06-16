@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -53,13 +53,19 @@ const Login = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="font-body text-sm text-muted-foreground">Passwort</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="font-body text-sm text-muted-foreground">Passwort</Label>
+              <Link to="/forgot-password" className="text-xs font-mono text-muted-foreground hover:text-foreground">
+                VERGESSEN?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
               className="bg-card border-border font-body"
             />
           </div>
