@@ -8,6 +8,7 @@ import {
   Handshake,
   ArrowRight,
   Check,
+  Minus,
   Sparkles,
   Eye,
   TrendingUp,
@@ -20,170 +21,144 @@ const BRAND = {
   bg: "#0a0a0f",
 };
 
-type FeatureGroup = {
-  title: string;
-  items: string[];
-};
-
 type Plan = {
+  key: string;
   name: string;
   tagline: string;
-  highlight: string;
   price3: number;
   price12: number;
   setup: number;
-  groups: FeatureGroup[];
+  highlights: string[];
   popular?: boolean;
-};
-
-const STRATEGY_BLOCK: FeatureGroup = {
-  title: "Strategie & Steuerung",
-  items: [
-    "Datengetriebene Content-Strategie",
-    "Monatliche Performance-Analyse",
-    "Hook- & Format-Testing",
-    "Eigener Ansprechpartner",
-  ],
-};
-
-const POSTING_BLOCK: FeatureGroup = {
-  title: "Posting & Distribution",
-  items: [
-    "Posting & Veröffentlichung",
-    "Caption-Texting inkl. CTA",
-    "Hashtag- & SEO-Optimierung",
-    "Reporting-Dashboard",
-  ],
 };
 
 const PLANS: Plan[] = [
   {
+    key: "basic_lite",
     name: "Basic Lite",
     tagline: "Einstieg in den organischen Aufbau",
-    highlight: "~180 neue Follower / Monat",
     price3: 1500,
     price12: 1350,
     setup: 2000,
-    groups: [
-      {
-        title: "Content-Produktion",
-        items: [
-          "15 Testreels pro Monat",
-          "Hochwertiger Schnitt & Sounddesign",
-          "Untertitel & On-Screen-Text",
-        ],
-      },
-      POSTING_BLOCK,
-      STRATEGY_BLOCK,
+    highlights: [
+      "15 Testreels / Monat",
+      "Posting & Strategie",
+      "~180 neue Follower / Monat",
     ],
   },
   {
+    key: "basic",
     name: "Basic",
     tagline: "Volle Frequenz für planbares Wachstum",
-    highlight: "~360 neue Follower / Monat",
     price3: 2500,
     price12: 2250,
     setup: 2000,
-    groups: [
-      {
-        title: "Content-Produktion",
-        items: [
-          "30 Testreels pro Monat",
-          "Hochwertiger Schnitt & Sounddesign",
-          "Untertitel & On-Screen-Text",
-          "Cover-Design für jedes Reel",
-        ],
-      },
-      POSTING_BLOCK,
-      STRATEGY_BLOCK,
+    highlights: [
+      "30 Testreels / Monat",
+      "Posting & Strategie",
+      "~360 neue Follower / Monat",
     ],
   },
   {
+    key: "standard",
     name: "Standard",
     tagline: "Multi-Format für mehr Engagement",
-    highlight: "~360 Follower / Monat + mehr Engagement",
     price3: 3500,
     price12: 3150,
     setup: 2000,
     popular: true,
-    groups: [
-      {
-        title: "Content-Produktion",
-        items: [
-          "30 Testreels pro Monat",
-          "10 Carousels pro Monat (Edu/Hook)",
-          "Story-Sequenzen für Reichweiten-Push",
-          "Cover-Design & On-Screen-Text",
-        ],
-      },
-      POSTING_BLOCK,
-      STRATEGY_BLOCK,
+    highlights: [
+      "30 Testreels + 10 Carousels",
+      "Story-Sequenzen",
+      "~360 Follower + mehr Engagement",
     ],
   },
   {
+    key: "plus",
     name: "Plus",
-    tagline: "Reichweite + professioneller Drehtag-Content",
-    highlight: "Reichweite + professioneller Video-Content",
+    tagline: "Reichweite + Drehtag-Content",
     price3: 4500,
     price12: 4050,
     setup: 2000,
-    groups: [
-      {
-        title: "Content-Produktion",
-        items: [
-          "30 Testreels pro Monat",
-          "20 Reels inkl. Drehtag (Kamera, Licht, Ton)",
-          "10 Carousels pro Monat",
-          "Story-Sequenzen",
-        ],
-      },
-      {
-        title: "Drehtag-Setup",
-        items: [
-          "1 Drehtag pro Monat inkl. Equipment",
-          "Regie & Hook-Coaching am Set",
-          "B-Roll & Cutaway-Material",
-        ],
-      },
-      POSTING_BLOCK,
-      STRATEGY_BLOCK,
+    highlights: [
+      "30 Testreels + 20 Drehtag-Reels",
+      "Monatlicher Drehtag inkl.",
+      "Carousels & Storys",
     ],
   },
   {
+    key: "elite",
     name: "Elite",
     tagline: "Maximale Reichweite + bezahlte Verstärkung",
-    highlight: "Maximale Reichweite + bezahlte Verstärkung",
     price3: 6500,
     price12: 5850,
     setup: 2000,
-    groups: [
-      {
-        title: "Content-Produktion",
-        items: [
-          "30 Testreels pro Monat",
-          "20 Reels inkl. Drehtag (Kamera, Licht, Ton)",
-          "10 Carousels pro Monat",
-          "Story-Sequenzen",
-        ],
-      },
-      {
-        title: "Drehtag-Setup",
-        items: [
-          "1 Drehtag pro Monat inkl. Equipment",
-          "Regie & Hook-Coaching am Set",
-          "B-Roll & Cutaway-Material",
-        ],
-      },
-      {
-        title: "Paid Ads",
-        items: [
-          "Ads schalten & laufend optimieren",
-          "Creative-Testing der Top-Reels",
-          "Audience- & Retargeting-Setup",
-        ],
-      },
-      POSTING_BLOCK,
-      STRATEGY_BLOCK,
+    highlights: [
+      "Alles aus Plus",
+      "Paid Ads schalten & optimieren",
+      "Creative- & Retargeting-Setup",
+    ],
+  },
+];
+
+// Comparison table data
+type Cell = string | number | boolean;
+type Row = { label: string; values: Cell[] };
+type TableSection = { title: string; rows: Row[] };
+
+const COMPARISON: TableSection[] = [
+  {
+    title: "Content-Produktion",
+    rows: [
+      { label: "Testreels pro Monat", values: [15, 30, 30, 30, 30] },
+      { label: "Reels mit Drehtag", values: ["—", "—", "—", 20, 20] },
+      { label: "Carousels pro Monat", values: ["—", "—", 10, 10, 10] },
+      { label: "Story-Sequenzen", values: [false, false, true, true, true] },
+      { label: "Cover-Design & On-Screen-Text", values: [true, true, true, true, true] },
+      { label: "Untertitel & Sounddesign", values: [true, true, true, true, true] },
+    ],
+  },
+  {
+    title: "Drehtag-Setup",
+    rows: [
+      { label: "Drehtage pro Monat", values: ["—", "—", "—", 1, 1] },
+      { label: "Equipment (Kamera, Licht, Ton)", values: [false, false, false, true, true] },
+      { label: "Regie & Hook-Coaching am Set", values: [false, false, false, true, true] },
+      { label: "B-Roll & Cutaway-Material", values: [false, false, false, true, true] },
+    ],
+  },
+  {
+    title: "Distribution",
+    rows: [
+      { label: "Posting & Veröffentlichung", values: [true, true, true, true, true] },
+      { label: "Caption-Texting inkl. CTA", values: [true, true, true, true, true] },
+      { label: "Hashtag- & SEO-Optimierung", values: [true, true, true, true, true] },
+      { label: "Reporting-Dashboard", values: [true, true, true, true, true] },
+    ],
+  },
+  {
+    title: "Strategie & Steuerung",
+    rows: [
+      { label: "Datengetriebene Content-Strategie", values: [true, true, true, true, true] },
+      { label: "Monatliche Performance-Analyse", values: [true, true, true, true, true] },
+      { label: "Hook- & Format-Testing", values: [true, true, true, true, true] },
+      { label: "Eigener Ansprechpartner", values: [true, true, true, true, true] },
+    ],
+  },
+  {
+    title: "Paid Ads",
+    rows: [
+      { label: "Ads schalten & verwalten", values: [false, false, false, false, true] },
+      { label: "Creative-Testing der Top-Reels", values: [false, false, false, false, true] },
+      { label: "Audience- & Retargeting-Setup", values: [false, false, false, false, true] },
+    ],
+  },
+  {
+    title: "Kommerziell",
+    rows: [
+      { label: "Einmaliges Setup", values: ["2.000 €", "2.000 €", "2.000 €", "2.000 €", "2.000 €"] },
+      { label: "Mindestlaufzeit", values: ["3 Monate", "3 Monate", "3 Monate", "3 Monate", "3 Monate"] },
+      { label: "Rabatt bei 12 Monaten", values: ["10 %", "10 %", "10 %", "10 %", "10 %"] },
     ],
   },
 ];
@@ -208,28 +183,12 @@ const FUNNEL = [
 ];
 
 const EXPECTATIONS = [
-  {
-    icon: Eye,
-    value: "23.000",
-    label: "Reichweite pro Testreel",
-    sub: "Durchschnittlicher Impressions-Wert über alle Nischen",
-  },
-  {
-    icon: TrendingUp,
-    value: "12",
-    label: "Follower pro Reel",
-    sub: "Im Schnitt — datengetriebene Testreel-Strategie",
-  },
-  {
-    icon: Users,
-    value: "360+",
-    label: "Neue Follower pro Monat",
-    sub: "Bei 30 Reels — kontinuierlich, planbar",
-  },
+  { icon: Eye, value: "23.000", label: "Reichweite pro Testreel", sub: "Durchschnitt über alle Nischen" },
+  { icon: TrendingUp, value: "12", label: "Follower pro Reel", sub: "Datengetriebene Testreel-Strategie" },
+  { icon: Users, value: "360+", label: "Neue Follower pro Monat", sub: "Bei 30 Reels — planbar" },
 ];
 
-const formatEUR = (n: number) =>
-  new Intl.NumberFormat("de-DE").format(n);
+const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 
 const Pricing = () => {
   const [annual, setAnnual] = useState(false);
@@ -250,10 +209,7 @@ const Pricing = () => {
   return (
     <div
       className="min-h-screen w-full text-white"
-      style={{
-        background: BRAND.bg,
-        fontFamily: "'Manrope', system-ui, sans-serif",
-      }}
+      style={{ background: BRAND.bg, fontFamily: "'Manrope', system-ui, sans-serif" }}
     >
       <div
         aria-hidden
@@ -287,9 +243,7 @@ const Pricing = () => {
             Was du bekommst:{" "}
             <span
               className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage: `linear-gradient(90deg, ${BRAND.blue}, #7B5CFF)`,
-              }}
+              style={{ backgroundImage: `linear-gradient(90deg, ${BRAND.blue}, #7B5CFF)` }}
             >
               Reichweite, Vertrauen, qualifizierte Termine.
             </span>
@@ -366,9 +320,7 @@ const Pricing = () => {
                   </div>
                   <div
                     className="bg-clip-text text-5xl font-extrabold tracking-tight text-transparent md:text-6xl"
-                    style={{
-                      backgroundImage: `linear-gradient(180deg, #ffffff 0%, ${BRAND.blue} 130%)`,
-                    }}
+                    style={{ backgroundImage: `linear-gradient(180deg, #ffffff 0%, ${BRAND.blue} 130%)` }}
                   >
                     {m.value}
                   </div>
@@ -380,27 +332,35 @@ const Pricing = () => {
           </div>
         </section>
 
-        {/* PACKAGES */}
+        {/* PACKAGES — OVERVIEW CARDS */}
         <section className="mt-32">
           <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <SectionHeader eyebrow="Pakete" title="Pakete" />
+              <SectionHeader eyebrow="Pakete" title="Pakete im Überblick" />
               <p className="mt-3 text-white/60">
-                Mindestlaufzeit 3 Monate. 12-Monats-Laufzeit ={" "}
-                <span className="font-semibold text-white">10 % Rabatt</span>.
-                Einmaliges Setup{" "}
-                <span className="font-semibold text-white">2.000 €</span> in
-                jedem Paket.
+                Mindestlaufzeit 3 Monate · 12-Monats-Laufzeit ={" "}
+                <span className="font-semibold text-white">10 % Rabatt</span> ·
+                Einmaliges Setup <span className="font-semibold text-white">2.000 €</span>.
               </p>
             </div>
             <BillingToggle annual={annual} onChange={setAnnual} />
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             {PLANS.map((p, i) => (
-              <PlanCard key={p.name} plan={p} annual={annual} index={i} />
+              <PlanCard key={p.key} plan={p} annual={annual} index={i} />
             ))}
           </div>
+
+          <p className="mt-8 text-center text-sm text-white/40">
+            Alle Details im direkten Vergleich ↓
+          </p>
+        </section>
+
+        {/* COMPARISON TABLE */}
+        <section className="mt-20">
+          <SectionHeader eyebrow="Vergleich" title="Alles im Detail" />
+          <ComparisonTable annual={annual} />
         </section>
 
         {/* ADDONS */}
@@ -425,9 +385,7 @@ const Pricing = () => {
         <section className="mt-32 mb-12 text-center">
           <p
             className="mx-auto max-w-3xl bg-clip-text text-2xl font-semibold text-transparent md:text-4xl"
-            style={{
-              backgroundImage: `linear-gradient(90deg, #ffffff, ${BRAND.blue})`,
-            }}
+            style={{ backgroundImage: `linear-gradient(90deg, #ffffff, ${BRAND.blue})` }}
           >
             Kein Werbebudget nötig. Kein Risiko. Nur ein System das funktioniert.
           </p>
@@ -482,15 +440,7 @@ const BillingToggle = ({
   </div>
 );
 
-const PlanCard = ({
-  plan,
-  annual,
-  index,
-}: {
-  plan: Plan;
-  annual: boolean;
-  index: number;
-}) => {
+const PlanCard = ({ plan, annual, index }: { plan: Plan; annual: boolean; index: number }) => {
   const price = annual ? plan.price12 : plan.price3;
   return (
     <motion.div
@@ -507,16 +457,14 @@ const PlanCard = ({
       {plan.popular && (
         <div
           className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
-          style={{
-            background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})`,
-          }}
+          style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})` }}
         >
           <Sparkles className="h-3 w-3" /> Beliebt
         </div>
       )}
 
       <div className="text-lg font-bold">{plan.name}</div>
-      <div className="mt-1 min-h-[36px] text-xs text-white/55">{plan.tagline}</div>
+      <div className="mt-1 min-h-[34px] text-xs text-white/55">{plan.tagline}</div>
 
       <div className="mt-5 flex items-baseline gap-1">
         <span className="text-4xl font-extrabold tracking-tight">
@@ -525,46 +473,110 @@ const PlanCard = ({
         </span>
       </div>
       <div className="text-xs text-white/45">
-        / Monat · {annual ? "12 Mon. Laufzeit" : "3 Mon. Laufzeit"}
+        / Monat · {annual ? "12 Mon." : "3 Mon."}
       </div>
-      <div className="mt-2 inline-flex w-fit items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-[11px] font-medium text-white/65">
-        + {formatEUR(plan.setup)} € Setup (einmalig)
-      </div>
-
-      <div
-        className="mt-5 rounded-lg px-3 py-2 text-xs font-semibold"
-        style={{
-          background: `linear-gradient(135deg, ${BRAND.blue}1f, ${BRAND.purple}1f)`,
-          color: "#cfe5ff",
-          border: `1px solid ${BRAND.blue}40`,
-        }}
-      >
-        {plan.highlight}
+      <div className="mt-2 text-[11px] text-white/40">
+        + {formatEUR(plan.setup)} € Setup einmalig
       </div>
 
-      <div className="my-6 h-px w-full bg-white/10" />
+      <div className="my-5 h-px w-full bg-white/10" />
 
-      <div className="flex flex-col gap-5">
-        {plan.groups.map((g) => (
-          <div key={g.title}>
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-white/40">
-              {g.title}
-            </div>
-            <ul className="flex flex-col gap-2">
-              {g.items.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-white/80">
-                  <Check
-                    className="mt-0.5 h-4 w-4 shrink-0"
-                    style={{ color: BRAND.blue }}
-                  />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <ul className="flex flex-col gap-2">
+        {plan.highlights.map((h) => (
+          <li key={h} className="flex items-start gap-2 text-sm text-white/80">
+            <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: BRAND.blue }} />
+            <span>{h}</span>
+          </li>
         ))}
-      </div>
+      </ul>
     </motion.div>
+  );
+};
+
+const renderCell = (v: Cell) => {
+  if (v === true)
+    return <Check className="mx-auto h-5 w-5" style={{ color: BRAND.blue }} />;
+  if (v === false)
+    return <Minus className="mx-auto h-4 w-4 text-white/20" />;
+  return <span className="text-sm text-white/85">{v}</span>;
+};
+
+const ComparisonTable = ({ annual }: { annual: boolean }) => {
+  return (
+    <div className="mt-10 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.02]">
+      <table className="w-full min-w-[860px] border-collapse">
+        <thead>
+          <tr className="border-b border-white/10">
+            <th className="sticky left-0 z-10 w-[280px] bg-[#0a0a0f] p-5 text-left align-bottom" />
+            {PLANS.map((p) => (
+              <th
+                key={p.key}
+                className="p-5 text-center align-bottom"
+                style={{
+                  background: p.popular
+                    ? `linear-gradient(180deg, ${BRAND.blue}14, transparent)`
+                    : undefined,
+                }}
+              >
+                <div className="flex flex-col items-center gap-1">
+                  {p.popular && (
+                    <span
+                      className="mb-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white"
+                      style={{
+                        background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})`,
+                      }}
+                    >
+                      <Sparkles className="h-2.5 w-2.5" /> Beliebt
+                    </span>
+                  )}
+                  <div className="text-base font-bold">{p.name}</div>
+                  <div className="text-xs text-white/45">
+                    {formatEUR(annual ? p.price12 : p.price3)} € / Mon.
+                  </div>
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {COMPARISON.map((section) => (
+            <>
+              <tr key={`${section.title}-h`}>
+                <td
+                  colSpan={PLANS.length + 1}
+                  className="border-t border-white/10 bg-white/[0.03] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white/55"
+                >
+                  {section.title}
+                </td>
+              </tr>
+              {section.rows.map((row, i) => (
+                <tr
+                  key={`${section.title}-${row.label}`}
+                  className="border-t border-white/5 transition-colors hover:bg-white/[0.02]"
+                >
+                  <td className="sticky left-0 z-10 bg-[#0a0a0f] px-5 py-4 text-sm text-white/75">
+                    {row.label}
+                  </td>
+                  {row.values.map((v, idx) => (
+                    <td
+                      key={idx}
+                      className="px-5 py-4 text-center"
+                      style={{
+                        background: PLANS[idx]?.popular
+                          ? "rgba(0,131,247,0.04)"
+                          : undefined,
+                      }}
+                    >
+                      {renderCell(v)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
