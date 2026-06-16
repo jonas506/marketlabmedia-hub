@@ -29,6 +29,8 @@ import ActivityPage from "./pages/ActivityPage";
 import Tasks from "./pages/Tasks";
 import MyTodos from "./pages/MyTodos";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 import TimeTracking from "./pages/TimeTracking";
@@ -85,6 +87,8 @@ const App = () => (
               <ErrorBoundary level="page">
                 <Routes>
                   <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/accept-invite" element={<AcceptInvite />} />
                   <Route path="/approve/:token" element={<ClientApproval />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
