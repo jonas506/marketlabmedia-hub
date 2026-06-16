@@ -264,6 +264,58 @@ const Pricing = () => {
           </div>
         </section>
 
+        {/* INKLUSIVE KURS — IN EVERY PLAN */}
+        <section className="mt-20">
+          <SectionHeader eyebrow="Kurs & Coaching" title="Inklusive in jedem Paket" />
+          <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45 }}
+              className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-7"
+            >
+              <div
+                className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-lg"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}33, ${BRAND.purple}33)`,
+                  color: BRAND.blue,
+                }}
+              >
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div className="text-xl font-bold">Aktueller Markt</div>
+              <div className="mt-2 text-sm text-white/60">
+                Kurzer Crash-Kurs zu aktuellen Algorithmus-Updates, Trends und
+                Content-Formaten die gerade laufen.
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45, delay: 0.08 }}
+              className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-7"
+            >
+              <div
+                className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-lg"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}33, ${BRAND.purple}33)`,
+                  color: BRAND.blue,
+                }}
+              >
+                <Smartphone className="h-5 w-5" />
+              </div>
+              <div className="text-xl font-bold">Handy-Filming Masterclass</div>
+              <div className="mt-2 text-sm text-white/60">
+                Wie du selbst spontan professionelle Videos mit dem Handy drehst —
+                Settings, Licht, Hook-Setups und Schnitt-Tricks.
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* ADD-ONS — DIRECTLY UNDER PACKAGES */}
         <section className="mt-20">
           <SectionHeader eyebrow="Add-Ons" title="Jederzeit zubuchbar" />
