@@ -56,7 +56,8 @@ const ClientListRow: React.FC<{ client: ClientDashboardData; index: number }> = 
       className="group relative rounded-lg border border-border bg-card hover:bg-surface-elevated transition-all duration-200"
     >
       {canDelete && (
-        <div className="absolute top-3 right-3 z-10">
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
+          <ArchiveClientButton clientId={client.id} clientName={client.name} isArchived={client.status === "archived"} />
           <DeleteClientDialog clientId={client.id} clientName={client.name} />
         </div>
       )}
