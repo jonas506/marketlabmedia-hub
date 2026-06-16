@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useClients } from "@/hooks/useClients";
 import AppLayout from "@/components/AppLayout";
 import CreateClientDialog from "@/components/CreateClientDialog";
@@ -9,6 +10,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import RunwayBadge from "@/components/RunwayBadge";
 import DeleteClientDialog from "@/components/DeleteClientDialog";
+import ArchiveClientButton from "@/components/ArchiveClientButton";
 import type { ClientDashboardData, LifecyclePhase } from "@/hooks/useClients";
 
 const lifecycleConfig: Record<LifecyclePhase, { label: string; className: string; icon?: React.ReactNode }> = {
