@@ -443,35 +443,37 @@ const Referral = () => {
           <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
             Die Menschen hinter Marketlab Media
           </h2>
-          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {TEAM.map((p) => (
-              <div
+          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
+            {TEAM.map((p, i) => (
+              <motion.div
                 key={p.name}
-                className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-white/[0.01]"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="flex flex-col items-center text-center"
               >
                 <div
-                  className="relative aspect-[3/4] overflow-hidden"
+                  className="relative h-28 w-28 overflow-hidden rounded-full ring-2 ring-[#0083F7]/30 md:h-32 md:w-32"
                   style={{
                     background:
-                      "radial-gradient(60% 50% at 50% 40%, rgba(0,131,247,0.35) 0%, rgba(33,8,155,0.15) 50%, transparent 80%), #0a0a14",
+                      "radial-gradient(circle at 50% 35%, rgba(0,131,247,0.25), rgba(10,10,20,1) 70%)",
                   }}
                 >
                   <img
                     src={p.img}
                     alt={p.name}
-                    className="absolute inset-0 h-full w-full object-cover object-top"
+                    className="h-full w-full object-cover object-top"
                     loading="lazy"
                   />
                 </div>
-                <div className="p-4">
-                  <div className="text-sm font-bold">{p.name}</div>
-                  <div className="mt-0.5 text-xs text-white/55">{p.role}</div>
-                  <div
-                    className="mt-2 h-0.5 w-8 rounded-full"
-                    style={{ background: BRAND.blue }}
-                  />
-                </div>
-              </div>
+                <div className="mt-4 text-sm font-bold">{p.name}</div>
+                <div className="mt-0.5 text-xs text-white/55">{p.role}</div>
+                <div
+                  className="mt-2 h-0.5 w-6 rounded-full"
+                  style={{ background: BRAND.blue }}
+                />
+              </motion.div>
             ))}
           </div>
         </section>
@@ -485,34 +487,27 @@ const Referral = () => {
                 "linear-gradient(135deg, rgba(0,131,247,0.10), rgba(33,8,155,0.08))",
             }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">
-              <div
-                className="relative hidden md:block"
-                style={{
-                  background:
-                    "radial-gradient(60% 50% at 50% 40%, rgba(0,131,247,0.40) 0%, rgba(33,8,155,0.20) 50%, transparent 80%)",
-                }}
-              >
-                <img
-                  src={jonasImg.url}
-                  alt="Jonas Fesser"
-                  className="absolute bottom-0 left-1/2 h-full w-auto -translate-x-1/2 object-contain"
-                />
-              </div>
-              <div className="p-8 md:p-10">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col items-center gap-6 p-8 md:flex-row md:gap-10 md:p-10">
+              <div className="flex flex-col items-center text-center md:items-start md:text-left">
+                <div
+                  className="relative h-36 w-36 overflow-hidden rounded-full ring-2 ring-[#0083F7]/30 md:h-44 md:w-44"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 50% 35%, rgba(0,131,247,0.30), rgba(10,10,20,1) 70%)",
+                  }}
+                >
                   <img
                     src={jonasImg.url}
                     alt="Jonas Fesser"
-                    className="h-12 w-12 rounded-full object-cover object-top md:hidden"
-                    style={{ background: "#1a1a24" }}
+                    className="h-full w-full object-cover object-top"
                   />
-                  <div>
-                    <div className="text-sm font-semibold text-white">Jonas Fesser</div>
-                    <div className="text-xs text-white/55">Geschäftsführer Marketlab Media</div>
-                  </div>
                 </div>
-                <p className="mt-5 text-lg font-medium text-white/85 md:text-xl">
+                <div className="mt-4 text-sm font-bold">Jonas Fesser</div>
+                <div className="mt-0.5 text-xs text-white/55">Geschäftsführer Marketlab Media</div>
+              </div>
+
+              <div className="flex-1">
+                <p className="text-lg font-medium text-white/85 md:text-xl">
                   „Wir bauen Marketlab nach 3 klaren Werten. Daran misst sich jede
                   Entscheidung, jeder Dreh, jedes Reel — und genau deswegen liefern
                   wir Ergebnisse, die andere nicht hinkriegen."
