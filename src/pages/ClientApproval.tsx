@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send, AlertCircle, Calendar, Pencil, ChevronDown, Layers, Trophy, Sparkles, ArrowRight, Gift } from "lucide-react";
+import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send, AlertCircle, Calendar, Pencil, ChevronDown, Layers, Trophy, Sparkles, ArrowRight, Gift, Copy, Share2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -1345,19 +1345,61 @@ const ClientApproval = () => {
                   ))}
                 </div>
 
-                {/* CTA hint */}
-                <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3 mb-5">
-                  <p className="text-[11px] text-white/30 text-center leading-relaxed">
-                    Sprich uns einfach an — wir kümmern uns um den Rest.
-                  </p>
-                </div>
+                {/* Share Link + WhatsApp */}
+                {(() => {
+                  const referralUrl = token
+                    ? `${window.location.origin}/empfehlung/${token}`
+                    : "";
+                  const waText = `Hey, ich bin Kunde bei Marketlab Media und würde dich gerne weiterempfehlen — ich bin selbst super happy mit den Ergebnissen und denke, da kann auch für dich richtig was rumkommen. Schau es dir kurz an: ${referralUrl}`;
+                  const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+                  const handleCopy = async () => {
+                    try {
+                      await navigator.clipboard.writeText(referralUrl);
+                      toast.success("Link kopiert");
+                    } catch {
+                      toast.error("Konnte Link nicht kopieren");
+                    }
+                  };
+                  return (
+                    <div className="space-y-2.5 mb-5">
+                      <p className="text-[11px] text-white/40 text-center mb-1">
+                        Teile diesen Link mit jemandem, der zu uns passt:
+                      </p>
+                      <div className="flex items-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.08] px-3 py-2.5">
+                        <span className="flex-1 truncate text-[11px] text-white/60 font-mono">
+                          {referralUrl}
+                        </span>
+                        <button
+                          onClick={handleCopy}
+                          className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.1] text-white/80 text-[11px] font-semibold px-2.5 py-1.5 transition-all active:scale-95"
+                        >
+                          <Copy className="h-3 w-3" />
+                          Kopieren
+                        </button>
+                      </div>
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-2 w-full rounded-xl text-white text-sm font-semibold py-3 transition-all active:scale-[0.98] hover:opacity-95"
+                        style={{
+                          background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
+                          boxShadow: "0 8px 24px -8px rgba(37, 211, 102, 0.5)",
+                        }}
+                      >
+                        <Share2 className="h-4 w-4" />
+                        Per WhatsApp teilen
+                      </a>
+                    </div>
+                  );
+                })()}
 
                 {/* Close button */}
                 <button
                   onClick={() => setShowReferral(false)}
                   className="w-full rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white/60 hover:text-white text-sm font-medium py-3 transition-all active:scale-[0.98]"
                 >
-                  Verstanden
+                  Schließen
                 </button>
               </div>
             </motion.div>
