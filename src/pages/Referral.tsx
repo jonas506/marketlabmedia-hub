@@ -490,9 +490,8 @@ const Referral = () => {
             <div className="flex flex-col items-center gap-6 p-8 md:flex-row md:gap-10 md:p-10">
               <div className="flex flex-col items-center text-center md:items-start md:text-left">
                 <div
-                  className="relative h-36 w-36 overflow-hidden rounded-full ring-2 md:h-44 md:w-44"
+                  className="relative h-36 w-36 overflow-hidden rounded-full ring-2 ring-[#0083F7]/30 md:h-44 md:w-44"
                   style={{
-                    ringColor: `${BRAND.blue}55`,
                     background:
                       "radial-gradient(circle at 50% 35%, rgba(0,131,247,0.30), rgba(10,10,20,1) 70%)",
                   }}
