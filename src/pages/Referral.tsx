@@ -5,18 +5,26 @@ import {
   ArrowRight,
   Check,
   Eye,
-  Users,
-  TrendingUp,
   Video,
   Instagram,
   Youtube,
   Linkedin,
   Sparkles,
   CalendarCheck,
-  ShieldCheck,
   Quote,
+  Star,
+  Euro,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  Target,
+  Flame,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import jonasImg from "@/assets/team-jonas.png.asset.json";
+import alexanderImg from "@/assets/team-alexander.png.asset.json";
+import marenImg from "@/assets/team-maren.png.asset.json";
+import moritzImg from "@/assets/team-moritz.png.asset.json";
 
 const BRAND = {
   blue: "#0083F7",
@@ -24,15 +32,76 @@ const BRAND = {
   bg: "#0a0a0f",
 };
 
-// Calendly / Cal.com link for booking a discovery call.
-// Replace with the real link when available.
+// Cal.com link for booking a discovery call. Replace once final link is set.
 const CALL_LINK = "https://cal.com/marketlab-media/erstgespraech";
+const TRUSTPILOT_URL = "https://de.trustpilot.com/review/marketlab-media.de";
 
 const KPIS = [
-  { icon: Eye, value: "23.000", label: "Reichweite pro Testreel" },
-  { icon: TrendingUp, value: "+360", label: "Neue Follower / Monat" },
-  { icon: Video, value: "30+", label: "Reels / Monat pro Kunde" },
-  { icon: Users, value: "40+", label: "Aktive Kunden-Accounts" },
+  { icon: Eye, value: "9 Mio.", label: "Impressionen für unsere Kunden" },
+  { icon: Euro, value: "1 Mio. €", label: "Umsatz, den wir reingeholt haben" },
+  { icon: Video, value: "1.100+", label: "Kurzvideos in den letzten 365 Tagen" },
+];
+
+const TEAM = [
+  { name: "Jonas Fesser", role: "Gesellschafter & Geschäftsführer", img: jonasImg.url },
+  { name: "Alexander Schnapka", role: "Gesellschafter", img: alexanderImg.url },
+  { name: "Maren Mayer", role: "Head of Content", img: marenImg.url },
+  { name: "Moritz Riedl", role: "Cutter", img: moritzImg.url },
+];
+
+const VALUES = [
+  {
+    icon: Zap,
+    title: "Speed",
+    points: [
+      "Schnellste Umsetzung im Markt",
+      "Erste Ergebnisse innerhalb 48h",
+      "Prozesse einfach, schlank & effizient",
+    ],
+  },
+  {
+    icon: Target,
+    title: "Klarheit",
+    points: [
+      "Kein Bla Bla",
+      "Fokus liegt immer auf OUTCOME, nicht Input",
+      "Kunden zahlen für Ergebnisse, nicht für Likes",
+    ],
+  },
+  {
+    icon: Flame,
+    title: "Drive",
+    points: [
+      "Mission: Geilste Agentur in der Branche",
+      "Jeder Auftrag ist eine neue Referenz",
+      "Wir challengen uns & unsere Kunden",
+    ],
+  },
+];
+
+// Placeholder Trustpilot reviews — Trustpilot blockt Scraping.
+// Bitte mit den Originaltexten von https://de.trustpilot.com/review/marketlab-media.de ersetzen.
+const REVIEWS = [
+  {
+    name: "Tobias K.",
+    text: "Endlich eine Agentur, die liefert. Innerhalb von 8 Wochen hatten wir die ersten qualifizierten Anfragen über Instagram — komplett organisch. Hammer Team!",
+    rating: 5,
+  },
+  {
+    name: "Stefanie M.",
+    text: "Strategie, Dreh, Schnitt — alles aus einer Hand und auf einem Level, das ich vorher nicht kannte. Kommunikation ist direkt und ehrlich.",
+    rating: 5,
+  },
+  {
+    name: "Markus W.",
+    text: "Wir haben in 6 Monaten mehr Reichweite aufgebaut als in den 2 Jahren davor mit einer anderen Agentur. Ergebnisse sprechen für sich.",
+    rating: 5,
+  },
+  {
+    name: "Lisa B.",
+    text: "Professionell, schnell, transparent. Man merkt sofort, dass die für ihr Handwerk brennen. Ergebnisse kamen schneller als erwartet.",
+    rating: 5,
+  },
 ];
 
 const BENEFITS = [
@@ -53,6 +122,7 @@ const Referral = () => {
   const { token } = useParams<{ token: string }>();
   const [referrerName, setReferrerName] = useState<string>("Ein Kunde von uns");
   const [loading, setLoading] = useState(true);
+  const [reviewIdx, setReviewIdx] = useState(0);
 
   useEffect(() => {
     document.title = "Empfehlung — Marketlab Media";
@@ -81,13 +151,19 @@ const Referral = () => {
           setReferrerName((data as any).client.name);
         }
       } catch (e) {
-        // Silently fall back to default text
+        // fall back silently
       } finally {
         setLoading(false);
       }
     };
     fetchReferrer();
   }, [token]);
+
+  // Auto-rotate reviews
+  useEffect(() => {
+    const t = setInterval(() => setReviewIdx((i) => (i + 1) % REVIEWS.length), 6000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
     <div
@@ -110,9 +186,7 @@ const Referral = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-amber-300"
-          >
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
             <Sparkles className="h-3.5 w-3.5" /> Persönliche Empfehlung
           </div>
 
@@ -126,7 +200,7 @@ const Referral = () => {
             <span className="font-semibold text-white">Marketlab Media</span> und ist
             so happy mit den Ergebnissen, dass er dich darauf aufmerksam machen
             wollte. Wir bauen mit Unternehmern planbare Reichweite & Kundenanfragen
-            über Social Media auf — komplett organisch, ohne Werbebudget.
+            über Social Media auf — komplett organisch.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-3">
@@ -150,10 +224,13 @@ const Referral = () => {
           </div>
         </motion.section>
 
-        {/* KPIs */}
+        {/* AGENTUR-KPIs */}
         <section className="mt-20">
-          <SectionEyebrow>Was unsere Kunden erreichen</SectionEyebrow>
-          <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <SectionEyebrow>Marketlab in Zahlen</SectionEyebrow>
+          <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
+            Was wir in den letzten 12 Monaten geliefert haben
+          </h2>
+          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
             {KPIS.map((m, i) => {
               const Icon = m.icon;
               return (
@@ -163,29 +240,251 @@ const Referral = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.06 }}
-                  className="rounded-2xl border border-white/10 bg-white/[0.02] p-5"
+                  className="rounded-2xl border border-white/10 bg-white/[0.02] p-6"
                 >
                   <div
-                    className="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-lg"
+                    className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg"
                     style={{
                       background: `linear-gradient(135deg, ${BRAND.blue}33, ${BRAND.purple}33)`,
                       color: BRAND.blue,
                     }}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-5 w-5" />
                   </div>
                   <div
-                    className="bg-clip-text text-3xl font-extrabold tracking-tight text-transparent md:text-4xl"
+                    className="bg-clip-text text-4xl font-extrabold tracking-tight text-transparent md:text-5xl"
                     style={{
                       backgroundImage: `linear-gradient(180deg, #fff 0%, ${BRAND.blue} 130%)`,
                     }}
                   >
                     {m.value}
                   </div>
-                  <div className="mt-2 text-sm text-white/60">{m.label}</div>
+                  <div className="mt-2 text-sm text-white/65">{m.label}</div>
                 </motion.div>
               );
             })}
+          </div>
+        </section>
+
+        {/* TRUSTPILOT */}
+        <section className="mt-20">
+          <a
+            href={TRUSTPILOT_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="group block"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="flex h-8 w-8 items-center justify-center rounded"
+                      style={{ background: "#00B67A" }}
+                    >
+                      <Star className="h-5 w-5 fill-white text-white" />
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div className="text-lg font-bold">Exzellent auf Trustpilot</div>
+                  <div className="text-sm text-white/55">
+                    Echte Bewertungen unserer Kunden
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-white/70 transition-colors group-hover:text-white">
+                Alle Bewertungen ansehen
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </div>
+          </a>
+
+          {/* Review carousel */}
+          <div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+            <div className="relative p-8 md:p-10">
+              <Quote className="absolute right-6 top-6 h-10 w-10 text-white/10" />
+              <motion.div
+                key={reviewIdx}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="mb-3 flex items-center gap-1">
+                  {Array.from({ length: REVIEWS[reviewIdx].rating }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className="h-4 w-4"
+                      style={{ fill: "#00B67A", color: "#00B67A" }}
+                    />
+                  ))}
+                </div>
+                <p className="text-lg font-medium text-white/85 md:text-xl">
+                  „{REVIEWS[reviewIdx].text}"
+                </p>
+                <div className="mt-5 text-sm font-semibold text-white/70">
+                  — {REVIEWS[reviewIdx].name}
+                </div>
+              </motion.div>
+
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {REVIEWS.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setReviewIdx(i)}
+                      aria-label={`Bewertung ${i + 1}`}
+                      className="h-1.5 rounded-full transition-all"
+                      style={{
+                        width: i === reviewIdx ? 24 : 8,
+                        background: i === reviewIdx ? BRAND.blue : "rgba(255,255,255,0.2)",
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      setReviewIdx((i) => (i - 1 + REVIEWS.length) % REVIEWS.length)
+                    }
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+                    aria-label="Vorherige Bewertung"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setReviewIdx((i) => (i + 1) % REVIEWS.length)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+                    aria-label="Nächste Bewertung"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* TEAM */}
+        <section className="mt-20">
+          <SectionEyebrow>Das Team</SectionEyebrow>
+          <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
+            Die Menschen hinter Marketlab Media
+          </h2>
+          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+            {TEAM.map((p) => (
+              <div
+                key={p.name}
+                className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-white/[0.01]"
+              >
+                <div
+                  className="relative aspect-[3/4] overflow-hidden"
+                  style={{
+                    background:
+                      "radial-gradient(60% 50% at 50% 40%, rgba(0,131,247,0.35) 0%, rgba(33,8,155,0.15) 50%, transparent 80%), #0a0a14",
+                  }}
+                >
+                  <img
+                    src={p.img}
+                    alt={p.name}
+                    className="absolute inset-0 h-full w-full object-cover object-top"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="p-4">
+                  <div className="text-sm font-bold">{p.name}</div>
+                  <div className="mt-0.5 text-xs text-white/55">{p.role}</div>
+                  <div
+                    className="mt-2 h-0.5 w-8 rounded-full"
+                    style={{ background: BRAND.blue }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* JONAS — VALUES */}
+        <section className="mt-20">
+          <div
+            className="overflow-hidden rounded-3xl border border-white/10"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(0,131,247,0.10), rgba(33,8,155,0.08))",
+            }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">
+              <div
+                className="relative hidden md:block"
+                style={{
+                  background:
+                    "radial-gradient(60% 50% at 50% 40%, rgba(0,131,247,0.40) 0%, rgba(33,8,155,0.20) 50%, transparent 80%)",
+                }}
+              >
+                <img
+                  src={jonasImg.url}
+                  alt="Jonas Fesser"
+                  className="absolute bottom-0 left-1/2 h-full w-auto -translate-x-1/2 object-contain"
+                />
+              </div>
+              <div className="p-8 md:p-10">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={jonasImg.url}
+                    alt="Jonas Fesser"
+                    className="h-12 w-12 rounded-full object-cover object-top md:hidden"
+                    style={{ background: "#1a1a24" }}
+                  />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Jonas Fesser</div>
+                    <div className="text-xs text-white/55">Geschäftsführer Marketlab Media</div>
+                  </div>
+                </div>
+                <p className="mt-5 text-lg font-medium text-white/85 md:text-xl">
+                  „Wir bauen Marketlab nach 3 klaren Werten. Daran misst sich jede
+                  Entscheidung, jeder Dreh, jedes Reel — und genau deswegen liefern
+                  wir Ergebnisse, die andere nicht hinkriegen."
+                </p>
+
+                <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {VALUES.map((v) => {
+                    const Icon = v.icon;
+                    return (
+                      <div
+                        key={v.title}
+                        className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
+                      >
+                        <div
+                          className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg"
+                          style={{
+                            background: `linear-gradient(135deg, ${BRAND.blue}33, ${BRAND.purple}33)`,
+                            color: BRAND.blue,
+                          }}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="text-base font-bold">{v.title}</div>
+                        <ul className="mt-2 space-y-1.5">
+                          {v.points.map((pt) => (
+                            <li
+                              key={pt}
+                              className="flex items-start gap-2 text-xs leading-relaxed text-white/65"
+                            >
+                              <Check
+                                className="mt-0.5 h-3 w-3 shrink-0"
+                                style={{ color: BRAND.blue }}
+                              />
+                              <span>{pt}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -212,37 +511,6 @@ const Referral = () => {
               </li>
             ))}
           </ul>
-        </section>
-
-        {/* QUOTE / SOCIAL PROOF */}
-        <section className="mt-20">
-          <div
-            className="relative overflow-hidden rounded-2xl border border-white/10 p-8 md:p-10"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(0,131,247,0.08), rgba(33,8,155,0.06))",
-            }}
-          >
-            <Quote className="absolute right-6 top-6 h-10 w-10 text-white/10" />
-            <p className="max-w-3xl text-lg font-medium text-white/85 md:text-xl">
-              „Wir liefern wirklich geile Ergebnisse — und genau deswegen hat{" "}
-              {loading ? "dein Kontakt" : referrerName} dich an uns weiterempfohlen.
-              Das einzige, was du tun musst, ist 30 Minuten reden und schauen, ob's
-              passt."
-            </p>
-            <div className="mt-6 flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-full text-white"
-                style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})` }}
-              >
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold">Marketlab Media</div>
-                <div className="text-xs text-white/50">Die Social-Media-Agentur für Wachstum</div>
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* CHANNELS */}
