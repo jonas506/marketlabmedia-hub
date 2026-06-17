@@ -36,8 +36,20 @@ const BRAND = {
 const CALL_LINK = "https://cal.com/marketlab-media/erstgespraech";
 const TRUSTPILOT_URL = "https://de.trustpilot.com/review/marketlab-media.de";
 
-const KPIS = [
-  { icon: Eye, value: "9 Mio.", label: "Impressionen für unsere Kunden" },
+// Live-Impressionen-Counter:
+// Anker auf 17.06.2026 00:00 UTC mit 9.000.000 Impressionen.
+// Wächst 24/7 mit Ø 50.000 / Tag (≈ 0,5787 / ms).
+const IMPRESSIONS_ANCHOR_MS = Date.UTC(2026, 5, 17, 0, 0, 0);
+const IMPRESSIONS_BASE = 9_000_000;
+const IMPRESSIONS_PER_DAY = 50_000;
+const IMPRESSIONS_PER_MS = IMPRESSIONS_PER_DAY / 86_400_000;
+
+const getLiveImpressions = () =>
+  Math.floor(
+    IMPRESSIONS_BASE + Math.max(0, Date.now() - IMPRESSIONS_ANCHOR_MS) * IMPRESSIONS_PER_MS,
+  );
+
+const STATIC_KPIS = [
   { icon: Euro, value: "1 Mio. €", label: "Umsatz, den wir reingeholt haben" },
   { icon: Video, value: "1.100+", label: "Kurzvideos in den letzten 365 Tagen" },
 ];
