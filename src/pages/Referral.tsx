@@ -191,9 +191,13 @@ const Referral = () => {
     return () => clearInterval(t);
   }, []);
 
-  // Helper: emotionaler Italic-Accent (Playfair Display)
-  const accent = "italic font-medium" as const;
-  const accentStyle: React.CSSProperties = { fontFamily: "'Playfair Display', serif" };
+  // Helper: emotionaler Italic-Accent (Playfair Display + Brand Blue Glow)
+  const accent = "italic font-semibold" as const;
+  const accentStyle: React.CSSProperties = {
+    fontFamily: "'Playfair Display', serif",
+    color: BRAND.blue,
+    textShadow: `0 0 24px ${BRAND.blue}66, 0 0 48px ${BRAND.blue}33`,
+  };
 
   return (
     <div
