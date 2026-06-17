@@ -177,6 +177,13 @@ const Referral = () => {
     return () => clearInterval(t);
   }, []);
 
+  // Live impressions counter — tickt alle 80ms hoch
+  const [impressions, setImpressions] = useState<number>(() => getLiveImpressions());
+  useEffect(() => {
+    const t = setInterval(() => setImpressions(getLiveImpressions()), 80);
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <div
       className="min-h-screen w-full text-white"
