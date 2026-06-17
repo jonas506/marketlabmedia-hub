@@ -297,9 +297,6 @@ const Referral = () => {
               <div className="relative mt-2 text-sm text-white/65">
                 Impressionen für unsere Kunden
               </div>
-              <div className="relative mt-1 text-xs text-white/40">
-                +50.000 / Tag · läuft 24/7
-              </div>
             </motion.div>
 
             {STATIC_KPIS.map((m, i) => {
