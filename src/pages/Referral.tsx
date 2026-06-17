@@ -36,8 +36,20 @@ const BRAND = {
 const CALL_LINK = "https://cal.com/marketlab-media/erstgespraech";
 const TRUSTPILOT_URL = "https://de.trustpilot.com/review/marketlab-media.de";
 
-const KPIS = [
-  { icon: Eye, value: "9 Mio.", label: "Impressionen für unsere Kunden" },
+// Live-Impressionen-Counter:
+// Anker auf 17.06.2026 00:00 UTC mit 9.000.000 Impressionen.
+// Wächst 24/7 mit Ø 50.000 / Tag (≈ 0,5787 / ms).
+const IMPRESSIONS_ANCHOR_MS = Date.UTC(2026, 5, 17, 0, 0, 0);
+const IMPRESSIONS_BASE = 9_000_000;
+const IMPRESSIONS_PER_DAY = 50_000;
+const IMPRESSIONS_PER_MS = IMPRESSIONS_PER_DAY / 86_400_000;
+
+const getLiveImpressions = () =>
+  Math.floor(
+    IMPRESSIONS_BASE + Math.max(0, Date.now() - IMPRESSIONS_ANCHOR_MS) * IMPRESSIONS_PER_MS,
+  );
+
+const STATIC_KPIS = [
   { icon: Euro, value: "1 Mio. €", label: "Umsatz, den wir reingeholt haben" },
   { icon: Video, value: "1.100+", label: "Kurzvideos in den letzten 365 Tagen" },
 ];
@@ -165,6 +177,13 @@ const Referral = () => {
     return () => clearInterval(t);
   }, []);
 
+  // Live impressions counter — tickt alle 80ms hoch
+  const [impressions, setImpressions] = useState<number>(() => getLiveImpressions());
+  useEffect(() => {
+    const t = setInterval(() => setImpressions(getLiveImpressions()), 80);
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <div
       className="min-h-screen w-full text-white"
@@ -231,7 +250,59 @@ const Referral = () => {
             Was wir in den letzten 12 Monaten geliefert haben
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {KPIS.map((m, i) => {
+            {/* Live impressions counter */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="relative overflow-hidden rounded-2xl border p-6"
+              style={{
+                borderColor: `${BRAND.blue}55`,
+                background: `linear-gradient(135deg, ${BRAND.blue}14, ${BRAND.purple}10)`,
+              }}
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl"
+                style={{ background: `${BRAND.blue}33` }}
+              />
+              <div className="relative flex items-center justify-between">
+                <div
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.blue}33, ${BRAND.purple}33)`,
+                    color: BRAND.blue,
+                  }}
+                >
+                  <Eye className="h-5 w-5" />
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/70">
+                  <span
+                    className="h-1.5 w-1.5 animate-pulse rounded-full"
+                    style={{ background: BRAND.blue, boxShadow: `0 0 8px ${BRAND.blue}` }}
+                  />
+                  Live
+                </div>
+              </div>
+              <div
+                className="relative mt-4 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent tabular-nums md:text-5xl"
+                style={{
+                  backgroundImage: `linear-gradient(180deg, #fff 0%, ${BRAND.blue} 130%)`,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {impressions.toLocaleString("de-DE")}
+              </div>
+              <div className="relative mt-2 text-sm text-white/65">
+                Impressionen für unsere Kunden
+              </div>
+              <div className="relative mt-1 text-xs text-white/40">
+                +50.000 / Tag · läuft 24/7
+              </div>
+            </motion.div>
+
+            {STATIC_KPIS.map((m, i) => {
               const Icon = m.icon;
               return (
                 <motion.div
@@ -239,7 +310,7 @@ const Referral = () => {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.06 }}
+                  transition={{ duration: 0.4, delay: (i + 1) * 0.06 }}
                   className="rounded-2xl border border-white/10 bg-white/[0.02] p-6"
                 >
                   <div
