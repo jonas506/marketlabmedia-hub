@@ -29,7 +29,7 @@ const PieceInternalComments: React.FC<Props> = ({ pieceId, clientId, team }) => 
   const [body, setBody] = useState("");
   const [showMention, setShowMention] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const profileMap = React.useMemo(() => {
@@ -47,7 +47,7 @@ const PieceInternalComments: React.FC<Props> = ({ pieceId, clientId, team }) => 
     setComments((data as Comment[]) || []);
   };
 
-  useEffect(() => { if (open) load(); }, [open, pieceId]);
+  useEffect(() => { load(); }, [pieceId]);
 
   const handleChange = (v: string) => {
     setBody(v);
