@@ -25,7 +25,7 @@ import OnboardingBanner from "@/components/OnboardingBanner";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
-  ArrowLeft, Globe, FileText, Copy, Check, ExternalLink,
+  ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
   CalendarDays, Smartphone, ClipboardList, Presentation, Sparkles,
   TrendingUp, Clock, Info, Menu,
