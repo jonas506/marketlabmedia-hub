@@ -58,6 +58,7 @@ const ClientDetail = () => {
   const { role } = useAuth();
   const now = new Date();
   const [copied, setCopied] = useState(false);
+  const [referralCopied, setReferralCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [activeModule, setActiveModule] = useState("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
