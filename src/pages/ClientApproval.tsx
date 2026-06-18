@@ -559,7 +559,7 @@ const ClientApproval = () => {
   const currentPreviewLink = currentPiece?.preview_link ?? null;
   const allPreviewLinks = (currentPiece?.preview_link ?? "").split("\n").map(l => l.trim()).filter(Boolean);
   const isCurrentLoading = currentPiece ? actionLoading === currentPiece.id : false;
-  const isRevisionBlocked = (currentPiece?.revision_count ?? 0) >= 2;
+  const isRevisionBlocked = false;
   const isTyping = showFeedback && commentText.trim().length > 0;
   const hasEmbedPreview = !!currentEmbed;
 
