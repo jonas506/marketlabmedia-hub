@@ -851,21 +851,7 @@ const ClientApproval = () => {
                   )}
 
 
-                  {isRevisionBlocked ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4 flex items-start gap-3"
-                    >
-                      <AlertCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-amber-300">Maximale Revisionen erreicht</p>
-                        <p className="text-xs text-white/35 mt-1 leading-relaxed">
-                          Du hast bereits 2× Feedback gegeben. Bitte kontaktiere dein Marketlab-Team direkt für weitere Änderungen.
-                        </p>
-                      </div>
-                    </motion.div>
-                  ) : (
+                  <AnimatePresence mode="wait">
                     <AnimatePresence mode="wait">
                       {showFeedback ? (
                         <motion.div
@@ -876,12 +862,7 @@ const ClientApproval = () => {
                           className="overflow-hidden"
                         >
                           <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-3 space-y-2.5">
-                            {(currentPiece?.revision_count ?? 0) === 1 && (
-                              <div className="flex items-center gap-2 text-amber-400/70 text-[11px] font-medium px-1">
-                                <AlertCircle className="h-3 w-3" />
-                                Letzte Revision — danach bitte direkt mit dem Team sprechen
-                              </div>
-                            )}
+                            {/* Revision limit removed — unlimited feedback allowed */}
                             <div className="flex items-center gap-2">
                               {commentTimestamp != null ? (
                                 <button
@@ -981,13 +962,10 @@ const ClientApproval = () => {
                         >
                           <MessageSquare className="h-3.5 w-3.5" />
                           Feedback hinzufügen
-                          {(currentPiece?.revision_count ?? 0) > 0 && (
-                            <span className="text-[10px] opacity-50">({currentPiece?.revision_count}/2)</span>
-                          )}
                         </motion.button>
                       )}
                     </AnimatePresence>
-                  )}
+                  </AnimatePresence>
                 </div>
               )}
 
@@ -1001,7 +979,7 @@ const ClientApproval = () => {
                           <Send className="h-3.5 w-3.5" />
                           Kommentar wird automatisch gespeichert
                         </div>
-                      ) : currentComments.length > 0 && !isRevisionBlocked ? (
+                      ) : currentComments.length > 0 ? (
                         <>
                           {currentPiece?.team_reply ? (
                             <>
@@ -1157,7 +1135,7 @@ const ClientApproval = () => {
                             <Send className="h-3.5 w-3.5" />
                             Kommentar wird automatisch gespeichert
                           </div>
-                        ) : currentComments.length > 0 && !isRevisionBlocked ? (
+                        ) : currentComments.length > 0 ? (
                           <>
                             {currentPiece?.team_reply ? (
                               <>
