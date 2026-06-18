@@ -25,7 +25,7 @@ import OnboardingBanner from "@/components/OnboardingBanner";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
-  ArrowLeft, Globe, FileText, Copy, Check, ExternalLink,
+  ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
   CalendarDays, Smartphone, ClipboardList, Presentation, Sparkles,
   TrendingUp, Clock, Info, Menu,
@@ -58,6 +58,7 @@ const ClientDetail = () => {
   const { role } = useAuth();
   const now = new Date();
   const [copied, setCopied] = useState(false);
+  const [referralCopied, setReferralCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [activeModule, setActiveModule] = useState("dashboard");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -361,6 +362,35 @@ const ClientDetail = () => {
                   }}
                 >
                   {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                </Button>
+              </div>
+            )}
+            {canEdit && approvalToken && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-xs h-7 text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    const url = `https://hub.marketlab-media.de/empfehlung/${approvalToken}`;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <Share2 className="h-3 w-3" />
+                  <span className="hidden sm:inline">Weiterempfehlen</span>
+                </Button>
+                <Button
+                  variant={referralCopied ? "default" : "ghost"}
+                  size="sm"
+                  className={cn("h-7 w-7 p-0 transition-all", referralCopied && "bg-primary text-primary-foreground")}
+                  onClick={() => {
+                    const url = `https://hub.marketlab-media.de/empfehlung/${approvalToken}`;
+                    navigator.clipboard.writeText(url);
+                    setReferralCopied(true);
+                    setTimeout(() => setReferralCopied(false), 2000);
+                  }}
+                >
+                  {referralCopied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                 </Button>
               </div>
             )}
