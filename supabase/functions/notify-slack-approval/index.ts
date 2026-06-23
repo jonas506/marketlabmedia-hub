@@ -79,6 +79,7 @@ Deno.serve(async (req) => {
         tag: "Posten",
         priority: "normal",
         status: "offen",
+        content_piece_id,
       });
       if (taskError) {
         console.error("Failed to create posting task:", taskError);
