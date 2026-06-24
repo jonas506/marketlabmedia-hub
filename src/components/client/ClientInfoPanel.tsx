@@ -87,6 +87,33 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     toast.success("Datei gelöscht");
   };
 
+  const handleLogoUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (!file.type.startsWith("image/")) {
+      toast.error("Bitte eine Bilddatei wählen");
+      return;
+    }
+    setIsUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${client.id}/logo/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("landing-page-assets").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("landing-page-assets").getPublicUrl(path);
+      const { error: updErr } = await supabase.from("clients").update({ logo_url: urlData.publicUrl } as any).eq("id", client.id);
+      if (updErr) throw updErr;
+      await qc.invalidateQueries({ queryKey: ["client", client.id] });
+      qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
+      toast.success("Logo aktualisiert");
+    } catch (err: any) {
+      toast.error("Fehler beim Hochladen: " + (err.message || "Unbekannt"));
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  };
+
   const downloadFile = async (url: string, filename: string) => {
     const resp = await fetch(url);
     const blob = await resp.blob();
