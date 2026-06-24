@@ -22,6 +22,7 @@ import ClientChecklists from "@/components/client/ClientChecklists";
 import ClientDashboard from "@/components/client/ClientDashboard";
 import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
 import OnboardingBanner from "@/components/OnboardingBanner";
+import ArchiveClientButton from "@/components/ArchiveClientButton";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
