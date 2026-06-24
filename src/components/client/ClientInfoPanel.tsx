@@ -34,7 +34,9 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
   const [ciAssets, setCiAssets] = useState<CIAsset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
   const { user, role } = useAuth();
   const [approvalToken, setApprovalToken] = useState<string | null>(null);
@@ -83,6 +85,33 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
     await supabase.storage.from("landing-page-assets").remove([asset.path]);
     setCiAssets((prev) => prev.filter((a) => a.path !== asset.path));
     toast.success("Datei gelöscht");
+  };
+
+  const handleLogoUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (!file.type.startsWith("image/")) {
+      toast.error("Bitte eine Bilddatei wählen");
+      return;
+    }
+    setIsUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${client.id}/logo/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("landing-page-assets").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("landing-page-assets").getPublicUrl(path);
+      const { error: updErr } = await supabase.from("clients").update({ logo_url: urlData.publicUrl } as any).eq("id", client.id);
+      if (updErr) throw updErr;
+      await qc.invalidateQueries({ queryKey: ["client", client.id] });
+      qc.invalidateQueries({ queryKey: ["clients-dashboard"] });
+      toast.success("Logo aktualisiert");
+    } catch (err: any) {
+      toast.error("Fehler beim Hochladen: " + (err.message || "Unbekannt"));
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
   };
 
   const downloadFile = async (url: string, filename: string) => {
@@ -182,16 +211,33 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
       <input ref={fileInputRef} type="file" className="hidden" multiple
         accept="image/*,.svg,.pdf,.ai,.eps,.ttf,.otf,.woff,.woff2"
         onChange={(e) => handleUpload(e.target.files)} />
+      <input ref={logoInputRef} type="file" className="hidden" accept="image/*"
+        onChange={(e) => handleLogoUpload(e.target.files)} />
 
       <CollapsibleTrigger asChild>
         <button className="w-full flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-3.5 hover:border-primary/20 transition-all text-left group">
-          {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 font-display text-base font-bold text-primary">
-              {client.name.charAt(0)}
-            </div>
-          )}
+          <div className="relative h-10 w-10 shrink-0">
+            {client.logo_url ? (
+              <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 font-display text-base font-bold text-primary">
+                {client.name.charAt(0)}
+              </div>
+            )}
+            {canEdit && (
+              <span
+                role="button"
+                tabIndex={0}
+                title="Logo ändern"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); logoInputRef.current?.click(); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); logoInputRef.current?.click(); } }}
+                className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity ring-2 ring-card cursor-pointer"
+              >
+                {isUploadingLogo ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Pencil className="h-2.5 w-2.5" />}
+              </span>
+            )}
+          </div>
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <h1 className="text-lg font-display font-bold tracking-tight truncate">{client.name}</h1>
