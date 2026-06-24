@@ -211,16 +211,33 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
       <input ref={fileInputRef} type="file" className="hidden" multiple
         accept="image/*,.svg,.pdf,.ai,.eps,.ttf,.otf,.woff,.woff2"
         onChange={(e) => handleUpload(e.target.files)} />
+      <input ref={logoInputRef} type="file" className="hidden" accept="image/*"
+        onChange={(e) => handleLogoUpload(e.target.files)} />
 
       <CollapsibleTrigger asChild>
         <button className="w-full flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-3.5 hover:border-primary/20 transition-all text-left group">
-          {client.logo_url ? (
-            <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 font-display text-base font-bold text-primary">
-              {client.name.charAt(0)}
-            </div>
-          )}
+          <div className="relative h-10 w-10 shrink-0">
+            {client.logo_url ? (
+              <img src={client.logo_url} alt={client.name} className="h-10 w-10 rounded-lg object-contain bg-white p-1 ring-1 ring-border" />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 font-display text-base font-bold text-primary">
+                {client.name.charAt(0)}
+              </div>
+            )}
+            {canEdit && (
+              <span
+                role="button"
+                tabIndex={0}
+                title="Logo ändern"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); logoInputRef.current?.click(); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); logoInputRef.current?.click(); } }}
+                className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity ring-2 ring-card cursor-pointer"
+              >
+                {isUploadingLogo ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Pencil className="h-2.5 w-2.5" />}
+              </span>
+            )}
+          </div>
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <h1 className="text-lg font-display font-bold tracking-tight truncate">{client.name}</h1>
