@@ -34,7 +34,9 @@ const ClientInfoPanel: React.FC<ClientInfoPanelProps> = ({ client, canEdit }) =>
   const [ciAssets, setCiAssets] = useState<CIAsset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
   const { user, role } = useAuth();
   const [approvalToken, setApprovalToken] = useState<string | null>(null);
