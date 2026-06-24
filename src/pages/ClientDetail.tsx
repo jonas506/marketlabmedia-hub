@@ -337,6 +337,13 @@ const ClientDetail = () => {
                 </Button>
               </>
             )}
+            {role === "admin" && (
+              <ArchiveClientButton
+                clientId={client.id}
+                clientName={client.name}
+                isArchived={client.status === "archived"}
+              />
+            )}
             {canEdit && approvalToken && (
               <div className="flex items-center gap-1">
                 <Button
