@@ -22,6 +22,7 @@ import ClientChecklists from "@/components/client/ClientChecklists";
 import ClientDashboard from "@/components/client/ClientDashboard";
 import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
 import OnboardingBanner from "@/components/OnboardingBanner";
+import ArchiveClientButton from "@/components/ArchiveClientButton";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -335,6 +336,13 @@ const ClientDetail = () => {
                   {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
                 </Button>
               </>
+            )}
+            {role === "admin" && (
+              <ArchiveClientButton
+                clientId={client.id}
+                clientName={client.name}
+                isArchived={client.status === "archived"}
+              />
             )}
             {canEdit && approvalToken && (
               <div className="flex items-center gap-1">
