@@ -54,7 +54,8 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const moduleId = url.searchParams.get("module_id");
-    const authHeader = req.headers.get("Authorization");
+    const queryToken = url.searchParams.get("t");
+    const authHeader = req.headers.get("Authorization") || (queryToken ? `Bearer ${queryToken}` : null);
     if (!moduleId || !authHeader) {
       return new Response("Missing params", { status: 400, headers: corsHeaders });
     }
