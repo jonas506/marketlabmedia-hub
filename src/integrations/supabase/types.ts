@@ -1190,6 +1190,115 @@ export type Database = {
           },
         ]
       }
+      course_modules: {
+        Row: {
+          created_at: string
+          description: string | null
+          drive_file_id: string | null
+          duration_seconds: number | null
+          id: string
+          is_published: boolean
+          resources: Json
+          sort_order: number
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          drive_file_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_published?: boolean
+          resources?: Json
+          sort_order?: number
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          drive_file_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_published?: boolean
+          resources?: Json
+          sort_order?: number
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      course_progress: {
+        Row: {
+          completed_at: string | null
+          last_position_seconds: number
+          module_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          last_position_seconds?: number
+          module_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          last_position_seconds?: number
+          module_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "course_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_students: {
+        Row: {
+          activated_at: string | null
+          client_id: string | null
+          email: string
+          full_name: string | null
+          invited_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          client_id?: string | null
+          email: string
+          full_name?: string | null
+          invited_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          client_id?: string | null
+          email?: string
+          full_name?: string | null
+          invited_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_students_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_activities: {
         Row: {
           ai_extracted: boolean | null
@@ -3388,6 +3497,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_course_student: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string

@@ -43,6 +43,9 @@ import InternalReviewSwiper from "./pages/InternalReviewSwiper";
 import StundenUebersicht from "./pages/StundenUebersicht";
 import Pricing from "./pages/Pricing";
 import Referral from "./pages/Referral";
+import CourseHome from "./pages/CourseHome";
+import CoursePlayer from "./pages/CoursePlayer";
+import CourseAdmin from "./pages/admin/CourseAdmin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -125,6 +128,9 @@ const App = () => (
                   <Route path="/interne-freigabe" element={<ProtectedRoute><InternalReview /></ProtectedRoute>} />
                   <Route path="/interne-freigabe/swiper" element={<ProtectedRoute><InternalReviewSwiper /></ProtectedRoute>} />
                   <Route path="/stunden-uebersicht" element={<ProtectedRoute><StundenUebersicht /></ProtectedRoute>} />
+                  <Route path="/kurs" element={<ProtectedRoute><CourseHome /></ProtectedRoute>} />
+                  <Route path="/kurs/:moduleId" element={<ProtectedRoute><CoursePlayer /></ProtectedRoute>} />
+                  <Route path="/admin/kurs" element={<ProtectedRoute><CourseAdmin /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
