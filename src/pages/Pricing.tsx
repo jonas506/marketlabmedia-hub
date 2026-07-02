@@ -98,59 +98,52 @@ const COMPARISON: TableSection[] = [
   {
     title: "Content-Produktion",
     rows: [
-      { label: "Testreels pro Monat", values: [15, 30, 30, 30, 30] },
-      { label: "Reels mit Drehtag", values: ["—", "—", "—", 20, 20] },
-      { label: "Carousels pro Monat", values: ["—", "—", 10, 10, 10] },
-      { label: "Story-Sequenzen", values: [false, false, true, true, true] },
-      { label: "Cover-Design & On-Screen-Text", values: [true, true, true, true, true] },
-      { label: "Untertitel & Sounddesign", values: [true, true, true, true, true] },
+      { label: "Testreels pro Monat", values: [15, 30, 30, 30] },
+      { label: "Reels mit Drehtag", values: ["—", "—", "—", 20] },
+      { label: "Carousels pro Monat", values: ["—", "—", 10, 10] },
+      { label: "Story-Sequenzen", values: [false, false, true, true] },
+      { label: "Cover-Design & On-Screen-Text", values: [true, true, true, true] },
+      { label: "Untertitel & Sounddesign", values: [true, true, true, true] },
     ],
   },
   {
     title: "Drehtag-Setup",
     rows: [
-      { label: "Drehtage pro Monat", values: ["—", "—", "—", 1, 1] },
-      { label: "Equipment (Kamera, Licht, Ton)", values: [false, false, false, true, true] },
-      { label: "Regie & Hook-Coaching am Set", values: [false, false, false, true, true] },
-      { label: "B-Roll & Cutaway-Material", values: [false, false, false, true, true] },
+      { label: "Drehtage pro Monat", values: ["—", "—", "—", 1] },
+      { label: "Equipment (Kamera, Licht, Ton)", values: [false, false, false, true] },
+      { label: "Regie & Hook-Coaching am Set", values: [false, false, false, true] },
+      { label: "B-Roll & Cutaway-Material", values: [false, false, false, true] },
     ],
   },
   {
     title: "Distribution",
     rows: [
-      { label: "Posting & Veröffentlichung", values: [true, true, true, true, true] },
-      { label: "Caption-Texting inkl. CTA", values: [true, true, true, true, true] },
-      { label: "Hashtag- & SEO-Optimierung", values: [true, true, true, true, true] },
-      { label: "Reporting-Dashboard", values: [true, true, true, true, true] },
+      { label: "Posting & Veröffentlichung", values: [true, true, true, true] },
+      { label: "Caption-Texting inkl. CTA", values: [true, true, true, true] },
+      { label: "Hashtag- & SEO-Optimierung", values: [true, true, true, true] },
+      { label: "Reporting-Dashboard", values: [true, true, true, true] },
     ],
   },
   {
     title: "Strategie & Steuerung",
     rows: [
-      { label: "Datengetriebene Content-Strategie", values: [true, true, true, true, true] },
-      { label: "Monatliche Performance-Analyse", values: [true, true, true, true, true] },
-      { label: "Hook- & Format-Testing", values: [true, true, true, true, true] },
-      { label: "Kurs: Aktueller Markt & Handy-Filming", values: [true, true, true, true, true] },
-      { label: "Eigener Ansprechpartner", values: [true, true, true, true, true] },
-    ],
-  },
-  {
-    title: "Paid Ads",
-    rows: [
-      { label: "Ads schalten & verwalten", values: [false, false, false, false, true] },
-      { label: "Creative-Testing der Top-Reels", values: [false, false, false, false, true] },
-      { label: "Audience- & Retargeting-Setup", values: [false, false, false, false, true] },
+      { label: "Datengetriebene Content-Strategie", values: [true, true, true, true] },
+      { label: "Monatliche Performance-Analyse", values: [true, true, true, true] },
+      { label: "Hook- & Format-Testing", values: [true, true, true, true] },
+      { label: "Kurs: Aktueller Markt & Handy-Filming", values: [true, true, true, true] },
+      { label: "Eigener Ansprechpartner", values: [true, true, true, true] },
     ],
   },
   {
     title: "Kommerziell",
     rows: [
-      { label: "Einmaliges Setup", values: ["2.000 €", "2.000 €", "2.000 €", "2.000 €", "2.000 €"] },
-      { label: "Mindestlaufzeit", values: ["3 Monate", "3 Monate", "3 Monate", "3 Monate", "3 Monate"] },
-      { label: "Rabatt bei 12 Monaten", values: ["10 %", "10 %", "10 %", "10 %", "10 %"] },
+      { label: "Einmaliges Setup", values: ["2.000 €", "2.000 €", "2.000 €", "2.000 €"] },
+      { label: "Mindestlaufzeit", values: ["3 Monate", "3 Monate", "3 Monate", "3 Monate"] },
+      { label: "Rabatt bei 12 Monaten", values: ["10 %", "10 %", "10 %", "10 %"] },
     ],
   },
 ];
+
 
 const ADDONS = [
   { name: "Drehtag on top (ohne Editing)", price: "1.500 €" },
