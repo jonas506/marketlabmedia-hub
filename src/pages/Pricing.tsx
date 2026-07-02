@@ -237,7 +237,7 @@ const Pricing = () => {
             <BillingToggle annual={annual} onChange={setAnnual} />
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((p, i) => (
               <PlanCard key={p.key} plan={p} annual={annual} index={i} />
             ))}
