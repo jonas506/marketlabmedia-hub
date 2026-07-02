@@ -86,20 +86,8 @@ const PLANS: Plan[] = [
       "Carousels & Storys",
     ],
   },
-  {
-    key: "elite",
-    name: "Elite",
-    tagline: "Maximale Reichweite + bezahlte Verstärkung",
-    price3: 6500,
-    price12: 5850,
-    setup: 2000,
-    highlights: [
-      "Alles aus Plus",
-      "Paid Ads schalten & optimieren",
-      "Creative- & Retargeting-Setup",
-    ],
-  },
 ];
+
 
 // Comparison table data
 type Cell = string | number | boolean;
