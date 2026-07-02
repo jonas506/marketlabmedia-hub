@@ -244,6 +244,83 @@ const Pricing = () => {
           </div>
         </section>
 
+        {/* ADS — STANDALONE PACKAGE */}
+        <section className="mt-20">
+          <SectionHeader eyebrow="Paid Ads" title="Ads Management — separat buchbar" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5 }}
+            className="mt-10 overflow-hidden rounded-2xl border p-8 md:p-10"
+            style={{
+              borderColor: `${BRAND.blue}55`,
+              background: `linear-gradient(135deg, ${BRAND.blue}14, ${BRAND.purple}14)`,
+              boxShadow: `0 20px 60px -25px ${BRAND.blue}66`,
+            }}
+          >
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.2fr_1fr] md:items-center">
+              <div>
+                <div
+                  className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
+                  style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})` }}
+                >
+                  <TrendingUp className="h-3 w-3" /> Add-On Paket
+                </div>
+                <h3 className="text-2xl font-extrabold md:text-3xl">
+                  Bezahlte Verstärkung deiner Top-Reels
+                </h3>
+                <p className="mt-3 text-white/60">
+                  Wir schalten und optimieren deine Kampagnen auf Meta &amp; Co.,
+                  testen Creatives, bauen Audiences und retargeten warme Kontakte —
+                  damit dein bester Content nicht nur organisch, sondern auch bezahlt performt.
+                </p>
+                <ul className="mt-6 flex flex-col gap-2">
+                  {[
+                    "Kampagnen-Setup, Tracking & Pixel-Integration",
+                    "Creative-Testing der Top-Reels",
+                    "Audience- & Retargeting-Setup",
+                    "Laufende Optimierung & monatliches Reporting",
+                  ].map((h) => (
+                    <li key={h} className="flex items-start gap-2 text-sm text-white/85">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: BRAND.blue }} />
+                      <span>{h}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="text-xs uppercase tracking-wider text-white/50">
+                    Setup pro Kampagne
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold tracking-tight">1.500</span>
+                    <span className="text-lg text-white/60">€</span>
+                    <span className="ml-2 text-xs text-white/45">einmalig</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="text-xs uppercase tracking-wider text-white/50">
+                    Verwaltung
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold tracking-tight">750</span>
+                    <span className="text-lg text-white/60">€</span>
+                    <span className="ml-2 text-xs text-white/45">/ Monat</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-white/40">
+                  Werbebudget wird separat direkt an die Plattform gezahlt.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+
+
         {/* ADD-ONS — DIRECTLY UNDER PACKAGES */}
         <section className="mt-20">
           <SectionHeader eyebrow="Add-Ons" title="Jederzeit zubuchbar" />
