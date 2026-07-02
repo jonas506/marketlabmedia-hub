@@ -86,20 +86,8 @@ const PLANS: Plan[] = [
       "Carousels & Storys",
     ],
   },
-  {
-    key: "elite",
-    name: "Elite",
-    tagline: "Maximale Reichweite + bezahlte Verstärkung",
-    price3: 6500,
-    price12: 5850,
-    setup: 2000,
-    highlights: [
-      "Alles aus Plus",
-      "Paid Ads schalten & optimieren",
-      "Creative- & Retargeting-Setup",
-    ],
-  },
 ];
+
 
 // Comparison table data
 type Cell = string | number | boolean;
@@ -110,59 +98,52 @@ const COMPARISON: TableSection[] = [
   {
     title: "Content-Produktion",
     rows: [
-      { label: "Testreels pro Monat", values: [15, 30, 30, 30, 30] },
-      { label: "Reels mit Drehtag", values: ["—", "—", "—", 20, 20] },
-      { label: "Carousels pro Monat", values: ["—", "—", 10, 10, 10] },
-      { label: "Story-Sequenzen", values: [false, false, true, true, true] },
-      { label: "Cover-Design & On-Screen-Text", values: [true, true, true, true, true] },
-      { label: "Untertitel & Sounddesign", values: [true, true, true, true, true] },
+      { label: "Testreels pro Monat", values: [15, 30, 30, 30] },
+      { label: "Reels mit Drehtag", values: ["—", "—", "—", 20] },
+      { label: "Carousels pro Monat", values: ["—", "—", 10, 10] },
+      { label: "Story-Sequenzen", values: [false, false, true, true] },
+      { label: "Cover-Design & On-Screen-Text", values: [true, true, true, true] },
+      { label: "Untertitel & Sounddesign", values: [true, true, true, true] },
     ],
   },
   {
     title: "Drehtag-Setup",
     rows: [
-      { label: "Drehtage pro Monat", values: ["—", "—", "—", 1, 1] },
-      { label: "Equipment (Kamera, Licht, Ton)", values: [false, false, false, true, true] },
-      { label: "Regie & Hook-Coaching am Set", values: [false, false, false, true, true] },
-      { label: "B-Roll & Cutaway-Material", values: [false, false, false, true, true] },
+      { label: "Drehtage pro Monat", values: ["—", "—", "—", 1] },
+      { label: "Equipment (Kamera, Licht, Ton)", values: [false, false, false, true] },
+      { label: "Regie & Hook-Coaching am Set", values: [false, false, false, true] },
+      { label: "B-Roll & Cutaway-Material", values: [false, false, false, true] },
     ],
   },
   {
     title: "Distribution",
     rows: [
-      { label: "Posting & Veröffentlichung", values: [true, true, true, true, true] },
-      { label: "Caption-Texting inkl. CTA", values: [true, true, true, true, true] },
-      { label: "Hashtag- & SEO-Optimierung", values: [true, true, true, true, true] },
-      { label: "Reporting-Dashboard", values: [true, true, true, true, true] },
+      { label: "Posting & Veröffentlichung", values: [true, true, true, true] },
+      { label: "Caption-Texting inkl. CTA", values: [true, true, true, true] },
+      { label: "Hashtag- & SEO-Optimierung", values: [true, true, true, true] },
+      { label: "Reporting-Dashboard", values: [true, true, true, true] },
     ],
   },
   {
     title: "Strategie & Steuerung",
     rows: [
-      { label: "Datengetriebene Content-Strategie", values: [true, true, true, true, true] },
-      { label: "Monatliche Performance-Analyse", values: [true, true, true, true, true] },
-      { label: "Hook- & Format-Testing", values: [true, true, true, true, true] },
-      { label: "Kurs: Aktueller Markt & Handy-Filming", values: [true, true, true, true, true] },
-      { label: "Eigener Ansprechpartner", values: [true, true, true, true, true] },
-    ],
-  },
-  {
-    title: "Paid Ads",
-    rows: [
-      { label: "Ads schalten & verwalten", values: [false, false, false, false, true] },
-      { label: "Creative-Testing der Top-Reels", values: [false, false, false, false, true] },
-      { label: "Audience- & Retargeting-Setup", values: [false, false, false, false, true] },
+      { label: "Datengetriebene Content-Strategie", values: [true, true, true, true] },
+      { label: "Monatliche Performance-Analyse", values: [true, true, true, true] },
+      { label: "Hook- & Format-Testing", values: [true, true, true, true] },
+      { label: "Kurs: Aktueller Markt & Handy-Filming", values: [true, true, true, true] },
+      { label: "Eigener Ansprechpartner", values: [true, true, true, true] },
     ],
   },
   {
     title: "Kommerziell",
     rows: [
-      { label: "Einmaliges Setup", values: ["2.000 €", "2.000 €", "2.000 €", "2.000 €", "2.000 €"] },
-      { label: "Mindestlaufzeit", values: ["3 Monate", "3 Monate", "3 Monate", "3 Monate", "3 Monate"] },
-      { label: "Rabatt bei 12 Monaten", values: ["10 %", "10 %", "10 %", "10 %", "10 %"] },
+      { label: "Einmaliges Setup", values: ["2.000 €", "2.000 €", "2.000 €", "2.000 €"] },
+      { label: "Mindestlaufzeit", values: ["3 Monate", "3 Monate", "3 Monate", "3 Monate"] },
+      { label: "Rabatt bei 12 Monaten", values: ["10 %", "10 %", "10 %", "10 %"] },
     ],
   },
 ];
+
 
 const ADDONS = [
   { name: "Drehtag on top (ohne Editing)", price: "1.500 €" },
@@ -256,12 +237,89 @@ const Pricing = () => {
             <BillingToggle annual={annual} onChange={setAnnual} />
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((p, i) => (
               <PlanCard key={p.key} plan={p} annual={annual} index={i} />
             ))}
           </div>
         </section>
+
+        {/* ADS — STANDALONE PACKAGE */}
+        <section className="mt-20">
+          <SectionHeader eyebrow="Paid Ads" title="Ads Management — separat buchbar" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5 }}
+            className="mt-10 overflow-hidden rounded-2xl border p-8 md:p-10"
+            style={{
+              borderColor: `${BRAND.blue}55`,
+              background: `linear-gradient(135deg, ${BRAND.blue}14, ${BRAND.purple}14)`,
+              boxShadow: `0 20px 60px -25px ${BRAND.blue}66`,
+            }}
+          >
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.2fr_1fr] md:items-center">
+              <div>
+                <div
+                  className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
+                  style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})` }}
+                >
+                  <TrendingUp className="h-3 w-3" /> Add-On Paket
+                </div>
+                <h3 className="text-2xl font-extrabold md:text-3xl">
+                  Bezahlte Verstärkung deiner Top-Reels
+                </h3>
+                <p className="mt-3 text-white/60">
+                  Wir schalten und optimieren deine Kampagnen auf Meta &amp; Co.,
+                  testen Creatives, bauen Audiences und retargeten warme Kontakte —
+                  damit dein bester Content nicht nur organisch, sondern auch bezahlt performt.
+                </p>
+                <ul className="mt-6 flex flex-col gap-2">
+                  {[
+                    "Kampagnen-Setup, Tracking & Pixel-Integration",
+                    "Creative-Testing der Top-Reels",
+                    "Audience- & Retargeting-Setup",
+                    "Laufende Optimierung & monatliches Reporting",
+                  ].map((h) => (
+                    <li key={h} className="flex items-start gap-2 text-sm text-white/85">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: BRAND.blue }} />
+                      <span>{h}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="text-xs uppercase tracking-wider text-white/50">
+                    Setup pro Kampagne
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold tracking-tight">1.500</span>
+                    <span className="text-lg text-white/60">€</span>
+                    <span className="ml-2 text-xs text-white/45">einmalig</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="text-xs uppercase tracking-wider text-white/50">
+                    Verwaltung
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold tracking-tight">750</span>
+                    <span className="text-lg text-white/60">€</span>
+                    <span className="ml-2 text-xs text-white/45">/ Monat</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-white/40">
+                  Werbebudget wird separat direkt an die Plattform gezahlt.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+
 
         {/* ADD-ONS — DIRECTLY UNDER PACKAGES */}
         <section className="mt-20">
