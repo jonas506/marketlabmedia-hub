@@ -146,6 +146,7 @@ const COMPARISON: TableSection[] = [
 
 
 const ADDONS = [
+  { name: "Exposé-Bilder (pro Wohnung / Haus)", price: "150 € netto + Anfahrt" },
   { name: "Drehtag on top (ohne Editing)", price: "1.500 €" },
   { name: "Halbtag (ohne Editing)", price: "800 €" },
   { name: "Testimonial (inkl. 2–3 Clips)", price: "700 € + 0,40 €/km" },
