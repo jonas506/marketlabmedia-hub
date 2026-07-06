@@ -70,7 +70,7 @@ const PLANS: Plan[] = [
     highlights: [
       "45 Testreels + 10 Carousels",
       "Story-Sequenzen",
-      "~540 Follower + mehr Engagement",
+      "~600 Follower + mehr Engagement",
     ],
   },
   {
@@ -81,7 +81,7 @@ const PLANS: Plan[] = [
     price12: 4050,
     setup: 2000,
     highlights: [
-      "45 Testreels + 20 Drehtag-Reels",
+      "45 Testreels + 20 Drehtag-Reels + 10 Carousels",
       "Monatlicher Drehtag inkl.",
       "Carousels & Storys",
     ],
@@ -146,7 +146,7 @@ const COMPARISON: TableSection[] = [
 
 
 const ADDONS = [
-  { name: "Exposé-Bilder (pro Wohnung / Haus)", price: "150 € netto + Anfahrt" },
+  { name: "Exposé-Bilder (pro Wohnung / Haus)", price: "150 € + Anfahrt" },
   { name: "Drehtag on top (ohne Editing)", price: "1.500 €" },
   { name: "Halbtag (ohne Editing)", price: "800 €" },
   { name: "Testimonial (inkl. 2–3 Clips)", price: "700 € + 0,40 €/km" },
