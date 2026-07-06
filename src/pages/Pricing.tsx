@@ -222,7 +222,7 @@ const Pricing = () => {
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: `linear-gradient(90deg, ${BRAND.blue}, #7B5CFF)` }}
             >
-              planbar, skalierbar, ohne Werbebudget.
+              planbar, skalierbar, für organisches Wachstum.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-white/60 md:text-xl">
@@ -315,6 +315,7 @@ const Pricing = () => {
                 </div>
                 <p className="text-[11px] text-white/40">
                   Werbebudget wird separat direkt an die Plattform gezahlt.
+                  Für eine grundlegende Kampagne empfehlen wir ca. 20–40 €/Tag.
                 </p>
               </div>
             </div>
