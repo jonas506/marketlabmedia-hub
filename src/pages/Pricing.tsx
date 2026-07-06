@@ -228,7 +228,8 @@ const Pricing = () => {
           <p className="mt-6 max-w-2xl text-lg text-white/60 md:text-xl">
             Mindestlaufzeit 3 Monate · 12-Monats-Laufzeit ={" "}
             <span className="font-semibold text-white">10 % Rabatt</span> ·
-            Einmaliges Setup <span className="font-semibold text-white">2.000 €</span>.
+            Einmaliges Setup <span className="font-semibold text-white">2.000 €</span>
+            <span className="text-white/40"> · Alle Preise sind Nettopreise.</span>
           </p>
         </motion.section>
 
