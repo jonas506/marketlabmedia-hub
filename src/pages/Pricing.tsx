@@ -54,7 +54,7 @@ const PLANS: Plan[] = [
     price12: 2250,
     setup: 2000,
     highlights: [
-      "45 Testreels / Monat",
+      "45 Testreels + 5 Carousels / Monat",
       "Posting & Strategie",
       "~540 neue Follower / Monat",
     ],
@@ -100,7 +100,7 @@ const COMPARISON: TableSection[] = [
     rows: [
       { label: "Testreels pro Monat", values: [30, 45, 45, 45] },
       { label: "Reels mit Drehtag", values: ["—", "—", "—", 20] },
-      { label: "Carousels pro Monat", values: ["—", "—", 10, 10] },
+      { label: "Carousels pro Monat", values: ["—", 5, 10, 10] },
       { label: "Story-Sequenzen", values: [false, false, true, true] },
       { label: "Cover-Design & On-Screen-Text", values: [true, true, true, true] },
       { label: "Untertitel & Sounddesign", values: [true, true, true, true] },
