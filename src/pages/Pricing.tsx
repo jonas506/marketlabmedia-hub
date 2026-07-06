@@ -54,9 +54,9 @@ const PLANS: Plan[] = [
     price12: 2250,
     setup: 2000,
     highlights: [
-      "60 Testreels / Monat",
+      "45 Testreels / Monat",
       "Posting & Strategie",
-      "~720 neue Follower / Monat",
+      "~540 neue Follower / Monat",
     ],
   },
   {
@@ -68,9 +68,9 @@ const PLANS: Plan[] = [
     setup: 2000,
     popular: true,
     highlights: [
-      "30 Testreels + 10 Carousels",
+      "45 Testreels + 10 Carousels",
       "Story-Sequenzen",
-      "~360 Follower + mehr Engagement",
+      "~540 Follower + mehr Engagement",
     ],
   },
   {
@@ -81,7 +81,7 @@ const PLANS: Plan[] = [
     price12: 4050,
     setup: 2000,
     highlights: [
-      "30 Testreels + 20 Drehtag-Reels",
+      "45 Testreels + 20 Drehtag-Reels",
       "Monatlicher Drehtag inkl.",
       "Carousels & Storys",
     ],
@@ -98,7 +98,7 @@ const COMPARISON: TableSection[] = [
   {
     title: "Content-Produktion",
     rows: [
-      { label: "Testreels pro Monat", values: [30, 60, 30, 30] },
+      { label: "Testreels pro Monat", values: [30, 45, 45, 45] },
       { label: "Reels mit Drehtag", values: ["—", "—", "—", 20] },
       { label: "Carousels pro Monat", values: ["—", "—", 10, 10] },
       { label: "Story-Sequenzen", values: [false, false, true, true] },
