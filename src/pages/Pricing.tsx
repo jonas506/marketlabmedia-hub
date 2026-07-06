@@ -13,6 +13,7 @@ import {
   Eye,
   TrendingUp,
 } from "lucide-react";
+import logo from "@/assets/logo-dark.png";
 
 const BRAND = {
   blue: "#0083F7",
@@ -210,6 +211,11 @@ const Pricing = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
+          <img
+            src={logo}
+            alt="Marketlab Media Logo"
+            className="mb-6 h-10 w-auto object-contain"
+          />
           <p
             className="mb-4 text-sm font-semibold uppercase tracking-[0.18em]"
             style={{ color: BRAND.blue }}
