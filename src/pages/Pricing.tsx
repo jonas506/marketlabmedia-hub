@@ -13,7 +13,7 @@ import {
   Eye,
   TrendingUp,
 } from "lucide-react";
-import logo from "@/assets/logo-dark.png";
+import logo from "@/assets/logo-light.png";
 
 const BRAND = {
   blue: "#0083F7",
