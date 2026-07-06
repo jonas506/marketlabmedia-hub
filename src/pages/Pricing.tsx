@@ -43,7 +43,7 @@ const PLANS: Plan[] = [
     highlights: [
       "30 Testreels / Overlayposts / Monat",
       "Posting & Strategie",
-      "~180 neue Follower / Monat",
+      "~360 neue Follower / Monat",
     ],
   },
   {
