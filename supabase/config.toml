@@ -13,3 +13,5 @@ project_id = "winsekbpsgwtwfdehyms"
     verify_jwt = false
   [functions.course-video-proxy]
     verify_jwt = false
+  [functions.offer-public]
+    verify_jwt = false
