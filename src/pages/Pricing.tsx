@@ -448,6 +448,24 @@ const Pricing = () => {
           </p>
         </section>
       </div>
+
+      {isAdmin && (
+        <>
+          <button
+            onClick={() => setConfigOpen(true)}
+            className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white shadow-2xl transition-transform hover:scale-105"
+            style={{ background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.purple})`, boxShadow: `0 20px 40px -10px ${BRAND.blue}88` }}
+          >
+            <Wand2 className="h-4 w-4" /> Angebot konfigurieren
+          </button>
+          <OfferConfigurator
+            open={configOpen}
+            onClose={() => setConfigOpen(false)}
+            plans={PLANS.map((p) => ({ key: p.key, name: p.name, price3: p.price3, price12: p.price12, setup: p.setup }))}
+            addons={ADDONS}
+          />
+        </>
+      )}
     </div>
   );
 };
