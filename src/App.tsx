@@ -46,6 +46,7 @@ import Referral from "./pages/Referral";
 import CourseHome from "./pages/CourseHome";
 import CoursePlayer from "./pages/CoursePlayer";
 import CourseAdmin from "./pages/admin/CourseAdmin";
+import OfferView from "./pages/OfferView";
 
 const queryClient = new QueryClient({
   defaultOptions: {
