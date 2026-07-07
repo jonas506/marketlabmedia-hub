@@ -2524,6 +2524,96 @@ export type Database = {
         }
         Relationships: []
       }
+      offers: {
+        Row: {
+          accepted_at: string | null
+          addons: Json
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          custom_body: string
+          discount_pct: number
+          duration_months: number
+          id: string
+          lead_id: string | null
+          monthly_price: number
+          plan_key: string
+          plan_name: string
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string | null
+          setup_price: number
+          status: string
+          subject: string
+          token: string
+          updated_at: string
+          viewed_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          addons?: Json
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_body?: string
+          discount_pct?: number
+          duration_months: number
+          id?: string
+          lead_id?: string | null
+          monthly_price: number
+          plan_key: string
+          plan_name: string
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          setup_price?: number
+          status?: string
+          subject: string
+          token?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          addons?: Json
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_body?: string
+          discount_pct?: number
+          duration_months?: number
+          id?: string
+          lead_id?: string | null
+          monthly_price?: number
+          plan_key?: string
+          plan_name?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          setup_price?: number
+          status?: string
+          subject?: string
+          token?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       piece_internal_comments: {
         Row: {
           author_id: string
