@@ -179,6 +179,9 @@ const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 
 const Pricing = () => {
   const [annual, setAnnual] = useState(false);
+  const [configOpen, setConfigOpen] = useState(false);
+  const { role } = useAuth();
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     document.title = "Pakete & Preise — Marketlab Media";
