@@ -14,6 +14,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 import logo from "@/assets/logo-light.png";
+import { useAuth } from "@/contexts/AuthContext";
+import OfferConfigurator from "@/components/pricing/OfferConfigurator";
+import { Wand2 } from "lucide-react";
 
 const BRAND = {
   blue: "#0083F7",
