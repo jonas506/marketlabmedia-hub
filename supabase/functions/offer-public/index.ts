@@ -65,8 +65,8 @@ Deno.serve(async (req) => {
         let leadName: string | null = null;
         if (offer.lead_id) {
           const { data: lead } = await supabase
-            .from('crm_leads').select('company_name, first_name, last_name').eq('id', offer.lead_id).maybeSingle();
-          leadName = lead?.company_name || [lead?.first_name, lead?.last_name].filter(Boolean).join(' ') || null;
+            .from('crm_leads').select('name, contact_name').eq('id', offer.lead_id).maybeSingle();
+          leadName = lead?.name || lead?.contact_name || null;
         }
         const clientName = leadName || offer.recipient_name || offer.recipient_email;
         const { data: newClient, error: cErr } = await supabase
