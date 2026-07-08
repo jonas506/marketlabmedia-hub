@@ -121,7 +121,7 @@ export default function CRMLeadDetail() {
   const [contactOpen, setContactOpen] = useState(true);
   const [tasksOpen, setTasksOpen] = useState(true);
   const [smartImportOpen, setSmartImportOpen] = useState(false);
-  const [settingCallOpen, setSettingCallOpen] = useState(false);
+  const [settingCallOpen, setSettingCallOpen] = useState(true);
   const [editingSettingIdx, setEditingSettingIdx] = useState<number | null>(null);
 
   const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
