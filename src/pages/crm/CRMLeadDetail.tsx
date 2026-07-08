@@ -50,6 +50,16 @@ const FILTER_MAP: Record<string, string | null> = {
   Alle: null, Notizen: "note", Anrufe: "call", Emails: "email", Meetings: "sms",
 };
 
+const SETTING_CALL_QUESTIONS = [
+  "Wie kommst du gerade an deine Kunden? (Empfehlung, Netzwerk, Ads, Bestand?)",
+  "Wie viele Abschlüsse bzw. wie viel Umsatz machst du aktuell im Monat?",
+  "Verkaufst du feste Objekte oder eher das Konzept (Steuern sparen, Altersvorsorge) und suchst dann das passende Objekt?",
+  "Wenn du morgen 5 qualifizierte Termine mehr hättest – könntest du die abarbeiten und closen?",
+  "Was ist dein Ziel für die nächsten 6–12 Monate – in Abschlüssen oder Volumen?",
+  "Was hält dich aktuell davon ab, das schon zu erreichen?",
+  "Hast du für Marketing/Leadgenerierung schon mal Geld in die Hand genommen – und wenn ja, in welchem Rahmen?",
+] as const;
+
 interface LeadData {
   id: string;
   name: string;
