@@ -818,6 +818,64 @@ export default function CRMLeadDetail() {
                 )}
               </div>
 
+              {/* SETTING CALL */}
+              <div className="border-b border-border">
+                <button
+                  onClick={() => setSettingCallOpen(!settingCallOpen)}
+                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {settingCallOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <Sparkles className="h-3 w-3" />
+                  Setting Call
+                  <span className="ml-1 text-[10px] text-muted-foreground">
+                    {Object.values(lead.setting_call_answers || {}).filter(v => v && String(v).trim()).length}/{SETTING_CALL_QUESTIONS.length}
+                  </span>
+                </button>
+                {settingCallOpen && (
+                  <div className="px-4 pb-4 space-y-3">
+                    {SETTING_CALL_QUESTIONS.map((q, idx) => {
+                      const key = `q${idx + 1}`;
+                      const answers = lead.setting_call_answers || {};
+                      const value = answers[key] || "";
+                      const isEditing = editingSettingIdx === idx;
+                      return (
+                        <div key={key} className="space-y-1">
+                          <p className="text-[11px] font-medium text-foreground/80 leading-snug">
+                            {idx + 1}. {q}
+                          </p>
+                          {isEditing ? (
+                            <Textarea
+                              autoFocus
+                              defaultValue={value}
+                              rows={2}
+                              className="bg-background border-border text-xs"
+                              placeholder="Antwort..."
+                              onBlur={async (e) => {
+                                const next = { ...answers, [key]: e.target.value };
+                                setLead(p => p ? { ...p, setting_call_answers: next } : p);
+                                setEditingSettingIdx(null);
+                                await saveField("setting_call_answers", next);
+                              }}
+                            />
+                          ) : (
+                            <button
+                              onClick={() => setEditingSettingIdx(idx)}
+                              className="text-xs text-left w-full min-h-[24px] px-2 py-1 rounded hover:bg-muted/30 transition-colors"
+                            >
+                              {value ? (
+                                <span className="text-foreground/70 whitespace-pre-wrap">{value}</span>
+                              ) : (
+                                <span className="text-muted-foreground/50">Antwort hinzufügen...</span>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* TO-DOS */}
               <div className="border-b border-border">
                 <button
