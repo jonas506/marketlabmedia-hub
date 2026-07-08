@@ -50,6 +50,16 @@ const FILTER_MAP: Record<string, string | null> = {
   Alle: null, Notizen: "note", Anrufe: "call", Emails: "email", Meetings: "sms",
 };
 
+const SETTING_CALL_QUESTIONS = [
+  "Wie kommst du gerade an deine Kunden? (Empfehlung, Netzwerk, Ads, Bestand?)",
+  "Wie viele Abschlüsse bzw. wie viel Umsatz machst du aktuell im Monat?",
+  "Verkaufst du feste Objekte oder eher das Konzept (Steuern sparen, Altersvorsorge) und suchst dann das passende Objekt?",
+  "Wenn du morgen 5 qualifizierte Termine mehr hättest – könntest du die abarbeiten und closen?",
+  "Was ist dein Ziel für die nächsten 6–12 Monate – in Abschlüssen oder Volumen?",
+  "Was hält dich aktuell davon ab, das schon zu erreichen?",
+  "Hast du für Marketing/Leadgenerierung schon mal Geld in die Hand genommen – und wenn ja, in welchem Rahmen?",
+] as const;
+
 interface LeadData {
   id: string;
   name: string;
@@ -67,6 +77,7 @@ interface LeadData {
   instagram_handle: string | null;
   linkedin_url: string | null;
   ai_summary: string | null;
+  setting_call_answers: Record<string, string> | null;
 }
 
 interface Activity {
@@ -110,6 +121,8 @@ export default function CRMLeadDetail() {
   const [contactOpen, setContactOpen] = useState(true);
   const [tasksOpen, setTasksOpen] = useState(true);
   const [smartImportOpen, setSmartImportOpen] = useState(false);
+  const [settingCallOpen, setSettingCallOpen] = useState(false);
+  const [editingSettingIdx, setEditingSettingIdx] = useState<number | null>(null);
 
   const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -801,6 +814,64 @@ export default function CRMLeadDetail() {
                         </button>
                       )}
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* SETTING CALL */}
+              <div className="border-b border-border">
+                <button
+                  onClick={() => setSettingCallOpen(!settingCallOpen)}
+                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {settingCallOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <Sparkles className="h-3 w-3" />
+                  Setting Call
+                  <span className="ml-1 text-[10px] text-muted-foreground">
+                    {Object.values(lead.setting_call_answers || {}).filter(v => v && String(v).trim()).length}/{SETTING_CALL_QUESTIONS.length}
+                  </span>
+                </button>
+                {settingCallOpen && (
+                  <div className="px-4 pb-4 space-y-3">
+                    {SETTING_CALL_QUESTIONS.map((q, idx) => {
+                      const key = `q${idx + 1}`;
+                      const answers = lead.setting_call_answers || {};
+                      const value = answers[key] || "";
+                      const isEditing = editingSettingIdx === idx;
+                      return (
+                        <div key={key} className="space-y-1">
+                          <p className="text-[11px] font-medium text-foreground/80 leading-snug">
+                            {idx + 1}. {q}
+                          </p>
+                          {isEditing ? (
+                            <Textarea
+                              autoFocus
+                              defaultValue={value}
+                              rows={2}
+                              className="bg-background border-border text-xs"
+                              placeholder="Antwort..."
+                              onBlur={async (e) => {
+                                const next = { ...answers, [key]: e.target.value };
+                                setLead(p => p ? { ...p, setting_call_answers: next } : p);
+                                setEditingSettingIdx(null);
+                                await saveField("setting_call_answers", next);
+                              }}
+                            />
+                          ) : (
+                            <button
+                              onClick={() => setEditingSettingIdx(idx)}
+                              className="text-xs text-left w-full min-h-[24px] px-2 py-1 rounded hover:bg-muted/30 transition-colors"
+                            >
+                              {value ? (
+                                <span className="text-foreground/70 whitespace-pre-wrap">{value}</span>
+                              ) : (
+                                <span className="text-muted-foreground/50">Antwort hinzufügen...</span>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
