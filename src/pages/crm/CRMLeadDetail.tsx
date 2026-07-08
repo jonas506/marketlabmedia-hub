@@ -77,6 +77,7 @@ interface LeadData {
   instagram_handle: string | null;
   linkedin_url: string | null;
   ai_summary: string | null;
+  setting_call_answers: Record<string, string> | null;
 }
 
 interface Activity {
