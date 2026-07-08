@@ -1638,6 +1638,7 @@ export type Database = {
           next_step_date: string | null
           notes: string | null
           profile_image_url: string | null
+          setting_call_answers: Json
           source: string | null
           stage: string
           status_id: string | null
@@ -1667,6 +1668,7 @@ export type Database = {
           next_step_date?: string | null
           notes?: string | null
           profile_image_url?: string | null
+          setting_call_answers?: Json
           source?: string | null
           stage?: string
           status_id?: string | null
@@ -1696,6 +1698,7 @@ export type Database = {
           next_step_date?: string | null
           notes?: string | null
           profile_image_url?: string | null
+          setting_call_answers?: Json
           source?: string | null
           stage?: string
           status_id?: string | null
