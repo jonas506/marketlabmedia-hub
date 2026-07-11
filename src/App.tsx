@@ -45,6 +45,7 @@ import Pricing from "./pages/Pricing";
 import Referral from "./pages/Referral";
 import CourseHome from "./pages/CourseHome";
 import CoursePlayer from "./pages/CoursePlayer";
+import CourseSignup from "./pages/CourseSignup";
 import CourseAdmin from "./pages/admin/CourseAdmin";
 import OfferView from "./pages/OfferView";
 
@@ -102,6 +103,7 @@ const App = () => (
                   <Route path="/pakete" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/angebot/:token" element={<OfferView />} />
+                  <Route path="/kurs/anmelden" element={<CourseSignup />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/clients" element={<ProtectedRoute><ClientsList /></ProtectedRoute>} />
                   <Route path="/posting-kalender" element={<ProtectedRoute><PostingCalendarPage /></ProtectedRoute>} />

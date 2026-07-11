@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Trash2, ArrowUp, ArrowDown, Mail, Loader2 } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, Mail, Loader2, Link2, Check } from "lucide-react";
 
 interface Module {
   id: string;
@@ -175,7 +175,14 @@ const CourseAdmin = () => {
         </TabsContent>
 
         <TabsContent value="students" className="mt-4">
-          <div className="flex justify-end mb-3">
+          <div className="flex flex-wrap gap-2 justify-between items-center mb-3">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs">
+              <Link2 className="h-3.5 w-3.5 text-primary" />
+              <span className="font-mono text-muted-foreground truncate max-w-[280px]">{`${window.location.origin}/kurs/anmelden`}</span>
+              <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/kurs/anmelden`); toast.success("Link kopiert"); }}>
+                <Check className="h-3.5 w-3.5" />
+              </Button>
+            </div>
             <Button onClick={() => setInviteOpen(true)} size="sm" className="gap-1"><Mail className="h-4 w-4" /> Einladen</Button>
           </div>
           <div className="rounded-lg border border-border bg-card divide-y divide-border">
