@@ -31,16 +31,7 @@ Deno.serve(async (req) => {
     const html = await renderAsync(React.createElement(InviteEmail, props))
     const text = await renderAsync(React.createElement(InviteEmail, props), { plainText: true })
 
-    const url = lovableApiKey
-      ? 'https://connector-gateway.lovable.dev/resend/emails'
-      : 'https://api.resend.com/emails'
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${lovableApiKey || resendApiKey}`,
-    }
-    if (lovableApiKey) headers['X-Connection-Api-Key'] = resendApiKey
-
-    const res = await fetch(url, {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers,
       body: JSON.stringify({
