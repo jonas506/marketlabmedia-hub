@@ -95,10 +95,23 @@ const Login = () => {
           {error && (
             <p className="text-sm text-destructive font-body">{error}</p>
           )}
+          {info && (
+            <p className="text-sm text-primary font-body">{info}</p>
+          )}
 
           <Button type="submit" className="w-full font-mono text-sm" disabled={loading}>
-            {loading ? "ANMELDEN..." : "ANMELDEN"}
+            {loading
+              ? (mode === "signup" ? "REGISTRIEREN..." : "ANMELDEN...")
+              : (mode === "signup" ? "REGISTRIEREN" : "ANMELDEN")}
           </Button>
+
+          <button
+            type="button"
+            onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setInfo(""); }}
+            className="w-full text-center text-xs font-mono text-muted-foreground hover:text-foreground"
+          >
+            {mode === "signin" ? "NOCH KEIN KONTO? REGISTRIEREN" : "SCHON EIN KONTO? ANMELDEN"}
+          </button>
 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
