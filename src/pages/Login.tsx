@@ -14,7 +14,9 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   if (authLoading) return null;
   if (user) return <Navigate to="/" replace />;
@@ -22,7 +24,27 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setInfo("");
     setLoading(true);
+    if (mode === "signup") {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/` },
+      });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+      if (data.session) {
+        navigate("/", { replace: true });
+      } else {
+        setInfo("Bestätigungs-E-Mail verschickt. Bitte Postfach prüfen.");
+        setLoading(false);
+      }
+      return;
+    }
     const { error } = await signIn(email, password);
     if (error) {
       setError(error.message);
