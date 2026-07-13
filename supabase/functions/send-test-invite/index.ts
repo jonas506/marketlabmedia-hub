@@ -1,6 +1,5 @@
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
-import { createClient } from 'npm:@supabase/supabase-js@2'
 import { InviteEmail } from '../_shared/email-templates/invite.tsx'
 
 const corsHeaders = {
@@ -10,8 +9,7 @@ const corsHeaders = {
 
 const SITE_NAME = 'marketlabmedia-hub'
 const ROOT_DOMAIN = 'marketlabmedia.de'
-const SENDER_DOMAIN = 'notify.marketlabmedia.de'
-const FROM_DOMAIN = 'marketlabmedia.de'
+const FROM_ADDRESS = `${SITE_NAME} <noreply@${ROOT_DOMAIN}>`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
@@ -19,6 +17,10 @@ Deno.serve(async (req) => {
   try {
     const { to, confirmationUrl } = await req.json()
     if (!to) throw new Error('to required')
+
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
+    if (!resendApiKey) throw new Error('RESEND_API_KEY not configured')
 
     const props = {
       siteName: SITE_NAME,
@@ -29,39 +31,27 @@ Deno.serve(async (req) => {
     const html = await renderAsync(React.createElement(InviteEmail, props))
     const text = await renderAsync(React.createElement(InviteEmail, props), { plainText: true })
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    )
-
-    const messageId = crypto.randomUUID()
-
-    await supabase.from('email_send_log').insert({
-      message_id: messageId,
-      template_name: 'invite',
-      recipient_email: to,
-      status: 'pending',
-    })
-
-    const { error } = await supabase.rpc('enqueue_email', {
-      queue_name: 'auth_emails',
-      payload: {
-        run_id: crypto.randomUUID(),
-        message_id: messageId,
-        to,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: FROM_ADDRESS,
+        to: [to],
         subject: "You've been invited",
         html,
         text,
-        purpose: 'transactional',
-        label: 'invite',
-        queued_at: new Date().toISOString(),
-      },
+      }),
     })
-    if (error) throw error
+    const result = await res.json()
+    if (!res.ok) {
+      console.error('resend error', res.status, result)
+      throw new Error(`Resend failed: ${JSON.stringify(result)}`)
+    }
 
-    return new Response(JSON.stringify({ success: true, messageId }), {
+    return new Response(JSON.stringify({ success: true, id: result.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
