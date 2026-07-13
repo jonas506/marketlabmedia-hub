@@ -14,7 +14,9 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   if (authLoading) return null;
   if (user) return <Navigate to="/" replace />;
@@ -22,7 +24,27 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setInfo("");
     setLoading(true);
+    if (mode === "signup") {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/` },
+      });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+      if (data.session) {
+        navigate("/", { replace: true });
+      } else {
+        setInfo("Bestätigungs-E-Mail verschickt. Bitte Postfach prüfen.");
+        setLoading(false);
+      }
+      return;
+    }
     const { error } = await signIn(email, password);
     if (error) {
       setError(error.message);
@@ -73,10 +95,23 @@ const Login = () => {
           {error && (
             <p className="text-sm text-destructive font-body">{error}</p>
           )}
+          {info && (
+            <p className="text-sm text-primary font-body">{info}</p>
+          )}
 
           <Button type="submit" className="w-full font-mono text-sm" disabled={loading}>
-            {loading ? "ANMELDEN..." : "ANMELDEN"}
+            {loading
+              ? (mode === "signup" ? "REGISTRIEREN..." : "ANMELDEN...")
+              : (mode === "signup" ? "REGISTRIEREN" : "ANMELDEN")}
           </Button>
+
+          <button
+            type="button"
+            onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setInfo(""); }}
+            className="w-full text-center text-xs font-mono text-muted-foreground hover:text-foreground"
+          >
+            {mode === "signin" ? "NOCH KEIN KONTO? REGISTRIEREN" : "SCHON EIN KONTO? ANMELDEN"}
+          </button>
 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
