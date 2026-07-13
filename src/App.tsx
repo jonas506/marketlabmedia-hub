@@ -68,9 +68,9 @@ const queryClient = new QueryClient({
   },
 });
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) {
+const ProtectedRoute: React.FC<{ children: React.ReactNode; allowCourseStudents?: boolean }> = ({ children, allowCourseStudents }) => {
+  const { user, role, roleLoaded, loading } = useAuth();
+  if (loading || (user && !roleLoaded)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -78,6 +78,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
   if (!user) return <Navigate to="/login" replace />;
+  // Course students (no internal role) must not access internal app routes.
+  if (!allowCourseStudents && !role) return <Navigate to="/kurs" replace />;
   return <>{children}</>;
 };
 
