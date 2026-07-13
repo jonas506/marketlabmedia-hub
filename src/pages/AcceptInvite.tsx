@@ -39,12 +39,18 @@ const AcceptInvite = () => {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { data: updated, error } = await supabase.auth.updateUser({ password });
     if (error) {
       setError(error.message);
       setLoading(false);
     } else {
-      navigate("/", { replace: true });
+      const uid = updated.user?.id;
+      let target = "/kurs";
+      if (uid) {
+        const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", uid).maybeSingle();
+        if (roleRow?.role) target = "/";
+      }
+      navigate(target, { replace: true });
     }
   };
 
