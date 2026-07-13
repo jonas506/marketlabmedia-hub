@@ -134,8 +134,8 @@ const App = () => (
                   <Route path="/interne-freigabe" element={<ProtectedRoute><InternalReview /></ProtectedRoute>} />
                   <Route path="/interne-freigabe/swiper" element={<ProtectedRoute><InternalReviewSwiper /></ProtectedRoute>} />
                   <Route path="/stunden-uebersicht" element={<ProtectedRoute><StundenUebersicht /></ProtectedRoute>} />
-                  <Route path="/kurs" element={<ProtectedRoute><CourseHome /></ProtectedRoute>} />
-                  <Route path="/kurs/:moduleId" element={<ProtectedRoute><CoursePlayer /></ProtectedRoute>} />
+                  <Route path="/kurs" element={<ProtectedRoute allowCourseStudents><CourseHome /></ProtectedRoute>} />
+                  <Route path="/kurs/:moduleId" element={<ProtectedRoute allowCourseStudents><CoursePlayer /></ProtectedRoute>} />
                   <Route path="/admin/kurs" element={<ProtectedRoute><CourseAdmin /></ProtectedRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
