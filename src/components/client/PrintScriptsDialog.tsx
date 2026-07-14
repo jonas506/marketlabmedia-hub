@@ -150,6 +150,46 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     return PHASE_CONFIG.filter((ph) => phases.has(ph.key));
   }, [pieces]);
 
+  const handleExportGDoc = async () => {
+    if (scriptPieces.length === 0) return;
+    setExportingGDoc(true);
+    setGdocResult(null);
+    try {
+      const payload = {
+        clientName: clientName || "Kunde",
+        pieces: scriptPieces.map((p) => ({
+          id: p.id,
+          title: p.title,
+          type: p.type,
+          phase: p.phase,
+          script_text: p.script_text ?? null,
+          tag: p.tag ?? null,
+          funnel_stage: p.funnel_stage ?? null,
+          script_links: p.script_links ?? null,
+          script_images: p.script_images ?? null,
+        })),
+      };
+      const { data, error } = await supabase.functions.invoke("export-scripts-gdoc", { body: payload });
+      if (error) throw error;
+      if (!data?.url) throw new Error("Kein Doc-Link zurückgegeben");
+      setGdocResult({ url: data.url, name: data.name });
+      window.open(data.url, "_blank", "noopener,noreferrer");
+      toast.success("Google Doc erstellt", { description: "Geöffnet in neuem Tab. Link kann geteilt werden." });
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Export fehlgeschlagen", { description: e?.message ?? "Bitte erneut versuchen" });
+    } finally {
+      setExportingGDoc(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!gdocResult) return;
+    await navigator.clipboard.writeText(gdocResult.url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handlePrint = async () => {
     const logoBase64 = await getLogoBase64();
 
