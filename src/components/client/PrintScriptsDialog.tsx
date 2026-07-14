@@ -2,10 +2,12 @@ import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Printer, ChevronDown, ChevronUp } from "lucide-react";
+import { Printer, ChevronDown, ChevronUp, FileText, Loader2, ExternalLink, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import marketlabLogo from "@/assets/marketlab-logo.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const getLogoBase64 = async (): Promise<string> => {
   const response = await fetch(marketlabLogo);
