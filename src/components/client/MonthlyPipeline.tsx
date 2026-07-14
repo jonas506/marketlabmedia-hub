@@ -68,7 +68,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     queryFn: async () => {
       const { data } = await supabase
         .from("clients")
-        .select("drive_folder_id, drive_reels_link, drive_carousels_link, drive_ads_link, drive_youtube_link")
+        .select("name, drive_folder_id, drive_reels_link, drive_carousels_link, drive_ads_link, drive_youtube_link")
         .eq("id", clientId)
         .single();
       return data;
@@ -547,7 +547,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       <CaptionStudio open={captionStudioOpen} onOpenChange={setCaptionStudioOpen} pieces={monthPieces} clientId={clientId} />
       <PieceDetailDialog open={!!detailPiece} onOpenChange={(open) => !open && setDetailPiece(null)} piece={detailPiece ? { ...detailPiece, client_id: clientId } : null} clientId={clientId} />
       <ScriptEditorDialog open={!!scriptPiece} onOpenChange={(open) => !open && setScriptPiece(null)} piece={scriptPiece} clientId={clientId} canEdit={canEdit} />
-      <PrintScriptsDialog open={printScriptsOpen} onOpenChange={setPrintScriptsOpen} pieces={monthPieces} />
+      <PrintScriptsDialog open={printScriptsOpen} onOpenChange={setPrintScriptsOpen} pieces={monthPieces} clientName={driveLinks?.name ?? null} />
       <CarouselBuilder open={!!carouselBuilderPiece} onOpenChange={(open) => !open && setCarouselBuilderPiece(null)} piece={carouselBuilderPiece} clientId={clientId} onSaved={() => qc.invalidateQueries({ queryKey: ["content-pieces", clientId] })} />
       <DriveImportDialog open={driveImportOpen} onOpenChange={setDriveImportOpen} clientId={clientId} activeType={activeType} onImportComplete={() => qc.invalidateQueries({ queryKey: ["content-pieces", clientId] })} />
     </motion.div>

@@ -2,10 +2,12 @@ import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Printer, ChevronDown, ChevronUp } from "lucide-react";
+import { Printer, ChevronDown, ChevronUp, FileText, Loader2, ExternalLink, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import marketlabLogo from "@/assets/marketlab-logo.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const getLogoBase64 = async (): Promise<string> => {
   const response = await fetch(marketlabLogo);
@@ -61,6 +63,7 @@ interface PrintScriptsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pieces: ScriptPiece[];
+  clientName?: string | null;
 }
 
 const HOOK_SEPARATOR = "\n---HOOKS---\n";
@@ -96,11 +99,14 @@ const PHASE_CONFIG: { key: string; label: string }[] = [
   { key: "handed_over", label: "Übergeben" },
 ];
 
-const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenChange, pieces }) => {
+const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenChange, pieces, clientName }) => {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(["reel", "carousel", "ad", "youtube_longform"]));
   const [selectedPhases, setSelectedPhases] = useState<Set<string>>(new Set(["script", "filmed", "editing"]));
   const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
   const [showPieces, setShowPieces] = useState(false);
+  const [exportingGDoc, setExportingGDoc] = useState(false);
+  const [gdocResult, setGdocResult] = useState<{ url: string; name: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const toggleType = (type: string) => {
     setSelectedTypes((prev) => {
@@ -143,6 +149,46 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
     const phases = new Set(pieces.map((p) => p.phase));
     return PHASE_CONFIG.filter((ph) => phases.has(ph.key));
   }, [pieces]);
+
+  const handleExportGDoc = async () => {
+    if (scriptPieces.length === 0) return;
+    setExportingGDoc(true);
+    setGdocResult(null);
+    try {
+      const payload = {
+        clientName: clientName || "Kunde",
+        pieces: scriptPieces.map((p) => ({
+          id: p.id,
+          title: p.title,
+          type: p.type,
+          phase: p.phase,
+          script_text: p.script_text ?? null,
+          tag: p.tag ?? null,
+          funnel_stage: p.funnel_stage ?? null,
+          script_links: p.script_links ?? null,
+          script_images: p.script_images ?? null,
+        })),
+      };
+      const { data, error } = await supabase.functions.invoke("export-scripts-gdoc", { body: payload });
+      if (error) throw error;
+      if (!data?.url) throw new Error("Kein Doc-Link zurückgegeben");
+      setGdocResult({ url: data.url, name: data.name });
+      window.open(data.url, "_blank", "noopener,noreferrer");
+      toast.success("Google Doc erstellt", { description: "Geöffnet in neuem Tab. Link kann geteilt werden." });
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Export fehlgeschlagen", { description: e?.message ?? "Bitte erneut versuchen" });
+    } finally {
+      setExportingGDoc(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!gdocResult) return;
+    await navigator.clipboard.writeText(gdocResult.url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handlePrint = async () => {
     const logoBase64 = await getLogoBase64();
@@ -571,9 +617,39 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
           </div>
         )}
 
-        <DialogFooter className="mt-2">
+        {gdocResult && (
+          <div className="mt-2 rounded-lg border border-primary/30 bg-primary/5 p-3 flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate">{gdocResult.name}</p>
+              <p className="text-[10px] text-muted-foreground">Jeder mit dem Link kann bearbeiten</p>
+            </div>
+            <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={handleCopyLink}>
+              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? "Kopiert" : "Link"}
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 gap-1.5" asChild>
+              <a href={gdocResult.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3 w-3" /> Öffnen
+              </a>
+            </Button>
+          </div>
+        )}
+
+        <DialogFooter className="mt-2 gap-2 sm:gap-2">
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Abbrechen
+          </Button>
+          <div className="flex-1" />
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            disabled={scriptPieces.length === 0 || exportingGDoc}
+            onClick={handleExportGDoc}
+          >
+            {exportingGDoc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+            {exportingGDoc ? "Erstelle Google Doc…" : "Als Google Doc"}
           </Button>
           <Button
             size="sm"
