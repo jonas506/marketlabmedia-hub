@@ -617,9 +617,39 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
           </div>
         )}
 
-        <DialogFooter className="mt-2">
+        {gdocResult && (
+          <div className="mt-2 rounded-lg border border-primary/30 bg-primary/5 p-3 flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate">{gdocResult.name}</p>
+              <p className="text-[10px] text-muted-foreground">Jeder mit dem Link kann bearbeiten</p>
+            </div>
+            <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={handleCopyLink}>
+              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? "Kopiert" : "Link"}
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 gap-1.5" asChild>
+              <a href={gdocResult.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3 w-3" /> Öffnen
+              </a>
+            </Button>
+          </div>
+        )}
+
+        <DialogFooter className="mt-2 gap-2 sm:gap-2">
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Abbrechen
+          </Button>
+          <div className="flex-1" />
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            disabled={scriptPieces.length === 0 || exportingGDoc}
+            onClick={handleExportGDoc}
+          >
+            {exportingGDoc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+            {exportingGDoc ? "Erstelle Google Doc…" : "Als Google Doc"}
           </Button>
           <Button
             size="sm"
