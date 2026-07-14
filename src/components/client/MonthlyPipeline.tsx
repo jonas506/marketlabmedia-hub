@@ -68,7 +68,7 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
     queryFn: async () => {
       const { data } = await supabase
         .from("clients")
-        .select("drive_folder_id, drive_reels_link, drive_carousels_link, drive_ads_link, drive_youtube_link")
+        .select("name, drive_folder_id, drive_reels_link, drive_carousels_link, drive_ads_link, drive_youtube_link")
         .eq("id", clientId)
         .single();
       return data;
