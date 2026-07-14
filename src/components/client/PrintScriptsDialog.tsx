@@ -63,6 +63,7 @@ interface PrintScriptsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pieces: ScriptPiece[];
+  clientName?: string | null;
 }
 
 const HOOK_SEPARATOR = "\n---HOOKS---\n";
