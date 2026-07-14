@@ -581,33 +581,56 @@ const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenCha
             </button>
 
             {showPieces && (
-              <ScrollArea className="mt-2 max-h-48">
-                <div className="space-y-1">
+              <ScrollArea className="mt-2 max-h-56 rounded-md border border-border">
+                <div className="min-w-[420px]">
+                  {/* Table header */}
+                  <div className="grid grid-cols-[32px_1fr_90px_90px_80px] items-center gap-2 px-2 py-1.5 border-b border-border bg-muted/40 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    <span className="text-center">✓</span>
+                    <span>Skript</span>
+                    <span>Typ</span>
+                    <span>Status</span>
+                    <span>Tag</span>
+                  </div>
+                  {/* Table rows */}
                   {filteredPieces.map((p) => {
                     const isSelected = !excludedIds.has(p.id);
-                    const typeEmoji = TYPE_CONFIG.find((t) => t.key === p.type)?.emoji ?? "";
+                    const typeConfig = TYPE_CONFIG.find((t) => t.key === p.type);
+                    const phaseConfig = PHASE_CONFIG.find((ph) => ph.key === p.phase);
                     return (
                       <label
                         key={p.id}
+                        onClick={() => togglePiece(p.id)}
                         className={cn(
-                          "flex items-center gap-2.5 rounded-md border px-2.5 py-2 cursor-pointer transition-colors text-xs",
+                          "grid grid-cols-[32px_1fr_90px_90px_80px] items-center gap-2 px-2 py-1 cursor-pointer transition-colors text-xs border-b border-border last:border-b-0",
                           isSelected
-                            ? "border-primary/30 bg-primary/5"
-                            : "border-border opacity-50 hover:opacity-75"
+                            ? "bg-primary/[0.03] hover:bg-primary/[0.06]"
+                            : "opacity-45 hover:opacity-70"
                         )}
                       >
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={() => togglePiece(p.id)}
-                        />
-                        <span className="truncate flex-1">
-                          {typeEmoji} {p.title || "Ohne Titel"}
+                        <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => togglePiece(p.id)}
+                          />
+                        </div>
+                        <span className="truncate" title={p.title || "Ohne Titel"}>
+                          {p.title || "Ohne Titel"}
                         </span>
-                        {p.tag && (
-                          <span className="text-[10px] bg-accent/50 text-accent-foreground px-1.5 py-0.5 rounded">
-                            {p.tag}
-                          </span>
-                        )}
+                        <span className="truncate text-[10px] text-muted-foreground">
+                          {typeConfig?.emoji} {typeConfig?.label ?? p.type}
+                        </span>
+                        <span className="truncate text-[10px] text-muted-foreground">
+                          {phaseConfig?.label ?? p.phase}
+                        </span>
+                        <span className="truncate">
+                          {p.tag ? (
+                            <span className="text-[9px] bg-accent/50 text-accent-foreground px-1 py-0.5 rounded">
+                              {p.tag}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground/40">–</span>
+                          )}
+                        </span>
                       </label>
                     );
                   })}
