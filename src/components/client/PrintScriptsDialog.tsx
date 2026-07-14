@@ -99,11 +99,14 @@ const PHASE_CONFIG: { key: string; label: string }[] = [
   { key: "handed_over", label: "Übergeben" },
 ];
 
-const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenChange, pieces }) => {
+const PrintScriptsDialog: React.FC<PrintScriptsDialogProps> = ({ open, onOpenChange, pieces, clientName }) => {
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(["reel", "carousel", "ad", "youtube_longform"]));
   const [selectedPhases, setSelectedPhases] = useState<Set<string>>(new Set(["script", "filmed", "editing"]));
   const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
   const [showPieces, setShowPieces] = useState(false);
+  const [exportingGDoc, setExportingGDoc] = useState(false);
+  const [gdocResult, setGdocResult] = useState<{ url: string; name: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const toggleType = (type: string) => {
     setSelectedTypes((prev) => {
