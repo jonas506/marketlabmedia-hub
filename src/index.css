@@ -103,35 +103,36 @@
     --popover: 0 0% 100%;
     --popover-foreground: 230 20% 12%;
 
-    --primary: 211 100% 48%;
+    --primary: 244 76% 55%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 244 90% 68%;
 
-    --secondary: 260 70% 55%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 240 30% 92%;
+    --secondary-foreground: 240 50% 20%;
 
     --muted: 228 20% 92%;
     --muted-foreground: 228 12% 44%;
 
-    --accent: 260 60% 96%;
-    --accent-foreground: 260 70% 50%;
+    --accent: 244 76% 96%;
+    --accent-foreground: 244 76% 45%;
 
     --destructive: 0 72% 52%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 228 12% 90%;
     --input: 228 18% 90%;
-    --ring: 211 100% 48%;
+    --ring: 244 76% 55%;
 
-    /* Status – same vibrant colors, works on light bg */
+    /* Status */
     --status-done: 154 60% 42%;
-    --status-working: 211 100% 48%;
+    --status-working: 244 76% 55%;
     --status-review: 35 95% 50%;
     --status-stuck: 0 72% 52%;
     --status-default: 228 10% 65%;
 
     --prio-critical: 0 72% 52%;
     --prio-high: 25 95% 50%;
-    --prio-medium: 211 100% 48%;
+    --prio-medium: 244 76% 55%;
     --prio-low: 228 10% 65%;
 
     --runway-green: 154 60% 42%;
@@ -147,16 +148,16 @@
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 230 15% 30%;
-    --sidebar-primary: 211 100% 48%;
+    --sidebar-primary: 244 76% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 60% 96%;
-    --sidebar-accent-foreground: 260 70% 50%;
+    --sidebar-accent: 244 76% 96%;
+    --sidebar-accent-foreground: 244 76% 45%;
     --sidebar-border: 228 18% 90%;
-    --sidebar-ring: 211 100% 48%;
+    --sidebar-ring: 244 76% 55%;
 
-    --group-blue: 211 100% 48%;
+    --group-blue: 244 76% 55%;
     --group-green: 154 60% 42%;
-    --group-purple: 260 70% 50%;
+    --group-purple: 268 70% 55%;
     --group-orange: 25 95% 50%;
 
     /* Canvas dot grid – keep visible on light bg */
