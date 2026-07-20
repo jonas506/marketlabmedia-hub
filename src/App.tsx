@@ -115,6 +115,7 @@ const App = () => (
                   <Route path="/activity" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />
                   
                   <Route path="/team" element={<ProtectedRoute><TeamOverview /></ProtectedRoute>} />
+                  <Route path="/prozesse" element={<Navigate to="/checklists" replace />} />
                   <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
                   <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
                   <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
