@@ -257,9 +257,6 @@ export default function CRMHome() {
             )}
           </TabsContent>
 
-          <TabsContent value="kampagnen">
-            <CRMCampaigns />
-          </TabsContent>
         </Tabs>
       </div>
     </AppLayout>
