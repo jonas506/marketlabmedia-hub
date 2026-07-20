@@ -22,7 +22,7 @@ import ArchiveClientButton from "@/components/ArchiveClientButton";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
-  ArrowLeft, FileText, Copy, Check, ExternalLink, Share2,
+  ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
   Smartphone, ClipboardList,
   TrendingUp, Clock, Info, Menu,
