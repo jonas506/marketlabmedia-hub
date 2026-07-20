@@ -27,7 +27,7 @@ const PipelineSubNav: React.FC<PipelineSubNavProps> = React.memo(({
   showPhases,
 }) => {
   return (
-    <div className="flex items-center gap-2 mb-4 -mx-1 px-1 overflow-x-auto scrollbar-none">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 mb-4">
       {/* Format tabs — compact icon+count */}
       <div className="flex items-center gap-1 shrink-0">
         {Object.entries(PIPELINE_CONFIG).map(([key, cfg]) => {
