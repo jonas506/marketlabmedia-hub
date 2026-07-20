@@ -22,9 +22,9 @@ import ArchiveClientButton from "@/components/ArchiveClientButton";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
-  ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
+  ArrowLeft, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
-  CalendarDays, Smartphone, ClipboardList, Presentation, Sparkles,
+  Smartphone, ClipboardList,
   TrendingUp, Clock, Info, Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
