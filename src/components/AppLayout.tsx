@@ -22,8 +22,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
 
   { to: "/my-todos", label: "Meine To-Dos", icon: ListTodo },
   { to: "/tasks", label: "Aufgaben", icon: CheckSquare },
-  { to: "/checklists", label: "Checklisten", icon: ClipboardList, roles: ["admin", "head_of_content"] },
-  { to: "/sops", label: "SOPs", icon: BookOpen, roles: ["admin", "head_of_content"] },
+  { to: "/prozesse", label: "Prozesse", icon: ClipboardList, roles: ["admin", "head_of_content"] },
   { to: "/prompts", label: "Prompts", icon: BookmarkIcon, roles: ["admin", "head_of_content"] },
   { to: "/crew", label: "Crew", icon: Users },
   { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
