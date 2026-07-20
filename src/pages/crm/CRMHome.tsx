@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Briefcase, Search, ArrowUpDown } from "lucide-react";
 import PipelineBoard from "@/components/crm/PipelineBoard";
 import MagicInput from "@/components/crm/MagicInput";
-import CRMCampaigns from "@/pages/crm/CRMCampaigns";
+
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
 import { formatDistanceToNow } from "date-fns";
