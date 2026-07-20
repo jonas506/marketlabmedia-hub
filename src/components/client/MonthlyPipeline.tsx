@@ -20,8 +20,7 @@ import CarouselBuilder from "./CarouselBuilder";
 import DriveImportDialog from "./pipeline/DriveImportDialog";
 import {
   PipelineHeader,
-  PipelineTypeTabs,
-  PhasePills,
+  PipelineSubNav,
   ReviewMailBanner,
   PipelineFilterBar,
   PipelinePieceCard,
@@ -387,7 +386,16 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
       />
 
       <div className="p-4">
-        <PipelineTypeTabs activeType={activeType} onTypeChange={handleTypeChange} contentPieces={contentPieces} />
+        <PipelineSubNav
+          activeType={activeType}
+          onTypeChange={handleTypeChange}
+          contentPieces={contentPieces}
+          phases={config.phases}
+          activePhase={activePhase}
+          onPhaseChange={handlePhaseChange}
+          monthPieces={monthPieces}
+          showPhases={viewMode === "list"}
+        />
 
         {viewMode === "kanban" ? (
           <PipelineKanban
@@ -402,7 +410,6 @@ const MonthlyPipeline: React.FC<MonthlyPipelineProps> = ({ clientId, contentPiec
           />
         ) : (
           <>
-            <PhasePills phases={config.phases} activePhase={activePhase} onPhaseChange={handlePhaseChange} monthPieces={monthPieces} />
             {activePhase === "review" && <ReviewMailBanner clientId={clientId} phasePieces={phasePieces} canEdit={canEdit} />}
             <PipelineFilterBar
               filterPerson={filterPerson}
