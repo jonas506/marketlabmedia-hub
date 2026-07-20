@@ -198,40 +198,16 @@ const ClientDetail = () => {
             <StorySequences clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
-      case "shootdays":
-        return (
-          <ErrorBoundary level="section">
-            <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
       case "checklists":
         return (
           <ErrorBoundary level="section">
             <ClientChecklists clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
-      case "strategy":
-        return (
-          <ErrorBoundary level="section">
-            <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
-      case "inspo":
-        return (
-          <ErrorBoundary level="section">
-            <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
       case "marketing":
         return (
           <ErrorBoundary level="section">
             <MarketingTracking clientId={client.id} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
-      case "landing":
-        return (
-          <ErrorBoundary level="section">
-            <LandingPagesList clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
       case "activity":
