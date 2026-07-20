@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -9,12 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import MobileDatePicker from "@/components/MobileDatePicker";
-import { CalendarIcon, Clock, Send } from "lucide-react";
+import { CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Task, TeamMember, TaskComment, STATUS_CONFIG, PRIORITY_CONFIG, getSC, getInitials } from "./constants";
+import { Task, TeamMember, STATUS_CONFIG, PRIORITY_CONFIG, getSC, getInitials } from "./constants";
 
 interface TaskDetailSheetProps {
   task: Task | null;
