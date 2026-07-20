@@ -79,6 +79,7 @@ const Checklists = () => {
   return (
     <AppLayout>
       <ErrorBoundary level="section">
+      <ProzesseTabs />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
