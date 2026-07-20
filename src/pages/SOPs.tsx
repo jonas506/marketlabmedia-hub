@@ -130,6 +130,7 @@ const SOPs = () => {
   return (
     <AppLayout>
       <ErrorBoundary level="section">
+      <ProzesseTabs />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
         <div className="flex items-center justify-between mb-8">
           <div>
