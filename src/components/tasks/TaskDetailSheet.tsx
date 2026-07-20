@@ -30,30 +30,14 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editNotes, setEditNotes] = useState("");
-  const [commentText, setCommentText] = useState("");
 
   useEffect(() => {
     if (task) {
       setEditTitle(task.title);
       setEditDesc(task.description || "");
       setEditNotes(task.notes || "");
-      setCommentText("");
     }
   }, [task?.id]);
-
-  const { data: comments = [], refetch: refetchComments } = useQuery({
-    queryKey: ["task-comments", task?.id],
-    queryFn: async () => {
-      if (!task) return [];
-      const { data } = await supabase
-        .from("task_comments" as any)
-        .select("*")
-        .eq("task_id", task.id)
-        .order("created_at", { ascending: true });
-      return (data as any[] ?? []) as TaskComment[];
-    },
-    enabled: !!task,
-  });
 
   const updateTask = useCallback(async (taskId: string, updates: Record<string, any>) => {
     await supabase.from("tasks" as any).update(updates as any).eq("id", taskId);
@@ -70,17 +54,6 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
     toast.success("✓ Erledigt");
     onClose();
   }, [qc, onClose]);
-
-  const addComment = async () => {
-    if (!commentText.trim() || !task || !user) return;
-    await supabase.from("task_comments" as any).insert({
-      task_id: task.id,
-      user_id: user.id,
-      content: commentText.trim(),
-    } as any);
-    setCommentText("");
-    refetchComments();
-  };
 
   const [localTask, setLocalTask] = useState<Task | null>(null);
   useEffect(() => { setLocalTask(task); }, [task]);
