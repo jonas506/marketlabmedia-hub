@@ -8,14 +8,10 @@ import AppLayout from "@/components/AppLayout";
 import ClientInfoPanel from "@/components/client/ClientInfoPanel";
 import ClientContractsCard from "@/components/client/ClientContractsCard";
 import KontingentTracker from "@/components/client/KontingentTracker";
-import MonthlyShootDays from "@/components/client/MonthlyShootDays";
 import MonthlyPipeline from "@/components/client/MonthlyPipeline";
-import LandingPagesList from "@/components/client/LandingPagesList";
 import ClientDocuments from "@/components/client/ClientDocuments";
 import MarketingTracking from "@/components/client/MarketingTracking";
 import TaskList from "@/components/client/TaskList";
-import InspirationBoard from "@/components/client/InspirationBoard";
-import ClientStrategyBoards from "@/components/client/ClientStrategyBoards";
 import StorySequences from "@/components/client/StorySequences";
 import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
@@ -28,7 +24,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import {
   ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
-  CalendarDays, Smartphone, ClipboardList, Presentation, Sparkles,
+  Smartphone, ClipboardList,
   TrendingUp, Clock, Info, Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,12 +38,8 @@ const MODULE_ITEMS = [
   { key: "pipeline", label: "Pipeline", icon: Clapperboard },
   { key: "tasks", label: "Aufgaben", icon: ListChecks },
   { key: "stories", label: "Stories", icon: Smartphone },
-  { key: "shootdays", label: "Drehtage", icon: CalendarDays },
   { key: "checklists", label: "Checklisten", icon: ClipboardList },
-  { key: "strategy", label: "Strategie", icon: Presentation },
-  { key: "inspo", label: "Inspirationen", icon: Sparkles },
   { key: "marketing", label: "Marketing", icon: TrendingUp },
-  { key: "landing", label: "Landing Pages", icon: Globe },
   { key: "stunden", label: "Stunden", icon: Clock, adminOnly: true },
   { key: "activity", label: "Verlauf", icon: Clock },
   { key: "info", label: "Info", icon: Info },
@@ -138,19 +130,8 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
-  const { data: shootDays } = useQuery({
-    queryKey: ["shoot-days", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("shoot_days")
-        .select("*")
-        .eq("client_id", id!)
-        .order("date", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id,
-  });
+
+
 
   const focusPieceId = searchParams.get("piece");
 
@@ -202,40 +183,16 @@ const ClientDetail = () => {
             <StorySequences clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
-      case "shootdays":
-        return (
-          <ErrorBoundary level="section">
-            <MonthlyShootDays clientId={client.id} shootDays={shootDays ?? []} month={now.getMonth() + 1} year={now.getFullYear()} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
       case "checklists":
         return (
           <ErrorBoundary level="section">
             <ClientChecklists clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
-      case "strategy":
-        return (
-          <ErrorBoundary level="section">
-            <ClientStrategyBoards clientId={client.id} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
-      case "inspo":
-        return (
-          <ErrorBoundary level="section">
-            <InspirationBoard clientId={client.id} clientName={client.name} clientIndustry={client.industry} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
       case "marketing":
         return (
           <ErrorBoundary level="section">
             <MarketingTracking clientId={client.id} canEdit={canEdit} />
-          </ErrorBoundary>
-        );
-      case "landing":
-        return (
-          <ErrorBoundary level="section">
-            <LandingPagesList clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
       case "activity":
