@@ -36,7 +36,7 @@ type Lead = {
 export default function CRMHome() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const defaultTab = tabParam === "kampagnen" ? "kampagnen" : tabParam === "leads" ? "leads" : "pipeline";
+  const defaultTab = tabParam === "leads" ? "leads" : "pipeline";
   const [tab, setTab] = useState(defaultTab);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
