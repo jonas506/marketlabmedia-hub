@@ -112,7 +112,7 @@ export default function CRMHome() {
           <TabsList>
             <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
             <TabsTrigger value="leads">Alle Leads</TabsTrigger>
-            <TabsTrigger value="kampagnen">Kampagnen</TabsTrigger>
+            
           </TabsList>
 
           <TabsContent value="pipeline">
