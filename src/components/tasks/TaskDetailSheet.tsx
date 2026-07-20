@@ -211,44 +211,12 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
 
             <div>
               <label className="text-[10px] font-mono text-muted-foreground uppercase mb-2 block">Aktivität</label>
-              <div className="space-y-2 mb-3">
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-mono">
-                  <Clock className="h-3 w-3" />
-                  Erstellt {format(new Date(selectedTask.created_at), "dd.MM.yyyy HH:mm", { locale: de })}
-                  {selectedTask.created_by && teamMap[selectedTask.created_by] && (
-                    <span>von {teamMap[selectedTask.created_by].name}</span>
-                  )}
-                </div>
-                {comments.map(c => (
-                  <div key={c.id} className="flex gap-2 p-2 rounded-md bg-surface-elevated">
-                    <Avatar className="h-5 w-5 shrink-0">
-                      <AvatarFallback className="text-[8px] font-bold">
-                        {getInitials(teamMap[c.user_id]?.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold">{teamMap[c.user_id]?.name || "?"}</span>
-                        <span className="text-[9px] text-muted-foreground font-mono">
-                          {format(new Date(c.created_at), "dd.MM. HH:mm", { locale: de })}
-                        </span>
-                      </div>
-                      <p className="text-xs font-body mt-0.5">{c.content}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={commentText}
-                  onChange={e => setCommentText(e.target.value)}
-                  placeholder="Kommentar schreiben…"
-                  className="text-xs h-8 flex-1"
-                  onKeyDown={e => { if (e.key === "Enter") addComment(); }}
-                />
-                <Button size="icon" className="h-8 w-8 shrink-0" onClick={addComment} disabled={!commentText.trim()}>
-                  <Send className="h-3 w-3" />
-                </Button>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-mono">
+                <Clock className="h-3 w-3" />
+                Erstellt {format(new Date(selectedTask.created_at), "dd.MM.yyyy HH:mm", { locale: de })}
+                {selectedTask.created_by && teamMap[selectedTask.created_by] && (
+                  <span>von {teamMap[selectedTask.created_by].name}</span>
+                )}
               </div>
             </div>
           </div>
