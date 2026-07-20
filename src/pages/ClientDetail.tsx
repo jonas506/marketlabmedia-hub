@@ -53,7 +53,7 @@ const ClientDetail = () => {
   const [copied, setCopied] = useState(false);
   const [referralCopied, setReferralCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [activeModule, setActiveModule] = useState("dashboard");
+  const activeModule = searchParams.get("m") || "dashboard";
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [approvalToken, setApprovalToken] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -143,9 +143,11 @@ const ClientDetail = () => {
   }, [focusPieceId, searchParams, setSearchParams]);
 
   const handleNavigate = useCallback((module: string) => {
-    setActiveModule(module);
+    const next = new URLSearchParams(searchParams);
+    if (module === "dashboard") next.delete("m"); else next.set("m", module);
+    setSearchParams(next, { replace: true });
     setMobileNavOpen(false);
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   if (isLoading || !client) {
     return (
