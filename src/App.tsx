@@ -130,7 +130,7 @@ const App = () => (
                   <Route path="/crm" element={<ProtectedRoute><CRMHome /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
                   <Route path="/crm/pipelines" element={<Navigate to="/crm" replace />} />
-                  <Route path="/crm/campaigns" element={<Navigate to="/crm?tab=kampagnen" replace />} />
+                  <Route path="/crm/campaigns" element={<Navigate to="/marketing" replace />} />
                   <Route path="/finanzen" element={<ProtectedRoute><Finanzen /></ProtectedRoute>} />
                   <Route path="/interne-freigabe" element={<ProtectedRoute><InternalReview /></ProtectedRoute>} />
                   <Route path="/interne-freigabe/swiper" element={<ProtectedRoute><InternalReviewSwiper /></ProtectedRoute>} />
