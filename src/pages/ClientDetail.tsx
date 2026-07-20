@@ -143,9 +143,11 @@ const ClientDetail = () => {
   }, [focusPieceId, searchParams, setSearchParams]);
 
   const handleNavigate = useCallback((module: string) => {
-    setActiveModule(module);
+    const next = new URLSearchParams(searchParams);
+    if (module === "dashboard") next.delete("m"); else next.set("m", module);
+    setSearchParams(next, { replace: true });
     setMobileNavOpen(false);
-  }, []);
+  }, [searchParams, setSearchParams]);
 
   if (isLoading || !client) {
     return (
