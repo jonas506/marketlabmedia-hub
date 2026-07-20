@@ -53,7 +53,7 @@ const ClientDetail = () => {
   const [copied, setCopied] = useState(false);
   const [referralCopied, setReferralCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [activeModule, setActiveModule] = useState("dashboard");
+  const activeModule = searchParams.get("m") || "dashboard";
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [approvalToken, setApprovalToken] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
