@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Briefcase, Search, ArrowUpDown } from "lucide-react";
 import PipelineBoard from "@/components/crm/PipelineBoard";
 import MagicInput from "@/components/crm/MagicInput";
-import CRMCampaigns from "@/pages/crm/CRMCampaigns";
+
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
 import { formatDistanceToNow } from "date-fns";
@@ -36,7 +36,7 @@ type Lead = {
 export default function CRMHome() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const defaultTab = tabParam === "kampagnen" ? "kampagnen" : tabParam === "leads" ? "leads" : "pipeline";
+  const defaultTab = tabParam === "leads" ? "leads" : "pipeline";
   const [tab, setTab] = useState(defaultTab);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,7 +112,7 @@ export default function CRMHome() {
           <TabsList>
             <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
             <TabsTrigger value="leads">Alle Leads</TabsTrigger>
-            <TabsTrigger value="kampagnen">Kampagnen</TabsTrigger>
+            
           </TabsList>
 
           <TabsContent value="pipeline">
@@ -257,9 +257,6 @@ export default function CRMHome() {
             )}
           </TabsContent>
 
-          <TabsContent value="kampagnen">
-            <CRMCampaigns />
-          </TabsContent>
         </Tabs>
       </div>
     </AppLayout>

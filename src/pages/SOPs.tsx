@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import SopBoard, { type BoardData } from "@/components/sop/SopBoard";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ProzesseTabs from "@/components/ProzesseTabs";
 
 interface SopTemplate {
   id: string;
@@ -129,6 +130,7 @@ const SOPs = () => {
   return (
     <AppLayout>
       <ErrorBoundary level="section">
+      <ProzesseTabs />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
         <div className="flex items-center justify-between mb-8">
           <div>

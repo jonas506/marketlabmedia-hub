@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardList, Calendar, Filter } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ProzesseTabs from "@/components/ProzesseTabs";
 import { cn } from "@/lib/utils";
 
 const getWeekNumber = (d: Date) => {
@@ -79,6 +80,7 @@ const Checklists = () => {
   return (
     <AppLayout>
       <ErrorBoundary level="section">
+      <ProzesseTabs />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
