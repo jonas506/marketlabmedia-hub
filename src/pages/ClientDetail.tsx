@@ -130,19 +130,8 @@ const ClientDetail = () => {
     enabled: !!id,
   });
 
-  const { data: shootDays } = useQuery({
-    queryKey: ["shoot-days", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("shoot_days")
-        .select("*")
-        .eq("client_id", id!)
-        .order("date", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id,
-  });
+
+
 
   const focusPieceId = searchParams.get("piece");
 
