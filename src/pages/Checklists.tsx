@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardList, Calendar, Filter } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ProzesseTabs from "@/components/ProzesseTabs";
 import { cn } from "@/lib/utils";
 
 const getWeekNumber = (d: Date) => {
