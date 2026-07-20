@@ -1,6 +1,7 @@
 export { default as PipelineHeader } from "./PipelineHeader";
 export { default as PipelineTypeTabs } from "./PipelineTypeTabs";
 export { default as PhasePills } from "./PhasePills";
+export { default as PipelineSubNav } from "./PipelineSubNav";
 export { default as ReviewMailBanner } from "./ReviewMailBanner";
 export { default as PipelineFilterBar } from "./PipelineFilterBar";
 export { default as PipelinePieceCard } from "./PipelinePieceCard";
