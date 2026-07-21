@@ -1,0 +1,1 @@
+UPDATE public.profiles SET slack_user_id = NULL WHERE user_id IN ('f2b9549d-016d-4d7e-a2f9-800f38355500','6db0a1a9-9c17-4653-a331-b76dc8e8356f');
