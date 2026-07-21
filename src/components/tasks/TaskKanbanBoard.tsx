@@ -203,17 +203,20 @@ const TaskKanbanBoard: React.FC<Props> = ({ tasks, clientMap, teamMap, todayStr,
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="flex gap-3 items-stretch">
         {COLUMNS.map(s => (
-          <Column
-            key={s}
-            status={s}
-            tasks={columns[s]}
-            clientMap={clientMap}
-            teamMap={teamMap}
-            todayStr={todayStr}
-            onSelect={onSelect}
-          />
+          <div key={s} className={collapsed[s] ? "flex-shrink-0" : "flex-1 min-w-0"}>
+            <Column
+              status={s}
+              tasks={columns[s]}
+              clientMap={clientMap}
+              teamMap={teamMap}
+              todayStr={todayStr}
+              onSelect={onSelect}
+              collapsed={collapsed[s]}
+              onToggleCollapse={() => toggleCollapsed(s)}
+            />
+          </div>
         ))}
       </div>
       <DragOverlay>
