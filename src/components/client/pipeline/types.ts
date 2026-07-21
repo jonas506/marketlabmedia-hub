@@ -26,6 +26,7 @@ export interface ContentPiece {
   funnel_stage?: string | null;
   raw_footage_link?: string | null;
   updated_at?: string | null;
+  phase_changed_at?: string | null;
   created_at?: string | null;
 }
 
