@@ -7,14 +7,16 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, AlertTriangle, X } from "lucide-react";
+import { Plus, Search, AlertTriangle, X, LayoutGrid, User, Building2, Flag } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { motion } from "framer-motion";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Task, TeamMember } from "@/components/tasks/constants";
 import TaskKanbanBoard from "@/components/tasks/TaskKanbanBoard";
+import TaskGroupedView from "@/components/tasks/TaskGroupedView";
 import NewTaskSheet from "@/components/tasks/NewTaskSheet";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
+import { cn } from "@/lib/utils";
 
 interface ClientInfo { id: string; name: string; logo_url: string | null }
 
