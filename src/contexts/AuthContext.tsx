@@ -36,14 +36,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let currentUserId: string | null = null;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        const nextUserId = session?.user?.id ?? null;
         setSession(session);
         setUser(session?.user ?? null);
-        if (session?.user) {
+        // Only refetch role/profile when the user identity actually changes.
+        // Token refreshes (e.g. after switching browser tabs) must not trigger
+        // a re-render storm that remounts routes and resets scroll/tab state.
+        if (nextUserId && nextUserId !== currentUserId) {
+          currentUserId = nextUserId;
           setRoleLoaded(false);
-          setTimeout(() => fetchUserData(session.user.id), 0);
-        } else {
+          setTimeout(() => fetchUserData(nextUserId), 0);
+        } else if (!nextUserId) {
+          currentUserId = null;
           setRole(null);
           setProfile(null);
           setRoleLoaded(true);
@@ -56,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        currentUserId = session.user.id;
         fetchUserData(session.user.id);
       } else {
         setRoleLoaded(true);
