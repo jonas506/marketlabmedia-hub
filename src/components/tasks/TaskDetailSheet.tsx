@@ -231,6 +231,18 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
                 )}
               </div>
             </div>
+
+            <div className="pt-4 border-t border-border/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteTask(selectedTask)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Aufgabe löschen
+              </Button>
+            </div>
           </div>
         )}
       </SheetContent>
