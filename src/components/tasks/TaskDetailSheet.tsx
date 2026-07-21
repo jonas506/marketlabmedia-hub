@@ -55,6 +55,18 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
     onClose();
   }, [qc, onClose]);
 
+  const deleteTask = useCallback(async (t: Task) => {
+    if (!confirm(`Aufgabe „${t.title}" wirklich löschen?`)) return;
+    const { error } = await supabase.from("tasks" as any).delete().eq("id", t.id);
+    if (error) { toast.error("Löschen fehlgeschlagen"); return; }
+    qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
+    qc.invalidateQueries({ queryKey: ["my-tasks"] });
+    qc.invalidateQueries({ queryKey: ["kanban-tasks"] });
+    qc.invalidateQueries({ queryKey: ["tasks"] });
+    toast.success("Aufgabe gelöscht");
+    onClose();
+  }, [qc, onClose]);
+
   const [localTask, setLocalTask] = useState<Task | null>(null);
   useEffect(() => { setLocalTask(task); }, [task]);
 
