@@ -279,7 +279,7 @@ function CheckinDialog({
   const [nextActionDate, setNextActionDate] = useState("");
   const [escalated, setEscalated] = useState(false);
   const [upsell, setUpsell] = useState(false);
-  const [createTask, setCreateTask] = useState(true);
+  // Auto-task creation disabled — Next Actions are captured on the check-in only.
 
   const save = async () => {
     setSaving(true);
@@ -304,17 +304,7 @@ function CheckinDialog({
       });
       if (error) throw error;
 
-      if (createTask && nextAction.trim()) {
-        await supabase.from("tasks").insert({
-          client_id: clientId,
-          title: `Check-in Next Action: ${nextAction.trim().slice(0, 100)}`,
-          deadline: nextActionDate || null,
-          priority: escalated ? "urgent" : "normal",
-          status: "not_started",
-          tag: "checkin",
-          assigned_to: userData.user?.id ?? null,
-        });
-      }
+      // No auto-task — Next Action stays on the check-in record only.
 
       toast.success("Check-in gespeichert");
       onSaved();
@@ -411,10 +401,6 @@ function CheckinDialog({
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <Checkbox checked={upsell} onCheckedChange={(v) => setUpsell(!!v)} />
             <span className="text-amber-400">Upsell-Flag an Jonas</span>
-          </label>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <Checkbox checked={createTask} onCheckedChange={(v) => setCreateTask(!!v)} />
-            Task für Next Action anlegen
           </label>
         </div>
       </div>
