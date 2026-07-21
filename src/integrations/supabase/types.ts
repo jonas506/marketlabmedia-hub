@@ -2881,7 +2881,7 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string | null
-          client_id: string
+          client_id: string | null
           completed_at: string | null
           completed_by: string | null
           content_piece_id: string | null
@@ -2903,7 +2903,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
-          client_id: string
+          client_id?: string | null
           completed_at?: string | null
           completed_by?: string | null
           content_piece_id?: string | null
@@ -2925,7 +2925,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
-          client_id?: string
+          client_id?: string | null
           completed_at?: string | null
           completed_by?: string | null
           content_piece_id?: string | null
