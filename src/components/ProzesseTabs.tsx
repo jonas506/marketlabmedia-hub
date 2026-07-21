@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { ClipboardList, BookOpen } from "lucide-react";
+import { ClipboardList, BookOpen, MessageCircleHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { to: "/checklists", label: "Checklisten", icon: ClipboardList },
   { to: "/sops", label: "SOPs", icon: BookOpen },
+  { to: "/checkins", label: "Check-ins", icon: MessageCircleHeart },
 ];
 
 export default function ProzesseTabs() {
