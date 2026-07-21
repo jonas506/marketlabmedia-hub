@@ -170,6 +170,19 @@ export default function InternalReviewSwiper() {
         })
         .eq("id", currentPiece.id);
       if (error) throw error;
+
+      // Also record as internal comment so team sees it in the pipeline thread
+      const { data: authData } = await supabase.auth.getUser();
+      const authorId = authData.user?.id;
+      if (authorId) {
+        await supabase.from("piece_internal_comments").insert({
+          content_piece_id: currentPiece.id,
+          client_id: currentPiece.client_id,
+          author_id: authorId,
+          body: feedbackText.trim(),
+          mentioned_user_ids: [],
+        });
+      }
       const id = currentPiece.id;
       const newPieces = pieces.filter((p) => p.id !== id);
       setPieces(newPieces);
