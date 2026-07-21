@@ -148,14 +148,7 @@ export const createNewClientChecklists = async (clientId: string) => {
         );
       }
     }
-    // Also generate SOP tasks for new client onboarding
-    try {
-      await supabase.functions.invoke("generate-sop-tasks", {
-        body: { trigger_type: "new_client", client_id: clientId },
-      });
-    } catch (e) {
-      console.error("New client SOP task generation failed:", e);
-    }
+    // Auto-task generation disabled — tasks are created manually only.
   } catch (err) {
     console.error("New client checklist trigger failed:", err);
   }
