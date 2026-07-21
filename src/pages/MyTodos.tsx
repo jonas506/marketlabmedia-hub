@@ -13,7 +13,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { Task, TeamMember, groupTasks } from "@/components/tasks/constants";
 import { TaskCard } from "@/components/tasks";
 import TaskGroupSection from "@/components/tasks/TaskGroupSection";
-import TaskGroupCard from "@/components/tasks/TaskGroupCard";
+
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
 import FocusMode from "@/components/todos/FocusMode";
 
@@ -81,13 +81,7 @@ const MyTodos = () => {
     return m;
   }, [team]);
 
-  const isGroupTask = useCallback((task: any) => {
-    return task.group_source && !task.content_piece_id;
-  }, []);
-
-  const regularTasks = useMemo(() => myTasks.filter(t => !isGroupTask(t)), [myTasks, isGroupTask]);
-  const groupTasks_ = useMemo(() => myTasks.filter(t => isGroupTask(t)), [myTasks, isGroupTask]);
-  const grouped = useMemo(() => groupTasks(regularTasks, todayStr), [regularTasks, todayStr]);
+  const grouped = useMemo(() => groupTasks(myTasks, todayStr), [myTasks, todayStr]);
 
   const completeTask = useCallback(async (task: Task) => {
     await supabase.from("tasks" as any).update({
@@ -173,21 +167,6 @@ const MyTodos = () => {
 
           {viewMode === "list" ? (
             <div className="space-y-4">
-              {/* Group tasks */}
-              {groupTasks_.length > 0 && (
-                <div className="space-y-2">
-                  {groupTasks_.map(t => (
-                    <TaskGroupCard
-                      key={t.id}
-                      task={t as any}
-                      clientMap={clientMap}
-                      teamMap={teamNameMap}
-                      todayStr={todayStr}
-                      onSelect={selectTask}
-                    />
-                  ))}
-                </div>
-              )}
 
               <TaskGroupSection groupKey="overdue" tasks={grouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
               <TaskGroupSection groupKey="today" tasks={grouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />

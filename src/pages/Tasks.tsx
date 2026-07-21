@@ -210,9 +210,7 @@ const Tasks = () => {
     return m;
   }, [team]);
 
-  const isGroupTask = useCallback((task: any) => {
-    return task.group_source && !task.content_piece_id;
-  }, []);
+  // All tasks are manual now — no auto-generated group tasks.
 
   const completeTask = useCallback(async (task: Task) => {
     await supabase.from("tasks" as any).update({
@@ -247,37 +245,22 @@ const Tasks = () => {
 
   // === Team view: Group by client ===
   const clientTaskGroups = useMemo(() => {
-    const regularByClient: Record<string, Task[]> = {};
-    const groupByClient: Record<string, Task[]> = {};
-
+    const byClient: Record<string, Task[]> = {};
     allTasks.forEach(t => {
       const cid = t.client_id || "no-client";
-      if (isGroupTask(t)) {
-        if (!groupByClient[cid]) groupByClient[cid] = [];
-        groupByClient[cid].push(t);
-      } else {
-        if (!regularByClient[cid]) regularByClient[cid] = [];
-        regularByClient[cid].push(t);
-      }
+      if (!byClient[cid]) byClient[cid] = [];
+      byClient[cid].push(t);
     });
-
-    // Build per-client groups, sorted by urgency (overdue count desc)
-    const allClientIds = new Set([...Object.keys(regularByClient), ...Object.keys(groupByClient)]);
-    const groups = Array.from(allClientIds).map(cid => {
-      const regular = regularByClient[cid] || [];
-      const group = groupByClient[cid] || [];
+    const groups = Object.entries(byClient).map(([cid, regular]) => {
       const overdueCount = regular.filter(t => t.deadline && t.deadline < todayStr).length;
-      return { clientId: cid, regular, group, overdueCount, total: regular.length + group.length };
+      return { clientId: cid, regular, overdueCount, total: regular.length };
     });
-
-    // Sort: most overdue first, then most tasks
     groups.sort((a, b) => {
       if (a.overdueCount !== b.overdueCount) return b.overdueCount - a.overdueCount;
       return b.total - a.total;
     });
-
     return groups;
-  }, [allTasks, todayStr, isGroupTask]);
+  }, [allTasks, todayStr]);
 
   const clientInfoMap = useMemo(() => {
     const m: Record<string, ClientInfo> = {};
@@ -287,27 +270,11 @@ const Tasks = () => {
 
   // === My tasks ===
   const myTasks = useMemo(() => allTasks.filter(t => t.assigned_to === user?.id), [allTasks, user?.id]);
-  const myRegular = useMemo(() => myTasks.filter(t => !isGroupTask(t)), [myTasks, isGroupTask]);
-  const myGrouped = useMemo(() => groupTasks(myRegular, todayStr), [myRegular, todayStr]);
-  const myGroupTasks = useMemo(() => myTasks.filter(t => isGroupTask(t)), [myTasks, isGroupTask]);
-  const mergeByClient = useCallback((tasks: Task[]) => {
-    const byClient: Record<string, Task[]> = {};
-    tasks.forEach(t => {
-      const key = t.client_id || "unknown";
-      if (!byClient[key]) byClient[key] = [];
-      byClient[key].push(t);
-    });
-    return Object.entries(byClient).map(([cid, ts]) => ({
-      clientId: cid,
-      clientName: clientMap[cid] || "Unbekannt",
-      parentTasks: ts,
-    }));
-  }, [clientMap]);
-  const myMergedGroups = useMemo(() => mergeByClient(myGroupTasks), [myGroupTasks, mergeByClient]);
+  const myGrouped = useMemo(() => groupTasks(myTasks, todayStr), [myTasks, todayStr]);
 
   // Summary stats
   const totalOpen = allTasks.length;
-  const overdueCount = useMemo(() => allTasks.filter(t => !isGroupTask(t) && t.deadline && t.deadline < todayStr).length, [allTasks, todayStr, isGroupTask]);
+  const overdueCount = useMemo(() => allTasks.filter(t => t.deadline && t.deadline < todayStr).length, [allTasks, todayStr]);
 
   const VIEW_TABS = [
     { key: "team" as const, label: "Team", count: totalOpen },
@@ -367,21 +334,7 @@ const Tasks = () => {
                 onKeyDown={e => { if (e.key === "Enter" && quickTitle.trim()) quickAdd(); }}
               />
             </div>
-            {myMergedGroups.length > 0 && (
-              <div className="space-y-2">
-                {myMergedGroups.map(mg => (
-                  <MergedGroupCard
-                    key={mg.clientId}
-                    clientId={mg.clientId}
-                    clientName={mg.clientName}
-                    parentTasks={mg.parentTasks as any}
-                    teamMap={teamNameMap}
-                    todayStr={todayStr}
-                    onSelect={selectTask}
-                  />
-                ))}
-              </div>
-            )}
+            {myTasks.length === 0 ? null : null}
             <div className="space-y-3">
               <TaskGroupSection groupKey="overdue" tasks={myGrouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
               <TaskGroupSection groupKey="today" tasks={myGrouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
@@ -398,14 +351,14 @@ const Tasks = () => {
         ) : (
           /* ====== TEAM VIEW: Client list ====== */
           <div className="space-y-3">
-            {clientTaskGroups.map(({ clientId, regular, group }) => {
+            {clientTaskGroups.map(({ clientId, regular }) => {
               const info = clientInfoMap[clientId] || { id: clientId, name: clientMap[clientId] || "Unbekannt", logo_url: null };
               return (
                 <ClientTaskRow
                   key={clientId}
                   client={info}
                   tasks={regular}
-                  groupParentTasks={group}
+                  groupParentTasks={[]}
                   todayStr={todayStr}
                   personNameMap={personNameMap}
                   teamNameMap={teamNameMap}

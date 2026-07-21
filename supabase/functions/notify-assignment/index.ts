@@ -79,21 +79,8 @@ Deno.serve(async (req) => {
     const typeLabel = typeLabels[piece.type] || piece.type;
     const title = piece.title || "Ohne Titel";
 
-    // 1. Create a task for the assignee
-    const { error: taskError } = await supabase.from("tasks").insert({
-      client_id: piece.client_id,
-      title: `${typeLabel} "${title}" bearbeiten`,
-      assigned_to,
-      priority: "normal",
-      status: "not_started",
-      tag: piece.type,
-      content_piece_id,
-      group_source: "auto_assignment",
-    });
-
-    if (taskError) {
-      console.error("Task creation error:", taskError);
-    }
+    // Auto-task creation disabled — all tasks are created manually.
+    const taskError = null as any;
 
     // 2. Send Slack notification
     const slackHeaders = {
