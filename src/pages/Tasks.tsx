@@ -1,169 +1,56 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, AlertTriangle, ChevronRight, CheckCheck } from "lucide-react";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, AlertTriangle, X } from "lucide-react";
+import { format, subDays } from "date-fns";
+import { motion } from "framer-motion";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { Task, TeamMember, GroupKey, groupTasks, getInitials, sortByPriority } from "@/components/tasks/constants";
-import { TaskCard } from "@/components/tasks";
-import TaskGroupSection from "@/components/tasks/TaskGroupSection";
-import MergedGroupCard from "@/components/tasks/MergedGroupCard";
-import CompletedTasksView from "@/components/tasks/CompletedTasksView";
+import { Task, TeamMember } from "@/components/tasks/constants";
+import TaskKanbanBoard from "@/components/tasks/TaskKanbanBoard";
+import NewTaskSheet from "@/components/tasks/NewTaskSheet";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useNavigate } from "react-router-dom";
 
-interface ClientInfo {
-  id: string;
-  name: string;
-  logo_url: string | null;
-}
-
-/** A single client row with logo, tasks grouped inline */
-const ClientTaskRow: React.FC<{
-  client: ClientInfo;
-  tasks: Task[];
-  groupParentTasks: Task[];
-  todayStr: string;
-  personNameMap: Record<string, string>;
-  teamNameMap: Record<string, { name: string | null }>;
-  onComplete: (task: Task) => void;
-  onSelect: (task: Task) => void;
-}> = React.memo(({ client, tasks, groupParentTasks, todayStr, personNameMap, teamNameMap, onComplete, onSelect }) => {
-  const [expanded, setExpanded] = useState(true);
-  const navigate = useNavigate();
-
-  const overdueCount = tasks.filter(t => t.deadline && t.deadline < todayStr).length;
-  const totalCount = tasks.length + groupParentTasks.length;
-
-  // Sort: overdue first, then by priority
-  const sortedTasks = useMemo(() => {
-    const sorted = [...tasks];
-    sorted.sort((a, b) => {
-      const aOverdue = a.deadline && a.deadline < todayStr ? 0 : 1;
-      const bOverdue = b.deadline && b.deadline < todayStr ? 0 : 1;
-      if (aOverdue !== bOverdue) return aOverdue - bOverdue;
-      const priorityOrder: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
-      return (priorityOrder[a.priority || "normal"] ?? 2) - (priorityOrder[b.priority || "normal"] ?? 2);
-    });
-    return sorted;
-  }, [tasks, todayStr]);
-
-  if (totalCount === 0) return null;
-
-  return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      {/* Client header */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 bg-surface-elevated cursor-pointer hover:bg-surface-hover transition-colors border-b border-border"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <Avatar className="h-8 w-8 rounded-lg shrink-0">
-          {client.logo_url ? (
-            <AvatarImage src={client.logo_url} alt={client.name} className="object-contain" />
-          ) : null}
-          <AvatarFallback className="rounded-lg text-[10px] font-bold bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
-            {client.name.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-display font-semibold truncate block">{client.name}</span>
-        </div>
-        {overdueCount > 0 && (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-destructive bg-destructive/10 px-2 py-0.5 rounded-full shrink-0">
-            <AlertTriangle className="h-3 w-3" /> {overdueCount}
-          </span>
-        )}
-        <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full shrink-0">
-          {totalCount}
-        </span>
-        <ChevronRight className={cn(
-          "h-4 w-4 text-muted-foreground transition-transform shrink-0",
-          expanded && "rotate-90"
-        )} />
-      </div>
-
-      {/* Tasks */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="p-2 space-y-1">
-              {/* Merged group tasks */}
-              {groupParentTasks.length > 0 && (
-                <div className="mb-2">
-                  <MergedGroupCard
-                    clientId={client.id}
-                    clientName={client.name}
-                    parentTasks={groupParentTasks as any}
-                    teamMap={teamNameMap}
-                    todayStr={todayStr}
-                    onSelect={onSelect}
-                  />
-                </div>
-              )}
-              {/* Regular tasks */}
-              <AnimatePresence mode="popLayout">
-                {sortedTasks.map(t => (
-                  <TaskCard
-                    key={t.id}
-                    task={t}
-                    showClient={false}
-                    showPerson
-                    personName={t.assigned_to ? personNameMap[t.assigned_to] : null}
-                    todayStr={todayStr}
-                    onComplete={onComplete}
-                    onSelect={onSelect}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-});
-
-ClientTaskRow.displayName = "ClientTaskRow";
+interface ClientInfo { id: string; name: string; logo_url: string | null }
 
 const Tasks = () => {
   const { user } = useAuth();
-  const qc = useQueryClient();
-  const [viewMode, setViewMode] = useState<"team" | "mine" | "done">("team");
+  const [params, setParams] = useSearchParams();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [quickTitle, setQuickTitle] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
   const todayStr = format(new Date(), "yyyy-MM-dd");
+  const doneCutoff = subDays(new Date(), 1).toISOString();
+
+  const person = params.get("person") || "all"; // all | me | userId
+  const clientFilter = params.get("client") || "all";
+  const priorityFilter = params.get("priority") || "all";
+  const search = params.get("q") || "";
+
+  const setParam = (key: string, val: string) => {
+    const next = new URLSearchParams(params);
+    if (!val || val === "all") next.delete(key); else next.set(key, val);
+    setParams(next, { replace: true });
+  };
 
   const { data: allTasks = [] } = useQuery({
-    queryKey: ["all-tasks-page"],
+    queryKey: ["kanban-tasks"],
     queryFn: async () => {
+      // Include all open tasks + tasks completed within 24h
       const { data, error } = await supabase
         .from("tasks" as any)
         .select("*")
-        .eq("is_completed", false)
         .is("parent_id", null)
-        .order("created_at", { ascending: true });
+        .or(`is_completed.eq.false,completed_at.gte.${doneCutoff}`)
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data as any[]) as Task[];
     },
+    refetchInterval: 30000,
   });
 
   const { data: team = [] } = useQuery({
@@ -181,14 +68,14 @@ const Tasks = () => {
   const { data: clients = [] } = useQuery({
     queryKey: ["clients-with-logos"],
     queryFn: async () => {
-      const { data } = await supabase.from("clients").select("id, name, logo_url").eq("status", "active").order("name");
+      const { data } = await supabase.from("clients").select("id, name, logo_url").order("name");
       return (data ?? []) as ClientInfo[];
     },
   });
 
   const clientMap = useMemo(() => {
-    const m: Record<string, string> = {};
-    clients.forEach(c => m[c.id] = c.name);
+    const m: Record<string, ClientInfo> = {};
+    clients.forEach(c => m[c.id] = c);
     return m;
   }, [clients]);
 
@@ -198,186 +85,127 @@ const Tasks = () => {
     return m;
   }, [team]);
 
-  const teamNameMap = useMemo(() => {
-    const m: Record<string, { name: string | null }> = {};
-    team.forEach(t => m[t.user_id] = { name: t.name });
-    return m;
-  }, [team]);
+  const filteredTasks = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return allTasks.filter(t => {
+      if (person === "me" && t.assigned_to !== user?.id) return false;
+      if (person !== "all" && person !== "me" && t.assigned_to !== person) return false;
+      if (clientFilter !== "all" && t.client_id !== clientFilter) return false;
+      if (priorityFilter === "high" && !(t.priority === "high" || t.priority === "urgent")) return false;
+      if (q && !t.title.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [allTasks, person, clientFilter, priorityFilter, search, user?.id]);
 
-  const personNameMap = useMemo(() => {
-    const m: Record<string, string> = {};
-    team.forEach(t => m[t.user_id] = t.name || t.email || "?");
-    return m;
-  }, [team]);
+  const overdueCount = useMemo(
+    () => filteredTasks.filter(t => !t.is_completed && t.deadline && t.deadline < todayStr).length,
+    [filteredTasks, todayStr]
+  );
 
-  // All tasks are manual now — no auto-generated group tasks.
-
-  const completeTask = useCallback(async (task: Task) => {
-    await supabase.from("tasks" as any).update({
-      is_completed: true,
-      status: "done",
-      completed_at: new Date().toISOString(),
-      completed_by: user?.id,
-    } as any).eq("id", task.id);
-    qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
-    qc.invalidateQueries({ queryKey: ["my-tasks"] });
-    qc.invalidateQueries({ queryKey: ["tasks", task.client_id] });
-    toast.success("✓ Erledigt");
-  }, [qc, user?.id]);
-
-  const selectTask = useCallback((task: Task) => setSelectedTask(task), []);
   const closeDetail = useCallback(() => setSelectedTask(null), []);
 
-  const quickAdd = async () => {
-    if (!quickTitle.trim() || !user) return;
-    await supabase.from("tasks" as any).insert({
-      title: quickTitle.trim(),
-      client_id: clients[0]?.id || "",
-      assigned_to: user.id,
-      created_by: user.id,
-      status: "not_started",
-    } as any);
-    setQuickTitle("");
-    qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
-    qc.invalidateQueries({ queryKey: ["my-tasks"] });
-    toast.success("Aufgabe erstellt");
-  };
-
-  // === Team view: Group by client ===
-  const clientTaskGroups = useMemo(() => {
-    const byClient: Record<string, Task[]> = {};
-    allTasks.forEach(t => {
-      const cid = t.client_id || "no-client";
-      if (!byClient[cid]) byClient[cid] = [];
-      byClient[cid].push(t);
-    });
-    const groups = Object.entries(byClient).map(([cid, regular]) => {
-      const overdueCount = regular.filter(t => t.deadline && t.deadline < todayStr).length;
-      return { clientId: cid, regular, overdueCount, total: regular.length };
-    });
-    groups.sort((a, b) => {
-      if (a.overdueCount !== b.overdueCount) return b.overdueCount - a.overdueCount;
-      return b.total - a.total;
-    });
-    return groups;
-  }, [allTasks, todayStr]);
-
-  const clientInfoMap = useMemo(() => {
-    const m: Record<string, ClientInfo> = {};
-    clients.forEach(c => m[c.id] = c);
-    return m;
-  }, [clients]);
-
-  // === My tasks ===
-  const myTasks = useMemo(() => allTasks.filter(t => t.assigned_to === user?.id), [allTasks, user?.id]);
-  const myGrouped = useMemo(() => groupTasks(myTasks, todayStr), [myTasks, todayStr]);
-
-  // Summary stats
-  const totalOpen = allTasks.length;
-  const overdueCount = useMemo(() => allTasks.filter(t => t.deadline && t.deadline < todayStr).length, [allTasks, todayStr]);
-
-  const VIEW_TABS = [
-    { key: "team" as const, label: "Team", count: totalOpen },
-    { key: "mine" as const, label: "Meine", count: myTasks.length },
-    { key: "done" as const, label: "Erledigt" },
-  ];
+  const hasActiveFilter = person !== "all" || clientFilter !== "all" || priorityFilter !== "all" || !!search;
 
   return (
     <AppLayout>
       <ErrorBoundary level="section">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
-        {/* Header */}
-        <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-display font-bold tracking-tight">Aufgaben</h1>
-            {overdueCount > 0 && viewMode !== "done" && (
-              <span className="flex items-center gap-1 text-[10px] font-mono text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
-                <AlertTriangle className="h-3 w-3" /> {overdueCount} überfällig
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1 bg-surface-elevated rounded-lg p-0.5 border border-border">
-            {VIEW_TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setViewMode(tab.key)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono transition-all",
-                  viewMode === tab.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {tab.label}
-                {tab.count !== undefined && (
-                  <span className={cn(
-                    "text-[10px] px-1.5 py-0 rounded-full",
-                    viewMode === tab.key ? "bg-primary-foreground/20" : "bg-muted/60"
-                  )}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {viewMode === "done" ? (
-          <CompletedTasksView team={team} />
-        ) : viewMode === "mine" ? (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-card border border-border">
-              <Plus className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-              <Input
-                value={quickTitle}
-                onChange={e => setQuickTitle(e.target.value)}
-                placeholder="Neue Aufgabe hinzufügen… (Enter)"
-                className="h-8 flex-1 text-sm bg-transparent border-0 shadow-none focus-visible:ring-0 px-0"
-                onKeyDown={e => { if (e.key === "Enter" && quickTitle.trim()) quickAdd(); }}
-              />
-            </div>
-            {myTasks.length === 0 ? null : null}
-            <div className="space-y-3">
-              <TaskGroupSection groupKey="overdue" tasks={myGrouped.overdue} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-              <TaskGroupSection groupKey="today" tasks={myGrouped.today} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-              <TaskGroupSection groupKey="week" tasks={myGrouped.week} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-              <TaskGroupSection groupKey="later" tasks={myGrouped.later} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-              <TaskGroupSection groupKey="no_deadline" tasks={myGrouped.no_deadline} defaultOpen={false} clientMap={clientMap} todayStr={todayStr} onComplete={completeTask} onSelect={selectTask} />
-              {myTasks.length === 0 && (
-                <div className="py-12 text-center text-xs text-muted-foreground/40 font-mono">
-                  Keine offenen Aufgaben ✓
-                </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+          {/* Header */}
+          <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-display font-bold tracking-tight">Aufgaben</h1>
+              {overdueCount > 0 && (
+                <span className="flex items-center gap-1 text-[10px] font-mono text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+                  <AlertTriangle className="h-3 w-3" /> {overdueCount} überfällig
+                </span>
               )}
             </div>
+            <Button onClick={() => setNewOpen(true)} size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" /> Neue Aufgabe
+            </Button>
           </div>
-        ) : (
-          /* ====== TEAM VIEW: Client list ====== */
-          <div className="space-y-3">
-            {clientTaskGroups.map(({ clientId, regular }) => {
-              const info = clientInfoMap[clientId] || { id: clientId, name: clientMap[clientId] || "Unbekannt", logo_url: null };
-              return (
-                <ClientTaskRow
-                  key={clientId}
-                  client={info}
-                  tasks={regular}
-                  groupParentTasks={[]}
-                  todayStr={todayStr}
-                  personNameMap={personNameMap}
-                  teamNameMap={teamNameMap}
-                  onComplete={completeTask}
-                  onSelect={selectTask}
-                />
-              );
-            })}
 
-            {totalOpen === 0 && (
-              <div className="py-12 text-center text-xs text-muted-foreground/40 font-mono">
-                Keine offenen Aufgaben ✓
-              </div>
+          {/* Filter bar */}
+          <div className="mb-4 flex flex-wrap items-center gap-2 p-2 rounded-xl bg-surface-elevated border border-border">
+            <div className="relative flex-1 min-w-[180px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={e => setParam("q", e.target.value)}
+                placeholder="Suchen…"
+                className="h-8 pl-8 text-xs bg-transparent border-0 shadow-none focus-visible:ring-1"
+              />
+            </div>
+
+            <Select value={person} onValueChange={v => setParam("person", v)}>
+              <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Personen</SelectItem>
+                <SelectItem value="me">Nur ich</SelectItem>
+                {team.map(t => <SelectItem key={t.user_id} value={t.user_id}>{t.name || t.email}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Select value={clientFilter} onValueChange={v => setParam("client", v)}>
+              <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Kunden</SelectItem>
+                {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Select value={priorityFilter} onValueChange={v => setParam("priority", v)}>
+              <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Priorität</SelectItem>
+                <SelectItem value="high">Hoch + Dringend</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilter && (
+              <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs" onClick={() => setParams({}, { replace: true })}>
+                <X className="h-3 w-3" /> Zurücksetzen
+              </Button>
             )}
           </div>
-        )}
 
-        <TaskDetailSheet task={selectedTask} onClose={closeDetail} team={team} clients={clients as any} teamMap={teamMap} />
-      </motion.div>
+          {/* Kanban board */}
+          <TaskKanbanBoard
+            tasks={filteredTasks}
+            clientMap={clientMap}
+            teamMap={teamMap}
+            todayStr={todayStr}
+            onSelect={setSelectedTask}
+          />
+
+          {filteredTasks.length === 0 && (
+            <div className="mt-8 py-12 text-center">
+              <p className="text-sm text-muted-foreground/60 font-mono mb-3">
+                {hasActiveFilter ? "Keine Aufgaben mit diesen Filtern" : "Noch keine Aufgaben"}
+              </p>
+              <Button onClick={() => setNewOpen(true)} size="sm" variant="outline" className="gap-1.5">
+                <Plus className="h-4 w-4" /> Erste Aufgabe erstellen
+              </Button>
+            </div>
+          )}
+        </motion.div>
+
+        <NewTaskSheet
+          open={newOpen}
+          onClose={() => setNewOpen(false)}
+          team={team}
+          clients={clients}
+          defaultClientId={clientFilter !== "all" ? clientFilter : null}
+          defaultAssignee={person !== "all" && person !== "me" ? person : (person === "me" ? user?.id : null)}
+        />
+
+        <TaskDetailSheet
+          task={selectedTask}
+          onClose={closeDetail}
+          team={team}
+          clients={clients}
+          teamMap={teamMap}
+        />
       </ErrorBoundary>
     </AppLayout>
   );
