@@ -27,6 +27,7 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
   not_started: { label: "Offen", cls: "bg-muted/60 text-foreground/70" },
   in_progress: { label: "In Arbeit", cls: "bg-blue-500/20 text-blue-300" },
   review: { label: "Review", cls: "bg-amber-500/20 text-amber-300" },
+  on_hold: { label: "On Hold", cls: "bg-zinc-500/20 text-zinc-300" },
   done: { label: "Erledigt", cls: "bg-emerald-500/20 text-emerald-300" },
 };
 
