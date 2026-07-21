@@ -21,7 +21,7 @@ export const WEEK_CONFIGS: Record<WeekFocus, WeekConfig> = {
     accent: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
     questions: [
       "Sind in den letzten zwei Wochen Anfragen über die DMs reingekommen? Wie war die Qualität?",
-      "Hat sich jemand gemeldet, von dem du dachtest „den hätte ich sonst nie erreicht"?",
+      'Hat sich jemand gemeldet, von dem du dachtest „den hätte ich sonst nie erreicht"?',
       "Gibt's einen Lead oder Termin, der gerade besonders heiß ist?",
     ],
   },
@@ -46,7 +46,7 @@ export const WEEK_CONFIGS: Record<WeekFocus, WeekConfig> = {
     questions: [
       "Wenn wir in den nächsten 30 Tagen eine Sache zusätzlich machen könnten — was hätte den größten Impact?",
       "Gibt's was bei deinen Mitbewerbern, das dir auffällt und das du auch willst?",
-      "Was würde dich sagen lassen: „Das war die beste Entscheidung, mit Marketlab zu arbeiten"?",
+      'Was würde dich sagen lassen: „Das war die beste Entscheidung, mit Marketlab zu arbeiten"?',
     ],
   },
   4: {
