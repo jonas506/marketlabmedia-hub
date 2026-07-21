@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Task, TeamMember, STATUS_CONFIG } from "./constants";
 import TaskKanbanCard from "./TaskKanbanCard";
-import { Circle, Loader2, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Circle, Loader2, MessageSquare, CheckCircle2, PauseCircle, ChevronDown, ChevronRight } from "lucide-react";
 
 interface ClientInfo { id: string; name: string; logo_url: string | null }
 
@@ -18,10 +18,11 @@ const COLUMN_META: Record<string, { label: string; icon: any; accent: string }> 
   not_started: { label: "Offen", icon: Circle, accent: "text-muted-foreground" },
   in_progress: { label: "In Arbeit", icon: Loader2, accent: "text-blue-400" },
   review: { label: "Review", icon: MessageSquare, accent: "text-amber-400" },
+  on_hold: { label: "On Hold", icon: PauseCircle, accent: "text-zinc-400" },
   done: { label: "Erledigt", icon: CheckCircle2, accent: "text-emerald-400" },
 };
 
-const COLUMNS = ["not_started", "in_progress", "review", "done"] as const;
+const COLUMNS = ["not_started", "in_progress", "review", "on_hold", "done"] as const;
 
 interface Props {
   tasks: Task[];
