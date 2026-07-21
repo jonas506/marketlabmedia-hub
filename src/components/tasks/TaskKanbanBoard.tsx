@@ -125,13 +125,30 @@ const Column: React.FC<{
   );
 };
 
+const COLLAPSE_KEY = "task-kanban-collapsed-v1";
+
 const TaskKanbanBoard: React.FC<Props> = ({ tasks, clientMap, teamMap, todayStr, onSelect }) => {
   const qc = useQueryClient();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = localStorage.getItem(COLLAPSE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return { done: true };
+  });
+
+  const toggleCollapsed = (s: string) => {
+    setCollapsed(prev => {
+      const next = { ...prev, [s]: !prev[s] };
+      try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   const columns = useMemo(() => {
-    const m: Record<string, Task[]> = { not_started: [], in_progress: [], review: [], done: [] };
+    const m: Record<string, Task[]> = { not_started: [], in_progress: [], review: [], on_hold: [], done: [] };
     tasks.forEach(t => {
       const s = t.status && m[t.status] ? t.status : "not_started";
       m[s].push(t);
