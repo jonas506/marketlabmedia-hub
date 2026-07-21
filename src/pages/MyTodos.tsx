@@ -13,7 +13,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { Task, TeamMember, groupTasks } from "@/components/tasks/constants";
 import { TaskCard } from "@/components/tasks";
 import TaskGroupSection from "@/components/tasks/TaskGroupSection";
-import TaskGroupCard from "@/components/tasks/TaskGroupCard";
+
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
 import FocusMode from "@/components/todos/FocusMode";
 
