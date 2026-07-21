@@ -107,6 +107,7 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
   const isInternalReview = activePhase === "internal_review";
   const isAdminLike = userRole === "admin" || userRole === "head_of_content";
   const showDeadlinePriority = ["script", "filmed", "review", "editing"].includes(activePhase);
+  const internalFeedback = piece.internal_note?.trim();
 
   const priorityOption = PRIORITY_OPTIONS.find(p => p.value === (piece.priority || "normal"));
   const NextIcon = nextPhase ? icons[config.phases.find((p) => p.key === nextPhase)?.emoji as keyof typeof icons] : null;
@@ -295,6 +296,37 @@ const PipelinePieceCard: React.FC<PipelinePieceCardProps> = React.memo(({
                 }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {internalFeedback && !isInternalReview && (
+        <div className="pl-7 sm:pl-9">
+          <div className="flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 p-2.5">
+            <MessageSquare className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-primary/80">
+                Internes Feedback aus Review
+                {piece.phase_changed_at && (
+                  <span className="ml-1 normal-case tracking-normal text-muted-foreground/70">
+                    · {relativeTime(piece.phase_changed_at)}
+                  </span>
+                )}
+              </div>
+              <p className="whitespace-pre-wrap text-xs leading-relaxed text-foreground/90">
+                {internalFeedback}
+              </p>
+            </div>
+            {canEdit && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[10px] text-muted-foreground shrink-0"
+                onClick={() => onUpdatePiece(piece.id, { internal_note: null })}
+              >
+                ✕
+              </Button>
+            )}
           </div>
         </div>
       )}
