@@ -425,6 +425,77 @@ export type Database = {
           },
         ]
       }
+      client_checkins: {
+        Row: {
+          answers: Json
+          calendar_week: number
+          checkin_date: string
+          client_id: string
+          content_ideas: string | null
+          created_at: string
+          created_by: string | null
+          escalated: boolean
+          id: string
+          mood: string | null
+          next_action: string | null
+          next_action_date: string | null
+          nps: number | null
+          updated_at: string
+          upsell_flag: boolean
+          week_focus: number
+          wishes: string | null
+          year: number
+        }
+        Insert: {
+          answers?: Json
+          calendar_week: number
+          checkin_date?: string
+          client_id: string
+          content_ideas?: string | null
+          created_at?: string
+          created_by?: string | null
+          escalated?: boolean
+          id?: string
+          mood?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          nps?: number | null
+          updated_at?: string
+          upsell_flag?: boolean
+          week_focus: number
+          wishes?: string | null
+          year: number
+        }
+        Update: {
+          answers?: Json
+          calendar_week?: number
+          checkin_date?: string
+          client_id?: string
+          content_ideas?: string | null
+          created_at?: string
+          created_by?: string | null
+          escalated?: boolean
+          id?: string
+          mood?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          nps?: number | null
+          updated_at?: string
+          upsell_flag?: boolean
+          week_focus?: number
+          wishes?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_checkins_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_contract_months: {
         Row: {
           amount_netto: number
