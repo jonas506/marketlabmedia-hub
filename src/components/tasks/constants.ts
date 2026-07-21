@@ -37,6 +37,7 @@ export const STATUS_CONFIG = [
   { value: "not_started", label: "Offen", cssClass: "monday-status-default" },
   { value: "in_progress", label: "Begonnen", cssClass: "monday-status-working" },
   { value: "review", label: "Besprechen", cssClass: "monday-status-review" },
+  { value: "on_hold", label: "On Hold", cssClass: "monday-status-default" },
   { value: "done", label: "Fertig", cssClass: "monday-status-done" },
 ];
 

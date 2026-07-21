@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Task, TeamMember, STATUS_CONFIG } from "./constants";
 import TaskKanbanCard from "./TaskKanbanCard";
-import { Circle, Loader2, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Circle, Loader2, MessageSquare, CheckCircle2, PauseCircle, ChevronDown, ChevronRight } from "lucide-react";
 
 interface ClientInfo { id: string; name: string; logo_url: string | null }
 
@@ -18,10 +18,11 @@ const COLUMN_META: Record<string, { label: string; icon: any; accent: string }> 
   not_started: { label: "Offen", icon: Circle, accent: "text-muted-foreground" },
   in_progress: { label: "In Arbeit", icon: Loader2, accent: "text-blue-400" },
   review: { label: "Review", icon: MessageSquare, accent: "text-amber-400" },
+  on_hold: { label: "On Hold", icon: PauseCircle, accent: "text-zinc-400" },
   done: { label: "Erledigt", icon: CheckCircle2, accent: "text-emerald-400" },
 };
 
-const COLUMNS = ["not_started", "in_progress", "review", "done"] as const;
+const COLUMNS = ["not_started", "in_progress", "review", "on_hold", "done"] as const;
 
 interface Props {
   tasks: Task[];
@@ -38,10 +39,40 @@ const Column: React.FC<{
   teamMap: Record<string, TeamMember>;
   todayStr: string;
   onSelect: (t: Task) => void;
-}> = ({ status, tasks, clientMap, teamMap, todayStr, onSelect }) => {
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}> = ({ status, tasks, clientMap, teamMap, todayStr, onSelect, collapsed, onToggleCollapse }) => {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const meta = COLUMN_META[status];
   const Icon = meta.icon;
+
+  if (collapsed) {
+    return (
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "flex flex-col rounded-xl border border-border/50 bg-surface-elevated/40 transition-colors cursor-pointer hover:bg-surface-elevated/70",
+          isOver && "border-primary/60 bg-primary/10"
+        )}
+        onClick={onToggleCollapse}
+        style={{ width: 44 }}
+      >
+        <div className="flex flex-col items-center gap-2 py-3">
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          <Icon className={cn("h-3.5 w-3.5", meta.accent)} />
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full">
+            {tasks.length}
+          </span>
+          <span
+            className="text-xs font-display font-semibold uppercase tracking-wide text-muted-foreground"
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+          >
+            {meta.label}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-w-0">
@@ -53,6 +84,15 @@ const Column: React.FC<{
             {tasks.length}
           </span>
         </div>
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="text-muted-foreground/60 hover:text-foreground transition-colors"
+            aria-label="Spalte einklappen"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
       <div
         ref={setNodeRef}
@@ -85,13 +125,30 @@ const Column: React.FC<{
   );
 };
 
+const COLLAPSE_KEY = "task-kanban-collapsed-v1";
+
 const TaskKanbanBoard: React.FC<Props> = ({ tasks, clientMap, teamMap, todayStr, onSelect }) => {
   const qc = useQueryClient();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = localStorage.getItem(COLLAPSE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return { done: true };
+  });
+
+  const toggleCollapsed = (s: string) => {
+    setCollapsed(prev => {
+      const next = { ...prev, [s]: !prev[s] };
+      try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   const columns = useMemo(() => {
-    const m: Record<string, Task[]> = { not_started: [], in_progress: [], review: [], done: [] };
+    const m: Record<string, Task[]> = { not_started: [], in_progress: [], review: [], on_hold: [], done: [] };
     tasks.forEach(t => {
       const s = t.status && m[t.status] ? t.status : "not_started";
       m[s].push(t);
@@ -146,17 +203,20 @@ const TaskKanbanBoard: React.FC<Props> = ({ tasks, clientMap, teamMap, todayStr,
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="flex gap-3 items-stretch">
         {COLUMNS.map(s => (
-          <Column
-            key={s}
-            status={s}
-            tasks={columns[s]}
-            clientMap={clientMap}
-            teamMap={teamMap}
-            todayStr={todayStr}
-            onSelect={onSelect}
-          />
+          <div key={s} className={collapsed[s] ? "flex-shrink-0" : "flex-1 min-w-0"}>
+            <Column
+              status={s}
+              tasks={columns[s]}
+              clientMap={clientMap}
+              teamMap={teamMap}
+              todayStr={todayStr}
+              onSelect={onSelect}
+              collapsed={collapsed[s]}
+              onToggleCollapse={() => toggleCollapsed(s)}
+            />
+          </div>
         ))}
       </div>
       <DragOverlay>

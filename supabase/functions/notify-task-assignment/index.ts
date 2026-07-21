@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       .single();
 
     const assigneeName = profile?.name || "Unbekannt";
-    const slackUserId = profile?.slack_user_id || null;
+    let slackUserId = profile?.slack_user_id || null;
 
     const slackHeaders = {
       Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -61,22 +61,48 @@ Deno.serve(async (req) => {
       "Content-Type": "application/json",
     };
 
-    // Try DM first
-    let dmChannelId: string | null = null;
-
-    if (slackUserId) {
+    // If slack_user_id looks like a DM channel (D...) use as-is.
+    // Otherwise, if we have an email, look up the real Slack user ID and cache it.
+    if (!slackUserId && profile?.email) {
       try {
-        const dmRes = await fetch(`${GATEWAY_URL}/conversations.open`, {
-          method: "POST",
-          headers: slackHeaders,
-          body: JSON.stringify({ users: slackUserId }),
-        });
-        const dmData = await dmRes.json();
-        if (dmData.ok && dmData.channel?.id) {
-          dmChannelId = dmData.channel.id;
+        const lookupRes = await fetch(
+          `${GATEWAY_URL}/users.lookupByEmail?email=${encodeURIComponent(profile.email)}`,
+          { method: "POST", headers: slackHeaders },
+        );
+        const lookupData = await lookupRes.json();
+        if (lookupData.ok && lookupData.user?.id) {
+          slackUserId = lookupData.user.id;
+          await supabase.from("profiles").update({ slack_user_id: slackUserId }).eq("user_id", assigned_to);
+        } else {
+          console.log("users.lookupByEmail failed:", JSON.stringify(lookupData));
         }
       } catch (e) {
-        console.log("DM open failed:", e);
+        console.log("lookupByEmail error:", e);
+      }
+    }
+
+    // Open DM
+    let dmChannelId: string | null = null;
+    if (slackUserId) {
+      if (slackUserId.startsWith("D")) {
+        // Already a DM channel id
+        dmChannelId = slackUserId;
+      } else {
+        try {
+          const dmRes = await fetch(`${GATEWAY_URL}/conversations.open`, {
+            method: "POST",
+            headers: slackHeaders,
+            body: JSON.stringify({ users: slackUserId }),
+          });
+          const dmData = await dmRes.json();
+          if (dmData.ok && dmData.channel?.id) {
+            dmChannelId = dmData.channel.id;
+          } else {
+            console.log("conversations.open failed:", JSON.stringify(dmData));
+          }
+        } catch (e) {
+          console.log("DM open failed:", e);
+        }
       }
     }
 
@@ -85,11 +111,24 @@ Deno.serve(async (req) => {
     if (!targetChannelId) {
       const channelsRes = await fetch(
         `${GATEWAY_URL}/conversations.list?types=public_channel&limit=999&exclude_archived=true`,
-        { headers: slackHeaders }
+        { method: "POST", headers: slackHeaders },
       );
       const channelsData = await channelsRes.json();
       const channels = channelsData.channels || [];
       targetChannelId = channels.find((c: any) => c.name === FALLBACK_CHANNEL)?.id;
+
+      // Auto-join the fallback public channel so postMessage works.
+      if (targetChannelId) {
+        try {
+          await fetch(`${GATEWAY_URL}/conversations.join`, {
+            method: "POST",
+            headers: slackHeaders,
+            body: JSON.stringify({ channel: targetChannelId }),
+          });
+        } catch (e) {
+          console.log("conversations.join failed:", e);
+        }
+      }
     }
 
     if (!targetChannelId) {
