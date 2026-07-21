@@ -18,6 +18,7 @@ import ClientApproval from "./pages/ClientApproval";
 import TeamOverview from "./pages/TeamOverview";
 import Checklists from "./pages/Checklists";
 import SOPs from "./pages/SOPs";
+import Checkins from "./pages/Checkins";
 import PromptLibrary from "./pages/PromptLibrary";
 
 import MarketingDashboard from "./pages/MarketingDashboard";
@@ -118,6 +119,7 @@ const App = () => (
                   <Route path="/prozesse" element={<Navigate to="/checklists" replace />} />
                   <Route path="/checklists" element={<ProtectedRoute><Checklists /></ProtectedRoute>} />
                   <Route path="/sops" element={<ProtectedRoute><SOPs /></ProtectedRoute>} />
+                  <Route path="/checkins" element={<ProtectedRoute><Checkins /></ProtectedRoute>} />
                   <Route path="/prompts" element={<ProtectedRoute><PromptLibrary /></ProtectedRoute>} />
                   
                   <Route path="/marketing" element={<ProtectedRoute><MarketingDashboard /></ProtectedRoute>} />

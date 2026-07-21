@@ -12,6 +12,7 @@ import ReviewQueue from "@/components/ReviewQueue";
 import CutterFocusBoard from "@/components/CutterFocusBoard";
 import ContractRunwayWidget from "@/components/ContractRunwayWidget";
 import FinanzenAlertWidget from "@/components/FinanzenAlertWidget";
+import CheckinsWidget from "@/components/CheckinsWidget";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useMonthlyChecklistTrigger } from "@/hooks/useChecklistTriggers";
@@ -76,6 +77,7 @@ const Dashboard = () => {
             <ErrorBoundary level="widget"><FinanzenAlertWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
             <ErrorBoundary level="widget"><ContractRunwayWidget /></ErrorBoundary>
+            <ErrorBoundary level="widget"><CheckinsWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><BottleneckAlert /></ErrorBoundary>
             <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>
@@ -88,6 +90,7 @@ const Dashboard = () => {
         {role === "head_of_content" && (
           <div className="space-y-4 sm:space-y-6">
             <ErrorBoundary level="widget"><WeeklyKPIs /></ErrorBoundary>
+            <ErrorBoundary level="widget"><CheckinsWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><ReviewQueue /></ErrorBoundary>
             <ErrorBoundary level="widget"><TeamWorkloadWidget /></ErrorBoundary>
             <ErrorBoundary level="widget"><OnboardingOverview /></ErrorBoundary>

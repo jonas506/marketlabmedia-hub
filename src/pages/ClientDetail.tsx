@@ -15,6 +15,7 @@ import TaskList from "@/components/client/TaskList";
 import StorySequences from "@/components/client/StorySequences";
 import ClientActivityTimeline from "@/components/client/ClientActivityTimeline";
 import ClientChecklists from "@/components/client/ClientChecklists";
+import ClientCheckins from "@/components/client/ClientCheckins";
 import ClientDashboard from "@/components/client/ClientDashboard";
 import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
 import OnboardingBanner from "@/components/OnboardingBanner";
@@ -24,7 +25,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import {
   ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
-  Smartphone, ClipboardList,
+  Smartphone, ClipboardList, MessageCircleHeart,
   TrendingUp, Clock, Info, Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ const MODULE_ITEMS = [
   { key: "tasks", label: "Aufgaben", icon: ListChecks },
   { key: "stories", label: "Stories", icon: Smartphone },
   { key: "checklists", label: "Checklisten", icon: ClipboardList },
+  { key: "checkins", label: "Check-ins", icon: MessageCircleHeart },
   { key: "marketing", label: "Marketing", icon: TrendingUp },
   { key: "stunden", label: "Stunden", icon: Clock, adminOnly: true },
   { key: "activity", label: "Verlauf", icon: Clock },
@@ -189,6 +191,12 @@ const ClientDetail = () => {
         return (
           <ErrorBoundary level="section">
             <ClientChecklists clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "checkins":
+        return (
+          <ErrorBoundary level="section">
+            <ClientCheckins clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
       case "marketing":
