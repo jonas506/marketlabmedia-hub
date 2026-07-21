@@ -7,14 +7,16 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, AlertTriangle, X } from "lucide-react";
+import { Plus, Search, AlertTriangle, X, LayoutGrid, User, Building2, Flag } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { motion } from "framer-motion";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Task, TeamMember } from "@/components/tasks/constants";
 import TaskKanbanBoard from "@/components/tasks/TaskKanbanBoard";
+import TaskGroupedView from "@/components/tasks/TaskGroupedView";
 import NewTaskSheet from "@/components/tasks/NewTaskSheet";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
+import { cn } from "@/lib/utils";
 
 interface ClientInfo { id: string; name: string; logo_url: string | null }
 
@@ -30,6 +32,14 @@ const Tasks = () => {
   const clientFilter = params.get("client") || "all";
   const priorityFilter = params.get("priority") || "all";
   const search = params.get("q") || "";
+  const view = (params.get("view") || "status") as "status" | "assignee" | "client" | "priority";
+
+  const VIEWS: { key: typeof view; label: string; icon: any }[] = [
+    { key: "status", label: "Status", icon: LayoutGrid },
+    { key: "assignee", label: "Mitarbeiter", icon: User },
+    { key: "client", label: "Kunde", icon: Building2 },
+    { key: "priority", label: "Priorität", icon: Flag },
+  ];
 
   const setParam = (key: string, val: string) => {
     const next = new URLSearchParams(params);
@@ -169,14 +179,46 @@ const Tasks = () => {
             )}
           </div>
 
-          {/* Kanban board */}
-          <TaskKanbanBoard
-            tasks={filteredTasks}
-            clientMap={clientMap}
-            teamMap={teamMap}
-            todayStr={todayStr}
-            onSelect={setSelectedTask}
-          />
+          {/* View switcher */}
+          <div className="mb-3 inline-flex items-center gap-1 p-1 rounded-lg bg-surface-elevated border border-border">
+            {VIEWS.map(v => {
+              const Icon = v.icon;
+              const active = view === v.key;
+              return (
+                <button
+                  key={v.key}
+                  onClick={() => setParam("view", v.key === "status" ? "" : v.key)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                    active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {v.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Board */}
+          {view === "status" ? (
+            <TaskKanbanBoard
+              tasks={filteredTasks}
+              clientMap={clientMap}
+              teamMap={teamMap}
+              todayStr={todayStr}
+              onSelect={setSelectedTask}
+            />
+          ) : (
+            <TaskGroupedView
+              groupBy={view}
+              tasks={filteredTasks}
+              clientMap={clientMap}
+              teamMap={teamMap}
+              todayStr={todayStr}
+              onSelect={setSelectedTask}
+            />
+          )}
 
           {filteredTasks.length === 0 && (
             <div className="mt-8 py-12 text-center">
