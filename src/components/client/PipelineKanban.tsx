@@ -30,6 +30,8 @@ interface ContentPiece {
   tag?: string | null;
   scheduled_post_date?: string | null;
   slide_images?: string[] | null;
+  internal_note?: string | null;
+  phase_changed_at?: string | null;
 }
 
 interface PhaseConfig {
@@ -61,6 +63,11 @@ const PRIORITY_COLORS: Record<string, string> = {
   high: "bg-orange-500",
   normal: "bg-primary",
   low: "bg-muted-foreground/40",
+};
+
+const formatShortDate = (value?: string | null) => {
+  if (!value) return null;
+  return format(new Date(value), "dd.MM., HH:mm", { locale: de });
 };
 
 const PipelineKanban: React.FC<PipelineKanbanProps> = ({
@@ -177,6 +184,7 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                     const assigneeName = getTeamName(piece.assigned_to);
                     const priority = piece.priority || "normal";
                     const showPriority = priority !== "normal";
+                    const internalFeedback = piece.internal_note?.trim();
                     return (
                       <motion.div
                         key={piece.id}
@@ -245,6 +253,23 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                           </div>
                         )}
 
+                        {internalFeedback && (
+                          <div className="mt-2.5 rounded-lg border border-primary/20 bg-primary/5 p-2">
+                            <div className="mb-1 flex items-center gap-1.5 text-[9.5px] font-mono uppercase tracking-wider text-primary/80">
+                              <MessageSquare className="h-2.5 w-2.5" />
+                              Internes Feedback
+                              {piece.phase_changed_at && (
+                                <span className="normal-case tracking-normal text-muted-foreground/70">
+                                  · {formatShortDate(piece.phase_changed_at)}
+                                </span>
+                              )}
+                            </div>
+                            <p className="whitespace-pre-wrap text-[11px] leading-snug text-foreground/90 line-clamp-4">
+                              {internalFeedback}
+                            </p>
+                          </div>
+                        )}
+
                         {/* Footer row: assignee + icons */}
                         <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-border/40">
                           {assigneeName ? (
@@ -273,7 +298,7 @@ const PipelineKanban: React.FC<PipelineKanbanProps> = ({
                                 </a>
                               ) : null;
                             })()}
-                            {piece.client_comment && (
+                            {(piece.client_comment || internalFeedback) && (
                               <MessageSquare className="h-3 w-3 text-[hsl(var(--runway-yellow))]" />
                             )}
                             {piece.scheduled_post_date && (
