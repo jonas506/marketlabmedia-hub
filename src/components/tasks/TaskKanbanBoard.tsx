@@ -39,10 +39,40 @@ const Column: React.FC<{
   teamMap: Record<string, TeamMember>;
   todayStr: string;
   onSelect: (t: Task) => void;
-}> = ({ status, tasks, clientMap, teamMap, todayStr, onSelect }) => {
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}> = ({ status, tasks, clientMap, teamMap, todayStr, onSelect, collapsed, onToggleCollapse }) => {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const meta = COLUMN_META[status];
   const Icon = meta.icon;
+
+  if (collapsed) {
+    return (
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "flex flex-col rounded-xl border border-border/50 bg-surface-elevated/40 transition-colors cursor-pointer hover:bg-surface-elevated/70",
+          isOver && "border-primary/60 bg-primary/10"
+        )}
+        onClick={onToggleCollapse}
+        style={{ width: 44 }}
+      >
+        <div className="flex flex-col items-center gap-2 py-3">
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          <Icon className={cn("h-3.5 w-3.5", meta.accent)} />
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full">
+            {tasks.length}
+          </span>
+          <span
+            className="text-xs font-display font-semibold uppercase tracking-wide text-muted-foreground"
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+          >
+            {meta.label}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-w-0">
@@ -54,6 +84,15 @@ const Column: React.FC<{
             {tasks.length}
           </span>
         </div>
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="text-muted-foreground/60 hover:text-foreground transition-colors"
+            aria-label="Spalte einklappen"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
       <div
         ref={setNodeRef}
