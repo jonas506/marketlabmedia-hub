@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import MobileDatePicker from "@/components/MobileDatePicker";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon, Clock, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -52,6 +52,18 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
     qc.invalidateQueries({ queryKey: ["my-tasks"] });
     qc.invalidateQueries({ queryKey: ["tasks", t.client_id] });
     toast.success("✓ Erledigt");
+    onClose();
+  }, [qc, onClose]);
+
+  const deleteTask = useCallback(async (t: Task) => {
+    if (!confirm(`Aufgabe „${t.title}" wirklich löschen?`)) return;
+    const { error } = await supabase.from("tasks" as any).delete().eq("id", t.id);
+    if (error) { toast.error("Löschen fehlgeschlagen"); return; }
+    qc.invalidateQueries({ queryKey: ["all-tasks-page"] });
+    qc.invalidateQueries({ queryKey: ["my-tasks"] });
+    qc.invalidateQueries({ queryKey: ["kanban-tasks"] });
+    qc.invalidateQueries({ queryKey: ["tasks"] });
+    toast.success("Aufgabe gelöscht");
     onClose();
   }, [qc, onClose]);
 
@@ -218,6 +230,18 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
                   <span>von {teamMap[selectedTask.created_by].name}</span>
                 )}
               </div>
+            </div>
+
+            <div className="pt-4 border-t border-border/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteTask(selectedTask)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Aufgabe löschen
+              </Button>
             </div>
           </div>
         )}
