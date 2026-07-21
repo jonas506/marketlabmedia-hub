@@ -211,6 +211,14 @@ const Tasks = () => {
               todayStr={todayStr}
               onSelect={setSelectedTask}
             />
+          ) : view === "list" ? (
+            <TaskListView
+              tasks={filteredTasks}
+              clientMap={clientMap}
+              teamMap={teamMap}
+              todayStr={todayStr}
+              onSelect={setSelectedTask}
+            />
           ) : (
             <TaskGroupedView
               groupBy={view}
