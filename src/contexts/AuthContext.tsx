@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        currentUserId = session.user.id;
         fetchUserData(session.user.id);
       } else {
         setRoleLoaded(true);
