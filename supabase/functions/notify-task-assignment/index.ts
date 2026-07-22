@@ -147,6 +147,10 @@ Deno.serve(async (req) => {
       messageText = dmChannelId
         ? `👀 Deine Aufgabe ist bereit zur Freigabe:\n\n*${task_title}*${clientSuffix}`
         : `👀 *${assigneeName}*: Aufgabe „${task_title}" ist zur Freigabe bereit${clientSuffix}`;
+    } else if (kind === "completed") {
+      messageText = dmChannelId
+        ? `✅ Deine Aufgabe wurde erledigt:\n\n*${task_title}*${clientSuffix}`
+        : `✅ *${assigneeName}*: Aufgabe „${task_title}" wurde erledigt${clientSuffix}`;
     } else {
       messageText = dmChannelId
         ? isGroup
@@ -156,6 +160,7 @@ Deno.serve(async (req) => {
           ? `📋 *${assigneeName}* hat *${task_count} neue Aufgaben* erhalten:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${clientSuffix}`
           : `📋 *${assigneeName}* hat eine neue Aufgabe:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${clientSuffix}`;
     }
+
 
     const msgRes = await fetch(`${GATEWAY_URL}/chat.postMessage`, {
       method: "POST",
