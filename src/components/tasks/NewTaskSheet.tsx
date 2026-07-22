@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MobileDatePicker from "@/components/MobileDatePicker";
-import { CalendarIcon, Sparkles } from "lucide-react";
+import { CalendarIcon, Sparkles, Repeat, BookmarkPlus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -16,14 +16,25 @@ import { toast } from "sonner";
 import { TeamMember, PRIORITY_CONFIG } from "./constants";
 
 const QUICK_TEMPLATES = [
-  "Reel posten",
-  "Carousel posten",
-  "Skript schreiben",
-  "Schnitt",
-  "Feedback einholen",
-  "Setting Call",
-  "Follow-up",
+  "Reel posten", "Carousel posten", "Skript schreiben", "Schnitt",
+  "Feedback einholen", "Setting Call", "Follow-up",
 ];
+
+const RECURRENCE_OPTIONS = [
+  { value: "none", label: "Einmalig" },
+  { value: "daily", label: "Täglich" },
+  { value: "weekdays", label: "Mo–Fr" },
+  { value: "weekly", label: "Wöchentlich" },
+  { value: "monthly", label: "Monatlich" },
+];
+
+interface CustomTemplate {
+  id: string; name: string; title: string; priority: string | null;
+  default_assignee: string | null; default_client_id: string | null;
+  deadline_offset_days: number | null;
+  recurrence_rule: string | null; notes: string | null;
+  created_by: string | null;
+}
 
 interface Props {
   open: boolean;
@@ -45,19 +56,41 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
   const [dueTime, setDueTime] = useState("");
   const [priority, setPriority] = useState("normal");
   const [notes, setNotes] = useState("");
+  const [recurrence, setRecurrence] = useState("none");
   const [saving, setSaving] = useState(false);
+  const [saveAsTpl, setSaveAsTpl] = useState(false);
+  const [tplName, setTplName] = useState("");
+
+  const { data: customTemplates = [] } = useQuery({
+    queryKey: ["task-templates"],
+    queryFn: async () => {
+      const { data } = await supabase.from("task_templates" as any).select("*").order("name");
+      return (data ?? []) as CustomTemplate[];
+    },
+  });
 
   useEffect(() => {
     if (open) {
-      setTitle("");
-      setClientId(defaultClientId || "");
+      setTitle(""); setClientId(defaultClientId || "");
       setAssignee(defaultAssignee || user?.id || "");
-      setDeadline(undefined);
-      setDueTime("");
-      setPriority("normal");
-      setNotes("");
+      setDeadline(undefined); setDueTime("");
+      setPriority("normal"); setNotes("");
+      setRecurrence("none"); setSaveAsTpl(false); setTplName("");
     }
   }, [open, defaultClientId, defaultAssignee, user?.id]);
+
+  const applyTemplate = (tpl: CustomTemplate) => {
+    setTitle(tpl.title);
+    setPriority(tpl.priority || "normal");
+    if (tpl.default_assignee) setAssignee(tpl.default_assignee);
+    if (tpl.default_client_id) setClientId(tpl.default_client_id);
+    if (tpl.deadline_offset_days != null) {
+      const d = new Date(); d.setDate(d.getDate() + tpl.deadline_offset_days);
+      setDeadline(d);
+    }
+    if (tpl.recurrence_rule) setRecurrence(tpl.recurrence_rule);
+    if (tpl.notes) setNotes(tpl.notes);
+  };
 
   const canSave = title.trim().length > 0 && !!assignee;
 
@@ -65,7 +98,7 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
     if (!canSave || !user) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("tasks" as any).insert({
+      const payload: any = {
         title: title.trim(),
         client_id: clientId || null,
         assigned_to: assignee,
@@ -75,8 +108,27 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
         deadline: deadline ? format(deadline, "yyyy-MM-dd") : null,
         due_time: dueTime || null,
         notes: notes.trim() || null,
-      } as any);
+        recurrence_rule: recurrence === "none" ? null : recurrence,
+      };
+      const { error } = await supabase.from("tasks" as any).insert(payload);
       if (error) throw error;
+
+      if (saveAsTpl && tplName.trim()) {
+        await supabase.from("task_templates" as any).insert({
+          name: tplName.trim(),
+          title: title.trim(),
+          priority,
+          default_assignee: assignee,
+          default_client_id: clientId || null,
+          deadline_offset_days: deadline ? Math.round((deadline.getTime() - Date.now()) / 86400000) : null,
+          recurrence_rule: recurrence === "none" ? null : recurrence,
+          notes: notes.trim() || null,
+          is_shared: true,
+          created_by: user.id,
+        });
+        qc.invalidateQueries({ queryKey: ["task-templates"] });
+      }
+
       qc.invalidateQueries({ queryKey: ["kanban-tasks"] });
       qc.invalidateQueries({ queryKey: ["my-todos-page"] });
       qc.invalidateQueries({ queryKey: ["my-tasks"] });
@@ -89,6 +141,12 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
     }
   };
 
+  const deleteTemplate = async (id: string) => {
+    if (!confirm("Vorlage löschen?")) return;
+    await supabase.from("task_templates" as any).delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["task-templates"] });
+  };
+
   return (
     <Sheet open={open} onOpenChange={o => !o && onClose()}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
@@ -97,7 +155,6 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
         </SheetHeader>
 
         <div className="space-y-5 pt-4">
-          {/* Quick templates */}
           <div>
             <div className="flex items-center gap-1.5 mb-2">
               <Sparkles className="h-3 w-3 text-primary" />
@@ -105,34 +162,38 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
             </div>
             <div className="flex flex-wrap gap-1.5">
               {QUICK_TEMPLATES.map(tpl => (
-                <button
-                  key={tpl}
-                  type="button"
-                  onClick={() => setTitle(tpl)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-xs border transition-all",
-                    title === tpl
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-surface-elevated border-border hover:border-primary/50 text-foreground"
-                  )}
-                >
-                  {tpl}
-                </button>
+                <button key={tpl} type="button" onClick={() => setTitle(tpl)}
+                  className={cn("px-2.5 py-1 rounded-full text-xs border transition-all",
+                    title === tpl ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-surface-elevated border-border hover:border-primary/50")}
+                >{tpl}</button>
               ))}
             </div>
+            {customTemplates.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {customTemplates.map(tpl => (
+                  <div key={tpl.id} className="group flex items-center gap-0.5 bg-primary/10 rounded-full border border-primary/30">
+                    <button type="button" onClick={() => applyTemplate(tpl)}
+                      className="px-2.5 py-1 text-xs text-primary hover:text-primary-foreground hover:bg-primary rounded-full transition-colors">
+                      ⚡ {tpl.name}
+                    </button>
+                    {tpl.created_by === user?.id && (
+                      <button type="button" onClick={() => deleteTemplate(tpl.id)}
+                        className="opacity-0 group-hover:opacity-100 pr-1.5 text-muted-foreground hover:text-destructive">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Title */}
           <div>
             <label className="text-[10px] font-mono uppercase text-muted-foreground mb-1 block">Titel *</label>
-            <Input
-              autoFocus
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="Was ist zu tun?"
-              className="h-10"
-              onKeyDown={e => { if (e.key === "Enter" && canSave) save(); }}
-            />
+            <Input autoFocus value={title} onChange={e => setTitle(e.target.value)}
+              placeholder="Was ist zu tun?" className="h-10"
+              onKeyDown={e => { if (e.key === "Enter" && canSave) save(); }} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -169,19 +230,28 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
               <Input type="time" value={dueTime} onChange={e => setDueTime(e.target.value)} className="h-9 text-xs" />
             </div>
             <div className="col-span-2">
+              <label className="text-[10px] font-mono uppercase text-muted-foreground mb-1 flex items-center gap-1">
+                <Repeat className="h-3 w-3" /> Wiederholung
+              </label>
+              <Select value={recurrence} onValueChange={setRecurrence}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {RECURRENCE_OPTIONS.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {recurrence !== "none" && (
+                <p className="mt-1 text-[10px] text-muted-foreground/70">
+                  Nach Erledigung wird automatisch die nächste Instanz erstellt.
+                </p>
+              )}
+            </div>
+            <div className="col-span-2">
               <label className="text-[10px] font-mono uppercase text-muted-foreground mb-1 block">Priorität</label>
               <div className="flex gap-1.5">
                 {PRIORITY_CONFIG.map(p => (
-                  <button
-                    key={p.value}
-                    type="button"
-                    onClick={() => setPriority(p.value)}
-                    className={cn(
-                      "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md border text-xs transition-all",
-                      priority === p.value
-                        ? "border-primary bg-primary/10 text-foreground"
-                        : "border-border text-muted-foreground hover:text-foreground"
-                    )}
+                  <button key={p.value} type="button" onClick={() => setPriority(p.value)}
+                    className={cn("flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md border text-xs transition-all",
+                      priority === p.value ? "border-primary bg-primary/10" : "border-border text-muted-foreground hover:text-foreground")}
                   >
                     <span className={cn("w-2 h-2 rounded-full", p.dot)} />
                     {p.label}
@@ -192,8 +262,21 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
           </div>
 
           <div>
-            <label className="text-[10px] font-mono uppercase text-muted-foreground mb-1 block">Notiz (optional)</label>
+            <label className="text-[10px] font-mono uppercase text-muted-foreground mb-1 block">Notiz</label>
             <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Kontext, Links …" className="min-h-[70px] text-sm" />
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-surface-elevated/40 p-3">
+            <button type="button" onClick={() => setSaveAsTpl(v => !v)}
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
+              <BookmarkPlus className="h-3.5 w-3.5" />
+              {saveAsTpl ? "Nicht als Vorlage speichern" : "Als Vorlage speichern"}
+            </button>
+            {saveAsTpl && (
+              <Input value={tplName} onChange={e => setTplName(e.target.value)}
+                placeholder="Vorlagen-Name (z.B. „Weekly Reporting")"
+                className="mt-2 h-8 text-xs" />
+            )}
           </div>
 
           <div className="flex gap-2 pt-2">
