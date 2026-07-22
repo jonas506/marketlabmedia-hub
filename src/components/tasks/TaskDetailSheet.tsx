@@ -9,12 +9,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import MobileDatePicker from "@/components/MobileDatePicker";
-import { CalendarIcon, Clock, Trash2 } from "lucide-react";
+import { CalendarIcon, Clock, Trash2, Repeat } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Task, TeamMember, STATUS_CONFIG, PRIORITY_CONFIG, getSC, getInitials } from "./constants";
+import TaskComments from "./TaskComments";
+
+const RECURRENCE_OPTIONS = [
+  { value: "none", label: "Einmalig" },
+  { value: "daily", label: "Täglich" },
+  { value: "weekdays", label: "Mo–Fr" },
+  { value: "weekly", label: "Wöchentlich" },
+  { value: "monthly", label: "Monatlich" },
+];
 
 interface TaskDetailSheetProps {
   task: Task | null;
