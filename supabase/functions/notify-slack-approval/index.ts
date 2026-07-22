@@ -75,12 +75,13 @@ Deno.serve(async (req) => {
       const { error: taskError } = await supabase.from("tasks").insert({
         client_id: piece.client_id,
         assigned_to: MAREN_USER_ID,
-        title: `${typeName} „${pieceTitle}" posten`,
-        tag: "Posten",
+        title: `${typeName} „${pieceTitle}" veröffentlichen`,
+        tag: "veröffentlichen",
         priority: "normal",
-        status: "offen",
+        status: "not_started",
         content_piece_id,
-      });
+        group_source: "approval",
+      } as any);
       if (taskError) {
         console.error("Failed to create posting task:", taskError);
       }
