@@ -9,12 +9,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import MobileDatePicker from "@/components/MobileDatePicker";
-import { CalendarIcon, Clock, Trash2 } from "lucide-react";
+import { CalendarIcon, Clock, Trash2, Repeat } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Task, TeamMember, STATUS_CONFIG, PRIORITY_CONFIG, getSC, getInitials } from "./constants";
+import TaskComments from "./TaskComments";
+
+const RECURRENCE_OPTIONS = [
+  { value: "none", label: "Einmalig" },
+  { value: "daily", label: "Täglich" },
+  { value: "weekdays", label: "Mo–Fr" },
+  { value: "weekly", label: "Wöchentlich" },
+  { value: "monthly", label: "Monatlich" },
+];
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -197,7 +206,23 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
                   className="h-8 text-xs"
                 />
               </div>
+
+              <div className="col-span-2">
+                <label className="text-[10px] font-mono text-muted-foreground uppercase mb-1 flex items-center gap-1">
+                  <Repeat className="h-3 w-3" /> Wiederholung
+                </label>
+                <Select
+                  value={(selectedTask as any).recurrence_rule || "none"}
+                  onValueChange={v => handleUpdate(selectedTask.id, { recurrence_rule: v === "none" ? null : v })}
+                >
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {RECURRENCE_OPTIONS.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
 
             <div>
               <label className="text-[10px] font-mono text-muted-foreground uppercase mb-1 block">Beschreibung</label>
@@ -230,6 +255,10 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
                   <span>von {teamMap[selectedTask.created_by].name}</span>
                 )}
               </div>
+            </div>
+
+            <div className="pt-4 border-t border-border/50">
+              <TaskComments taskId={selectedTask.id} teamMap={teamMap} />
             </div>
 
             <div className="pt-4 border-t border-border/50">

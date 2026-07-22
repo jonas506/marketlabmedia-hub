@@ -2878,6 +2878,94 @@ export type Database = {
         }
         Relationships: []
       }
+      task_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deadline_offset_days: number | null
+          default_assignee: string | null
+          default_client_id: string | null
+          id: string
+          is_shared: boolean
+          name: string
+          notes: string | null
+          priority: string | null
+          recurrence_day: number | null
+          recurrence_rule: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deadline_offset_days?: number | null
+          default_assignee?: string | null
+          default_client_id?: string | null
+          id?: string
+          is_shared?: boolean
+          name: string
+          notes?: string | null
+          priority?: string | null
+          recurrence_day?: number | null
+          recurrence_rule?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deadline_offset_days?: number | null
+          default_assignee?: string | null
+          default_client_id?: string | null
+          id?: string
+          is_shared?: boolean
+          name?: string
+          notes?: string | null
+          priority?: string | null
+          recurrence_day?: number | null
+          recurrence_rule?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_templates_default_client_id_fkey"
+            columns: ["default_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string | null
@@ -2896,6 +2984,9 @@ export type Database = {
           notes: string | null
           parent_id: string | null
           priority: string | null
+          recurrence_day: number | null
+          recurrence_parent_id: string | null
+          recurrence_rule: string | null
           sort_order: number | null
           status: string | null
           tag: string | null
@@ -2918,6 +3009,9 @@ export type Database = {
           notes?: string | null
           parent_id?: string | null
           priority?: string | null
+          recurrence_day?: number | null
+          recurrence_parent_id?: string | null
+          recurrence_rule?: string | null
           sort_order?: number | null
           status?: string | null
           tag?: string | null
@@ -2940,6 +3034,9 @@ export type Database = {
           notes?: string | null
           parent_id?: string | null
           priority?: string | null
+          recurrence_day?: number | null
+          recurrence_parent_id?: string | null
+          recurrence_rule?: string | null
           sort_order?: number | null
           status?: string | null
           tag?: string | null
@@ -2963,6 +3060,13 @@ export type Database = {
           {
             foreignKeyName: "tasks_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_recurrence_parent_id_fkey"
+            columns: ["recurrence_parent_id"]
             isOneToOne: false
             referencedRelation: "tasks"
             referencedColumns: ["id"]

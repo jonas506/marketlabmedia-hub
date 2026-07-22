@@ -7,7 +7,7 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, AlertTriangle, X, LayoutGrid, User, Building2, Flag, List } from "lucide-react";
+import { Plus, Search, AlertTriangle, X, LayoutGrid, User, Building2, Flag, List, CalendarDays } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { motion } from "framer-motion";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -15,6 +15,7 @@ import { Task, TeamMember } from "@/components/tasks/constants";
 import TaskKanbanBoard from "@/components/tasks/TaskKanbanBoard";
 import TaskGroupedView from "@/components/tasks/TaskGroupedView";
 import TaskListView from "@/components/tasks/TaskListView";
+import TaskCalendarView from "@/components/tasks/TaskCalendarView";
 import NewTaskSheet from "@/components/tasks/NewTaskSheet";
 import TaskDetailSheet from "@/components/tasks/TaskDetailSheet";
 import { cn } from "@/lib/utils";
@@ -33,11 +34,12 @@ const Tasks = () => {
   const clientFilter = params.get("client") || "all";
   const priorityFilter = params.get("priority") || "all";
   const search = params.get("q") || "";
-  const view = (params.get("view") || "status") as "status" | "list" | "assignee" | "client" | "priority";
+  const view = (params.get("view") || "status") as "status" | "list" | "calendar" | "assignee" | "client" | "priority";
 
   const VIEWS: { key: typeof view; label: string; icon: any }[] = [
     { key: "status", label: "Status", icon: LayoutGrid },
     { key: "list", label: "Liste", icon: List },
+    { key: "calendar", label: "Kalender", icon: CalendarDays },
     { key: "assignee", label: "Mitarbeiter", icon: User },
     { key: "client", label: "Kunde", icon: Building2 },
     { key: "priority", label: "Priorität", icon: Flag },
@@ -213,6 +215,14 @@ const Tasks = () => {
             />
           ) : view === "list" ? (
             <TaskListView
+              tasks={filteredTasks}
+              clientMap={clientMap}
+              teamMap={teamMap}
+              todayStr={todayStr}
+              onSelect={setSelectedTask}
+            />
+          ) : view === "calendar" ? (
+            <TaskCalendarView
               tasks={filteredTasks}
               clientMap={clientMap}
               teamMap={teamMap}
