@@ -206,7 +206,23 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
                   className="h-8 text-xs"
                 />
               </div>
+
+              <div className="col-span-2">
+                <label className="text-[10px] font-mono text-muted-foreground uppercase mb-1 flex items-center gap-1">
+                  <Repeat className="h-3 w-3" /> Wiederholung
+                </label>
+                <Select
+                  value={(selectedTask as any).recurrence_rule || "none"}
+                  onValueChange={v => handleUpdate(selectedTask.id, { recurrence_rule: v === "none" ? null : v })}
+                >
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {RECURRENCE_OPTIONS.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
 
             <div>
               <label className="text-[10px] font-mono text-muted-foreground uppercase mb-1 block">Beschreibung</label>
