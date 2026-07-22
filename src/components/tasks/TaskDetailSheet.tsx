@@ -258,6 +258,10 @@ const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({ task, onClose, team, 
             </div>
 
             <div className="pt-4 border-t border-border/50">
+              <TaskComments taskId={selectedTask.id} teamMap={teamMap} />
+            </div>
+
+            <div className="pt-4 border-t border-border/50">
               <Button
                 variant="ghost"
                 size="sm"
