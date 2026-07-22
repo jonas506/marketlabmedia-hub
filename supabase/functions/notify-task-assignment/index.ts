@@ -141,13 +141,21 @@ Deno.serve(async (req) => {
     const tagLabel = tag ? ({ reel: "🎬 Reel", carousel: "🖼️ Karussell", ad: "📢 Ad", youtube_longform: "🎥 YouTube" }[tag] || tag) : "";
     const isGroup = (task_count || 1) > 1;
 
-    const messageText = dmChannelId
-      ? isGroup
-        ? `📋 Dir wurden *${task_count} neue Aufgaben* zugewiesen:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${client_name ? `\nKunde: *${client_name}*` : ""}`
-        : `📋 Neue Aufgabe für dich:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${client_name ? `\nKunde: *${client_name}*` : ""}`
-      : isGroup
-        ? `📋 *${assigneeName}* hat *${task_count} neue Aufgaben* erhalten:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${client_name ? `\nKunde: *${client_name}*` : ""}`
-        : `📋 *${assigneeName}* hat eine neue Aufgabe:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${client_name ? `\nKunde: *${client_name}*` : ""}`;
+    const clientSuffix = client_name ? `\nKunde: *${client_name}*` : "";
+    let messageText: string;
+    if (kind === "review_ready") {
+      messageText = dmChannelId
+        ? `👀 Deine Aufgabe ist bereit zur Freigabe:\n\n*${task_title}*${clientSuffix}`
+        : `👀 *${assigneeName}*: Aufgabe „${task_title}" ist zur Freigabe bereit${clientSuffix}`;
+    } else {
+      messageText = dmChannelId
+        ? isGroup
+          ? `📋 Dir wurden *${task_count} neue Aufgaben* zugewiesen:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${clientSuffix}`
+          : `📋 Neue Aufgabe für dich:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${clientSuffix}`
+        : isGroup
+          ? `📋 *${assigneeName}* hat *${task_count} neue Aufgaben* erhalten:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${clientSuffix}`
+          : `📋 *${assigneeName}* hat eine neue Aufgabe:\n\n${tagLabel ? tagLabel + " — " : ""}*${task_title}*${clientSuffix}`;
+    }
 
     const msgRes = await fetch(`${GATEWAY_URL}/chat.postMessage`, {
       method: "POST",
