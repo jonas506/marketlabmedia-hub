@@ -65,7 +65,7 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
     queryKey: ["task-templates"],
     queryFn: async () => {
       const { data } = await supabase.from("task_templates" as any).select("*").order("name");
-      return (data ?? []) as CustomTemplate[];
+      return ((data ?? []) as unknown) as CustomTemplate[];
     },
   });
 

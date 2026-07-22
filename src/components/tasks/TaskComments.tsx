@@ -32,7 +32,7 @@ const TaskComments: React.FC<Props> = ({ taskId, teamMap }) => {
     queryFn: async () => {
       const { data } = await supabase.from("task_comments" as any)
         .select("*").eq("task_id", taskId).order("created_at", { ascending: true });
-      return (data ?? []) as Comment[];
+      return ((data ?? []) as unknown) as Comment[];
     },
   });
 
