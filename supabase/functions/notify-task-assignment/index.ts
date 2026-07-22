@@ -31,7 +31,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { assigned_to, task_title, task_count, client_name, tag } = await req.json();
+    const { assigned_to, task_title, task_count, client_name, tag, kind } = await req.json();
+    // kind: 'assigned' (default) | 'review_ready'
 
     if (!assigned_to || !task_title) {
       return new Response(
@@ -45,7 +46,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Fetch assignee profile
+    // Fetch recipient profile
     const { data: profile } = await supabase
       .from("profiles")
       .select("name, email, slack_user_id")
