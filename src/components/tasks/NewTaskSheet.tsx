@@ -274,7 +274,7 @@ const NewTaskSheet: React.FC<Props> = ({ open, onClose, team, clients, defaultCl
             </button>
             {saveAsTpl && (
               <Input value={tplName} onChange={e => setTplName(e.target.value)}
-                placeholder="Vorlagen-Name (z.B. „Weekly Reporting")"
+                placeholder="Vorlagen-Name (z.B. Weekly Reporting)"
                 className="mt-2 h-8 text-xs" />
             )}
           </div>
