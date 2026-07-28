@@ -573,7 +573,9 @@ const Pricing = () => {
 const CplResults = ({ adSpend }: { adSpend: number }) => {
   const monthlyAdSpend = adSpend * 30;
   const management = 750;
-  const totalMonthly = monthlyAdSpend + management;
+  const setupTotal = 4500; // Strategie & Setup 2.000 + Drehtag 1.500 + Bearbeitung 1.000
+  const setupPerMonth = setupTotal / 3;
+  const totalMonthly = monthlyAdSpend + management + setupPerMonth;
   const leadsAt30 = Math.round(monthlyAdSpend / 30);
   const leadsAt50 = Math.round(monthlyAdSpend / 50);
   const cplAt30 = leadsAt30 > 0 ? Math.round(totalMonthly / leadsAt30) : 0;
@@ -589,7 +591,7 @@ const CplResults = ({ adSpend }: { adSpend: number }) => {
       <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
         <div className="text-[11px] uppercase tracking-wider text-white/50">Gesamtkosten / Monat</div>
         <div className="mt-1 text-2xl font-extrabold">{formatEUR(totalMonthly)} €</div>
-        <div className="text-[11px] text-white/40">Inkl. Verwaltung</div>
+        <div className="text-[11px] text-white/40">Inkl. Verwaltung + Setup anteilig</div>
       </div>
       <div
         className="rounded-xl border p-4"
