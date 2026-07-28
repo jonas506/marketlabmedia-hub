@@ -335,6 +335,13 @@ const Pricing = () => {
                     <span className="text-base font-bold">750 € / Monat</span>
                   </div>
                 </div>
+                <button
+                  onClick={() => setCplOpen(true)}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08]"
+                >
+                  <Calculator className="h-4 w-4" style={{ color: BRAND.blue }} />
+                  CPL-Rechner: Was kostet ein Lead?
+                </button>
                 <div
                   className="rounded-xl p-5"
                   style={{ background: `linear-gradient(135deg, ${BRAND.blue}22, ${BRAND.purple}22)`, border: `1px solid ${BRAND.blue}44` }}
