@@ -334,6 +334,98 @@ const Pricing = () => {
           </motion.div>
         </section>
 
+        {/* QUICK FIX PRO — 3 MONTH SPRINT */}
+        <section className="mt-20">
+          <SectionHeader eyebrow="3-Monats-Sprint" title="Quick Fix Pro — Leads für die Kapitalanlage" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5 }}
+            className="mt-10 overflow-hidden rounded-2xl border p-8 md:p-10"
+            style={{
+              borderColor: `${BRAND.purple}66`,
+              background: `linear-gradient(135deg, ${BRAND.purple}18, ${BRAND.blue}10)`,
+              boxShadow: `0 20px 60px -25px ${BRAND.purple}77`,
+            }}
+          >
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.2fr_1fr] md:items-start">
+              <div>
+                <div
+                  className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
+                  style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})` }}
+                >
+                  <Sparkles className="h-3 w-3" /> 3 Monate Laufzeit
+                </div>
+                <h3 className="text-2xl font-extrabold md:text-3xl">
+                  Planbare Leads für 30–50 € in der Kapitalanlage
+                </h3>
+                <p className="mt-3 text-white/60">
+                  Kompakter Sprint über 3 Monate: Strategie, Drehtag, Bearbeitung und
+                  laufende Kampagnen­verwaltung — abgestimmt auf die Kapitalanlagen­branche.
+                  Ziel: qualifizierte Leads zwischen 30 und 50 € Cost per Lead.
+                </p>
+                <ul className="mt-6 flex flex-col gap-2">
+                  {[
+                    "Strategie & Setup (Zielgruppe, Funnel, Tracking)",
+                    "1 Drehtag: 10 Videos + 10 Bilder",
+                    "Komplette Bearbeitung aller Assets",
+                    "Laufende Kampagnen­verwaltung & Optimierung",
+                    "Monatliches Reporting mit CPL-Auswertung",
+                  ].map((h) => (
+                    <li key={h} className="flex items-start gap-2 text-sm text-white/85">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: BRAND.blue }} />
+                      <span>{h}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/70">Strategie & Setup</span>
+                    <span className="text-base font-bold">2.000 €</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/70">Drehtag (10 Videos + 10 Bilder)</span>
+                    <span className="text-base font-bold">1.500 €</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/70">Bearbeitung</span>
+                    <span className="text-base font-bold">1.000 €</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/70">Verwaltung (3× monatlich)</span>
+                    <span className="text-base font-bold">750 € / Monat</span>
+                  </div>
+                </div>
+                <div
+                  className="rounded-xl p-5"
+                  style={{ background: `linear-gradient(135deg, ${BRAND.blue}22, ${BRAND.purple}22)`, border: `1px solid ${BRAND.blue}44` }}
+                >
+                  <div className="text-xs uppercase tracking-wider text-white/60">Gesamt 3 Monate</div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold tracking-tight">6.750</span>
+                    <span className="text-lg text-white/60">€</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-white/40">
+                  Werbebudget wird separat direkt an die Plattform gezahlt.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+
+
 
 
         {/* ADD-ONS — DIRECTLY UNDER PACKAGES */}
