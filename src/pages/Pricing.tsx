@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Video,
   Users,
@@ -12,6 +12,8 @@ import {
   Sparkles,
   Eye,
   TrendingUp,
+  Calculator,
+  X,
 } from "lucide-react";
 import logo from "@/assets/logo-light.png";
 import { useAuth } from "@/contexts/AuthContext";
