@@ -477,6 +477,78 @@ const Pricing = () => {
         </section>
       </div>
 
+      <AnimatePresence>
+        {cplOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+            style={{ background: "rgba(10,10,15,0.85)", backdropFilter: "blur(8px)" }}
+            onClick={() => setCplOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 16 }}
+              transition={{ duration: 0.25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg overflow-hidden rounded-2xl border p-6 md:p-8"
+              style={{
+                borderColor: `${BRAND.blue}44`,
+                background: `linear-gradient(135deg, ${BRAND.purple}20, ${BRAND.blue}12)`,
+              }}
+            >
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <h3 className="text-xl font-extrabold">Quick Fix Pro — CPL-Rechner</h3>
+                  <p className="mt-1 text-sm text-white/55">
+                    Geschätzte Leads & Gesamt-CPL bei deinem Werbebudget
+                  </p>
+                </div>
+                <button
+                  onClick={() => setCplOpen(false)}
+                  className="rounded-full p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm text-white/70">Tägliches Werbebudget</span>
+                  <span className="text-lg font-bold" style={{ color: BRAND.blue }}>
+                    {adSpend} €
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={20}
+                  max={100}
+                  step={5}
+                  value={adSpend}
+                  onChange={(e) => setAdSpend(Number(e.target.value))}
+                  className="w-full accent-[#0083F7]"
+                  style={{ accentColor: BRAND.blue }}
+                />
+                <div className="mt-1 flex justify-between text-[11px] text-white/40">
+                  <span>20 € / Tag</span>
+                  <span>100 € / Tag</span>
+                </div>
+              </div>
+
+              <CplResults adSpend={adSpend} />
+
+              <p className="mt-5 text-[11px] leading-relaxed text-white/40">
+                Annahme: Cost per Lead zwischen 30 € und 50 €. Die 750 €/Monat Verwaltung
+                sind im Gesamt-CPL eingerechnet. Werbebudget zahlst du direkt an die
+                Plattform.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {isAdmin && (
         <>
           <button
