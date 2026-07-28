@@ -570,6 +570,53 @@ const Pricing = () => {
   );
 };
 
+const CplResults = ({ adSpend }: { adSpend: number }) => {
+  const monthlyAdSpend = adSpend * 30;
+  const management = 750;
+  const totalMonthly = monthlyAdSpend + management;
+  const leadsAt30 = Math.round(monthlyAdSpend / 30);
+  const leadsAt50 = Math.round(monthlyAdSpend / 50);
+  const cplAt30 = leadsAt30 > 0 ? Math.round(totalMonthly / leadsAt30) : 0;
+  const cplAt50 = leadsAt50 > 0 ? Math.round(totalMonthly / leadsAt50) : 0;
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+        <div className="text-[11px] uppercase tracking-wider text-white/50">Monatliches Budget</div>
+        <div className="mt-1 text-2xl font-extrabold">{formatEUR(monthlyAdSpend)} €</div>
+        <div className="text-[11px] text-white/40">Werbung + 750 € Verwaltung</div>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+        <div className="text-[11px] uppercase tracking-wider text-white/50">Gesamtkosten / Monat</div>
+        <div className="mt-1 text-2xl font-extrabold">{formatEUR(totalMonthly)} €</div>
+        <div className="text-[11px] text-white/40">Inkl. Verwaltung</div>
+      </div>
+      <div
+        className="rounded-xl border p-4"
+        style={{ borderColor: `${BRAND.blue}44`, background: `${BRAND.blue}10` }}
+      >
+        <div className="text-[11px] uppercase tracking-wider text-white/60">Bei 30 € CPL</div>
+        <div className="mt-1 text-3xl font-extrabold" style={{ color: BRAND.blue }}>
+          {leadsAt30}
+        </div>
+        <div className="text-[11px] text-white/60">Leads / Monat</div>
+        <div className="mt-2 text-sm font-semibold">Gesamt-CPL ~{cplAt30} €</div>
+      </div>
+      <div
+        className="rounded-xl border p-4"
+        style={{ borderColor: `${BRAND.blue}44`, background: `${BRAND.blue}10` }}
+      >
+        <div className="text-[11px] uppercase tracking-wider text-white/60">Bei 50 € CPL</div>
+        <div className="mt-1 text-3xl font-extrabold" style={{ color: BRAND.blue }}>
+          {leadsAt50}
+        </div>
+        <div className="text-[11px] text-white/60">Leads / Monat</div>
+        <div className="mt-2 text-sm font-semibold">Gesamt-CPL ~{cplAt50} €</div>
+      </div>
+    </div>
+  );
+};
+
 const SectionHeader = ({ eyebrow, title }: { eyebrow: string; title: string }) => (
   <div>
     <div
