@@ -182,6 +182,8 @@ const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 const Pricing = () => {
   const [annual, setAnnual] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [cplOpen, setCplOpen] = useState(false);
+  const [adSpend, setAdSpend] = useState(30);
   const { role } = useAuth();
   const isAdmin = role === "admin";
 
