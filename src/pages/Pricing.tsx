@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Video,
   Users,
@@ -12,6 +12,8 @@ import {
   Sparkles,
   Eye,
   TrendingUp,
+  Calculator,
+  X,
 } from "lucide-react";
 import logo from "@/assets/logo-light.png";
 import { useAuth } from "@/contexts/AuthContext";
@@ -180,6 +182,8 @@ const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 const Pricing = () => {
   const [annual, setAnnual] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [cplOpen, setCplOpen] = useState(false);
+  const [adSpend, setAdSpend] = useState(30);
   const { role } = useAuth();
   const isAdmin = role === "admin";
 
@@ -331,6 +335,13 @@ const Pricing = () => {
                     <span className="text-base font-bold">750 € / Monat</span>
                   </div>
                 </div>
+                <button
+                  onClick={() => setCplOpen(true)}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08]"
+                >
+                  <Calculator className="h-4 w-4" style={{ color: BRAND.blue }} />
+                  CPL-Rechner: Was kostet ein Lead?
+                </button>
                 <div
                   className="rounded-xl p-5"
                   style={{ background: `linear-gradient(135deg, ${BRAND.blue}22, ${BRAND.purple}22)`, border: `1px solid ${BRAND.blue}44` }}
@@ -466,6 +477,78 @@ const Pricing = () => {
         </section>
       </div>
 
+      <AnimatePresence>
+        {cplOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+            style={{ background: "rgba(10,10,15,0.85)", backdropFilter: "blur(8px)" }}
+            onClick={() => setCplOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 16 }}
+              transition={{ duration: 0.25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg overflow-hidden rounded-2xl border p-6 md:p-8"
+              style={{
+                borderColor: `${BRAND.blue}44`,
+                background: `linear-gradient(135deg, ${BRAND.purple}20, ${BRAND.blue}12)`,
+              }}
+            >
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <h3 className="text-xl font-extrabold">Quick Fix Pro — CPL-Rechner</h3>
+                  <p className="mt-1 text-sm text-white/55">
+                    Geschätzte Leads & Gesamt-CPL bei deinem Werbebudget
+                  </p>
+                </div>
+                <button
+                  onClick={() => setCplOpen(false)}
+                  className="rounded-full p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm text-white/70">Tägliches Werbebudget</span>
+                  <span className="text-lg font-bold" style={{ color: BRAND.blue }}>
+                    {adSpend} €
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={20}
+                  max={100}
+                  step={5}
+                  value={adSpend}
+                  onChange={(e) => setAdSpend(Number(e.target.value))}
+                  className="w-full accent-[#0083F7]"
+                  style={{ accentColor: BRAND.blue }}
+                />
+                <div className="mt-1 flex justify-between text-[11px] text-white/40">
+                  <span>20 € / Tag</span>
+                  <span>100 € / Tag</span>
+                </div>
+              </div>
+
+              <CplResults adSpend={adSpend} />
+
+              <p className="mt-5 text-[11px] leading-relaxed text-white/40">
+                Annahme: Cost per Lead zwischen 30 € und 50 €. Die 750 €/Monat Verwaltung
+                sind im Gesamt-CPL eingerechnet. Werbebudget zahlst du direkt an die
+                Plattform.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {isAdmin && (
         <>
           <button
@@ -483,6 +566,53 @@ const Pricing = () => {
           />
         </>
       )}
+    </div>
+  );
+};
+
+const CplResults = ({ adSpend }: { adSpend: number }) => {
+  const monthlyAdSpend = adSpend * 30;
+  const management = 750;
+  const totalMonthly = monthlyAdSpend + management;
+  const leadsAt30 = Math.round(monthlyAdSpend / 30);
+  const leadsAt50 = Math.round(monthlyAdSpend / 50);
+  const cplAt30 = leadsAt30 > 0 ? Math.round(totalMonthly / leadsAt30) : 0;
+  const cplAt50 = leadsAt50 > 0 ? Math.round(totalMonthly / leadsAt50) : 0;
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+        <div className="text-[11px] uppercase tracking-wider text-white/50">Monatliches Budget</div>
+        <div className="mt-1 text-2xl font-extrabold">{formatEUR(monthlyAdSpend)} €</div>
+        <div className="text-[11px] text-white/40">Werbung + 750 € Verwaltung</div>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+        <div className="text-[11px] uppercase tracking-wider text-white/50">Gesamtkosten / Monat</div>
+        <div className="mt-1 text-2xl font-extrabold">{formatEUR(totalMonthly)} €</div>
+        <div className="text-[11px] text-white/40">Inkl. Verwaltung</div>
+      </div>
+      <div
+        className="rounded-xl border p-4"
+        style={{ borderColor: `${BRAND.blue}44`, background: `${BRAND.blue}10` }}
+      >
+        <div className="text-[11px] uppercase tracking-wider text-white/60">Bei 30 € CPL</div>
+        <div className="mt-1 text-3xl font-extrabold" style={{ color: BRAND.blue }}>
+          {leadsAt30}
+        </div>
+        <div className="text-[11px] text-white/60">Leads / Monat</div>
+        <div className="mt-2 text-sm font-semibold">Gesamt-CPL ~{cplAt30} €</div>
+      </div>
+      <div
+        className="rounded-xl border p-4"
+        style={{ borderColor: `${BRAND.blue}44`, background: `${BRAND.blue}10` }}
+      >
+        <div className="text-[11px] uppercase tracking-wider text-white/60">Bei 50 € CPL</div>
+        <div className="mt-1 text-3xl font-extrabold" style={{ color: BRAND.blue }}>
+          {leadsAt50}
+        </div>
+        <div className="text-[11px] text-white/60">Leads / Monat</div>
+        <div className="mt-2 text-sm font-semibold">Gesamt-CPL ~{cplAt50} €</div>
+      </div>
     </div>
   );
 };
