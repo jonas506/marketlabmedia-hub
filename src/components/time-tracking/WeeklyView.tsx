@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ACTIVITY_TYPES, formatHoursMinutes } from "@/lib/time-tracking-constants";
+import { ACTIVITY_TYPES, formatHoursMinutes, targetHoursForRange } from "@/lib/time-tracking-constants";
+import SollIstBar from "./SollIstBar";
 import { cn } from "@/lib/utils";
 
 interface TimeEntry {
@@ -25,9 +26,10 @@ interface TimeEntry {
 interface WeeklyViewProps {
   entries: TimeEntry[];
   onRefresh: () => void;
+  weeklyTarget?: number;
 }
 
-export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
+export default function WeeklyView({ entries, onRefresh, weeklyTarget = 0 }: WeeklyViewProps) {
   const [weekRef, setWeekRef] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -58,6 +60,8 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
   }, [weekEntries, selectedDay]);
 
   const totalHours = weekEntries.reduce((s, e) => s + Number(e.hours), 0);
+  const weekTarget = weeklyTarget;
+  const dayTarget = weeklyTarget / 5;
 
   const hoursPerDay = useMemo(() => {
     const map: Record<string, number> = {};
@@ -189,6 +193,10 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
         <span className="text-sm font-semibold">{formatHoursMinutes(totalHours)} diese Woche</span>
       </div>
 
+      {weekTarget > 0 && (
+        <SollIstBar actual={totalHours} target={weekTarget} label="Woche" />
+      )}
+
       {/* Day selector pills */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         <Button
@@ -218,7 +226,14 @@ export default function WeeklyView({ entries, onRefresh }: WeeklyViewProps) {
               <span className="text-[10px] uppercase leading-none">{format(day, "EEE", { locale: de })}</span>
               <span className="text-xs font-semibold leading-none mt-0.5">{format(day, "dd.")}</span>
               {dayHours > 0 && (
-                <span className={cn("text-[10px] leading-none mt-0.5", isSelected ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                <span className={cn(
+                  "text-[10px] leading-none mt-0.5",
+                  isSelected
+                    ? "text-primary-foreground/70"
+                    : dayTarget > 0 && [1,2,3,4,5].includes(day.getDay())
+                      ? (dayHours >= dayTarget ? "text-emerald-500" : "text-amber-500")
+                      : "text-muted-foreground"
+                )}>
                   {formatHoursMinutes(dayHours)}
                 </span>
               )}
