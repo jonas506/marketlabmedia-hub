@@ -2387,6 +2387,7 @@ export type Database = {
           slack_user_id: string | null
           updated_at: string
           user_id: string
+          weekly_target_hours: number
         }
         Insert: {
           created_at?: string
@@ -2396,6 +2397,7 @@ export type Database = {
           slack_user_id?: string | null
           updated_at?: string
           user_id: string
+          weekly_target_hours?: number
         }
         Update: {
           created_at?: string
@@ -2405,6 +2407,7 @@ export type Database = {
           slack_user_id?: string | null
           updated_at?: string
           user_id?: string
+          weekly_target_hours?: number
         }
         Relationships: []
       }

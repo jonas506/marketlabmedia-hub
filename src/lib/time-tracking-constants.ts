@@ -34,6 +34,26 @@ export function formatHoursMinutes(decimal: number): string {
   return `${h}h ${m}min`;
 }
 
+export const DEFAULT_WEEKLY_TARGET_HOURS = 40;
+
+/** Number of weekdays (Mo–Fr) in an inclusive date range. */
+export function countWeekdays(start: Date, end: Date): number {
+  let count = 0;
+  const d = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  while (d <= last) {
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+/** Soll-Stunden für einen Zeitraum auf Basis der Wochen-Soll-Stunden (Mo–Fr). */
+export function targetHoursForRange(weeklyTarget: number, start: Date, end: Date): number {
+  return (weeklyTarget / 5) * countWeekdays(start, end);
+}
+
 export const VACATION_TYPES = [
   { value: 'vacation', label: 'Urlaub' },
   { value: 'sick', label: 'Krank' },

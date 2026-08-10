@@ -12,6 +12,7 @@ import MonthlyStats from "@/components/time-tracking/MonthlyStats";
 import VacationTab from "@/components/time-tracking/VacationTab";
 import TravelExpensesTab from "@/components/time-tracking/TravelExpensesTab";
 import SickDayQuickButton from "@/components/time-tracking/SickDayQuickButton";
+import TargetHoursSettings from "@/components/time-tracking/TargetHoursSettings";
 
 export default function TimeTracking() {
   const { user, role } = useAuth();
@@ -29,7 +30,7 @@ export default function TimeTracking() {
   const { data: profiles = [] } = useQuery({
     queryKey: ["profiles-all"],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("user_id, name");
+      const { data } = await supabase.from("profiles").select("user_id, name, weekly_target_hours");
       return data || [];
     },
   });
@@ -100,6 +101,18 @@ export default function TimeTracking() {
     return [...(entries as any[]), ...virtualEntries];
   }, [entries, absences]);
 
+  // Soll-Stunden pro Woche für die aktuelle Auswahl
+  const weeklyTarget = useMemo(() => {
+    const list = profiles as any[];
+    if (!isAdmin) {
+      return Number(list.find(p => p.user_id === user?.id)?.weekly_target_hours ?? 0);
+    }
+    if (memberFilter !== "__all__") {
+      return Number(list.find(p => p.user_id === memberFilter)?.weekly_target_hours ?? 0);
+    }
+    return list.reduce((s, p) => s + Number(p.weekly_target_hours ?? 0), 0);
+  }, [profiles, isAdmin, memberFilter, user?.id]);
+
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto space-y-6">
@@ -132,6 +145,7 @@ export default function TimeTracking() {
                     ))}
                   </SelectContent>
                 </Select>
+                <TargetHoursSettings profiles={profiles as any} />
               </div>
             )}
 
@@ -145,10 +159,10 @@ export default function TimeTracking() {
             </div>
 
             {/* Weekly view */}
-            <WeeklyView entries={filteredEntries} onRefresh={() => refetchEntries()} />
+            <WeeklyView entries={filteredEntries} onRefresh={() => refetchEntries()} weeklyTarget={weeklyTarget} />
 
             {/* Monthly stats */}
-            <MonthlyStats entries={filteredEntries} isAdmin={isAdmin} profiles={profiles} />
+            <MonthlyStats entries={filteredEntries} isAdmin={isAdmin} profiles={profiles as any} weeklyTarget={weeklyTarget} />
           </TabsContent>
 
           <TabsContent value="urlaub" className="mt-4">

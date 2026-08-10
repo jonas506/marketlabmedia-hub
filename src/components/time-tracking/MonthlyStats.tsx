@@ -5,7 +5,8 @@ import { ChevronLeft, ChevronRight, Download, ChevronDown, ChevronUp } from "luc
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ACTIVITY_TYPES, ACTIVITY_BAR_COLORS, formatHoursMinutes } from "@/lib/time-tracking-constants";
+import { ACTIVITY_TYPES, ACTIVITY_BAR_COLORS, formatHoursMinutes, targetHoursForRange } from "@/lib/time-tracking-constants";
+import SollIstBar from "./SollIstBar";
 
 interface TimeEntry {
   id: string;
@@ -22,10 +23,11 @@ interface TimeEntry {
 interface MonthlyStatsProps {
   entries: TimeEntry[];
   isAdmin: boolean;
-  profiles?: { user_id: string; name: string }[];
+  profiles?: { user_id: string; name: string; weekly_target_hours?: number }[];
+  weeklyTarget?: number;
 }
 
-export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStatsProps) {
+export default function MonthlyStats({ entries, isAdmin, profiles, weeklyTarget = 0 }: MonthlyStatsProps) {
   const [monthRef, setMonthRef] = useState(new Date());
   const [open, setOpen] = useState(true);
 
@@ -38,6 +40,9 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
   );
 
   const totalHours = monthEntries.reduce((s, e) => s + Number(e.hours), 0);
+  const monthTarget = weeklyTarget > 0
+    ? targetHoursForRange(weeklyTarget, startOfMonth(monthRef), endOfMonth(monthRef))
+    : 0;
 
   // By client
   const byClient = useMemo(() => {
@@ -65,16 +70,20 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
   // By team member (admin only)
   const byMember = useMemo(() => {
     if (!isAdmin) return [];
-    const map: Record<string, { name: string; hours: number }> = {};
+    const map: Record<string, { name: string; hours: number; target: number }> = {};
     monthEntries.forEach(e => {
       if (!map[e.user_id]) {
         const p = profiles?.find(p => p.user_id === e.user_id);
-        map[e.user_id] = { name: p?.name || "Unbekannt", hours: 0 };
+        map[e.user_id] = {
+          name: p?.name || "Unbekannt",
+          hours: 0,
+          target: targetHoursForRange(Number(p?.weekly_target_hours ?? 0), startOfMonth(monthRef), endOfMonth(monthRef)),
+        };
       }
       map[e.user_id].hours += Number(e.hours);
     });
     return Object.values(map).sort((a, b) => b.hours - a.hours);
-  }, [monthEntries, isAdmin, profiles]);
+  }, [monthEntries, isAdmin, profiles, monthRef]);
 
   const exportCSV = () => {
     const rows = [["Datum", "Mitarbeiter", "Kunde", "Tätigkeit", "Stunden", "Notiz"]];
@@ -133,6 +142,8 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
       <CollapsibleContent className="mt-4 space-y-6">
         <div className="text-2xl font-bold">{formatHoursMinutes(totalHours)} <span className="text-sm font-normal text-muted-foreground">gesamt</span></div>
 
+        {monthTarget > 0 && <SollIstBar actual={totalHours} target={monthTarget} label="Monat" />}
+
         {/* By Client */}
         <div className="space-y-2">
           <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nach Kunde</h4>
@@ -149,7 +160,19 @@ export default function MonthlyStats({ entries, isAdmin, profiles }: MonthlyStat
         {isAdmin && byMember.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nach Mitarbeiter</h4>
-            {byMember.map(m => <Bar key={m.name} value={m.hours} max={Math.max(...byMember.map(x => x.hours))} label={m.name} hours={m.hours} />)}
+            {byMember.map(m => (
+              <div key={m.name}>
+                <Bar value={m.hours} max={Math.max(...byMember.map(x => x.hours))} label={m.name} hours={m.hours} />
+                {m.target > 0 && (
+                  <div className="ml-[7.75rem] text-[11px] text-muted-foreground">
+                    Soll {formatHoursMinutes(m.target)} ·{" "}
+                    <span className={m.hours >= m.target ? "text-emerald-500" : "text-amber-500"}>
+                      {m.hours >= m.target ? "+" : "−"}{formatHoursMinutes(Math.abs(m.hours - m.target))}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </CollapsibleContent>
