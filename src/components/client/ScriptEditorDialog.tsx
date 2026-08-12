@@ -135,6 +135,23 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setTimeout(() => setCopiedIdx(null), 1500);
   };
 
+  const [copiedAll, setCopiedAll] = useState(false);
+  const copyFullScript = () => {
+    const nonEmptyHooks = hooks.filter((h) => h.trim());
+    const parts: string[] = [];
+    if (nonEmptyHooks.length > 0) {
+      parts.push(nonEmptyHooks.map((h, i) => `Hook ${i + 1}: ${h.trim()}`).join("\n"));
+    }
+    if (body.trim()) parts.push(body.trim());
+    const text = parts.join("\n\n");
+    if (!text) { toast.error("Kein Skript zum Kopieren"); return; }
+    navigator.clipboard.writeText(text);
+    setCopiedAll(true);
+    toast.success("Skript kopiert");
+    setTimeout(() => setCopiedAll(false), 1500);
+  };
+
+
   const addLink = () => setLinks((prev) => [...prev, { url: "", tag: "Inspiration" }]);
   const removeLink = (idx: number) => setLinks((prev) => prev.filter((_, i) => i !== idx));
   const updateLink = (idx: number, field: keyof ScriptLink, value: string) =>
