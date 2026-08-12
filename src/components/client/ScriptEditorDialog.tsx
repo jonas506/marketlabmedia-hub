@@ -135,6 +135,23 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
     setTimeout(() => setCopiedIdx(null), 1500);
   };
 
+  const [copiedAll, setCopiedAll] = useState(false);
+  const copyFullScript = () => {
+    const nonEmptyHooks = hooks.filter((h) => h.trim());
+    const parts: string[] = [];
+    if (nonEmptyHooks.length > 0) {
+      parts.push(nonEmptyHooks.map((h, i) => `Hook ${i + 1}: ${h.trim()}`).join("\n"));
+    }
+    if (body.trim()) parts.push(body.trim());
+    const text = parts.join("\n\n");
+    if (!text) { toast.error("Kein Skript zum Kopieren"); return; }
+    navigator.clipboard.writeText(text);
+    setCopiedAll(true);
+    toast.success("Skript kopiert");
+    setTimeout(() => setCopiedAll(false), 1500);
+  };
+
+
   const addLink = () => setLinks((prev) => [...prev, { url: "", tag: "Inspiration" }]);
   const removeLink = (idx: number) => setLinks((prev) => prev.filter((_, i) => i !== idx));
   const updateLink = (idx: number, field: keyof ScriptLink, value: string) =>
@@ -203,9 +220,21 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           <DialogTitle className="flex items-center gap-2 font-display text-base">
             <span>{TYPE_EMOJI[piece.type] || "📄"}</span>
             <FileText className="h-4 w-4 text-muted-foreground" />
-            Skript — {piece.title || "Ohne Titel"}
+            <span className="truncate">Skript — {piece.title || "Ohne Titel"}</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="ml-auto mr-6 h-8 gap-1.5 text-xs shrink-0"
+              onClick={copyFullScript}
+              title="Skript kopieren"
+            >
+              {copiedAll ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedAll ? "Kopiert" : "Kopieren"}
+            </Button>
           </DialogTitle>
         </DialogHeader>
+
 
         <ScrollArea className="flex-1 min-h-0 overflow-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
           <div className="px-6 py-5 space-y-6">
