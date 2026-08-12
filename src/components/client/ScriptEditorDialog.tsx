@@ -203,9 +203,21 @@ const ScriptEditorDialog: React.FC<ScriptEditorDialogProps> = ({
           <DialogTitle className="flex items-center gap-2 font-display text-base">
             <span>{TYPE_EMOJI[piece.type] || "📄"}</span>
             <FileText className="h-4 w-4 text-muted-foreground" />
-            Skript — {piece.title || "Ohne Titel"}
+            <span className="truncate">Skript — {piece.title || "Ohne Titel"}</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="ml-auto mr-6 h-8 gap-1.5 text-xs shrink-0"
+              onClick={copyFullScript}
+              title="Skript kopieren"
+            >
+              {copiedAll ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedAll ? "Kopiert" : "Kopieren"}
+            </Button>
           </DialogTitle>
         </DialogHeader>
+
 
         <ScrollArea className="flex-1 min-h-0 overflow-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
           <div className="px-6 py-5 space-y-6">
