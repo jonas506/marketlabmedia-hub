@@ -207,6 +207,12 @@ const ClientDetail = () => {
             <MarketingTracking clientId={client.id} canEdit={canEdit} />
           </ErrorBoundary>
         );
+      case "empfehlung":
+        return (
+          <ErrorBoundary level="section">
+            <ReferralPageEditor clientId={client.id} clientName={client.name} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
       case "activity":
         return (
           <ErrorBoundary level="section">
