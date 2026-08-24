@@ -18,6 +18,7 @@ import ClientChecklists from "@/components/client/ClientChecklists";
 import ClientCheckins from "@/components/client/ClientCheckins";
 import ClientDashboard from "@/components/client/ClientDashboard";
 import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
+import ReferralPageEditor from "@/components/client/ReferralPageEditor";
 import OnboardingBanner from "@/components/OnboardingBanner";
 import ArchiveClientButton from "@/components/ArchiveClientButton";
 
