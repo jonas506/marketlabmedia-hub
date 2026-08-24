@@ -44,6 +44,7 @@ import InternalReviewSwiper from "./pages/InternalReviewSwiper";
 import StundenUebersicht from "./pages/StundenUebersicht";
 import Pricing from "./pages/Pricing";
 import Referral from "./pages/Referral";
+import ReferralLanding from "./pages/ReferralLanding";
 import CourseHome from "./pages/CourseHome";
 import CoursePlayer from "./pages/CoursePlayer";
 import CourseSignup from "./pages/CourseSignup";
