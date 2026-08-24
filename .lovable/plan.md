@@ -1,76 +1,50 @@
-## Neues Aufgaben-System
+# Kunden-Empfehlungsseite (Referenz-Landingpage pro Kunde)
 
-Die Tabelle `tasks` bleibt bestehen (hat schon alle nötigen Felder: `status`, `priority`, `deadline`, `assigned_to`, `client_id`). Nur die UI wird komplett neu.
+Jeder Kunde bekommt eine eigene, öffentlich teilbare Seite unter einem eigenen Link. Der Kunde schickt den Link an Bekannte — die sehen dort, was wir für ihn gemacht haben, sein persönliches Feedback (Bild, Voice, Video) und können direkt einen Termin buchen oder anrufen.
 
-### Ansicht `/tasks` — Team-Kanban
-
-Vier Spalten:
+## Seitenstruktur (öffentlich, ohne Login)
 
 ```text
-Offen  →  In Arbeit  →  Review  →  Erledigt
+1  HERO        "<Kunde> empfiehlt Marketlab Media"
+              Foto des Kunden, Name + Position/Firma, kurzer Einleitungssatz
+              CTA-Buttons: Termin buchen | Anrufen
+
+2  ERGEBNISSE  "Was wir für <Kunde> gemacht haben"
+              Freitext-Beschreibung + bis zu 4 Kennzahlen-Kacheln
+              (z. B. "+38.000 Follower", "112 Reels", "24 Anfragen/Monat")
+
+3  FEEDBACK    "Persönliches Feedback von <Kunde>"
+              Medien-Galerie: Bilder (Screenshots/Chats), Audio-Player (Voice),
+              Video-Player — beliebig viele, sortierbar, je mit optionaler Bildunterschrift
+              Optional ein Text-Zitat, groß gesetzt
+
+4  TERMIN      "Lass uns sprechen"
+              Cal.com-Embed (Erstgespräch) + gut sichtbarer Telefon-Button
 ```
 
-- Drag & Drop zwischen Spalten aktualisiert `status`.
-- Erledigte Aufgaben verschwinden nach 24h automatisch aus der Ansicht (bleiben in der DB).
-- Karten zeigen: Titel, Kunde (Farb-Chip), Assignee-Avatar, Deadline-Chip, Prioritäts-Flag.
-- Deadline-Chip färbt sich rot wenn überfällig, orange wenn heute/morgen, grau sonst.
-- Prioritäts-Flag: klein oben rechts (⚑ Normal / Hoch / Dringend).
+Design im bestehenden Marketlab-Dark-Look der aktuellen Empfehlungsseite (Blau-Akzent, Noise-Overlay, Playfair-Akzente). Mobil-optimiert, eigene Route, ohne den langen Agentur-Teil.
 
-### Filter-Leiste oben
+## Pflege im Kundenbereich
 
-- **Person**: Alle / Nur ich / einzelner Mitarbeiter
-- **Kunde**: Alle / einzelner Kunde
-- **Priorität**: Alle / Hoch+ 
-- **Suche** (Titel)
+Neues Modul „Empfehlungsseite" in der Kunden-Detailansicht (nur Admin/Head of Content):
 
-Filter werden in URL gespeichert (persistent beim Tab-Wechsel).
+- Foto hochladen, Anzeigename/Position eintragen
+- Hero-Text, Ergebnis-Text und Kennzahlen bearbeiten
+- Feedback-Medien hochladen (Bild / Audio / Video), Reihenfolge per Drag & Drop, Bildunterschrift, Löschen
+- Telefonnummer + Cal.com-Link je Seite überschreibbar (Standard: zentrale Werte)
+- Schalter „Seite aktiv" (inaktiv = Link zeigt Hinweisseite)
+- Live-Vorschau-Button + Link kopieren
 
-### Neue Aufgabe erstellen
+## Technische Umsetzung
 
-Ein einziger „+ Neue Aufgabe" Button oben. Öffnet ein schmales Sheet mit:
+- Tabelle `client_referral_pages`: `client_id` (unique), `slug` (öffentlicher, ratefreier Link-Teil), `is_active`, `headline_name`, `role_title`, `photo_url`, `intro_text`, `results_text`, `stats` (jsonb), `quote`, `phone`, `cal_link`, Timestamps. RLS: Schreiben/Lesen nur für interne Rollen, plus GRANTs.
+- Tabelle `client_referral_media`: `page_id`, `type` (image|audio|video), `url`, `caption`, `sort_order`. Gleiches RLS-Muster.
+- Storage-Bucket `referral-assets` (public read, Upload nur authentifiziert) für Foto und Feedback-Medien.
+- Öffentlicher Zugriff über Security-Definer-Funktion `get_referral_page(_slug text)`, die Seite + Medien als JSON liefert und nur aktive Seiten zurückgibt — keine direkte Tabellenfreigabe für Gäste.
+- Neue Route `/ref/:slug` mit neuer Seite `src/pages/ReferralPage.tsx` (öffentlich in `App.tsx` registriert), plus `<title>`/Meta-Description pro Kunde.
+- Cal.com-Embed via offiziellem Inline-Embed-Script; Telefon als `tel:`-Link.
+- Bestehende Seite `/empfehlung/:token` bleibt unverändert bestehen.
 
-- Titel (Pflicht)
-- **Quick-Templates** als Chips über dem Titelfeld — Klick füllt den Titel vor:
-  - „Reel posten"
-  - „Carousel posten"  
-  - „Skript schreiben"
-  - „Schnitt"
-  - „Feedback einholen"
-  - „Setting Call"
-  - „Follow-up"
-- Kunde (optional)
-- Zuweisen an (Pflicht)
-- Deadline (Datum + optional Uhrzeit)
-- Priorität (Normal/Hoch/Dringend)
-- Notiz (optional)
+## Offene Standardwerte
 
-Nach Speichern: Slack-DM geht automatisch an den Assignee (Trigger `trg_notify_task_assignment_slack` läuft bereits).
-
-### Aufgaben-Details
-
-Klick auf Karte → gleiches Sheet, aber mit Verlauf, Notizen bearbeitbar, „Erledigen" Button.
-
-### Ansicht `/my-todos` — Meine Woche
-
-Persönliche Fokus-Ansicht bleibt schlank:
-
-- Heute (nach Deadline sortiert)
-- Diese Woche
-- Später
-- Ohne Deadline
-
-Nur meine Aufgaben, kein Kunden-Filter nötig.
-
-### Was rausfliegt
-
-- `MergedGroupCard`, `TaskGroupCard`, `TaskGroupSection`, `SubtaskItem` — die ganze automatische Gruppierungs-Logik.
-- `CompletedTasksView` als separater Tab — Erledigte werden inline gedimmt und dann ausgeblendet.
-- Alte Filter/Toggles in `Tasks.tsx`.
-
-### Technisch
-
-- Neue Komponenten: `TaskKanbanBoard.tsx`, `TaskKanbanCard.tsx`, `TaskFilterBar.tsx`, `NewTaskSheet.tsx` mit Template-Chips.
-- `Tasks.tsx` wird komplett neu geschrieben (Team-Kanban).
-- `MyTodos.tsx` wird vereinfacht (nur die 4 Zeit-Sektionen).
-- Drag & Drop via bestehendes `@dnd-kit` (schon im Projekt).
-- Keine DB-Migration nötig.
+Zentrale Defaults: Cal.com `marketlab-media/erstgespraech`, Telefonnummer trage ich als Platzhalter ein und du kannst sie pro Seite oder global ändern.
