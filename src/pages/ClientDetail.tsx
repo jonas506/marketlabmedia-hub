@@ -43,6 +43,7 @@ const MODULE_ITEMS = [
   { key: "checklists", label: "Checklisten", icon: ClipboardList },
   { key: "checkins", label: "Check-ins", icon: MessageCircleHeart },
   { key: "marketing", label: "Marketing", icon: TrendingUp },
+  { key: "empfehlung", label: "Empfehlungsseite", icon: Heart, adminOnly: true },
   { key: "stunden", label: "Stunden", icon: Clock, adminOnly: true },
   { key: "activity", label: "Verlauf", icon: Clock },
   { key: "info", label: "Info", icon: Info },
