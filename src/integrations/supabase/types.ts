@@ -746,6 +746,106 @@ export type Database = {
           },
         ]
       }
+      client_referral_media: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          page_id: string
+          sort_order: number
+          type: string
+          url: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          page_id: string
+          sort_order?: number
+          type?: string
+          url: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          page_id?: string
+          sort_order?: number
+          type?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_referral_media_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "client_referral_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_referral_pages: {
+        Row: {
+          cal_link: string | null
+          client_id: string
+          created_at: string
+          headline_name: string | null
+          id: string
+          intro_text: string | null
+          is_active: boolean
+          phone: string | null
+          photo_url: string | null
+          quote: string | null
+          results_text: string | null
+          role_title: string | null
+          slug: string
+          stats: Json
+          updated_at: string
+        }
+        Insert: {
+          cal_link?: string | null
+          client_id: string
+          created_at?: string
+          headline_name?: string | null
+          id?: string
+          intro_text?: string | null
+          is_active?: boolean
+          phone?: string | null
+          photo_url?: string | null
+          quote?: string | null
+          results_text?: string | null
+          role_title?: string | null
+          slug: string
+          stats?: Json
+          updated_at?: string
+        }
+        Update: {
+          cal_link?: string | null
+          client_id?: string
+          created_at?: string
+          headline_name?: string | null
+          id?: string
+          intro_text?: string | null
+          is_active?: boolean
+          phone?: string | null
+          photo_url?: string | null
+          quote?: string | null
+          results_text?: string | null
+          role_title?: string | null
+          slug?: string
+          stats?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_referral_pages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           additional_products: string[] | null
@@ -3385,6 +3485,7 @@ export type Database = {
         Args: { _client_id: string }
         Returns: string
       }
+      get_referral_page: { Args: { _slug: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
