@@ -27,7 +27,7 @@ import {
   ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
   Smartphone, ClipboardList, MessageCircleHeart,
-  TrendingUp, Clock, Info, Menu,
+  TrendingUp, Clock, Info, Menu, Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
