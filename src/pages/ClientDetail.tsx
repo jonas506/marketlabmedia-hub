@@ -18,6 +18,7 @@ import ClientChecklists from "@/components/client/ClientChecklists";
 import ClientCheckins from "@/components/client/ClientCheckins";
 import ClientDashboard from "@/components/client/ClientDashboard";
 import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
+import ReferralPageEditor from "@/components/client/ReferralPageEditor";
 import OnboardingBanner from "@/components/OnboardingBanner";
 import ArchiveClientButton from "@/components/ArchiveClientButton";
 
@@ -26,7 +27,7 @@ import {
   ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
   Smartphone, ClipboardList, MessageCircleHeart,
-  TrendingUp, Clock, Info, Menu,
+  TrendingUp, Clock, Info, Menu, Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -42,6 +43,7 @@ const MODULE_ITEMS = [
   { key: "checklists", label: "Checklisten", icon: ClipboardList },
   { key: "checkins", label: "Check-ins", icon: MessageCircleHeart },
   { key: "marketing", label: "Marketing", icon: TrendingUp },
+  { key: "empfehlung", label: "Empfehlungsseite", icon: Heart, adminOnly: true },
   { key: "stunden", label: "Stunden", icon: Clock, adminOnly: true },
   { key: "activity", label: "Verlauf", icon: Clock },
   { key: "info", label: "Info", icon: Info },
@@ -203,6 +205,12 @@ const ClientDetail = () => {
         return (
           <ErrorBoundary level="section">
             <MarketingTracking clientId={client.id} canEdit={canEdit} />
+          </ErrorBoundary>
+        );
+      case "empfehlung":
+        return (
+          <ErrorBoundary level="section">
+            <ReferralPageEditor clientId={client.id} clientName={client.name} canEdit={canEdit} />
           </ErrorBoundary>
         );
       case "activity":

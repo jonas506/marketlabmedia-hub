@@ -44,6 +44,7 @@ import InternalReviewSwiper from "./pages/InternalReviewSwiper";
 import StundenUebersicht from "./pages/StundenUebersicht";
 import Pricing from "./pages/Pricing";
 import Referral from "./pages/Referral";
+import ReferralLanding from "./pages/ReferralLanding";
 import CourseHome from "./pages/CourseHome";
 import CoursePlayer from "./pages/CoursePlayer";
 import CourseSignup from "./pages/CourseSignup";
@@ -103,6 +104,7 @@ const App = () => (
                   <Route path="/approve/:token" element={<ClientApproval />} />
                   <Route path="/empfehlung/:token" element={<Referral />} />
                   <Route path="/r/:token" element={<Referral />} />
+                  <Route path="/ref/:slug" element={<ReferralLanding />} />
                   <Route path="/pakete" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/angebot/:token" element={<OfferView />} />
