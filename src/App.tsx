@@ -104,6 +104,7 @@ const App = () => (
                   <Route path="/approve/:token" element={<ClientApproval />} />
                   <Route path="/empfehlung/:token" element={<Referral />} />
                   <Route path="/r/:token" element={<Referral />} />
+                  <Route path="/ref/:slug" element={<ReferralLanding />} />
                   <Route path="/pakete" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/angebot/:token" element={<OfferView />} />
