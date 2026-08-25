@@ -615,7 +615,6 @@ const ReferralLanding = () => {
           <SectionEyebrow>Termin</SectionEyebrow>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
             Lass uns{" "}
-
             <span className="italic font-semibold" style={accentStyle}>
               sprechen
             </span>
@@ -625,30 +624,46 @@ const ReferralLanding = () => {
           </p>
 
           <div
-            className="mt-6 overflow-hidden rounded-2xl border"
-            style={{ borderColor: BRAND.border, background: BRAND.card }}
+            className="mt-8 overflow-hidden rounded-3xl border p-6 text-center md:p-10"
+            style={{
+              borderColor: `${BRAND.blue}2E`,
+              background: `linear-gradient(140deg, ${BRAND.card}, ${BRAND.bg} 70%)`,
+            }}
           >
-            <iframe
-              src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
-              title="Termin buchen"
-              className="w-full"
-              style={{ border: 0 }}
-              width="100%"
-              height="600"
-              frameBorder="0"
-            />
-          </div>
+            <div
+              className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
+              style={{ background: `${BRAND.blue}22`, color: BRAND.blue }}
+            >
+              <Calendar className="h-7 w-7" />
+            </div>
+            <h3 className="mt-5 text-xl font-bold md:text-2xl">Kostenloses Erstgespräch buchen</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-white/55">
+              Wähle direkt einen passenden Slot im Kalender aus – ohne Hin-und-Her per Mail.
+            </p>
+            <a
+              href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-sm font-bold text-white transition-all hover:scale-[1.03]"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.blueSoft})`,
+                boxShadow: `0 18px 46px -18px ${BRAND.blue}`,
+              }}
+            >
+              <Calendar className="h-4 w-4" /> Termin auswählen
+            </a>
 
-          <div className="mt-5 flex flex-wrap gap-3">
-            {page.phone && (
-              <a
-                href={`tel:${page.phone.replace(/\s/g, "")}`}
-                className="inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold text-white/80"
-                style={{ borderColor: BRAND.border, background: BRAND.card }}
-              >
-                <Phone className="h-4 w-4" /> Direkt anrufen
-              </a>
-            )}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              {page.phone && (
+                <a
+                  href={`tel:${page.phone.replace(/\s/g, "")}`}
+                  className="inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold text-white/80 transition-colors hover:text-white"
+                  style={{ borderColor: BRAND.border, background: BRAND.card }}
+                >
+                  <Phone className="h-4 w-4" /> {page.phone}
+                </a>
+              )}
+            </div>
           </div>
         </section>
 
