@@ -1342,7 +1342,7 @@ const ClientApproval = () => {
                   })}
                 </div>
 
-                </div>
+
 
                 {/* Share Link + WhatsApp */}
                 {(() => {
