@@ -11,6 +11,7 @@ import {
   Mic, Video as VideoIcon, Image as ImageIcon, Plus, Link2,
 } from "lucide-react";
 import { toast } from "sonner";
+import ReferralResultsChat from "./ReferralResultsChat";
 
 interface Props {
   clientId: string;
