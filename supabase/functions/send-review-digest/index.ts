@@ -101,7 +101,18 @@ Deno.serve(async (req) => {
         ? `https://hub.marketlab-media.de/approve/${tokenRow.token}`
         : null
 
-      const { subject, html, text } = buildEmail(client.name, pieces, approvalLink)
+      const { data: refRow } = await supabase
+        .from('client_referral_pages')
+        .select('slug')
+        .eq('client_id', clientId)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      const referralLink = refRow?.slug
+        ? `https://hub.marketlab-media.de/ref/${refRow.slug}`
+        : 'https://hub.marketlab-media.de/empfehlungen'
+
+      const { subject, html, text } = buildEmail(client.name, pieces, approvalLink, referralLink)
 
       let sendSuccess = true
       for (const email of client.review_notify_emails) {
