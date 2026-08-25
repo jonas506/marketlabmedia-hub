@@ -624,20 +624,15 @@ const ReferralLanding = () => {
           </p>
 
           <div
-            className="mt-8 overflow-hidden rounded-3xl border p-6 text-center md:p-10"
-            style={{
-              borderColor: `${BRAND.blue}2E`,
-              background: `linear-gradient(140deg, ${BRAND.card}, ${BRAND.bg} 70%)`,
-            }}
+            className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-xl shadow-slate-200/50 md:p-10"
           >
             <div
-              className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
-              style={{ background: `${BRAND.blue}22`, color: BRAND.blue }}
+              className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
             >
               <Calendar className="h-7 w-7" />
             </div>
-            <h3 className="mt-5 text-xl font-bold md:text-2xl">Kostenloses Erstgespräch buchen</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-white/55">
+            <h3 className="mt-5 text-xl font-bold text-slate-900 md:text-2xl">Kostenloses Erstgespräch buchen</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
               Wähle direkt einen passenden Slot im Kalender aus – ohne Hin-und-Her per Mail.
             </p>
             <a
@@ -652,11 +647,7 @@ const ReferralLanding = () => {
                   "noopener,noreferrer",
                 );
               }}
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-sm font-bold text-white transition-all hover:scale-[1.03]"
-              style={{
-                background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.blueSoft})`,
-                boxShadow: `0 18px 46px -18px ${BRAND.blue}`,
-              }}
+              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-8 py-4 text-sm font-bold text-white transition-all hover:scale-[1.03] hover:bg-blue-700"
             >
               <Calendar className="h-4 w-4" /> Termin auswählen
             </a>
@@ -665,8 +656,7 @@ const ReferralLanding = () => {
               {page.phone && (
                 <a
                   href={`tel:${page.phone.replace(/\s/g, "")}`}
-                  className="inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold text-white/80 transition-colors hover:text-white"
-                  style={{ borderColor: BRAND.border, background: BRAND.card }}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
                 >
                   <Phone className="h-4 w-4" /> {page.phone}
                 </a>
