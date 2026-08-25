@@ -349,6 +349,19 @@ const ClientApproval = () => {
       setUpcomingPosts(payload.upcoming_posts || []);
       setInProgress(payload.in_progress || []);
       setPipelineSummary(payload.pipeline_summary || {});
+
+      if (payload.client?.id) {
+        const { data: refData } = await supabase
+          .from("client_referral_pages")
+          .select("slug, headline_name")
+          .eq("client_id", payload.client.id)
+          .eq("is_active", true)
+          .single();
+        if (refData) {
+          setReferralSlug(refData.slug);
+          setReferralPageName(refData.headline_name || payload.client.name);
+        }
+      }
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
