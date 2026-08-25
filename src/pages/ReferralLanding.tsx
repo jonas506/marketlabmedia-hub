@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown, Clapperboard } from "lucide-react";
+import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
@@ -40,12 +40,6 @@ const parseResults = (raw: string): ResultBlock[] => {
   return blocks;
 };
 
-const getYouTubeId = (url: string) => {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?]+)/);
-  return match?.[1] ?? null;
-};
-
-const TRUST_VIDEO_URL = "https://www.youtube.com/watch?v=FfXnNFgT7Lo";
 
 
 
@@ -511,48 +505,6 @@ const ReferralLanding = () => {
           </section>
         )}
 
-        {/* TRUST VIDEO — Social Proof */}
-        <section className="mt-24">
-          <SectionEyebrow>Behind the Scenes</SectionEyebrow>
-          <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
-            So produzieren wir{" "}
-            <span className="italic font-semibold" style={accentStyle}>
-              Content
-            </span>{" "}
-            der verkauft
-          </h2>
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mt-8 overflow-hidden rounded-2xl border"
-            style={{ borderColor: BRAND.border, background: BRAND.card }}
-          >
-            <div className="aspect-video w-full bg-black">
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(TRUST_VIDEO_URL)}`}
-                title="Marketlab Media Content-Produktion"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                loading="lazy"
-                className="h-full w-full"
-                style={{ border: "none" }}
-              />
-            </div>
-            <div className="flex items-center gap-3 px-5 py-4">
-              <div
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
-                style={{ background: `${BRAND.blue}22`, color: BRAND.blue }}
-              >
-                <Clapperboard className="h-4 w-4" />
-              </div>
-              <p className="text-sm leading-relaxed text-white/55">
-                Einblicke in unsere Content-Produktion – damit du siehst, wie wir mit Social Media echte Marken aufbauen.
-              </p>
-            </div>
-          </motion.div>
-        </section>
 
         {/* FEEDBACK */}
         {(page.quote || feedbackImages.length > 0 || videos.length > 0 || audios.length > 0) && (
