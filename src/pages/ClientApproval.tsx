@@ -1150,7 +1150,13 @@ const ClientApproval = () => {
             {/* MOBILE sticky buttons */}
             <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:hidden">
               <div className="max-w-2xl mx-auto px-4 sm:px-6">
-                <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
+                <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 space-y-2.5">
+                  <GlowingReferralButton
+                    slug={referralSlug}
+                    name={referralPageName}
+                    onOpen={() => setShowReferral(true)}
+                  />
+                  {/* Confirm approve dialog when comments exist */}
                   {/* Confirm approve dialog when comments exist */}
                   <AnimatePresence>
                     {confirmApprove && (
