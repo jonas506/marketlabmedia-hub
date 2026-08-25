@@ -35,7 +35,8 @@ Deno.serve(async (req) => {
           { piece_type: 'reel', piece_title: 'Warum jetzt investieren?' },
           { piece_type: 'carousel', piece_title: 'Checkliste: Immobilienkauf' },
         ],
-        'https://hub.marketlab-media.de/approve/demo-token'
+        'https://hub.marketlab-media.de/approve/demo-token',
+        'https://hub.marketlab-media.de/ref/musterkunde'
       )
 
       const res = await fetch('https://api.resend.com/emails', {
