@@ -528,7 +528,41 @@ const ReferralLanding = () => {
 
         <p className="mt-16 text-center text-xs text-white/30">Marketlab Media</p>
       </div>
+
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightbox(null)}
+            className="fixed inset-0 z-[9998] flex cursor-zoom-out flex-col items-center justify-center gap-4 p-6 backdrop-blur-sm"
+            style={{ background: "rgba(3,4,10,0.92)" }}
+          >
+            <motion.img
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              src={lightbox.src}
+              alt={lightbox.caption || "Feedback"}
+              className="max-h-[82vh] max-w-full rounded-2xl object-contain"
+            />
+            {lightbox.caption && (
+              <p className="max-w-xl text-center text-sm text-white/60">{lightbox.caption}</p>
+            )}
+            <button
+              type="button"
+              aria-label="Schließen"
+              className="absolute right-5 top-5 rounded-full border p-2 text-white/70 transition-colors hover:text-white"
+              style={{ borderColor: BRAND.border, background: BRAND.card }}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+
   );
 };
 
