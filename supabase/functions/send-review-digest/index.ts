@@ -226,12 +226,14 @@ function buildEmail(
       </table>
       ${approvalLink ? `<div style="text-align:center;margin-top:28px;"><a href="${approvalLink}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Zur Freigabe →</a></div>` : ''}
     </div>
+    ${bonusHtml()}
     <p style="color:#555;font-size:12px;text-align:center;margin:0;">Marketlab Media · Automatische Benachrichtigung</p>
   </div>
 </body>
 </html>`
 
-  const text = `Neue Inhalte zur Freigabe\n\nFür ${clientName} ${count === 1 ? 'ist 1 neues Content Piece' : `sind ${count} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketlab Media · Automatische Benachrichtigung`
+  const text = `Neue Inhalte zur Freigabe\n\nFür ${clientName} ${count === 1 ? 'ist 1 neues Content Piece' : `sind ${count} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}${bonusText()}\n\nMarketlab Media · Automatische Benachrichtigung`
+
 
   return { subject, html, text }
 }
