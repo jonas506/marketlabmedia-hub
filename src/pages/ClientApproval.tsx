@@ -1029,7 +1029,12 @@ const ClientApproval = () => {
               )}
 
               {/* Desktop Buttons */}
-              <div className="hidden sm:block mt-6 space-y-2">
+              <div className="hidden sm:block mt-6 space-y-3">
+                <GlowingReferralButton
+                  slug={referralSlug}
+                  name={referralPageName}
+                  onOpen={() => setShowReferral(true)}
+                />
                 {!confirmApprove ? (
                   <>
                     <div className="flex gap-2">
