@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight, Check, Eye, Video, Instagram, Youtube, Linkedin,
-  CalendarCheck, Quote, Star, Euro, Zap, Target, Flame,
+  CalendarCheck, Quote, Star, Euro, Zap, Target, Flame, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import jonasImg from "@/assets/team-jonas.png.asset.json";
 import alexanderImg from "@/assets/team-alexander.png.asset.json";
