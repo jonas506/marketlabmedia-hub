@@ -35,7 +35,8 @@ Deno.serve(async (req) => {
           { piece_type: 'reel', piece_title: 'Warum jetzt investieren?' },
           { piece_type: 'carousel', piece_title: 'Checkliste: Immobilienkauf' },
         ],
-        'https://hub.marketlab-media.de/approve/demo-token'
+        'https://hub.marketlab-media.de/approve/demo-token',
+        'https://hub.marketlab-media.de/ref/musterkunde'
       )
 
       const res = await fetch('https://api.resend.com/emails', {
@@ -101,7 +102,18 @@ Deno.serve(async (req) => {
         ? `https://hub.marketlab-media.de/approve/${tokenRow.token}`
         : null
 
-      const { subject, html, text } = buildEmail(client.name, pieces, approvalLink)
+      const { data: refRow } = await supabase
+        .from('client_referral_pages')
+        .select('slug')
+        .eq('client_id', clientId)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      const referralLink = refRow?.slug
+        ? `https://hub.marketlab-media.de/ref/${refRow.slug}`
+        : 'https://hub.marketlab-media.de/empfehlungen'
+
+      const { subject, html, text } = buildEmail(client.name, pieces, approvalLink, referralLink)
 
       let sendSuccess = true
       for (const email of client.review_notify_emails) {
@@ -176,7 +188,8 @@ Deno.serve(async (req) => {
 function buildEmail(
   clientName: string,
   pieces: { piece_type: string | null; piece_title: string | null }[],
-  approvalLink: string | null
+  approvalLink: string | null,
+  referralLink = 'https://hub.marketlab-media.de/empfehlungen'
 ) {
   const typeLabels: Record<string, string> = {
     reel: '🎬 Reel',
@@ -207,7 +220,20 @@ function buildEmail(
 
   const html = `<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  @keyframes mlGlow {
+    0%,100% { box-shadow:0 0 12px rgba(240,200,90,0.35); border-color:#c9a227; }
+    50% { box-shadow:0 0 34px rgba(240,200,90,0.85); border-color:#ffe08a; }
+  }
+  @keyframes mlPulse {
+    0%,100% { transform:scale(1); }
+    50% { transform:scale(1.035); }
+  }
+  .ml-glow { animation: mlGlow 2.2s ease-in-out infinite; }
+  .ml-pulse { animation: mlPulse 2.2s ease-in-out infinite; }
+</style>
+</head>
 <body style="margin:0;padding:0;background:#111115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:560px;margin:0 auto;padding:40px 20px;">
     <div style="background:#1a1a1f;border:1px solid #2a2a2f;border-radius:16px;padding:32px;margin-bottom:24px;">
@@ -224,15 +250,15 @@ function buildEmail(
         </thead>
         <tbody style="color:#e0e0e4;">${pieceListHtml}</tbody>
       </table>
-      ${approvalLink ? `<div style="text-align:center;margin-top:28px;"><a href="${approvalLink}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Zur Freigabe →</a></div>` : ''}
+      ${bonusHtml(referralLink)}
+      ${approvalLink ? `<div style="text-align:center;margin-top:20px;"><a href="${approvalLink}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Zur Freigabe →</a></div>` : ''}
     </div>
-    ${bonusHtml()}
     <p style="color:#555;font-size:12px;text-align:center;margin:0;">Marketlab Media · Automatische Benachrichtigung</p>
   </div>
 </body>
 </html>`
 
-  const text = `Neue Inhalte zur Freigabe\n\nFür ${clientName} ${count === 1 ? 'ist 1 neues Content Piece' : `sind ${count} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}${bonusText()}\n\nMarketlab Media · Automatische Benachrichtigung`
+  const text = `Neue Inhalte zur Freigabe\n\nFür ${clientName} ${count === 1 ? 'ist 1 neues Content Piece' : `sind ${count} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${bonusText(referralLink)}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketlab Media · Automatische Benachrichtigung`
 
 
   return { subject, html, text }
@@ -249,10 +275,10 @@ function bonusActive(): boolean {
   return Date.now() < BONUS_END.getTime()
 }
 
-function bonusHtml(): string {
+function bonusHtml(referralLink: string): string {
   if (!bonusActive()) return ''
   const days = bonusDaysLeft()
-  return `<div style="background:linear-gradient(135deg,#241d07,#3a2c0a);border:1px solid #c9a227;border-radius:16px;padding:24px;margin-bottom:24px;">
+  return `<div class="ml-glow" style="margin-top:28px;background:linear-gradient(135deg,#241d07,#3a2c0a);border:1px solid #c9a227;border-radius:16px;padding:22px;box-shadow:0 0 22px rgba(240,200,90,0.45);">
       <p style="color:#f0c85a;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;font-weight:700;">+50 % Empfehlungsprämie · nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}</p>
       <h2 style="color:#ffffff;font-size:18px;margin:0 0 12px;font-weight:700;">Empfiehl uns weiter &amp; sichere dir bis zu 2.250 €</h2>
       <table style="width:100%;border-collapse:collapse;color:#e7dcc0;font-size:14px;">
@@ -260,12 +286,15 @@ function bonusHtml(): string {
         <tr><td style="padding:6px 0;">2. Empfehlung</td><td style="padding:6px 0;text-align:right;"><span style="color:#8b8b94;text-decoration:line-through;">1.500 €</span> <strong style="color:#f0c85a;">2.250 €</strong></td></tr>
         <tr><td style="padding:6px 0;">3. Empfehlung</td><td style="padding:6px 0;text-align:right;"><strong style="color:#f0c85a;">1 Monat gratis</strong></td></tr>
       </table>
-      <p style="color:#a89968;font-size:12px;margin:14px 0 0;">Gutschrift bei Vertragsabschluss · Aktion endet am 31. August 2026</p>
+      <div style="text-align:center;margin-top:18px;">
+        <a class="ml-pulse" href="${referralLink}" style="display:inline-block;background:linear-gradient(90deg,#d9a520,#f6d372,#d9a520);color:#241d07;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 0 24px rgba(240,200,90,0.55);">✦ Zu deiner Empfehlungsseite →</a>
+      </div>
+      <p style="color:#a89968;font-size:12px;margin:14px 0 0;text-align:center;">Gutschrift bei Vertragsabschluss · Aktion endet am 31. August 2026</p>
     </div>`
 }
 
-function bonusText(): string {
+function bonusText(referralLink: string): string {
   if (!bonusActive()) return ''
   const days = bonusDaysLeft()
-  return `\n\n+50 % EMPFEHLUNGSPRÄMIE – nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}\n1. Empfehlung: 1.500 € (statt 1.000 €)\n2. Empfehlung: 2.250 € (statt 1.500 €)\n3. Empfehlung: 1 Monat gratis\nAktion endet am 31. August 2026.`
+  return `\n\n+50 % EMPFEHLUNGSPRÄMIE – nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}\n1. Empfehlung: 1.500 € (statt 1.000 €)\n2. Empfehlung: 2.250 € (statt 1.500 €)\n3. Empfehlung: 1 Monat gratis\nDeine Empfehlungsseite: ${referralLink}\nAktion endet am 31. August 2026.`
 }
