@@ -479,7 +479,29 @@ export const AgencySections = () => {
           <h2 className="mt-2 text-2xl font-extrabold tracking-tight md:text-3xl">
             Unsere eigenen Kanäle
           </h2>
+
+          <div
+            className="mt-6 overflow-hidden rounded-2xl border"
+            style={{ borderColor: `${BRAND.blue}33`, background: BRAND.card }}
+          >
+            <div className="aspect-video w-full bg-black">
+              <iframe
+                src="https://www.youtube-nocookie.com/embed/FfXnNFgT7Lo"
+                title="Marketlab Media Content-Produktion"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+                className="h-full w-full"
+                style={{ border: "none" }}
+              />
+            </div>
+            <div className="px-5 py-4 text-sm leading-relaxed text-white/55">
+              Einblicke in unsere Content-Produktion – damit du siehst, wie wir mit Social Media echte Marken aufbauen.
+            </div>
+          </div>
+
           <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
+
             {CHANNELS.map((c) => {
               const Icon = c.icon;
               return (
