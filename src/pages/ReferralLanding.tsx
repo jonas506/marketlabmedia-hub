@@ -623,36 +623,25 @@ const ReferralLanding = () => {
             30 Minuten, unverbindlich. Wir schauen uns deine Situation an und sagen dir ehrlich, ob und wie wir helfen können.
           </p>
 
-          <div
-            className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-xl shadow-slate-200/50 md:p-10"
-          >
-            <div
-              className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"
-            >
-              <Calendar className="h-7 w-7" />
+          <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
+            <div className="p-6 text-center md:p-10">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                <Calendar className="h-7 w-7" />
+              </div>
+              <h3 className="mt-5 text-xl font-bold text-slate-900 md:text-2xl">Kostenloses Erstgespräch buchen</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+                Wähle direkt einen passenden Slot im Kalender aus – ohne Hin-und-Her per Mail.
+              </p>
             </div>
-            <h3 className="mt-5 text-xl font-bold text-slate-900 md:text-2xl">Kostenloses Erstgespräch buchen</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-              Wähle direkt einen passenden Slot im Kalender aus – ohne Hin-und-Her per Mail.
-            </p>
-            <a
-              href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
-              target="_blank"
-              rel="noreferrer noopener"
-              onClick={(e) => {
-                e.preventDefault();
-                window.open(
-                  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true",
-                  "_blank",
-                  "noopener,noreferrer",
-                );
-              }}
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-8 py-4 text-sm font-bold text-white transition-all hover:scale-[1.03] hover:bg-blue-700"
-            >
-              <Calendar className="h-4 w-4" /> Termin auswählen
-            </a>
-
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <iframe
+              src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
+              style={{ border: 0 }}
+              width="100%"
+              height="600"
+              frameBorder="0"
+              title="Google Calendar Terminbuchung"
+            />
+            <div className="flex flex-wrap items-center justify-center gap-3 border-t border-slate-100 p-6">
               {page.phone && (
                 <a
                   href={`tel:${page.phone.replace(/\s/g, "")}`}
