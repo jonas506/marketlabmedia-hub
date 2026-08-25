@@ -344,6 +344,15 @@ const ReferralPageEditor = ({ clientId, clientName, canEdit }: Props) => {
 
         <div className="space-y-2">
           <Label>Was wir gemacht haben / Ergebnisse</Label>
+          <ReferralResultsChat
+            clientId={clientId}
+            current={{ results_text: form.results_text, stats }}
+            disabled={!canEdit}
+            onApply={(d) => {
+              setForm((f) => ({ ...f, results_text: d.results_text || f.results_text }));
+              if (d.stats?.length) setStats(d.stats);
+            }}
+          />
           <Textarea
             rows={5}
             disabled={!canEdit}
@@ -352,6 +361,7 @@ const ReferralPageEditor = ({ clientId, clientName, canEdit }: Props) => {
             onChange={(e) => setForm((f) => ({ ...f, results_text: e.target.value }))}
           />
         </div>
+
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
