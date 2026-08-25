@@ -270,12 +270,17 @@ export const AgencySections = () => {
                     />
                   ))}
                 </div>
-                <p className="text-lg font-medium text-white/85 md:text-xl">
+                <div className="mb-2 text-base font-bold text-white">
+                  {REVIEWS[reviewIdx].title}
+                </div>
+                <p className="text-base font-medium text-white/85 md:text-lg">
                   „{REVIEWS[reviewIdx].text}"
                 </p>
                 <div className="mt-5 text-sm font-semibold text-white/70">
                   — {REVIEWS[reviewIdx].name}
+                  <span className="ml-2 font-normal text-white/40">{REVIEWS[reviewIdx].date}</span>
                 </div>
+
               </motion.div>
 
               <div className="mt-6 flex items-center justify-between">
