@@ -499,8 +499,21 @@ const ReferralPageEditor = ({ clientId, clientName, canEdit }: Props) => {
                     disabled={!canEdit}
                     onBlur={(e) => e.target.value !== (m.caption || "") && updateMedia(m.id, { caption: e.target.value })}
                   />
+                  <select
+                    className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground"
+                    value={m.category || "other"}
+                    disabled={!canEdit}
+                    onChange={(e) => updateMedia(m.id, { category: e.target.value })}
+                  >
+                    {MEDIA_CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
                   {m.type === "audio" && signed[m.id] && <audio src={signed[m.id]} controls className="h-8 w-full" />}
                 </div>
+
                 {canEdit && (
                   <Button variant="ghost" size="icon" onClick={() => deleteMedia(m)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
