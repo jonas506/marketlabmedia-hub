@@ -27,9 +27,19 @@ interface MediaRow {
   url: string;
   caption: string | null;
   sort_order: number;
+  category?: string | null;
 }
 
+const MEDIA_CATEGORIES = [
+  { value: "website", label: "Website überarbeitet" },
+  { value: "social", label: "Social Media überarbeitet" },
+  { value: "ads", label: "Ergebnisse über Ads" },
+  { value: "feedback", label: "Feedback" },
+  { value: "other", label: "Sonstiges" },
+];
+
 const PUBLIC_BASE = "https://hub.marketlab-media.de/ref/";
+
 
 const slugify = (s: string) =>
   s
