@@ -40,6 +40,14 @@ const parseResults = (raw: string): ResultBlock[] => {
   return blocks;
 };
 
+const getYouTubeId = (url: string) => {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?]+)/);
+  return match?.[1] ?? null;
+};
+
+const TRUST_VIDEO_URL = "https://www.youtube.com/watch?v=FfXnNFgT7Lo";
+
+
 
 
 interface MediaItem {
