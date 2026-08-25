@@ -749,6 +749,7 @@ export type Database = {
       client_referral_media: {
         Row: {
           caption: string | null
+          category: string
           created_at: string
           id: string
           page_id: string
@@ -758,6 +759,7 @@ export type Database = {
         }
         Insert: {
           caption?: string | null
+          category?: string
           created_at?: string
           id?: string
           page_id: string
@@ -767,6 +769,7 @@ export type Database = {
         }
         Update: {
           caption?: string | null
+          category?: string
           created_at?: string
           id?: string
           page_id?: string
