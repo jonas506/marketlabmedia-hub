@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown } from "lucide-react";
+import { Phone, Quote, Sparkles, Play, Check, X, ArrowDown, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
@@ -11,7 +11,7 @@ import {
   accentStyle as sharedAccentStyle,
 } from "@/components/referral/AgencySections";
 
-const DEFAULT_CAL = "https://cal.com/marketlab-media/erstgespraech";
+
 
 type ResultBlock =
   | { kind: "heading"; text: string }
@@ -124,17 +124,6 @@ const ReferralLanding = () => {
     }
   }, []);
 
-  const calLink = page?.cal_link || DEFAULT_CAL;
-  const calEmbedSrc = useMemo(() => {
-    try {
-      const u = new URL(calLink);
-      u.searchParams.set("embed", "true");
-      u.searchParams.set("theme", "dark");
-      return u.toString();
-    } catch {
-      return calLink;
-    }
-  }, [calLink]);
 
   if (loading) {
     return (
@@ -365,7 +354,7 @@ const ReferralLanding = () => {
                   boxShadow: `0 18px 46px -18px ${BRAND.blue}`,
                 }}
               >
-                <CalendarCheck className="h-4 w-4" /> Kostenloses Erstgespräch
+                <Calendar className="h-4 w-4" /> Kostenloses Erstgespräch
               </a>
               {page.phone && (
                 <a
@@ -640,23 +629,17 @@ const ReferralLanding = () => {
             style={{ borderColor: BRAND.border, background: BRAND.card }}
           >
             <iframe
-              src={calEmbedSrc}
+              src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
               title="Termin buchen"
-              className="h-[680px] w-full"
-              style={{ border: "none" }}
+              className="w-full"
+              style={{ border: 0 }}
+              width="100%"
+              height="600"
+              frameBorder="0"
             />
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href={calLink}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white"
-              style={{ background: BRAND.blue }}
-            >
-              <CalendarCheck className="h-4 w-4" /> Termin im neuen Tab buchen
-            </a>
             {page.phone && (
               <a
                 href={`tel:${page.phone.replace(/\s/g, "")}`}
