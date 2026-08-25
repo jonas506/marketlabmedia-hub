@@ -274,10 +274,10 @@ function bonusActive(): boolean {
   return Date.now() < BONUS_END.getTime()
 }
 
-function bonusHtml(): string {
+function bonusHtml(referralLink: string): string {
   if (!bonusActive()) return ''
   const days = bonusDaysLeft()
-  return `<div style="background:linear-gradient(135deg,#241d07,#3a2c0a);border:1px solid #c9a227;border-radius:16px;padding:24px;margin-bottom:24px;">
+  return `<div class="ml-glow" style="margin-top:28px;background:linear-gradient(135deg,#241d07,#3a2c0a);border:1px solid #c9a227;border-radius:16px;padding:22px;box-shadow:0 0 22px rgba(240,200,90,0.45);">
       <p style="color:#f0c85a;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;font-weight:700;">+50 % Empfehlungsprämie · nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}</p>
       <h2 style="color:#ffffff;font-size:18px;margin:0 0 12px;font-weight:700;">Empfiehl uns weiter &amp; sichere dir bis zu 2.250 €</h2>
       <table style="width:100%;border-collapse:collapse;color:#e7dcc0;font-size:14px;">
@@ -285,12 +285,15 @@ function bonusHtml(): string {
         <tr><td style="padding:6px 0;">2. Empfehlung</td><td style="padding:6px 0;text-align:right;"><span style="color:#8b8b94;text-decoration:line-through;">1.500 €</span> <strong style="color:#f0c85a;">2.250 €</strong></td></tr>
         <tr><td style="padding:6px 0;">3. Empfehlung</td><td style="padding:6px 0;text-align:right;"><strong style="color:#f0c85a;">1 Monat gratis</strong></td></tr>
       </table>
-      <p style="color:#a89968;font-size:12px;margin:14px 0 0;">Gutschrift bei Vertragsabschluss · Aktion endet am 31. August 2026</p>
+      <div style="text-align:center;margin-top:18px;">
+        <a class="ml-pulse" href="${referralLink}" style="display:inline-block;background:linear-gradient(90deg,#d9a520,#f6d372,#d9a520);color:#241d07;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 0 24px rgba(240,200,90,0.55);">✦ Zu deiner Empfehlungsseite →</a>
+      </div>
+      <p style="color:#a89968;font-size:12px;margin:14px 0 0;text-align:center;">Gutschrift bei Vertragsabschluss · Aktion endet am 31. August 2026</p>
     </div>`
 }
 
-function bonusText(): string {
+function bonusText(referralLink: string): string {
   if (!bonusActive()) return ''
   const days = bonusDaysLeft()
-  return `\n\n+50 % EMPFEHLUNGSPRÄMIE – nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}\n1. Empfehlung: 1.500 € (statt 1.000 €)\n2. Empfehlung: 2.250 € (statt 1.500 €)\n3. Empfehlung: 1 Monat gratis\nAktion endet am 31. August 2026.`
+  return `\n\n+50 % EMPFEHLUNGSPRÄMIE – nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}\n1. Empfehlung: 1.500 € (statt 1.000 €)\n2. Empfehlung: 2.250 € (statt 1.500 €)\n3. Empfehlung: 1 Monat gratis\nDeine Empfehlungsseite: ${referralLink}\nAktion endet am 31. August 2026.`
 }
