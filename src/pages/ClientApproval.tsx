@@ -299,22 +299,17 @@ const PreviewVideoPlayer = ({
 const GlowingReferralButton = ({
   slug,
   name,
-  onOpen,
 }: {
   slug: string | null;
   name: string | null;
-  onOpen: () => void;
 }) => {
   if (!slug) return null;
+  const url = `/ref/${slug}`;
   return (
     <a
-      href={`/ref/${slug}`}
+      href={url}
       target="_blank"
       rel="noreferrer"
-      onClick={(e) => {
-        e.preventDefault();
-        onOpen();
-      }}
       className="group relative block w-full overflow-hidden rounded-[20px] border-0 text-left"
     >
       {/* Animated glow layers */}
