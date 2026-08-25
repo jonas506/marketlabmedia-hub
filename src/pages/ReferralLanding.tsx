@@ -332,10 +332,14 @@ const ReferralLanding = () => {
           </section>
         )}
 
+        <AgencySections />
+
         {/* TERMIN */}
         <section id="termin" className="mt-20 scroll-mt-10">
-          <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+          <SectionEyebrow>Termin</SectionEyebrow>
+          <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
             Lass uns{" "}
+
             <span className="italic font-semibold" style={accentStyle}>
               sprechen
             </span>
