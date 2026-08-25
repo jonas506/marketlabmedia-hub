@@ -219,7 +219,20 @@ function buildEmail(
 
   const html = `<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  @keyframes mlGlow {
+    0%,100% { box-shadow:0 0 12px rgba(240,200,90,0.35); border-color:#c9a227; }
+    50% { box-shadow:0 0 34px rgba(240,200,90,0.85); border-color:#ffe08a; }
+  }
+  @keyframes mlPulse {
+    0%,100% { transform:scale(1); }
+    50% { transform:scale(1.035); }
+  }
+  .ml-glow { animation: mlGlow 2.2s ease-in-out infinite; }
+  .ml-pulse { animation: mlPulse 2.2s ease-in-out infinite; }
+</style>
+</head>
 <body style="margin:0;padding:0;background:#111115;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:560px;margin:0 auto;padding:40px 20px;">
     <div style="background:#1a1a1f;border:1px solid #2a2a2f;border-radius:16px;padding:32px;margin-bottom:24px;">
@@ -236,15 +249,15 @@ function buildEmail(
         </thead>
         <tbody style="color:#e0e0e4;">${pieceListHtml}</tbody>
       </table>
-      ${approvalLink ? `<div style="text-align:center;margin-top:28px;"><a href="${approvalLink}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Zur Freigabe →</a></div>` : ''}
+      ${bonusHtml(referralLink)}
+      ${approvalLink ? `<div style="text-align:center;margin-top:20px;"><a href="${approvalLink}" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:12px 32px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Zur Freigabe →</a></div>` : ''}
     </div>
-    ${bonusHtml()}
     <p style="color:#555;font-size:12px;text-align:center;margin:0;">Marketlab Media · Automatische Benachrichtigung</p>
   </div>
 </body>
 </html>`
 
-  const text = `Neue Inhalte zur Freigabe\n\nFür ${clientName} ${count === 1 ? 'ist 1 neues Content Piece' : `sind ${count} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}${bonusText()}\n\nMarketlab Media · Automatische Benachrichtigung`
+  const text = `Neue Inhalte zur Freigabe\n\nFür ${clientName} ${count === 1 ? 'ist 1 neues Content Piece' : `sind ${count} neue Content Pieces`} bereit zur Freigabe.\n\n${pieceListText}${bonusText(referralLink)}${approvalLink ? `\n\nZur Freigabe: ${approvalLink}` : ''}\n\nMarketlab Media · Automatische Benachrichtigung`
 
 
   return { subject, html, text }
