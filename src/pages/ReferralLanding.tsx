@@ -658,8 +658,8 @@ const ReferralLanding = () => {
         {/* TRUST — JONAS */}
         <section className="mt-10">
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 md:p-10">
-            <div className="mx-auto max-w-md text-center">
-              <div className="relative mx-auto aspect-[4/5] w-full max-w-[280px] overflow-hidden rounded-2xl">
+            <div className="mx-auto max-w-sm text-center">
+              <div className="relative mx-auto aspect-[4/5] w-full max-w-[260px] overflow-hidden rounded-2xl">
                 <img
                   src={jonasImg.url}
                   alt="Jonas Fesser – Marketlab Media"
@@ -667,11 +667,8 @@ const ReferralLanding = () => {
                   loading="lazy"
                 />
               </div>
-              <h3 className="mt-6 text-xl font-bold text-slate-900 md:text-2xl">Jonas Fesser</h3>
-              <p className="mt-1 text-sm font-medium text-slate-500">Gesellschafter & Geschäftsführer</p>
-              <p className="mt-4 text-sm leading-relaxed text-slate-600">
-                Hinter Marketlab stehen echte Menschen. Ich persönlich begleite dich vom ersten Gespräch bis zu messbaren Ergebnissen.
-              </p>
+              <p className="mt-4 text-sm font-semibold text-slate-900">Jonas Fesser</p>
+              <p className="text-xs text-slate-500">Gesellschafter & Geschäftsführer</p>
             </div>
           </div>
         </section>
