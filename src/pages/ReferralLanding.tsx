@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown, Clapperboard } from "lucide-react";
+import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
@@ -40,12 +40,6 @@ const parseResults = (raw: string): ResultBlock[] => {
   return blocks;
 };
 
-const getYouTubeId = (url: string) => {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?]+)/);
-  return match?.[1] ?? null;
-};
-
-const TRUST_VIDEO_URL = "https://www.youtube.com/watch?v=FfXnNFgT7Lo";
 
 
 
