@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown } from "lucide-react";
+import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown, Clapperboard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
