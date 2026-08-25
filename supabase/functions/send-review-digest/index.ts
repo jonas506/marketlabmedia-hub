@@ -23,6 +23,34 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey)
 
+    // --- Test mode: send a sample digest to a given address ---
+    let body: any = {}
+    try { body = await req.json() } catch { /* no body */ }
+
+    if (body?.test_email) {
+      const { subject, html, text } = buildEmail(
+        'Musterkunde GmbH',
+        [
+          { piece_type: 'reel', piece_title: 'Hook: 3 Fehler bei Kapitalanlagen' },
+          { piece_type: 'reel', piece_title: 'Warum jetzt investieren?' },
+          { piece_type: 'carousel', piece_title: 'Checkliste: Immobilienkauf' },
+        ],
+        'https://hub.marketlab-media.de/approve/demo-token'
+      )
+
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: FROM_ADDRESS, to: [body.test_email], subject: `[TEST] ${subject}`, html, text }),
+      })
+      const resBody = await res.text()
+      return new Response(JSON.stringify({ test: true, ok: res.ok, response: resBody }), {
+        status: res.ok ? 200 : 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+
     // Fetch unsent queue items
     const { data: queueItems, error: qErr } = await supabase
       .from('review_notification_queue')
