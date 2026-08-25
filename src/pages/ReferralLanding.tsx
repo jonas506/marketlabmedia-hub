@@ -655,49 +655,23 @@ const ReferralLanding = () => {
           </div>
         </section>
 
-        {/* TRUST BADGES — SYMPATHIE */}
+        {/* TRUST — JONAS */}
         <section className="mt-10">
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 md:p-10">
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Warum sich andere für Marketlab entschieden haben</h3>
-              <p className="mx-auto mt-2 max-w-lg text-sm text-slate-500">
-                Keine Agentur-Fassade – echte Menschen, persönliche Beratung und messbare Ergebnisse.
+            <div className="mx-auto max-w-md text-center">
+              <div className="relative mx-auto aspect-[4/5] w-full max-w-[280px] overflow-hidden rounded-2xl">
+                <img
+                  src={jonasImg.url}
+                  alt="Jonas Fesser – Marketlab Media"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <h3 className="mt-6 text-xl font-bold text-slate-900 md:text-2xl">Jonas Fesser</h3>
+              <p className="mt-1 text-sm font-medium text-slate-500">Gesellschafter & Geschäftsführer</p>
+              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                Hinter Marketlab stehen echte Menschen. Ich persönlich begleite dich vom ersten Gespräch bis zu messbaren Ergebnissen.
               </p>
-            </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                {
-                  icon: Heart,
-                  title: "Persönlich & unkompliziert",
-                  text: "Du sprichst direkt mit den Machern, nicht mit Account-Managern.",
-                },
-                {
-                  icon: MessageCircle,
-                  title: "Wir hören zu",
-                  text: "Erst verstehen wir deine Ziele, dann machen wir Vorschläge.",
-                },
-                {
-                  icon: Users,
-                  title: "Echte Menschen",
-                  text: "Hinter jedem Video steht ein Team, das sich mit dir freut.",
-                },
-                {
-                  icon: ShieldCheck,
-                  title: "Transparent & fair",
-                  text: "Klare Preise, klare Prozesse, keine versteckten Kosten.",
-                },
-              ].map((badge, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center rounded-2xl border border-slate-100 bg-slate-50 p-5 text-center transition-transform hover:-translate-y-1"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                    <badge.icon className="h-5 w-5" />
-                  </div>
-                  <h4 className="mt-3 text-sm font-bold text-slate-900">{badge.title}</h4>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-500">{badge.text}</p>
-                </div>
-              ))}
             </div>
           </div>
         </section>
