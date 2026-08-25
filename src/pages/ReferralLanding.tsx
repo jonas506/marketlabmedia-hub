@@ -31,7 +31,8 @@ const parseResults = (raw: string): ResultBlock[] => {
         if (last && last.kind === "bullets") last.items.push(bullet);
         else blocks.push({ kind: "bullets", items: [bullet] });
       } else if (line.endsWith(":") && line.length < 80) {
-        blocks.push({ kind: "heading", text: line.replace(/:$/, "") });
+        const heading = line.replace(/:$/, "");
+        if (!/^was wir f(ü|ue)r/i.test(heading)) blocks.push({ kind: "heading", text: heading });
       } else {
         blocks.push({ kind: "text", text: line });
       }
