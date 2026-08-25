@@ -1243,7 +1243,7 @@ const ClientApproval = () => {
           style={{ background: "radial-gradient(circle, #fbbf24, transparent 70%)" }}
         />
         <Trophy className="h-3.5 w-3.5" />
-        <span className="tracking-tight">1.000€ sparen</span>
+        <span className="tracking-tight">{isBonusActive() ? "1.500€ sparen" : "1.000€ sparen"}</span>
         <ArrowRight className="h-3 w-3 opacity-70 group-hover:translate-x-0.5 transition-transform" />
       </motion.button>
 
