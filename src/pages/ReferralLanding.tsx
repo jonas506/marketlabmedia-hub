@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Phone, Quote, Sparkles, Play, Check, X, ArrowDown, Calendar, Heart, MessageCircle, Users, ShieldCheck } from "lucide-react";
+import { Phone, Quote, Sparkles, Play, Check, X, ArrowDown, Calendar } from "lucide-react";
+import jonasImg from "@/assets/team-jonas.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
