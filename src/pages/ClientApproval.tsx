@@ -296,9 +296,51 @@ const PreviewVideoPlayer = ({
   );
 };
 
+const GlowingReferralButton = ({
+  slug,
+  name,
+  onOpen,
+}: {
+  slug: string | null;
+  name: string | null;
+  onOpen: () => void;
+}) => {
+  if (!slug) return null;
+  return (
+    <a
+      href={`/ref/${slug}`}
+      target="_blank"
+      rel="noreferrer"
+      onClick={(e) => {
+        e.preventDefault();
+        onOpen();
+      }}
+      className="group relative block w-full overflow-hidden rounded-[20px] border-0 text-left"
+    >
+      {/* Animated glow layers */}
+      <span className="pointer-events-none absolute -inset-2 rounded-[24px] bg-gradient-to-r from-amber-400 via-yellow-300 via-amber-500 via-yellow-200 to-amber-400 opacity-75 blur-md animate-[pulse-glow_2.5s_ease-in-out_infinite]" />
+      <span className="pointer-events-none absolute -inset-1 rounded-[22px] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 opacity-60 blur-sm animate-[pulse-glow_2.5s_ease-in-out_infinite_reverse]" />
 
-
-
+      <span className="relative flex items-center justify-between gap-3 rounded-[20px] bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 px-4 py-3.5 text-[#1a1208] shadow-[0_0_40px_-8px_rgba(245,158,11,0.55)] transition-transform active:scale-[0.98]">
+        <span className="flex items-center gap-2.5 min-w-0">
+          <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1a1208]/10">
+            <Sparkles className="h-4 w-4 text-[#1a1208]" />
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-ping" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-xs font-bold tracking-tight truncate">
+              {name ? `${name} empfiehlt weiter` : "Empfiehl uns weiter"}
+            </span>
+            <span className="block text-[10px] font-medium opacity-80 truncate">
+              +50 % Prämie bis 31.08. · Deine persönliche Seite
+            </span>
+          </span>
+        </span>
+        <ArrowRight className="h-4 w-4 shrink-0 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+      </span>
+    </a>
+  );
+};
 
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
