@@ -366,12 +366,137 @@ const ReferralLanding = () => {
           </section>
         )}
 
+        {/* WEBSITE */}
+        {websiteImages.length > 0 && (
+          <section className="mt-24">
+            <SectionEyebrow>Website</SectionEyebrow>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+              Website{" "}
+              <span className="italic font-semibold" style={accentStyle}>
+                überarbeitet
+              </span>
+            </h2>
+            <div className="mt-8 space-y-6">
+              {websiteImages.map((m) => (
+                <motion.figure
+                  key={m.id}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
+                  onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
+                  className="cursor-zoom-in overflow-hidden rounded-3xl border"
+                  style={{ borderColor: BRAND.border, background: BRAND.card }}
+                >
+                  <div className="flex items-center gap-1.5 border-b px-4 py-2.5" style={{ borderColor: BRAND.border }}>
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+                  </div>
+                  <img
+                    src={mediaUrls[m.id]}
+                    alt={m.caption || `Website von ${page.headline_name}`}
+                    loading="lazy"
+                    className="w-full object-contain"
+                  />
+                  {m.caption && (
+                    <figcaption className="px-5 py-4 text-sm leading-relaxed text-white/55">{m.caption}</figcaption>
+                  )}
+                </motion.figure>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* SOCIAL MEDIA */}
+        {socialImages.length > 0 && (
+          <section className="mt-24">
+            <SectionEyebrow>Social Media</SectionEyebrow>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+              Social Media{" "}
+              <span className="italic font-semibold" style={accentStyle}>
+                überarbeitet
+              </span>
+            </h2>
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {socialImages.map((m, i) => (
+                <motion.figure
+                  key={m.id}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: (i % 2) * 0.06 }}
+                  onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
+                  className="group cursor-zoom-in overflow-hidden rounded-2xl border transition-transform hover:-translate-y-1"
+                  style={{ borderColor: BRAND.border, background: BRAND.card }}
+                >
+                  <div className="flex items-center justify-center bg-black/30 p-3">
+                    <img
+                      src={mediaUrls[m.id]}
+                      alt={m.caption || `Social Media von ${page.headline_name}`}
+                      loading="lazy"
+                      className="max-h-[520px] w-full rounded-xl object-contain"
+                    />
+                  </div>
+                  {m.caption && (
+                    <figcaption className="px-4 py-3 text-sm leading-relaxed text-white/55">{m.caption}</figcaption>
+                  )}
+                </motion.figure>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ADS */}
+        {adsImages.length > 0 && (
+          <section className="mt-24">
+            <SectionEyebrow>Performance</SectionEyebrow>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+              Ergebnisse über{" "}
+              <span className="italic font-semibold" style={accentStyle}>
+                Ads
+              </span>
+            </h2>
+            <p className="mt-3 max-w-2xl text-white/55">
+              Echte Screenshots aus dem Werbekonto – inklusive Kosten pro Ergebnis.
+            </p>
+            <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
+              {adsImages.map((m, i) => (
+                <motion.figure
+                  key={m.id}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: (i % 2) * 0.06 }}
+                  onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
+                  className="flex cursor-zoom-in flex-col overflow-hidden rounded-2xl border"
+                  style={{ borderColor: `${BRAND.blue}33`, background: BRAND.card }}
+                >
+                  {m.caption && (
+                    <figcaption className="border-b px-5 py-4 text-base font-bold leading-snug text-white md:text-lg" style={{ borderColor: BRAND.border }}>
+                      {m.caption}
+                    </figcaption>
+                  )}
+                  <div className="flex flex-1 items-center justify-center bg-black/30 p-3">
+                    <img
+                      src={mediaUrls[m.id]}
+                      alt={m.caption || `Werbeergebnisse von ${page.headline_name}`}
+                      loading="lazy"
+                      className="max-h-[460px] w-full rounded-xl object-contain"
+                    />
+                  </div>
+                </motion.figure>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* FEEDBACK */}
-        {(page.quote || page.media.length > 0) && (
+        {(page.quote || feedbackImages.length > 0 || videos.length > 0 || audios.length > 0) && (
           <section className="mt-24">
             <SectionEyebrow>Feedback</SectionEyebrow>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
-              Persönliches Feedback von{" "}
+              Feedback von{" "}
               <span className="italic font-semibold" style={accentStyle}>
                 {page.headline_name}
               </span>
@@ -437,36 +562,29 @@ const ReferralLanding = () => {
               </div>
             )}
 
-            {images.length > 0 && (
-              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {images.map((m, i) => (
+            {feedbackImages.length > 0 && (
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {feedbackImages.map((m, i) => (
                   <motion.figure
                     key={m.id}
                     initial={{ opacity: 0, y: 18 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: (i % 3) * 0.06 }}
+                    transition={{ duration: 0.5, delay: (i % 2) * 0.06 }}
                     onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
                     className="group flex cursor-zoom-in flex-col overflow-hidden rounded-2xl border transition-transform hover:-translate-y-1"
                     style={{ borderColor: BRAND.border, background: BRAND.card }}
                   >
-                    <div className="relative aspect-[4/5] overflow-hidden bg-black/40">
+                    <div className="flex items-center justify-center bg-black/30 p-3">
                       <img
                         src={mediaUrls[m.id]}
                         alt={m.caption || `Feedback von ${page.headline_name}`}
                         loading="lazy"
-                        className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
-                      />
-                      <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-0"
-                        style={{ background: "linear-gradient(to top, rgba(6,7,15,0.65), transparent 45%)" }}
+                        className="max-h-[520px] w-full rounded-xl object-contain"
                       />
                     </div>
                     {m.caption && (
-                      <figcaption className="px-4 py-3 text-xs leading-relaxed text-white/50">
-                        {m.caption}
-                      </figcaption>
+                      <figcaption className="px-4 py-3 text-sm leading-relaxed text-white/55">{m.caption}</figcaption>
                     )}
                   </motion.figure>
                 ))}
@@ -483,6 +601,7 @@ const ReferralLanding = () => {
             </div>
           </section>
         )}
+
 
 
         <AgencySections />
