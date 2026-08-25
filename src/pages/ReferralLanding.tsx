@@ -78,6 +78,8 @@ const ReferralLanding = () => {
   const [loading, setLoading] = useState(true);
   const [photo, setPhoto] = useState<string | null>(null);
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
+  const [lightbox, setLightbox] = useState<{ src: string; caption?: string | null } | null>(null);
+
 
   useEffect(() => {
     const load = async () => {
