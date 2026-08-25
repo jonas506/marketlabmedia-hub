@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Phone, Quote, Sparkles, Play, Check, X, ArrowDown } from "lucide-react";
+import { Phone, Quote, Sparkles, Play, Check, X, ArrowDown, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
@@ -354,7 +354,7 @@ const ReferralLanding = () => {
                   boxShadow: `0 18px 46px -18px ${BRAND.blue}`,
                 }}
               >
-                <CalendarCheck className="h-4 w-4" /> Kostenloses Erstgespräch
+                <Calendar className="h-4 w-4" /> Kostenloses Erstgespräch
               </a>
               {page.phone && (
                 <a
