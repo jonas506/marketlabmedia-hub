@@ -643,7 +643,15 @@ const ReferralLanding = () => {
             <a
               href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
+              onClick={(e) => {
+                e.preventDefault();
+                window.open(
+                  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true",
+                  "_blank",
+                  "noopener,noreferrer",
+                );
+              }}
               className="mt-6 inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-sm font-bold text-white transition-all hover:scale-[1.03]"
               style={{
                 background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.blueSoft})`,
