@@ -50,11 +50,17 @@ const VALUES = [
 ];
 
 const REVIEWS = [
-  { name: "Tobias K.", text: "Endlich eine Agentur, die liefert. Innerhalb von 8 Wochen hatten wir die ersten qualifizierten Anfragen über Instagram — komplett organisch. Hammer Team!", rating: 5 },
-  { name: "Stefanie M.", text: "Strategie, Dreh, Schnitt — alles aus einer Hand und auf einem Level, das ich vorher nicht kannte. Kommunikation ist direkt und ehrlich.", rating: 5 },
-  { name: "Markus W.", text: "Wir haben in 6 Monaten mehr Reichweite aufgebaut als in den 2 Jahren davor mit einer anderen Agentur. Ergebnisse sprechen für sich.", rating: 5 },
-  { name: "Lisa B.", text: "Professionell, schnell, transparent. Man merkt sofort, dass die für ihr Handwerk brennen. Ergebnisse kamen schneller als erwartet.", rating: 5 },
+  { name: "Joel H.", date: "16. Jan. 2026", title: "Business-Shooting 10/10", rating: 5, text: "Ich habe Jonas im persönlichen Rahmen für ein Business-Shooting organisiert und kann am Ende zu den Ergebnissen nur sagen: Das waren mit die besten Bilder, die ich bis dato zu Gesicht bekommen habe. Der emotionale Aspekt in den Bildern ist genial. Die Fotos wirken nicht gestellt, sondern hoch professionell – und auch was Kameraqualität und Kameraführung betrifft, sind die Aufnahmen alle 1A. Jonas hat sich Zeit genommen, die Bilder zu perfektionieren, ist zu 100 % auf meine Wünsche eingegangen." },
+  { name: "Julia Ganzert", date: "16. Okt. 2025", title: "Licht am Ende des Tunnels.", rating: 5, text: "Auf dem Markt gibt es wirklich viele Menschen, die die Welt versprechen, aber nichts liefern. Jonas hat mir gezeigt wie es anders geht, er trägt wunderbare Werte, sein Team und er liefern top Performance. Er war immer top erreichbar, haben Vollgas gegeben und overdelivert. Konnte durch die Zusammenarbeit selbst viel lernen und hatte endlich jemanden an der Hand, der von seinem Werk echt Ahnung hat. Danke für Alles!" },
+  { name: "Max", date: "17. Okt. 2025", title: "Ich arbeite sehr gerne mit Jonas", rating: 5, text: "Ich arbeite sehr gerne mit Jonas, da von der Planung bis zur Umsetzung alles strukturiert und in hoher Qualität abläuft. Bei gemeinsamen Projekten weiß ich zu jeder Zeit, dass ich mich voll darauf verlassen kann. Kann ich nur empfehlen. Vielen Dank." },
+  { name: "julia", date: "24. Juni 2025", title: "Super Erlebnis beim Fotoshooting", rating: 5, text: "Super Erlebnis beim Fotoshooting mit Market Lab Media! Das Team war professionell, freundlich und hat eine entspannte Atmosphäre geschaffen. Die Videos sind fantastisch geworden – genau so, wie ich sie mir vorgestellt habe. Absolut empfehlenswert!" },
+  { name: "Darius Fisch", date: "16. Okt. 2025", title: "Sehr klares und professionelles Auftreten", rating: 5, text: "Vom ersten Moment an sehr klares und professionelles Auftreten. Ich habe direkt gespürt, der Mann weiß was er da macht! Durch das Einbeziehen der Darsteller hat er einen Raum für Co-Kreation eröffnet. Er bringt kreative Ideen ein, lässt aber auch den Darstellern Raum sich kreativ einzubringen. Klare Empfehlung. Freue mich auf weitere Projekte!" },
+  { name: "Jan Henke", date: "15. Aug. 2025", title: "Bombenjob abgeliefert", rating: 5, text: "Ich habe mit Jonas an einer Ad gearbeitet und trotz meiner Befürchtungen und Nervosität hat er nen Bombenjob abgeliefert mir die Zeit zu geben die Texte aufzusagen. Er war freundlich, zuvorkommend und super kreativ. Am Ende hat er aus den Aufnahmen unglaublich gute Ads gezaubert." },
+  { name: "Marisa Dittrich", date: "18. Sept. 2025", title: "Absolute Empfehlung!", rating: 5, text: "Absolute Empfehlung! Gute Planung und Umsetzung, unkomplizierte Arbeitsweise und sehr professionell. Ich freue mich sehr über eine weitere Zusammenarbeit :)" },
+  { name: "ls", date: "11. Feb. 2026", title: "Professionell!", rating: 5, text: "Ich durfte im Rahmen eines Model-/Moderationsjobs mit Marketlab Media arbeiten und kann nur positives berichten. Absolut professionell-authentisch und zuverlässig. Freue mich schon auf die nächsten Projekte. Gerne wieder!" },
+  { name: "Nina Engert", date: "26. Okt. 2025", title: "5 Sterne", rating: 5, text: "Die Zusammenarbeit mit Jonas hat sehr gut funktioniert. Deswegen von mir 5 Sterne!" },
 ];
+
 
 const BENEFITS = [
   "Komplett-Setup: Strategie, Dreh, Schnitt, Posting — alles aus einer Hand",
