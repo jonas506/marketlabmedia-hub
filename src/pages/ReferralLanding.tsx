@@ -197,51 +197,51 @@ const ReferralLanding = () => {
 
         {/* HERO */}
         <motion.section
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col items-start gap-8 md:flex-row md:items-center"
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_auto]"
         >
-          {photo && (
-            <img
-              src={photo}
-              alt={`${page.headline_name}, Kunde von Marketlab Media`}
-              className="h-32 w-32 shrink-0 rounded-2xl object-cover md:h-44 md:w-44"
-              style={{ boxShadow: `0 0 60px -20px ${BRAND.blue}` }}
-            />
-          )}
-          <div>
+          <div className="order-2 md:order-1">
             <div
-              className="mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+              className="mb-5 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] backdrop-blur"
               style={{ borderColor: `${BRAND.blue}4D`, background: `${BRAND.blue}14`, color: BRAND.blue }}
             >
               <Sparkles className="h-3.5 w-3.5" /> Persönliche Empfehlung
             </div>
-            <h1 className="text-3xl font-extrabold leading-[1.08] tracking-tight md:text-5xl">
-              {page.headline_name}{" "}
-              <span className="text-white/60">empfiehlt</span>{" "}
+            <h1 className="text-4xl font-extrabold leading-[1.03] tracking-tight md:text-6xl">
+              {page.headline_name}
+              <br />
+              <span className="text-white/45">empfiehlt</span>{" "}
               <span className="italic font-semibold" style={accentStyle}>
                 Marketlab Media
               </span>
             </h1>
             {page.role_title && (
-              <p className="mt-3 text-sm text-white/50">{page.role_title}</p>
+              <p className="mt-4 text-sm font-medium uppercase tracking-[0.14em] text-white/40">
+                {page.role_title}
+              </p>
             )}
             {page.intro_text && (
-              <p className="mt-5 max-w-2xl text-base text-white/70 md:text-lg">{page.intro_text}</p>
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/70 md:text-lg">
+                {page.intro_text}
+              </p>
             )}
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
                 href="#termin"
-                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.03]"
-                style={{ background: BRAND.blue, boxShadow: `0 10px 30px -10px ${BRAND.blue}` }}
+                className="inline-flex items-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold text-white transition-all hover:scale-[1.03]"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.blue}, ${BRAND.blueSoft})`,
+                  boxShadow: `0 18px 46px -18px ${BRAND.blue}`,
+                }}
               >
-                <CalendarCheck className="h-4 w-4" /> Termin buchen
+                <CalendarCheck className="h-4 w-4" /> Kostenloses Erstgespräch
               </a>
               {page.phone && (
                 <a
                   href={`tel:${page.phone.replace(/\s/g, "")}`}
-                  className="inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold text-white/80 transition-colors hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-2xl border px-5 py-3.5 text-sm font-semibold text-white/75 transition-colors hover:text-white"
                   style={{ borderColor: BRAND.border, background: BRAND.card }}
                 >
                   <Phone className="h-4 w-4" /> {page.phone}
@@ -249,65 +249,149 @@ const ReferralLanding = () => {
               )}
             </div>
           </div>
+
+          {photo && (
+            <div className="relative order-1 md:order-2">
+              <div
+                aria-hidden
+                className="absolute -inset-6 rounded-[2.5rem] blur-2xl"
+                style={{ background: `radial-gradient(circle at 50% 40%, ${BRAND.blue}33, transparent 70%)` }}
+              />
+              <div
+                className="relative overflow-hidden rounded-[1.75rem] border p-1.5"
+                style={{ borderColor: `${BRAND.blue}33`, background: BRAND.card }}
+              >
+                <img
+                  src={photo}
+                  alt={`${page.headline_name}, Kunde von Marketlab Media`}
+                  className="h-44 w-44 rounded-[1.4rem] object-cover md:h-60 md:w-60"
+                />
+              </div>
+            </div>
+          )}
         </motion.section>
 
-        {/* ERGEBNISSE */}
-        {(page.results_text || page.stats?.length > 0) && (
-          <section className="mt-20">
-            <SectionEyebrow>Ergebnisse</SectionEyebrow>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+        {page.stats?.length > 0 && (
+          <div className="mt-14 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {page.stats.map((s, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.07 }}
+                className="relative overflow-hidden rounded-2xl border p-5 transition-colors"
+                style={{
+                  borderColor: BRAND.border,
+                  background: `linear-gradient(160deg, ${BRAND.card}, ${BRAND.bg})`,
+                }}
+              >
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-px"
+                  style={{ background: `linear-gradient(90deg, transparent, ${BRAND.blue}80, transparent)` }}
+                />
+                <p className="text-2xl font-extrabold tracking-tight md:text-3xl" style={{ color: BRAND.blue }}>
+                  {s.value}
+                </p>
+                <p className="mt-1.5 text-xs leading-snug text-white/45">{s.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
+        {/* ERGEBNISSE */}
+        {resultBlocks.length > 0 && (
+          <section className="mt-24">
+            <SectionEyebrow>Ergebnisse</SectionEyebrow>
+            <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
               Was wir für {page.headline_name}{" "}
               <span className="italic font-semibold" style={accentStyle}>
                 gemacht
               </span>{" "}
               haben
             </h2>
-            {page.results_text && (
-              <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-white/70">
-                {page.results_text}
-              </p>
-            )}
-            {page.stats?.length > 0 && (
-              <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-                {page.stats.map((s, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: i * 0.06 }}
-                    className="rounded-2xl border p-4"
-                    style={{ borderColor: BRAND.border, background: BRAND.card }}
-                  >
-                    <p className="text-2xl font-extrabold" style={{ color: BRAND.blue }}>
-                      {s.value}
+
+            <div className="mt-8 space-y-6">
+              {resultBlocks.map((b, i) => {
+                if (b.kind === "heading")
+                  return (
+                    <h3
+                      key={i}
+                      className="pt-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40"
+                    >
+                      {b.text}
+                    </h3>
+                  );
+                if (b.kind === "text")
+                  return (
+                    <p key={i} className="max-w-3xl text-base leading-relaxed text-white/70">
+                      {b.text}
                     </p>
-                    <p className="mt-1 text-xs text-white/50">{s.label}</p>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+                  );
+                return (
+                  <div key={i} className="grid gap-3 md:grid-cols-2">
+                    {b.items.map((item, j) => (
+                      <motion.div
+                        key={j}
+                        initial={{ opacity: 0, y: 14 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.45, delay: j * 0.05 }}
+                        className="flex gap-3 rounded-2xl border p-4"
+                        style={{ borderColor: BRAND.border, background: BRAND.card }}
+                      >
+                        <span
+                          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                          style={{ background: `${BRAND.blue}1F`, color: BRAND.blue }}
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </span>
+                        <p className="text-sm leading-relaxed text-white/75">{item}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
           </section>
         )}
 
         {/* FEEDBACK */}
         {(page.quote || page.media.length > 0) && (
-          <section className="mt-20">
+          <section className="mt-24">
             <SectionEyebrow>Feedback</SectionEyebrow>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
-              Persönliches Feedback von {page.headline_name}
-
+              Persönliches Feedback von{" "}
+              <span className="italic font-semibold" style={accentStyle}>
+                {page.headline_name}
+              </span>
             </h2>
 
             {page.quote && (
-              <div
-                className="mt-6 rounded-2xl border p-6"
-                style={{ borderColor: `${BRAND.blue}33`, background: BRAND.card }}
+              <figure
+                className="relative mt-8 overflow-hidden rounded-3xl border p-7 md:p-10"
+                style={{
+                  borderColor: `${BRAND.blue}2E`,
+                  background: `linear-gradient(140deg, ${BRAND.card}, ${BRAND.bg} 70%)`,
+                }}
               >
-                <Quote className="h-6 w-6" style={{ color: BRAND.blue }} />
-                <p className="mt-3 text-lg leading-relaxed text-white/85 md:text-xl">{page.quote}</p>
-              </div>
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-10 -top-12 text-[10rem] font-black leading-none opacity-[0.07]"
+                  style={{ color: BRAND.blue, fontFamily: "'Playfair Display', serif" }}
+                >
+                  ”
+                </div>
+                <Quote className="h-7 w-7" style={{ color: BRAND.blue }} />
+                <blockquote className="relative mt-4 text-lg leading-relaxed text-white/90 md:text-2xl md:leading-relaxed">
+                  {page.quote}
+                </blockquote>
+                <figcaption className="mt-5 text-sm text-white/45">
+                  — {page.headline_name}
+                  {page.role_title ? `, ${page.role_title}` : ""}
+                </figcaption>
+              </figure>
             )}
 
             {videos.length > 0 && (
@@ -345,22 +429,52 @@ const ReferralLanding = () => {
             )}
 
             {images.length > 0 && (
-              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {images.map((m) => (
-                  <figure key={m.id} className="overflow-hidden rounded-2xl border" style={{ borderColor: BRAND.border, background: BRAND.card }}>
-                    <img
-                      src={mediaUrls[m.id]}
-                      alt={m.caption || `Feedback von ${page.headline_name}`}
-                      loading="lazy"
-                      className="w-full object-cover"
-                    />
-                    {m.caption && <figcaption className="px-3 py-2 text-xs text-white/50">{m.caption}</figcaption>}
-                  </figure>
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {images.map((m, i) => (
+                  <motion.figure
+                    key={m.id}
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: (i % 3) * 0.06 }}
+                    onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
+                    className="group flex cursor-zoom-in flex-col overflow-hidden rounded-2xl border transition-transform hover:-translate-y-1"
+                    style={{ borderColor: BRAND.border, background: BRAND.card }}
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden bg-black/40">
+                      <img
+                        src={mediaUrls[m.id]}
+                        alt={m.caption || `Feedback von ${page.headline_name}`}
+                        loading="lazy"
+                        className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
+                      />
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0"
+                        style={{ background: "linear-gradient(to top, rgba(6,7,15,0.65), transparent 45%)" }}
+                      />
+                    </div>
+                    {m.caption && (
+                      <figcaption className="px-4 py-3 text-xs leading-relaxed text-white/50">
+                        {m.caption}
+                      </figcaption>
+                    )}
+                  </motion.figure>
                 ))}
               </div>
             )}
+
+            <div className="mt-10 flex justify-center">
+              <a
+                href="#termin"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white/60 transition-colors hover:text-white"
+              >
+                <ArrowDown className="h-4 w-4" /> Jetzt selbst Termin sichern
+              </a>
+            </div>
           </section>
         )}
+
 
         <AgencySections />
 
