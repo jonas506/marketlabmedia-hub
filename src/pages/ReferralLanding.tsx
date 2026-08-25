@@ -155,6 +155,12 @@ const ReferralLanding = () => {
   const images = page.media.filter((m) => m.type === "image");
   const audios = page.media.filter((m) => m.type === "audio");
   const videos = page.media.filter((m) => m.type === "video");
+  const cat = (c: string) => images.filter((m) => (m.category || "other") === c);
+  const websiteImages = cat("website");
+  const socialImages = cat("social");
+  const adsImages = cat("ads");
+  const feedbackImages = [...cat("feedback"), ...cat("other")];
+
   const resultBlocks = page.results_text ? parseResults(page.results_text) : [];
 
   const accentStyle = sharedAccentStyle;
