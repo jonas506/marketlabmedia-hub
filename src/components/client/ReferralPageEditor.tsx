@@ -427,11 +427,11 @@ const ReferralPageEditor = ({ clientId, clientName, canEdit }: Props) => {
             />
           </div>
           <div className="space-y-2">
-            <Label>Cal.com-Link</Label>
+            <Label>Terminbuchungs-Link</Label>
             <Input
               value={form.cal_link}
               disabled={!canEdit}
-              placeholder="https://cal.com/marketlab-media/erstgespraech"
+              placeholder="https://calendar.google.com/calendar/appointments/schedules/..."
               onChange={(e) => setForm((f) => ({ ...f, cal_link: e.target.value }))}
             />
           </div>
