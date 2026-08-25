@@ -164,8 +164,126 @@ const ReferralLanding = () => {
   const feedbackImages = [...cat("feedback"), ...cat("other")];
 
   const resultBlocks = page.results_text ? parseResults(page.results_text) : [];
+  const bulletGroupCount = resultBlocks.filter((b) => b.kind === "bullets").length;
+  let bulletGroupIndex = 0;
 
   const accentStyle = sharedAccentStyle;
+
+  const MediaHeading = ({ eyebrow, children }: { eyebrow: string; children: React.ReactNode }) => (
+    <div className="pt-4">
+      <p className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: BRAND.blue }}>
+        {eyebrow}
+      </p>
+      <h3 className="mt-1.5 text-xl font-extrabold tracking-tight md:text-2xl">{children}</h3>
+    </div>
+  );
+
+  const websiteBlock = websiteImages.length > 0 && (
+    <div className="space-y-5">
+      <MediaHeading eyebrow="Website">Website überarbeitet</MediaHeading>
+      {websiteImages.map((m) => (
+        <motion.figure
+          key={m.id}
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
+          className="cursor-zoom-in overflow-hidden rounded-3xl border"
+          style={{ borderColor: BRAND.border, background: BRAND.card }}
+        >
+          <div className="flex items-center gap-1.5 border-b px-4 py-2.5" style={{ borderColor: BRAND.border }}>
+            <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+          </div>
+          <img
+            src={mediaUrls[m.id]}
+            alt={m.caption || `Website von ${page.headline_name}`}
+            loading="lazy"
+            className="w-full object-contain"
+          />
+          {m.caption && (
+            <figcaption className="px-5 py-4 text-sm leading-relaxed text-white/55">{m.caption}</figcaption>
+          )}
+        </motion.figure>
+      ))}
+    </div>
+  );
+
+  const socialBlock = socialImages.length > 0 && (
+    <div className="space-y-5">
+      <MediaHeading eyebrow="Social Media">Social Media überarbeitet</MediaHeading>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {socialImages.map((m, i) => (
+          <motion.figure
+            key={m.id}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: (i % 2) * 0.06 }}
+            onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
+            className="cursor-zoom-in overflow-hidden rounded-2xl border transition-transform hover:-translate-y-1"
+            style={{ borderColor: BRAND.border, background: BRAND.card }}
+          >
+            <div className="flex items-center justify-center bg-black/30 p-3">
+              <img
+                src={mediaUrls[m.id]}
+                alt={m.caption || `Social Media von ${page.headline_name}`}
+                loading="lazy"
+                className="max-h-[520px] w-full rounded-xl object-contain"
+              />
+            </div>
+            {m.caption && (
+              <figcaption className="px-4 py-3 text-sm leading-relaxed text-white/55">{m.caption}</figcaption>
+            )}
+          </motion.figure>
+        ))}
+      </div>
+    </div>
+  );
+
+  const adsBlock = adsImages.length > 0 && (
+    <div className="space-y-5">
+      <MediaHeading eyebrow="Performance">Ergebnisse über Ads</MediaHeading>
+      <p className="max-w-2xl text-sm leading-relaxed text-white/50">
+        Echte Screenshots aus dem Werbekonto – inklusive Kosten pro Ergebnis.
+      </p>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        {adsImages.map((m, i) => (
+          <motion.figure
+            key={m.id}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: (i % 2) * 0.06 }}
+            onClick={() => mediaUrls[m.id] && setLightbox({ src: mediaUrls[m.id], caption: m.caption })}
+            className="flex cursor-zoom-in flex-col overflow-hidden rounded-2xl border"
+            style={{ borderColor: `${BRAND.blue}33`, background: BRAND.card }}
+          >
+            {m.caption && (
+              <figcaption
+                className="border-b px-5 py-4 text-base font-bold leading-snug text-white md:text-lg"
+                style={{ borderColor: BRAND.border }}
+              >
+                {m.caption}
+              </figcaption>
+            )}
+            <div className="flex flex-1 items-center justify-center bg-black/30 p-3">
+              <img
+                src={mediaUrls[m.id]}
+                alt={m.caption || `Werbeergebnisse von ${page.headline_name}`}
+                loading="lazy"
+                className="max-h-[460px] w-full rounded-xl object-contain"
+              />
+            </div>
+          </motion.figure>
+        ))}
+      </div>
+    </div>
+  );
+
+
 
 
   return (
