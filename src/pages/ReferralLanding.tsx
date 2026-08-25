@@ -3,15 +3,17 @@ import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarCheck, Phone, Quote, Sparkles, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-const BRAND = {
-  bg: "#06070F",
-  card: "#0D1018",
-  border: "#181C24",
-  blue: "#1E7CF0",
-};
+import {
+  AgencySections,
+  FinalCta,
+  BRAND,
+  NOISE_SVG_URI,
+  SectionEyebrow,
+  accentStyle as sharedAccentStyle,
+} from "@/components/referral/AgencySections";
 
 const DEFAULT_CAL = "https://cal.com/marketlab-media/erstgespraech";
+
 
 interface MediaItem {
   id: string;
