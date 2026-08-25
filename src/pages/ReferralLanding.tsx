@@ -3,15 +3,16 @@ import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarCheck, Phone, Quote, Sparkles, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-const BRAND = {
-  bg: "#06070F",
-  card: "#0D1018",
-  border: "#181C24",
-  blue: "#1E7CF0",
-};
+import {
+  AgencySections,
+  BRAND,
+  NOISE_SVG_URI,
+  SectionEyebrow,
+  accentStyle as sharedAccentStyle,
+} from "@/components/referral/AgencySections";
 
 const DEFAULT_CAL = "https://cal.com/marketlab-media/erstgespraech";
+
 
 interface MediaItem {
   id: string;
@@ -125,11 +126,7 @@ const ReferralLanding = () => {
   const audios = page.media.filter((m) => m.type === "audio");
   const videos = page.media.filter((m) => m.type === "video");
 
-  const accentStyle: React.CSSProperties = {
-    fontFamily: "'Playfair Display', serif",
-    color: BRAND.blue,
-    textShadow: `0 0 24px ${BRAND.blue}66`,
-  };
+  const accentStyle = sharedAccentStyle;
 
   return (
     <div
@@ -138,14 +135,35 @@ const ReferralLanding = () => {
     >
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0"
+        className="pointer-events-none fixed inset-0 -z-0"
         style={{
           background:
             "radial-gradient(60% 50% at 50% 0%, rgba(30,124,240,0.18) 0%, rgba(30,124,240,0.06) 35%, transparent 70%)",
         }}
       />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-0"
+        style={{
+          backgroundImage: "radial-gradient(rgba(156,163,175,0.12) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          maskImage: "radial-gradient(ellipse at 50% 0%, black 0%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(ellipse at 50% 0%, black 0%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage: `url("${NOISE_SVG_URI}")`,
+          opacity: 0.03,
+          zIndex: 9999,
+          mixBlendMode: "overlay",
+        }}
+      />
 
-      <div className="relative z-10 mx-auto max-w-4xl px-5 py-14 md:py-20">
+      <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 md:py-24">
+
         {/* HERO */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
@@ -205,7 +223,9 @@ const ReferralLanding = () => {
         {/* ERGEBNISSE */}
         {(page.results_text || page.stats?.length > 0) && (
           <section className="mt-20">
-            <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+            <SectionEyebrow>Ergebnisse</SectionEyebrow>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+
               Was wir für {page.headline_name}{" "}
               <span className="italic font-semibold" style={accentStyle}>
                 gemacht
@@ -243,8 +263,10 @@ const ReferralLanding = () => {
         {/* FEEDBACK */}
         {(page.quote || page.media.length > 0) && (
           <section className="mt-20">
-            <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+            <SectionEyebrow>Feedback</SectionEyebrow>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
               Persönliches Feedback von {page.headline_name}
+
             </h2>
 
             {page.quote && (
@@ -309,10 +331,14 @@ const ReferralLanding = () => {
           </section>
         )}
 
+        <AgencySections />
+
         {/* TERMIN */}
         <section id="termin" className="mt-20 scroll-mt-10">
-          <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+          <SectionEyebrow>Termin</SectionEyebrow>
+          <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
             Lass uns{" "}
+
             <span className="italic font-semibold" style={accentStyle}>
               sprechen
             </span>
