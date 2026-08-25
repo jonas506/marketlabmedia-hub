@@ -635,12 +635,15 @@ const ReferralLanding = () => {
               </p>
             </div>
             <iframe
-              src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
+              src={
+                page.cal_link ||
+                "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1g8kUjplXlZ8xfSYs5M2vC3oSMuKwauzD2vZX9W00914jUnGeTmXu2oDaHCn5isEsYOeS-xZ7B?gv=true"
+              }
               style={{ border: 0 }}
               width="100%"
               height="600"
               frameBorder="0"
-              title="Google Calendar Terminbuchung"
+              title="Terminbuchung"
             />
             <div className="flex flex-wrap items-center justify-center gap-3 border-t border-slate-100 p-6">
               {page.phone && (
