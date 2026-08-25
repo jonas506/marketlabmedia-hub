@@ -47,7 +47,9 @@ interface MediaItem {
   type: string;
   url: string;
   caption?: string | null;
+  category?: string | null;
 }
+
 
 interface PageData {
   slug: string;
