@@ -405,6 +405,16 @@
     40% { opacity: 1; transform: scale(1.1); }
   }
 
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.55; transform: scale(0.98); }
+    50% { opacity: 0.9; transform: scale(1.04); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
   /* Content scroll area */
   .cb-content-scroll::-webkit-scrollbar { width: 4px; }
   .cb-content-scroll::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
