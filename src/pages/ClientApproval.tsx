@@ -1028,7 +1028,6 @@ const ClientApproval = () => {
                 <GlowingReferralButton
                   slug={referralSlug}
                   name={referralPageName}
-                  onOpen={() => setShowReferral(true)}
                 />
                 {!confirmApprove ? (
                   <>
