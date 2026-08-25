@@ -127,11 +127,7 @@ const ReferralLanding = () => {
   const audios = page.media.filter((m) => m.type === "audio");
   const videos = page.media.filter((m) => m.type === "video");
 
-  const accentStyle: React.CSSProperties = {
-    fontFamily: "'Playfair Display', serif",
-    color: BRAND.blue,
-    textShadow: `0 0 24px ${BRAND.blue}66`,
-  };
+  const accentStyle = sharedAccentStyle;
 
   return (
     <div
@@ -140,14 +136,35 @@ const ReferralLanding = () => {
     >
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0"
+        className="pointer-events-none fixed inset-0 -z-0"
         style={{
           background:
             "radial-gradient(60% 50% at 50% 0%, rgba(30,124,240,0.18) 0%, rgba(30,124,240,0.06) 35%, transparent 70%)",
         }}
       />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-0"
+        style={{
+          backgroundImage: "radial-gradient(rgba(156,163,175,0.12) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          maskImage: "radial-gradient(ellipse at 50% 0%, black 0%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(ellipse at 50% 0%, black 0%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage: `url("${NOISE_SVG_URI}")`,
+          opacity: 0.03,
+          zIndex: 9999,
+          mixBlendMode: "overlay",
+        }}
+      />
 
-      <div className="relative z-10 mx-auto max-w-4xl px-5 py-14 md:py-20">
+      <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 md:py-24">
+
         {/* HERO */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
