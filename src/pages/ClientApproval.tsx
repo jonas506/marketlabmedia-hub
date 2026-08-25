@@ -1148,7 +1148,6 @@ const ClientApproval = () => {
                   <GlowingReferralButton
                     slug={referralSlug}
                     name={referralPageName}
-                    onOpen={() => setShowReferral(true)}
                   />
                   {/* Confirm approve dialog when comments exist */}
                   {/* Confirm approve dialog when comments exist */}
