@@ -569,6 +569,7 @@ const ClientApproval = () => {
 
       {/* Header - slim & clean */}
       <div className="sticky top-0 z-50 bg-[#111115]/90 backdrop-blur-2xl border-b border-white/[0.04]">
+        <BonusCountdownBar onClick={() => setShowReferral(true)} />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 sm:h-14 flex items-center gap-2 sm:gap-3">
           <img src={logoDark} alt="Marketlab Media" className="h-5 opacity-60 hidden sm:block" />
           <div className="w-px h-5 bg-white/10 hidden sm:block" />
