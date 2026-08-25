@@ -5,7 +5,6 @@ import { CalendarCheck, Phone, Quote, Sparkles, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
-  FinalCta,
   BRAND,
   NOISE_SVG_URI,
   SectionEyebrow,
