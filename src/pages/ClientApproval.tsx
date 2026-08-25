@@ -296,9 +296,46 @@ const PreviewVideoPlayer = ({
   );
 };
 
+const GlowingReferralButton = ({
+  slug,
+  name,
+}: {
+  slug: string | null;
+  name: string | null;
+}) => {
+  if (!slug) return null;
+  const url = `/ref/${slug}`;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="group relative block w-full overflow-hidden rounded-[20px] border-0 text-left"
+    >
+      {/* Animated glow layers */}
+      <span className="pointer-events-none absolute -inset-2 rounded-[24px] bg-gradient-to-r from-amber-400 via-yellow-300 via-amber-500 via-yellow-200 to-amber-400 opacity-75 blur-md animate-[pulse-glow_2.5s_ease-in-out_infinite]" />
+      <span className="pointer-events-none absolute -inset-1 rounded-[22px] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 opacity-60 blur-sm animate-[pulse-glow_2.5s_ease-in-out_infinite_reverse]" />
 
-
-
+      <span className="relative flex items-center justify-between gap-3 rounded-[20px] bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 px-4 py-3.5 text-[#1a1208] shadow-[0_0_40px_-8px_rgba(245,158,11,0.55)] transition-transform active:scale-[0.98]">
+        <span className="flex items-center gap-2.5 min-w-0">
+          <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1a1208]/10">
+            <Sparkles className="h-4 w-4 text-[#1a1208]" />
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-ping" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-xs font-bold tracking-tight truncate">
+              {name ? `${name} empfiehlt weiter` : "Empfiehl uns weiter"}
+            </span>
+            <span className="block text-[10px] font-medium opacity-80 truncate">
+              +50 % Prämie bis 31.08. · Deine persönliche Seite
+            </span>
+          </span>
+        </span>
+        <ArrowRight className="h-4 w-4 shrink-0 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+      </span>
+    </a>
+  );
+};
 
 const ClientApproval = () => {
   const { token } = useParams<{ token: string }>();
@@ -312,6 +349,8 @@ const ClientApproval = () => {
   const [pipelineSummary, setPipelineSummary] = useState<Record<string, number>>({});
   const [overviewOpen, setOverviewOpen] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
+  const [referralSlug, setReferralSlug] = useState<string | null>(null);
+  const [referralPageName, setReferralPageName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -347,6 +386,19 @@ const ClientApproval = () => {
       setUpcomingPosts(payload.upcoming_posts || []);
       setInProgress(payload.in_progress || []);
       setPipelineSummary(payload.pipeline_summary || {});
+
+      if (payload.client?.id) {
+        const { data: refData } = await supabase
+          .from("client_referral_pages")
+          .select("slug, headline_name")
+          .eq("client_id", payload.client.id)
+          .eq("is_active", true)
+          .single();
+        if (refData) {
+          setReferralSlug(refData.slug);
+          setReferralPageName(refData.headline_name || payload.client.name);
+        }
+      }
     } catch (err: any) {
       setError(err.message || "Unbekannter Fehler");
     } finally {
@@ -972,7 +1024,11 @@ const ClientApproval = () => {
               )}
 
               {/* Desktop Buttons */}
-              <div className="hidden sm:block mt-6 space-y-2">
+              <div className="hidden sm:block mt-6 space-y-3">
+                <GlowingReferralButton
+                  slug={referralSlug}
+                  name={referralPageName}
+                />
                 {!confirmApprove ? (
                   <>
                     <div className="flex gap-2">
@@ -1088,7 +1144,12 @@ const ClientApproval = () => {
             {/* MOBILE sticky buttons */}
             <div className="sticky bottom-0 z-40 bg-gradient-to-t from-[#111115] via-[#111115] to-[#111115]/0 pt-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:hidden">
               <div className="max-w-2xl mx-auto px-4 sm:px-6">
-                <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
+                <div className="rounded-[28px] border border-white/[0.06] bg-white/[0.03] p-2 backdrop-blur-xl sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 space-y-2.5">
+                  <GlowingReferralButton
+                    slug={referralSlug}
+                    name={referralPageName}
+                  />
+                  {/* Confirm approve dialog when comments exist */}
                   {/* Confirm approve dialog when comments exist */}
                   <AnimatePresence>
                     {confirmApprove && (
