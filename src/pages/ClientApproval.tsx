@@ -312,6 +312,8 @@ const ClientApproval = () => {
   const [pipelineSummary, setPipelineSummary] = useState<Record<string, number>>({});
   const [overviewOpen, setOverviewOpen] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
+  const [referralSlug, setReferralSlug] = useState<string | null>(null);
+  const [referralPageName, setReferralPageName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
