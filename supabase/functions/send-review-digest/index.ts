@@ -187,7 +187,8 @@ Deno.serve(async (req) => {
 function buildEmail(
   clientName: string,
   pieces: { piece_type: string | null; piece_title: string | null }[],
-  approvalLink: string | null
+  approvalLink: string | null,
+  referralLink = 'https://hub.marketlab-media.de/empfehlungen'
 ) {
   const typeLabels: Record<string, string> = {
     reel: '🎬 Reel',
