@@ -5,6 +5,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, CheckCheck, MessageSquare, X, Play, ExternalLink, Loader2, Clock, Trash2, ChevronLeft, ChevronRight, Send, AlertCircle, Calendar, Pencil, ChevronDown, Layers, Trophy, Sparkles, ArrowRight, Gift, Copy, Share2 } from "lucide-react";
+import { BonusCountdownBar, isBonusActive } from "@/components/referral/BonusCountdownBar";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -569,6 +570,7 @@ const ClientApproval = () => {
 
       {/* Header - slim & clean */}
       <div className="sticky top-0 z-50 bg-[#111115]/90 backdrop-blur-2xl border-b border-white/[0.04]">
+        <BonusCountdownBar onClick={() => setShowReferral(true)} />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 sm:h-14 flex items-center gap-2 sm:gap-3">
           <img src={logoDark} alt="Marketlab Media" className="h-5 opacity-60 hidden sm:block" />
           <div className="w-px h-5 bg-white/10 hidden sm:block" />
@@ -1241,7 +1243,7 @@ const ClientApproval = () => {
           style={{ background: "radial-gradient(circle, #fbbf24, transparent 70%)" }}
         />
         <Trophy className="h-3.5 w-3.5" />
-        <span className="tracking-tight">1.000€ sparen</span>
+        <span className="tracking-tight">{isBonusActive() ? "1.500€ sparen" : "1.000€ sparen"}</span>
         <ArrowRight className="h-3 w-3 opacity-70 group-hover:translate-x-0.5 transition-transform" />
       </motion.button>
 
@@ -1297,6 +1299,15 @@ const ClientApproval = () => {
                   </div>
                 </div>
 
+                {/* Aktions-Hinweis */}
+                {isBonusActive() && (
+                  <div className="mb-4 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
+                    <p className="text-[12px] font-semibold text-amber-200">
+                      Sommer-Bonus: +50 % auf jede Prämie — nur bis 31. August.
+                    </p>
+                  </div>
+                )}
+
                 {/* Description */}
                 <p className="text-[13px] text-white/50 leading-relaxed mb-6">
                   Für jede Person, die du uns empfiehlst und die einen Vertrag bei uns unterschreibt, bekommst du eine Gutschrift auf deine nächste Rechnung. Sofort. Ohne Haken.
@@ -1305,23 +1316,33 @@ const ClientApproval = () => {
                 {/* Reward tiers */}
                 <div className="space-y-2.5 mb-6">
                   {[
-                    { label: "1. Empfehlung", reward: "1.000€ Gutschrift", color: "from-amber-500/20 to-amber-600/10", border: "border-amber-500/15", text: "text-amber-300" },
-                    { label: "2. Empfehlung", reward: "1.500€ Gutschrift", color: "from-amber-500/25 to-amber-600/15", border: "border-amber-500/20", text: "text-amber-200" },
-                    { label: "3. Empfehlung", reward: "Nächster Monat gratis", color: "from-amber-500/30 to-amber-600/20", border: "border-amber-500/25", text: "text-amber-100 font-semibold" },
-                  ].map((tier, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + i * 0.1 }}
-                      className={`flex items-center justify-between rounded-xl border ${tier.border} bg-gradient-to-r ${tier.color} px-4 py-3`}
-                    >
-                      <span className="text-xs text-white/40">{tier.label}</span>
-                      <ArrowRight className="h-3 w-3 text-white/20" />
-                      <span className={`text-sm ${tier.text}`}>{tier.reward}</span>
-                    </motion.div>
-                  ))}
+                    { label: "1. Empfehlung", reward: "1.000€ Gutschrift", bonus: "1.500€ Gutschrift", color: "from-amber-500/20 to-amber-600/10", border: "border-amber-500/15", text: "text-amber-300" },
+                    { label: "2. Empfehlung", reward: "1.500€ Gutschrift", bonus: "2.250€ Gutschrift", color: "from-amber-500/25 to-amber-600/15", border: "border-amber-500/20", text: "text-amber-200" },
+                    { label: "3. Empfehlung", reward: "Nächster Monat gratis", bonus: "Nächster Monat gratis", color: "from-amber-500/30 to-amber-600/20", border: "border-amber-500/25", text: "text-amber-100 font-semibold" },
+                  ].map((tier, i) => {
+                    const boosted = isBonusActive() && tier.bonus !== tier.reward;
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 + i * 0.1 }}
+                        className={`flex items-center justify-between rounded-xl border ${tier.border} bg-gradient-to-r ${tier.color} px-4 py-3`}
+                      >
+                        <span className="text-xs text-white/40">{tier.label}</span>
+                        <ArrowRight className="h-3 w-3 text-white/20" />
+                        <span className="flex items-center gap-2">
+                          {boosted && (
+                            <span className="text-[11px] text-white/25 line-through">{tier.reward}</span>
+                          )}
+                          <span className={`text-sm ${tier.text}`}>{boosted ? tier.bonus : tier.reward}</span>
+                        </span>
+                      </motion.div>
+                    );
+                  })}
                 </div>
+
+
 
                 {/* Share Link + WhatsApp */}
                 {(() => {
