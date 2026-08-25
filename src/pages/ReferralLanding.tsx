@@ -224,7 +224,9 @@ const ReferralLanding = () => {
         {/* ERGEBNISSE */}
         {(page.results_text || page.stats?.length > 0) && (
           <section className="mt-20">
-            <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+            <SectionEyebrow>Ergebnisse</SectionEyebrow>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+
               Was wir für {page.headline_name}{" "}
               <span className="italic font-semibold" style={accentStyle}>
                 gemacht
