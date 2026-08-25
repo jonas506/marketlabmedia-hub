@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { CalendarCheck, Phone, Quote, Sparkles, Play } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CalendarCheck, Phone, Quote, Sparkles, Play, Check, X, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AgencySections,
@@ -12,6 +12,33 @@ import {
 } from "@/components/referral/AgencySections";
 
 const DEFAULT_CAL = "https://cal.com/marketlab-media/erstgespraech";
+
+type ResultBlock =
+  | { kind: "heading"; text: string }
+  | { kind: "bullets"; items: string[] }
+  | { kind: "text"; text: string };
+
+const parseResults = (raw: string): ResultBlock[] => {
+  const blocks: ResultBlock[] = [];
+  raw
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      const bullet = line.replace(/^[•\-–*]\s*/, "");
+      if (/^[•\-–*]\s*/.test(line)) {
+        const last = blocks[blocks.length - 1];
+        if (last && last.kind === "bullets") last.items.push(bullet);
+        else blocks.push({ kind: "bullets", items: [bullet] });
+      } else if (line.endsWith(":") && line.length < 80) {
+        blocks.push({ kind: "heading", text: line.replace(/:$/, "") });
+      } else {
+        blocks.push({ kind: "text", text: line });
+      }
+    });
+  return blocks;
+};
+
 
 
 interface MediaItem {
