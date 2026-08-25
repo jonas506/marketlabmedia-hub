@@ -264,8 +264,10 @@ const ReferralLanding = () => {
         {/* FEEDBACK */}
         {(page.quote || page.media.length > 0) && (
           <section className="mt-20">
-            <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+            <SectionEyebrow>Feedback</SectionEyebrow>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
               Persönliches Feedback von {page.headline_name}
+
             </h2>
 
             {page.quote && (
