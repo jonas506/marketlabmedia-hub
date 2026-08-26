@@ -43,8 +43,9 @@ Deno.serve(async (req) => {
     // Get sender name
     const { data: profile } = await supabase
       .from('profiles').select('name, email').eq('user_id', user.id).single();
-    const senderName = profile?.name || 'Marketlab Media';
-    const fromAddress = `${senderName} <noreply@marketlabmedia.de>`;
+    const senderName = (profile?.name || 'Marketlab Media').replace(/[^\p{L}\p{N} .\-]/gu, '').trim() || 'Marketlab Media';
+    // Anzeigename fix halten – variable Namen im From-Header lösen Gmail-Spoofing-Warnungen aus.
+    const fromAddress = 'Marketlab Media <noreply@marketlabmedia.de>';
 
     const html = `
       <div style="font-family: Arial, sans-serif; font-size: 15px; color: #1E1E24; line-height: 1.65; max-width: 640px; margin: 0 auto; padding: 24px;">
