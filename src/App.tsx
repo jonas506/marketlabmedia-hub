@@ -43,6 +43,8 @@ import InternalReviewSwiper from "./pages/InternalReviewSwiper";
 
 import StundenUebersicht from "./pages/StundenUebersicht";
 import Pricing from "./pages/Pricing";
+import Documents from "./pages/Documents";
+import DocumentSign from "./pages/DocumentSign";
 import Referral from "./pages/Referral";
 import ReferralLanding from "./pages/ReferralLanding";
 import CourseHome from "./pages/CourseHome";
