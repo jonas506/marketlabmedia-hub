@@ -20,7 +20,7 @@ interface Lead {
   id: string;
   name: string | null;
   contact_name: string | null;
-  email: string | null;
+  contact_email: string | null;
 }
 
 async function sha256(file: File) {
@@ -64,7 +64,7 @@ export default function CreateDocumentDialog({
     if (!open) return;
     supabase
       .from("crm_leads")
-      .select("id, name, contact_name, email")
+      .select("id, name, contact_name, contact_email")
       .order("created_at", { ascending: false })
       .limit(200)
       .then(({ data }) => setLeads((data as Lead[]) ?? []));
@@ -241,17 +241,17 @@ export default function CreateDocumentDialog({
                       {leads.map((l) => (
                         <CommandItem
                           key={l.id}
-                          value={`${l.name ?? ""} ${l.contact_name ?? ""} ${l.email ?? ""}`}
+                          value={`${l.name ?? ""} ${l.contact_name ?? ""} ${l.contact_email ?? ""}`}
                           onSelect={() => {
                             setLeadId(l.id);
                             setRecipientName(l.contact_name || l.name || "");
-                            setRecipientEmail(l.email || "");
+                            setRecipientEmail(l.contact_email || "");
                             setPickerOpen(false);
                           }}
                         >
                           <div className="min-w-0">
                             <div className="truncate text-sm">{l.name || l.contact_name || "Ohne Namen"}</div>
-                            <div className="truncate text-xs text-muted-foreground">{l.email || "keine E-Mail"}</div>
+                            <div className="truncate text-xs text-muted-foreground">{l.contact_email || "keine E-Mail"}</div>
                           </div>
                         </CommandItem>
                       ))}
