@@ -59,18 +59,26 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    const res = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
+    const text = [
+      (offer.custom_body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+      '',
+      `Angebot ansehen & annehmen: ${acceptUrl}`,
+      '',
+      `${senderName} · Marketlab Media`,
+    ].filter(Boolean).join('\n');
+
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY') ?? ''}`,
-        'X-Connection-Api-Key': resendApiKey,
+        Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
         from: fromAddress,
         to: [offer.recipient_email],
         subject: offer.subject,
         html,
+        text,
         reply_to: profile?.email || user.email,
       }),
     });
