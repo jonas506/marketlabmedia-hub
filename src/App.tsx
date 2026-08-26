@@ -110,7 +110,9 @@ const App = () => (
                   <Route path="/pakete" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/angebot/:token" element={<OfferView />} />
+                  <Route path="/dokument/:token" element={<DocumentSign />} />
                   <Route path="/kurs/anmelden" element={<CourseSignup />} />
+                  <Route path="/dokumente" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/clients" element={<ProtectedRoute><ClientsList /></ProtectedRoute>} />
                   <Route path="/posting-kalender" element={<ProtectedRoute><PostingCalendarPage /></ProtectedRoute>} />
