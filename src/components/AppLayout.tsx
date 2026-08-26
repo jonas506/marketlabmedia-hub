@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings, ListTodo, Banknote, ShieldCheck, Clock } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings, ListTodo, Banknote, ShieldCheck, Clock, FileSignature } from "lucide-react";
 import { useInternalReviewCount } from "@/hooks/useInternalReviewCount";
 import marketlabLogo from "@/assets/marketlab-logo.jpg";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,6 +27,7 @@ const navItems: { to: string; label: string; icon: React.ComponentType<any>; rol
   { to: "/crew", label: "Crew", icon: Users },
   { to: "/crm", label: "CRM", icon: Briefcase, roles: ["admin"] },
   { to: "/finanzen", label: "Finanzen", icon: Banknote, roles: ["admin"] },
+  { to: "/dokumente", label: "Dokumente", icon: FileSignature, roles: ["admin"] },
   { to: "/stunden-uebersicht", label: "Stunden", icon: Clock, roles: ["admin"] },
   { to: "/admin/kurs", label: "Videokurs", icon: BookOpen, roles: ["admin"] },
   { to: "/team", label: "Einstellungen", icon: Settings, roles: ["admin"] },
