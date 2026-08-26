@@ -2630,6 +2630,134 @@ export type Database = {
           },
         ]
       }
+      signature_acceptances: {
+        Row: {
+          accepted_at: string
+          consent_text: string
+          document_id: string
+          file_hash: string | null
+          id: string
+          ip_address: string | null
+          typed_name: string
+          user_agent: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          consent_text: string
+          document_id: string
+          file_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          typed_name: string
+          user_agent?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          consent_text?: string
+          document_id?: string
+          file_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          typed_name?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_acceptances_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "signature_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signature_documents: {
+        Row: {
+          accepted_at: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          file_hash: string | null
+          file_name: string | null
+          file_path: string
+          file_size: number | null
+          id: string
+          lead_id: string | null
+          message_body: string | null
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          title: string
+          token: string
+          updated_at: string
+          viewed_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          file_hash?: string | null
+          file_name?: string | null
+          file_path: string
+          file_size?: number | null
+          id?: string
+          lead_id?: string | null
+          message_body?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          title: string
+          token?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          file_hash?: string | null
+          file_name?: string | null
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          lead_id?: string | null
+          message_body?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          title?: string
+          token?: string
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signature_documents_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sop_template_steps: {
         Row: {
           created_at: string
