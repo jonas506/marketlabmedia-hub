@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const SITE_NAME = 'marketlabmedia-hub'
 const ROOT_DOMAIN = 'marketlabmedia.de'
-const FROM_ADDRESS = `${SITE_NAME} <noreply@${ROOT_DOMAIN}>`
+const FROM_ADDRESS = `Marketlab Media <noreply@${ROOT_DOMAIN}>`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })

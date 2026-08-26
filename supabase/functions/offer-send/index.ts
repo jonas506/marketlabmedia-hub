@@ -43,8 +43,9 @@ Deno.serve(async (req) => {
     // Get sender name
     const { data: profile } = await supabase
       .from('profiles').select('name, email').eq('user_id', user.id).single();
-    const senderName = profile?.name || 'Marketlab Media';
-    const fromAddress = `${senderName} <noreply@marketlabmedia.de>`;
+    const senderName = (profile?.name || 'Marketlab Media').replace(/[^\p{L}\p{N} .\-]/gu, '').trim() || 'Marketlab Media';
+    // Anzeigename fix halten – variable Namen im From-Header lösen Gmail-Spoofing-Warnungen aus.
+    const fromAddress = 'Marketlab Media <noreply@marketlabmedia.de>';
 
     const html = `
       <div style="font-family: Arial, sans-serif; font-size: 15px; color: #1E1E24; line-height: 1.65; max-width: 640px; margin: 0 auto; padding: 24px;">
@@ -58,18 +59,26 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    const res = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
+    const text = [
+      (offer.custom_body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+      '',
+      `Angebot ansehen & annehmen: ${acceptUrl}`,
+      '',
+      `${senderName} · Marketlab Media`,
+    ].filter(Boolean).join('\n');
+
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY') ?? ''}`,
-        'X-Connection-Api-Key': resendApiKey,
+        Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
         from: fromAddress,
         to: [offer.recipient_email],
         subject: offer.subject,
         html,
+        text,
         reply_to: profile?.email || user.email,
       }),
     });

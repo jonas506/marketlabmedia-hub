@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
         to: recipients,
         subject,
         html,
+        text: html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
       }),
     });
 

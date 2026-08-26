@@ -48,8 +48,9 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id)
       .single()
 
-    const senderName = profile?.name || 'Marketlab Media'
-    const fromAddress = `${senderName} <noreply@marketlabmedia.de>`
+    const senderName = (profile?.name || 'Marketlab Media').replace(/[^\p{L}\p{N} .\-]/gu, '').trim() || 'Marketlab Media'
+    // Fester, sauberer Anzeigename verhindert Gmail-Spoofing-Warnungen.
+    const fromAddress = 'Marketlab Media <noreply@marketlabmedia.de>'
 
     // Convert plain text body to HTML
     const htmlBody = body
@@ -58,50 +59,25 @@ Deno.serve(async (req) => {
       .replace(/>/g, '&gt;')
       .replace(/\n/g, '<br>')
 
-    // Send via Resend
-    const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    const textBody = `${body}\n\n${senderName} · Marketlab Media`
 
-    let sendResult: any
-
-    if (LOVABLE_API_KEY) {
-      // Use gateway
-      const res = await fetch(`${GATEWAY_URL}/emails`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'X-Connection-Api-Key': resendApiKey,
-        },
-        body: JSON.stringify({
-          from: fromAddress,
-          to: [to],
-          subject,
-          html: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">${htmlBody}</div>`,
-          reply_to: profile?.email || user.email,
-        }),
-      })
-      sendResult = await res.json()
-      if (!res.ok) throw new Error(`Email send failed: ${JSON.stringify(sendResult)}`)
-    } else {
-      // Direct Resend API
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${resendApiKey}`,
-        },
-        body: JSON.stringify({
-          from: fromAddress,
-          to: [to],
-          subject,
-          html: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">${htmlBody}</div>`,
-          reply_to: profile?.email || user.email,
-        }),
-      })
-      sendResult = await res.json()
-      if (!res.ok) throw new Error(`Email send failed: ${JSON.stringify(sendResult)}`)
-    }
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: fromAddress,
+        to: [to],
+        subject,
+        html: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">${htmlBody}</div>`,
+        text: textBody,
+        reply_to: profile?.email || user.email,
+      }),
+    })
+    const sendResult = await res.json()
+    if (!res.ok) throw new Error(`Email send failed: ${JSON.stringify(sendResult)}`)
 
     // Log as crm_activity
     await supabase.from('crm_activities').insert({

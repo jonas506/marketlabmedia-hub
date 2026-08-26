@@ -115,6 +115,7 @@ Deno.serve(async (req) => {
             to: [RECIPIENT_EMAIL],
             subject: `Reisekostenabrechnung ${employeeName} — ${monthLabel} ${prevYear}`,
             html: htmlBody,
+            text: htmlBody.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
           }),
         });
       }

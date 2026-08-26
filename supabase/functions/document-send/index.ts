@@ -61,7 +61,9 @@ Deno.serve(async (req) => {
       .select('name, email')
       .eq('user_id', user.id)
       .maybeSingle();
-    const senderName = profile?.name || 'Marketlab Media';
+    // Anzeigename im From-Header immer fix & ASCII-sauber halten (Gmail-Spoofing-Warnung vermeiden).
+    const senderName = (profile?.name || 'Marketlab Media').replace(/[^\p{L}\p{N} .\-]/gu, '').trim() || 'Marketlab Media';
+    const fromAddress = 'Marketlab Media <noreply@marketlabmedia.de>';
 
     const greeting = doc.recipient_name ? `Hallo ${doc.recipient_name},` : 'Hallo,';
     const intro = reminder
@@ -86,6 +88,17 @@ Deno.serve(async (req) => {
         <p style="color:#999;font-size:12px;margin-top:24px">${senderName} · Marketlab Media</p>
       </div>`;
 
+    // Plaintext-Variante: fehlender Text-Teil ist ein starkes Spam-Signal.
+    const text = [
+      greeting,
+      reminder ? 'kurze Erinnerung: das folgende Dokument wartet noch auf deine Bestätigung.' : '',
+      (doc.message_body || '').trim(),
+      '',
+      `Dokument ansehen & annehmen: ${link}`,
+      '',
+      `${senderName} · Marketlab Media`,
+    ].filter(Boolean).join('\n');
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -93,10 +106,11 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: `${senderName} <noreply@marketlabmedia.de>`,
+        from: fromAddress,
         to: [doc.recipient_email],
         subject: reminder ? `Erinnerung: ${doc.subject}` : doc.subject,
         html,
+        text,
         reply_to: profile?.email || user.email,
       }),
     });
