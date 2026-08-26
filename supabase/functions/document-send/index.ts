@@ -86,12 +86,11 @@ Deno.serve(async (req) => {
         <p style="color:#999;font-size:12px;margin-top:24px">${senderName} · Marketlab Media</p>
       </div>`;
 
-    const res = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${Deno.env.get('LOVABLE_API_KEY') ?? ''}`,
-        'X-Connection-Api-Key': resendApiKey,
+        Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
         from: `${senderName} <noreply@marketlabmedia.de>`,
