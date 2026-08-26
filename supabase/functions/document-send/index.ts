@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (!roleRow) throw new Error('Nur Administratoren dürfen Dokumente versenden');
 
-    const { documentId, appUrl, reminder } = await req.json();
+    const { documentId, reminder } = await req.json();
     if (!documentId) throw new Error('documentId fehlt');
 
     const { data: doc, error: dErr } = await supabase
@@ -53,10 +53,8 @@ Deno.serve(async (req) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(doc.recipient_email ?? ''))
       throw new Error('Ungültige Empfänger-E-Mail');
 
-    // Preview-/Sandbox-URLs verlangen einen Lovable-Login -> immer die öffentliche Domain nutzen
-    const isPublic = typeof appUrl === 'string' && /^https?:\/\//.test(appUrl) && !/lovable\.(app|dev)$/.test(new URL(appUrl).hostname);
-    const base = isPublic ? appUrl : 'https://hub.marketlab-media.de';
-    const link = `${base}/dokument/${doc.token}`;
+    // Vertragslinks dürfen niemals von der Admin-/Preview-Domain abhängen.
+    const link = `https://hub.marketlab-media.de/dokument/${doc.token}`;
 
     const { data: profile } = await supabase
       .from('profiles')
