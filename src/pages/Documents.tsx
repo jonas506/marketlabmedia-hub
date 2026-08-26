@@ -116,7 +116,11 @@ export default function Documents() {
     setPdfUrl(signed?.signedUrl ?? null);
   };
 
-  const linkFor = (doc: Doc) => `${window.location.origin}/dokument/${doc.token}`;
+  // Preview-Domains erfordern einen Lovable-Login -> öffentlicher Link immer über die Live-Domain
+  const PUBLIC_BASE = /lovable\.(app|dev)$/.test(window.location.hostname)
+    ? "https://hub.marketlab-media.de"
+    : window.location.origin;
+  const linkFor = (doc: Doc) => `${PUBLIC_BASE}/dokument/${doc.token}`;
 
   const copyLink = (doc: Doc) => {
     navigator.clipboard.writeText(linkFor(doc));

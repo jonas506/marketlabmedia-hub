@@ -53,7 +53,9 @@ Deno.serve(async (req) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(doc.recipient_email ?? ''))
       throw new Error('Ungültige Empfänger-E-Mail');
 
-    const base = appUrl || 'https://hub.marketlab-media.de';
+    // Preview-/Sandbox-URLs verlangen einen Lovable-Login -> immer die öffentliche Domain nutzen
+    const isPublic = typeof appUrl === 'string' && /^https?:\/\//.test(appUrl) && !/lovable\.(app|dev)$/.test(new URL(appUrl).hostname);
+    const base = isPublic ? appUrl : 'https://hub.marketlab-media.de';
     const link = `${base}/dokument/${doc.token}`;
 
     const { data: profile } = await supabase
