@@ -116,10 +116,8 @@ export default function Documents() {
     setPdfUrl(signed?.signedUrl ?? null);
   };
 
-  // Preview-Domains erfordern einen Lovable-Login -> öffentlicher Link immer über die Live-Domain
-  const PUBLIC_BASE = /lovable\.(app|dev)$/.test(window.location.hostname)
-    ? "https://hub.marketlab-media.de"
-    : window.location.origin;
+  // Vertragslinks sind immer öffentlich und unabhängig von der Admin-/Preview-Domain.
+  const PUBLIC_BASE = "https://hub.marketlab-media.de";
   const linkFor = (doc: Doc) => `${PUBLIC_BASE}/dokument/${doc.token}`;
 
   const copyLink = (doc: Doc) => {
@@ -131,7 +129,7 @@ export default function Documents() {
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("document-send", {
-        body: { documentId: doc.id, appUrl: window.location.origin, reminder },
+        body: { documentId: doc.id, reminder },
       });
       if (error) throw error;
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
