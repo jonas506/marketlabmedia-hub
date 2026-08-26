@@ -32,6 +32,7 @@ async function sendMail(to: string[], subject: string, html: string) {
         to,
         subject,
         html,
+        text: html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
       }),
     });
   } catch (e) {
