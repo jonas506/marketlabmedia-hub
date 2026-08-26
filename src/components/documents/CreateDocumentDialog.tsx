@@ -136,7 +136,7 @@ export default function CreateDocumentDialog({
 
       if (send) {
         const { data, error } = await supabase.functions.invoke("document-send", {
-          body: { documentId: doc.id, appUrl: window.location.origin },
+          body: { documentId: doc.id },
         });
         if (error) throw error;
         if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
