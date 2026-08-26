@@ -61,7 +61,9 @@ Deno.serve(async (req) => {
       .select('name, email')
       .eq('user_id', user.id)
       .maybeSingle();
-    const senderName = profile?.name || 'Marketlab Media';
+    // Anzeigename im From-Header immer fix & ASCII-sauber halten (Gmail-Spoofing-Warnung vermeiden).
+    const senderName = (profile?.name || 'Marketlab Media').replace(/[^\p{L}\p{N} .\-]/gu, '').trim() || 'Marketlab Media';
+    const fromAddress = 'Marketlab Media <noreply@marketlabmedia.de>';
 
     const greeting = doc.recipient_name ? `Hallo ${doc.recipient_name},` : 'Hallo,';
     const intro = reminder
