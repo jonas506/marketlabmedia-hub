@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings, ListTodo, Banknote, ShieldCheck, Clock } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, ClipboardList, BookOpen, BookmarkIcon, Sun, Moon, BarChart3, Menu, X, Briefcase, Presentation, CalendarRange, CheckSquare, Activity, Search, Settings, ListTodo, Banknote, ShieldCheck, Clock, FileSignature } from "lucide-react";
 import { useInternalReviewCount } from "@/hooks/useInternalReviewCount";
 import marketlabLogo from "@/assets/marketlab-logo.jpg";
 import { useIsMobile } from "@/hooks/use-mobile";
