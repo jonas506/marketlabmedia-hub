@@ -60,6 +60,7 @@ interface PageData {
   headline_name: string;
   role_title?: string | null;
   photo_url?: string | null;
+  logo_url?: string | null;
   intro_text?: string | null;
   results_text?: string | null;
   stats: { label: string; value: string }[];
