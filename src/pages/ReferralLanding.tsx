@@ -156,8 +156,7 @@ const ReferralLanding = () => {
   const feedbackImages = [...cat("feedback"), ...cat("other")];
 
   const resultBlocks = page.results_text ? parseResults(page.results_text) : [];
-  const bulletGroupCount = resultBlocks.filter((b) => b.kind === "bullets").length;
-  let bulletGroupIndex = 0;
+  const hasResultImages = websiteImages.length + socialImages.length + adsImages.length > 0;
 
   const accentStyle = sharedAccentStyle;
 
