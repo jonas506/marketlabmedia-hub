@@ -658,23 +658,7 @@ const ReferralLanding = () => {
           </div>
         </section>
 
-        {/* TRUST — JONAS */}
-        <section className="mt-10">
-          <div className="mx-auto max-w-sm text-center">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-[260px] overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl shadow-black/40">
-              <img
-                src={jonasImg.url}
-                alt="Jonas Fesser – Marketlab Media"
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            </div>
-            <p className="mt-4 text-sm font-semibold text-white">Jonas Fesser</p>
-            <p className="text-xs text-white/60">Gesellschafter & Geschäftsführer</p>
-          </div>
-        </section>
-
-        <p className="mt-16 text-center text-xs text-white/30">Marketlab Media</p>
+        <p className="mt-12 text-center text-xs text-white/30">Marketlab Media</p>
       </div>
 
       <AnimatePresence>
