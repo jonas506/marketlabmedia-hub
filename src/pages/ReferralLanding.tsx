@@ -60,6 +60,7 @@ interface PageData {
   headline_name: string;
   role_title?: string | null;
   photo_url?: string | null;
+  logo_url?: string | null;
   intro_text?: string | null;
   results_text?: string | null;
   stats: { label: string; value: string }[];
@@ -118,11 +119,15 @@ const ReferralLanding = () => {
         setMeta('meta[name="twitter:description"]', "name", "twitter:description", description);
         setMeta('meta[property="og:type"]', "property", "og:type", "profile");
 
-        const signedPhoto = await signReferralAsset(p.photo_url);
+        const signedPhoto = (await signReferralAsset(p.photo_url)) || p.logo_url || null;
         setPhoto(signedPhoto);
-        if (signedPhoto) {
-          setMeta('meta[property="og:image"]', "property", "og:image", signedPhoto);
-          setMeta('meta[name="twitter:image"]', "name", "twitter:image", signedPhoto);
+        const ogImage = p.photo_url
+          ? `https://winsekbpsgwtwfdehyms.supabase.co/functions/v1/referral-og?slug=${encodeURIComponent(slug)}`
+          : p.logo_url || null;
+        if (ogImage) {
+          setMeta('meta[property="og:image"]', "property", "og:image", ogImage);
+          setMeta('meta[name="twitter:image"]', "name", "twitter:image", ogImage);
+          setMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
         }
         const entries = await Promise.all(
           (p.media || []).map(async (m) => [m.id, (await signReferralAsset(m.url)) || ""] as const),

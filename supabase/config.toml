@@ -19,4 +19,7 @@ project_id = "winsekbpsgwtwfdehyms"
     verify_jwt = false
   [functions.document-public]
     verify_jwt = false
+  [functions.referral-og]
+    verify_jwt = false
+
 
