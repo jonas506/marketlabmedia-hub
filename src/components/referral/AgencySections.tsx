@@ -111,7 +111,7 @@ export const AgencySections = () => {
   return (
     <>
         {/* AGENTUR-KPIs */}
-        <section className="mt-20">
+        <section className="mt-14">
           <SectionEyebrow>Marketlab in Zahlen</SectionEyebrow>
           <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
             Was wir in den letzten 12 Monaten{" "}
@@ -208,7 +208,7 @@ export const AgencySections = () => {
         </section>
 
         {/* TRUSTPILOT */}
-        <section className="mt-20">
+        <section className="mt-14">
           <a
             href={TRUSTPILOT_URL}
             target="_blank"
@@ -322,7 +322,7 @@ export const AgencySections = () => {
         </section>
 
         {/* TEAM */}
-        <section className="mt-20">
+        <section className="mt-14">
           <SectionEyebrow>Das Team</SectionEyebrow>
           <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
             Die Menschen{" "}
@@ -366,7 +366,7 @@ export const AgencySections = () => {
         </section>
 
         {/* JONAS — VALUES */}
-        <section className="mt-20">
+        <section className="mt-14">
           <div
             className="overflow-hidden rounded-3xl border"
             style={{
@@ -449,7 +449,7 @@ export const AgencySections = () => {
         </section>
 
         {/* WHY US */}
-        <section className="mt-20">
+        <section className="mt-14">
           <SectionEyebrow>Warum Marketlab Media</SectionEyebrow>
           <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
             Social Media Wachstum als{" "}
@@ -474,7 +474,7 @@ export const AgencySections = () => {
         </section>
 
         {/* CHANNELS */}
-        <section className="mt-20">
+        <section className="mt-14">
           <SectionEyebrow>Schau dich erst um</SectionEyebrow>
           <h2 className="mt-2 text-2xl font-extrabold tracking-tight md:text-3xl">
             Unsere eigenen Kanäle
@@ -541,7 +541,7 @@ export const AgencySections = () => {
 };
 
 export const FinalCta = ({ referrerName }: { referrerName?: string | null }) => (
-  <section className="mt-24 mb-12">
+  <section className="mt-16 mb-10">
     <div
       className="relative overflow-hidden rounded-3xl border p-10 text-center md:p-14"
       style={{
