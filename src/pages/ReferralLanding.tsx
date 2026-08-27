@@ -311,7 +311,7 @@ const ReferralLanding = () => {
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-5xl px-6 py-16 md:py-24">
+      <div className="relative z-10 mx-auto max-w-5xl px-6 py-12 md:py-16">
 
         {/* HERO */}
         <motion.section
