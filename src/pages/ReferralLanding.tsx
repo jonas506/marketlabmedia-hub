@@ -390,7 +390,7 @@ const ReferralLanding = () => {
         </motion.section>
 
         {page.stats?.length > 0 && (
-          <div className="mt-14 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
             {page.stats.map((s, i) => (
               <motion.div
                 key={i}
