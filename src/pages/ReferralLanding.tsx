@@ -88,6 +88,16 @@ const ReferralLanding = () => {
 
 
   useEffect(() => {
+    const setMeta = (selector: string, attr: "name" | "property", key: string, content: string) => {
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+
     const load = async () => {
       if (!slug) return;
       const { data } = await supabase.rpc("get_referral_page", { _slug: slug });
@@ -95,15 +105,25 @@ const ReferralLanding = () => {
       setPage(p);
       setLoading(false);
       if (p) {
-        document.title = `${p.headline_name} empfiehlt Marketlab Media`;
-        const meta = document.querySelector('meta[name="description"]');
-        if (meta) {
-          meta.setAttribute(
-            "content",
-            `${p.headline_name} über die Zusammenarbeit mit Marketlab Media — Ergebnisse, persönliches Feedback und direkte Terminbuchung.`,
-          );
+        const title = `${p.headline_name} empfiehlt Marketlab Media`;
+        const description = p.role_title
+          ? `${p.headline_name}, ${p.role_title} — Ergebnisse aus der Zusammenarbeit mit Marketlab Media und direkte Terminbuchung.`
+          : `${p.headline_name} über die Zusammenarbeit mit Marketlab Media — Ergebnisse, persönliches Feedback und direkte Terminbuchung.`;
+
+        document.title = title;
+        setMeta('meta[name="description"]', "name", "description", description);
+        setMeta('meta[property="og:title"]', "property", "og:title", title);
+        setMeta('meta[name="twitter:title"]', "name", "twitter:title", title);
+        setMeta('meta[property="og:description"]', "property", "og:description", description);
+        setMeta('meta[name="twitter:description"]', "name", "twitter:description", description);
+        setMeta('meta[property="og:type"]', "property", "og:type", "profile");
+
+        const signedPhoto = await signReferralAsset(p.photo_url);
+        setPhoto(signedPhoto);
+        if (signedPhoto) {
+          setMeta('meta[property="og:image"]', "property", "og:image", signedPhoto);
+          setMeta('meta[name="twitter:image"]', "name", "twitter:image", signedPhoto);
         }
-        setPhoto(await signReferralAsset(p.photo_url));
         const entries = await Promise.all(
           (p.media || []).map(async (m) => [m.id, (await signReferralAsset(m.url)) || ""] as const),
         );
@@ -112,6 +132,7 @@ const ReferralLanding = () => {
     };
     load();
   }, [slug]);
+
 
   useEffect(() => {
     const id = "marketlab-brand-fonts";
