@@ -419,8 +419,8 @@ const ReferralLanding = () => {
         )}
 
         {/* ERGEBNISSE + PASSENDE BILDER */}
-        {(resultBlocks.length > 0 || websiteImages.length + socialImages.length + adsImages.length > 0) && (
-          <section className="mt-24">
+        {(resultBlocks.length > 0 || hasResultImages) && (
+          <section className="mt-16">
             <SectionEyebrow>Ergebnisse</SectionEyebrow>
             <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
               Was wir für {page.headline_name}{" "}
@@ -430,66 +430,57 @@ const ReferralLanding = () => {
               haben
             </h2>
 
-            <div className="mt-8 space-y-6">
-              {resultBlocks.map((b, i) => {
-                if (b.kind === "heading")
-                  return (
-                    <h3
-                      key={i}
-                      className="pt-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40"
-                    >
-                      {b.text}
-                    </h3>
-                  );
-                if (b.kind === "text")
-                  return (
-                    <p key={i} className="max-w-3xl text-base leading-relaxed text-white/70">
-                      {b.text}
-                    </p>
-                  );
-                const gi = bulletGroupIndex++;
-                return (
-                  <Fragment key={i}>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {b.items.map((item, j) => (
-                        <motion.div
-                          key={j}
-                          initial={{ opacity: 0, y: 14 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.45, delay: j * 0.05 }}
-                          className="flex gap-3 rounded-2xl border p-4"
-                          style={{ borderColor: BRAND.border, background: BRAND.card }}
-                        >
-                          <span
-                            className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
-                            style={{ background: `${BRAND.blue}1F`, color: BRAND.blue }}
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                          </span>
-                          <p className="text-sm leading-relaxed text-white/75">{item}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-                    {gi === 0 && (
-                      <>
-                        {websiteBlock}
-                        {socialBlock}
-                      </>
-                    )}
-                    {gi === 1 && adsBlock}
-                  </Fragment>
-                );
-              })}
-
-              {bulletGroupCount === 0 && (
+            <div className="mt-8 space-y-10">
+              {hasResultImages ? (
                 <>
                   {websiteBlock}
                   {socialBlock}
                   {adsBlock}
                 </>
+              ) : (
+                <div className="space-y-6">
+                  {resultBlocks.map((b, i) => {
+                    if (b.kind === "heading")
+                      return (
+                        <h3
+                          key={i}
+                          className="pt-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white/40"
+                        >
+                          {b.text}
+                        </h3>
+                      );
+                    if (b.kind === "text")
+                      return (
+                        <p key={i} className="max-w-3xl text-base leading-relaxed text-white/70">
+                          {b.text}
+                        </p>
+                      );
+                    return (
+                      <div key={i} className="grid gap-3 md:grid-cols-2">
+                        {b.items.map((item, j) => (
+                          <motion.div
+                            key={j}
+                            initial={{ opacity: 0, y: 14 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.45, delay: j * 0.05 }}
+                            className="flex gap-3 rounded-2xl border p-4"
+                            style={{ borderColor: BRAND.border, background: BRAND.card }}
+                          >
+                            <span
+                              className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                              style={{ background: `${BRAND.blue}1F`, color: BRAND.blue }}
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </span>
+                            <p className="text-sm leading-relaxed text-white/75">{item}</p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-              {bulletGroupCount === 1 && adsBlock}
             </div>
           </section>
         )}
