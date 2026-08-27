@@ -488,7 +488,7 @@ const ReferralLanding = () => {
 
         {/* FEEDBACK */}
         {(page.quote || feedbackImages.length > 0 || videos.length > 0 || audios.length > 0) && (
-          <section className="mt-24">
+          <section className="mt-16">
             <SectionEyebrow>Feedback</SectionEyebrow>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
               Feedback von{" "}
