@@ -327,7 +327,7 @@ const GlowingReferralButton = ({
               {name ? `${name} empfiehlt weiter` : "Empfiehl uns weiter"}
             </span>
             <span className="block text-[10px] font-medium opacity-80 truncate">
-              +50 % Prämie bis 31.08. · Deine persönliche Seite
+              +50 % Prämie bis 10.09. · Deine persönliche Seite
             </span>
           </span>
         </span>
@@ -1364,7 +1364,7 @@ const ClientApproval = () => {
                 {isBonusActive() && (
                   <div className="mb-4 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
                     <p className="text-[12px] font-semibold text-amber-200">
-                      Sommer-Bonus: +50 % auf jede Prämie — nur bis 31. August.
+                      Sommer-Bonus: +50 % auf jede Prämie — nur bis 10. September.
                     </p>
                   </div>
                 )}

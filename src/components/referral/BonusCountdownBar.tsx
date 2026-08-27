@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Gift, ArrowRight } from "lucide-react";
 
-/** Ende der Aktion: 31. August, 23:59 (Berlin, UTC+2) */
-export const BONUS_DEADLINE = new Date("2026-08-31T23:59:59+02:00");
+/** Ende der Aktion: 10. September, 23:59 (Berlin, UTC+2) */
+export const BONUS_DEADLINE = new Date("2026-09-10T23:59:59+02:00");
 
 export const isBonusActive = () => Date.now() < BONUS_DEADLINE.getTime();
 
@@ -40,7 +40,7 @@ export function BonusCountdownBar({ onClick }: { onClick?: () => void }) {
           +50 % Empfehlungsprämie
         </span>
         <span className="hidden sm:inline text-[11px] font-medium opacity-70">
-          nur bis 31. August
+          nur bis 10. September
         </span>
         <span className="flex items-center gap-1 font-mono text-[11px] sm:text-xs font-bold tabular-nums">
           {days > 0 && <span>{days}T</span>}
