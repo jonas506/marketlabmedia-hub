@@ -602,7 +602,7 @@ const ReferralLanding = () => {
         <AgencySections />
 
         {/* TERMIN */}
-        <section id="termin" className="mt-20 scroll-mt-10">
+        <section id="termin" className="mt-14 scroll-mt-10">
           <SectionEyebrow>Termin</SectionEyebrow>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">
             Lass uns{" "}
