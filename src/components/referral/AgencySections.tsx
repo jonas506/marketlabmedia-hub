@@ -111,7 +111,7 @@ export const AgencySections = () => {
   return (
     <>
         {/* AGENTUR-KPIs */}
-        <section className="mt-20">
+        <section className="mt-14">
           <SectionEyebrow>Marketlab in Zahlen</SectionEyebrow>
           <h2 className="mt-2 max-w-3xl text-3xl font-extrabold tracking-tight md:text-4xl">
             Was wir in den letzten 12 Monaten{" "}
