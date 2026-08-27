@@ -264,8 +264,8 @@ function buildEmail(
   return { subject, html, text }
 }
 
-// --- Empfehlungs-Bonus (Aktion bis 31.08.2026, +50 %) ---
-const BONUS_END = new Date('2026-08-31T23:59:59+02:00')
+// --- Empfehlungs-Bonus (Aktion bis 10.09.2026, +50 %) ---
+const BONUS_END = new Date('2026-09-10T23:59:59+02:00')
 
 function bonusDaysLeft(): number {
   return Math.ceil((BONUS_END.getTime() - Date.now()) / 86400000)
@@ -289,12 +289,12 @@ function bonusHtml(referralLink: string): string {
       <div style="text-align:center;margin-top:18px;">
         <a class="ml-pulse" href="${referralLink}" style="display:inline-block;background:linear-gradient(90deg,#d9a520,#f6d372,#d9a520);color:#241d07;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 0 24px rgba(240,200,90,0.55);">✦ Zu deiner Empfehlungsseite →</a>
       </div>
-      <p style="color:#a89968;font-size:12px;margin:14px 0 0;text-align:center;">Gutschrift bei Vertragsabschluss · Aktion endet am 31. August 2026</p>
+      <p style="color:#a89968;font-size:12px;margin:14px 0 0;text-align:center;">Gutschrift bei Vertragsabschluss · Aktion endet am 10. September 2026</p>
     </div>`
 }
 
 function bonusText(referralLink: string): string {
   if (!bonusActive()) return ''
   const days = bonusDaysLeft()
-  return `\n\n+50 % EMPFEHLUNGSPRÄMIE – nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}\n1. Empfehlung: 1.500 € (statt 1.000 €)\n2. Empfehlung: 2.250 € (statt 1.500 €)\n3. Empfehlung: 1 Monat gratis\nDeine Empfehlungsseite: ${referralLink}\nAktion endet am 31. August 2026.`
+  return `\n\n+50 % EMPFEHLUNGSPRÄMIE – nur noch ${days} ${days === 1 ? 'Tag' : 'Tage'}\n1. Empfehlung: 1.500 € (statt 1.000 €)\n2. Empfehlung: 2.250 € (statt 1.500 €)\n3. Empfehlung: 1 Monat gratis\nDeine Empfehlungsseite: ${referralLink}\nAktion endet am 10. September 2026.`
 }
