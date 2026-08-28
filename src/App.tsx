@@ -50,6 +50,7 @@ import ReferralLanding from "./pages/ReferralLanding";
 import CourseHome from "./pages/CourseHome";
 import CoursePlayer from "./pages/CoursePlayer";
 import CourseSignup from "./pages/CourseSignup";
+import CourseLogin from "./pages/CourseLogin";
 import CourseAdmin from "./pages/admin/CourseAdmin";
 import OfferView from "./pages/OfferView";
 
@@ -81,7 +82,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowCourseStudents?
       </div>
     );
   }
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to={allowCourseStudents ? "/kurs/login" : "/login"} replace />;
   // Course students (no internal role) must not access internal app routes.
   if (!allowCourseStudents && !role) return <Navigate to="/kurs" replace />;
   return <>{children}</>;
@@ -112,6 +113,7 @@ const App = () => (
                   <Route path="/angebot/:token" element={<OfferView />} />
                   <Route path="/dokument/:token" element={<DocumentSign />} />
                   <Route path="/kurs/anmelden" element={<CourseSignup />} />
+                  <Route path="/kurs/login" element={<CourseLogin />} />
                   <Route path="/dokumente" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/clients" element={<ProtectedRoute><ClientsList /></ProtectedRoute>} />
