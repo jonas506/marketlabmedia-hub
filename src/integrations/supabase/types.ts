@@ -3629,6 +3629,7 @@ export type Database = {
         Returns: boolean
       }
       is_course_student: { Args: { _user_id: string }; Returns: boolean }
+      is_internal: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
