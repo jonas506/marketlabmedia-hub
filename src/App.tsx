@@ -81,7 +81,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowCourseStudents?
       </div>
     );
   }
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to={allowCourseStudents ? "/kurs/login" : "/login"} replace />;
   // Course students (no internal role) must not access internal app routes.
   if (!allowCourseStudents && !role) return <Navigate to="/kurs" replace />;
   return <>{children}</>;
