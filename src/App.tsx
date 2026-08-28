@@ -50,6 +50,7 @@ import ReferralLanding from "./pages/ReferralLanding";
 import CourseHome from "./pages/CourseHome";
 import CoursePlayer from "./pages/CoursePlayer";
 import CourseSignup from "./pages/CourseSignup";
+import CourseLogin from "./pages/CourseLogin";
 import CourseAdmin from "./pages/admin/CourseAdmin";
 import OfferView from "./pages/OfferView";
 
