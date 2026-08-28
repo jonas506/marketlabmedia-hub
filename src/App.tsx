@@ -112,6 +112,7 @@ const App = () => (
                   <Route path="/angebot/:token" element={<OfferView />} />
                   <Route path="/dokument/:token" element={<DocumentSign />} />
                   <Route path="/kurs/anmelden" element={<CourseSignup />} />
+                  <Route path="/kurs/login" element={<CourseLogin />} />
                   <Route path="/dokumente" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/clients" element={<ProtectedRoute><ClientsList /></ProtectedRoute>} />
