@@ -356,13 +356,13 @@ const Pricing = () => {
                 >
                   <div className="text-xs uppercase tracking-wider text-white/60">Gesamt 3 Monate</div>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold tracking-tight">7.500</span>
+                    <span className="text-4xl font-extrabold tracking-tight">8.500</span>
                     <span className="text-lg text-white/60">€</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-white/40">
-                  Werbebudget wird separat direkt an die Plattform gezahlt. Bild-Ads optional
-                  nach Bedarf (50 € pro Motiv).
+                  Werbebudget wird separat direkt an die Plattform gezahlt. 21 Bild-Creatives
+                  optional zubuchbar (50 € pro Motiv).
                 </p>
 
               </div>
@@ -583,7 +583,7 @@ const Pricing = () => {
 const CplResults = ({ adSpend }: { adSpend: number }) => {
   const monthlyAdSpend = adSpend * 30;
   const management = 1000;
-  const setupTotal = 4500; // Strategie & Setup 2.000 + Drehtag 1.500 + Bearbeitung 1.000
+  const setupTotal = 5500; // Strategie & Setup inkl. Landingpage 3.000 + Drehtag 1.500 + Bearbeitung 1.000
   const setupPerMonth = setupTotal / 3;
   const totalMonthly = monthlyAdSpend + management + setupPerMonth;
   const leadsAt30 = Math.round(monthlyAdSpend / 30);
