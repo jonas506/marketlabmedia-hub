@@ -337,8 +337,8 @@ const Pricing = () => {
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/70">Bearbeitung</span>
-                    <span className="text-base font-bold">1.000 €</span>
+                    <span className="text-sm text-white/70">Bearbeitung (21 × 50 €)</span>
+                    <span className="text-base font-bold">1.050 €</span>
                   </div>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -347,12 +347,28 @@ const Pricing = () => {
                     <span className="text-base font-bold">1.000 € / Monat</span>
                   </div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/70">Optional: 21 Bild-Creatives</span>
-                    <span className="text-base font-bold">50 € / Stück</span>
-                  </div>
-                </div>
+                <button
+                  onClick={() => setIncludeImageCreatives((v) => !v)}
+                  className={`group flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
+                    includeImageCreatives
+                      ? "border-[#0083F7]66 bg-[#0083F7]15"
+                      : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 text-sm text-white/85">
+                    <span
+                      className="flex h-5 w-5 items-center justify-center rounded border transition-colors"
+                      style={{
+                        borderColor: includeImageCreatives ? BRAND.blue : "rgba(255,255,255,0.25)",
+                        background: includeImageCreatives ? BRAND.blue : "transparent",
+                      }}
+                    >
+                      {includeImageCreatives && <Check className="h-3.5 w-3.5 text-white" />}
+                    </span>
+                    Optional: 21 Bild-Creatives
+                  </span>
+                  <span className="text-base font-bold">+ 1.050 €</span>
+                </button>
 
                 <button
                   onClick={() => setCplOpen(true)}
@@ -367,13 +383,18 @@ const Pricing = () => {
                 >
                   <div className="text-xs uppercase tracking-wider text-white/60">Gesamt 3 Monate</div>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold tracking-tight">8.500</span>
+                    <span className="text-4xl font-extrabold tracking-tight">
+                      {formatEUR(qfpTotal)}
+                    </span>
                     <span className="text-lg text-white/60">€</span>
                   </div>
+                  {includeImageCreatives && (
+                    <div className="mt-1 text-[11px] text-white/50">inkl. 21 Bild-Creatives</div>
+                  )}
                 </div>
                 <p className="text-[11px] text-white/40">
-                  Werbebudget wird separat direkt an die Plattform gezahlt. 21 Bild-Creatives
-                  optional zubuchbar (50 € pro Motiv).
+                  Werbebudget wird separat direkt an die Plattform gezahlt. Bild-Creatives sind
+                  optional und werden erst bei Bedarf abgerechnet.
                 </p>
 
               </div>
