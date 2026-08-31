@@ -332,7 +332,13 @@ const Pricing = () => {
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-white/70">Verwaltung (3× monatlich)</span>
-                    <span className="text-base font-bold">750 € / Monat</span>
+                    <span className="text-base font-bold">1.000 € / Monat</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/70">Optional: Bild-Ads</span>
+                    <span className="text-base font-bold">50 € / Stück</span>
                   </div>
                 </div>
                 <button
@@ -348,13 +354,15 @@ const Pricing = () => {
                 >
                   <div className="text-xs uppercase tracking-wider text-white/60">Gesamt 3 Monate</div>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold tracking-tight">6.750</span>
+                    <span className="text-4xl font-extrabold tracking-tight">7.500</span>
                     <span className="text-lg text-white/60">€</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-white/40">
-                  Werbebudget wird separat direkt an die Plattform gezahlt.
+                  Werbebudget wird separat direkt an die Plattform gezahlt. Bild-Ads optional
+                  nach Bedarf (50 € pro Motiv).
                 </p>
+
               </div>
             </div>
           </motion.div>
@@ -540,7 +548,7 @@ const Pricing = () => {
               <CplResults adSpend={adSpend} />
 
               <p className="mt-5 text-[11px] leading-relaxed text-white/40">
-                Annahme: Cost per Lead zwischen 30 € und 50 €. Die 750 €/Monat Verwaltung
+                Annahme: Cost per Lead zwischen 30 € und 50 €. Die 1.000 €/Monat Verwaltung
                 und das einmalige Setup (4.500 €) sind im Gesamt-CPL eingerechnet.
                 Werbebudget zahlst du direkt an die Plattform.
               </p>
@@ -572,7 +580,7 @@ const Pricing = () => {
 
 const CplResults = ({ adSpend }: { adSpend: number }) => {
   const monthlyAdSpend = adSpend * 30;
-  const management = 750;
+  const management = 1000;
   const setupTotal = 4500; // Strategie & Setup 2.000 + Drehtag 1.500 + Bearbeitung 1.000
   const setupPerMonth = setupTotal / 3;
   const totalMonthly = monthlyAdSpend + management + setupPerMonth;
@@ -586,7 +594,7 @@ const CplResults = ({ adSpend }: { adSpend: number }) => {
       <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
         <div className="text-[11px] uppercase tracking-wider text-white/50">Monatliches Budget</div>
         <div className="mt-1 text-2xl font-extrabold">{formatEUR(monthlyAdSpend)} €</div>
-        <div className="text-[11px] text-white/40">Werbung + 750 € Verwaltung</div>
+        <div className="text-[11px] text-white/40">Werbung + 1.000 € Verwaltung</div>
       </div>
       <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
         <div className="text-[11px] uppercase tracking-wider text-white/50">Gesamtkosten / Monat</div>
