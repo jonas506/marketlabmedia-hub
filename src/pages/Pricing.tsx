@@ -615,7 +615,7 @@ const Pricing = () => {
 const CplResults = ({ adSpend }: { adSpend: number }) => {
   const monthlyAdSpend = adSpend * 30;
   const management = 1000;
-  const setupTotal = 5500; // Strategie & Setup inkl. Landingpage 3.000 + Drehtag 1.500 + Bearbeitung 1.000
+  const setupTotal = 5550; // Strategie & Setup inkl. Landingpage 3.000 + Drehtag 1.500 + Bearbeitung 1.050
   const setupPerMonth = setupTotal / 3;
   const totalMonthly = monthlyAdSpend + management + setupPerMonth;
   const leadsAt30 = Math.round(monthlyAdSpend / 30);
