@@ -332,7 +332,13 @@ const Pricing = () => {
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-white/70">Verwaltung (3× monatlich)</span>
-                    <span className="text-base font-bold">750 € / Monat</span>
+                    <span className="text-base font-bold">1.000 € / Monat</span>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-white/70">Optional: Bild-Ads</span>
+                    <span className="text-base font-bold">50 € / Stück</span>
                   </div>
                 </div>
                 <button
@@ -348,13 +354,15 @@ const Pricing = () => {
                 >
                   <div className="text-xs uppercase tracking-wider text-white/60">Gesamt 3 Monate</div>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold tracking-tight">6.750</span>
+                    <span className="text-4xl font-extrabold tracking-tight">7.500</span>
                     <span className="text-lg text-white/60">€</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-white/40">
-                  Werbebudget wird separat direkt an die Plattform gezahlt.
+                  Werbebudget wird separat direkt an die Plattform gezahlt. Bild-Ads optional
+                  nach Bedarf (50 € pro Motiv).
                 </p>
+
               </div>
             </div>
           </motion.div>
