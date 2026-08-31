@@ -296,8 +296,9 @@ const Pricing = () => {
                 </p>
                 <ul className="mt-6 flex flex-col gap-2">
                   {[
-                    "Strategie & Setup (Zielgruppe, Funnel, Tracking)",
-                    "1 Drehtag: 10 Videos + 10 Bilder",
+                    "Strategie & Setup inkl. Landingpage (Zielgruppe, Funnel, Tracking)",
+                    "1 Drehtag: 21 Videos",
+                    "Optional: 21 Bild-Creatives",
                     "Komplette Bearbeitung aller Assets",
                     "Laufende Kampagnen­verwaltung & Optimierung",
                     "Monatliches Reporting mit CPL-Auswertung",
@@ -313,13 +314,13 @@ const Pricing = () => {
               <div className="flex flex-col gap-3">
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/70">Strategie & Setup</span>
-                    <span className="text-base font-bold">2.000 €</span>
+                    <span className="text-sm text-white/70">Strategie & Setup inkl. Landingpage</span>
+                    <span className="text-base font-bold">3.000 €</span>
                   </div>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/70">Drehtag (10 Videos + 10 Bilder)</span>
+                    <span className="text-sm text-white/70">Drehtag (21 Videos)</span>
                     <span className="text-base font-bold">1.500 €</span>
                   </div>
                 </div>
@@ -337,10 +338,11 @@ const Pricing = () => {
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/70">Optional: Bild-Ads</span>
+                    <span className="text-sm text-white/70">Optional: 21 Bild-Creatives</span>
                     <span className="text-base font-bold">50 € / Stück</span>
                   </div>
                 </div>
+
                 <button
                   onClick={() => setCplOpen(true)}
                   className="group flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08]"
