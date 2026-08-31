@@ -637,11 +637,18 @@ const Pricing = () => {
   );
 };
 
-const CplResults = ({ adSpend }: { adSpend: number }) => {
+const CplResults = ({
+  adSpend,
+  includeImageCreatives,
+}: {
+  adSpend: number;
+  includeImageCreatives: boolean;
+}) => {
   const monthlyAdSpend = adSpend * 30;
   const management = 1000;
   const setupTotal = 5550; // Strategie & Setup inkl. Landingpage 3.000 + Drehtag 1.500 + Bearbeitung 1.050
-  const setupPerMonth = setupTotal / 3;
+  const imageCreativeTotal = includeImageCreatives ? 21 * 50 : 0;
+  const setupPerMonth = (setupTotal + imageCreativeTotal) / 3;
   const totalMonthly = monthlyAdSpend + management + setupPerMonth;
   const leadsAt30 = Math.round(monthlyAdSpend / 30);
   const leadsAt50 = Math.round(monthlyAdSpend / 50);
@@ -658,7 +665,10 @@ const CplResults = ({ adSpend }: { adSpend: number }) => {
       <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
         <div className="text-[11px] uppercase tracking-wider text-white/50">Gesamtkosten / Monat</div>
         <div className="mt-1 text-2xl font-extrabold">{formatEUR(totalMonthly)} €</div>
-        <div className="text-[11px] text-white/40">Inkl. Verwaltung + Setup anteilig</div>
+        <div className="text-[11px] text-white/40">
+          Inkl. Verwaltung + Setup anteilig
+          {includeImageCreatives && " + Bild-Creatives"}
+        </div>
       </div>
       <div
         className="rounded-xl border p-4"
