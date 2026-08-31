@@ -184,8 +184,19 @@ const Pricing = () => {
   const [configOpen, setConfigOpen] = useState(false);
   const [cplOpen, setCplOpen] = useState(false);
   const [adSpend, setAdSpend] = useState(30);
+  const [includeImageCreatives, setIncludeImageCreatives] = useState(false);
   const { role } = useAuth();
   const isAdmin = role === "admin";
+
+  const QFP_SETUP = 3000;
+  const QFP_SHOOT = 1500;
+  const QFP_EDIT = 21 * 50; // 1.050 €
+  const QFP_MANAGEMENT_MONTHLY = 1000;
+  const QFP_IMAGE_CREATIVE_PRICE = 50;
+  const QFP_IMAGE_CREATIVE_COUNT = 21;
+  const qfpImageCreativesTotal = QFP_IMAGE_CREATIVE_COUNT * QFP_IMAGE_CREATIVE_PRICE;
+  const qfpBaseTotal = QFP_SETUP + QFP_SHOOT + QFP_EDIT + QFP_MANAGEMENT_MONTHLY * 3;
+  const qfpTotal = qfpBaseTotal + (includeImageCreatives ? qfpImageCreativesTotal : 0);
 
   useEffect(() => {
     document.title = "Pakete & Preise — Marketlab Media";
@@ -326,8 +337,8 @@ const Pricing = () => {
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/70">Bearbeitung</span>
-                    <span className="text-base font-bold">1.000 €</span>
+                    <span className="text-sm text-white/70">Bearbeitung (21 × 50 €)</span>
+                    <span className="text-base font-bold">1.050 €</span>
                   </div>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -336,12 +347,28 @@ const Pricing = () => {
                     <span className="text-base font-bold">1.000 € / Monat</span>
                   </div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/70">Optional: 21 Bild-Creatives</span>
-                    <span className="text-base font-bold">50 € / Stück</span>
-                  </div>
-                </div>
+                <button
+                  onClick={() => setIncludeImageCreatives((v) => !v)}
+                  className={`group flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
+                    includeImageCreatives
+                      ? "border-[#0083F7]66 bg-[#0083F7]15"
+                      : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
+                  }`}
+                >
+                  <span className="flex items-center gap-2 text-sm text-white/85">
+                    <span
+                      className="flex h-5 w-5 items-center justify-center rounded border transition-colors"
+                      style={{
+                        borderColor: includeImageCreatives ? BRAND.blue : "rgba(255,255,255,0.25)",
+                        background: includeImageCreatives ? BRAND.blue : "transparent",
+                      }}
+                    >
+                      {includeImageCreatives && <Check className="h-3.5 w-3.5 text-white" />}
+                    </span>
+                    Optional: 21 Bild-Creatives
+                  </span>
+                  <span className="text-base font-bold">+ 1.050 €</span>
+                </button>
 
                 <button
                   onClick={() => setCplOpen(true)}
@@ -356,13 +383,18 @@ const Pricing = () => {
                 >
                   <div className="text-xs uppercase tracking-wider text-white/60">Gesamt 3 Monate</div>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold tracking-tight">8.500</span>
+                    <span className="text-4xl font-extrabold tracking-tight">
+                      {formatEUR(qfpTotal)}
+                    </span>
                     <span className="text-lg text-white/60">€</span>
                   </div>
+                  {includeImageCreatives && (
+                    <div className="mt-1 text-[11px] text-white/50">inkl. 21 Bild-Creatives</div>
+                  )}
                 </div>
                 <p className="text-[11px] text-white/40">
-                  Werbebudget wird separat direkt an die Plattform gezahlt. 21 Bild-Creatives
-                  optional zubuchbar (50 € pro Motiv).
+                  Werbebudget wird separat direkt an die Plattform gezahlt. Bild-Creatives sind
+                  optional und werden erst bei Bedarf abgerechnet.
                 </p>
 
               </div>
@@ -551,8 +583,9 @@ const Pricing = () => {
 
               <p className="mt-5 text-[11px] leading-relaxed text-white/40">
                 Annahme: Cost per Lead zwischen 30 € und 50 €. Die 1.000 €/Monat Verwaltung
-                und das einmalige Setup (4.500 €) sind im Gesamt-CPL eingerechnet.
-                Werbebudget zahlst du direkt an die Plattform.
+                und das einmalige Setup (5.550 € inkl. 21 × 50 € Bearbeitung) sind im
+                Gesamt-CPL eingerechnet. Werbebudget zahlst du direkt an die Plattform.
+                Bild-Creatives sind optional und nicht im Rechner enthalten.
               </p>
             </motion.div>
           </motion.div>
@@ -583,7 +616,7 @@ const Pricing = () => {
 const CplResults = ({ adSpend }: { adSpend: number }) => {
   const monthlyAdSpend = adSpend * 30;
   const management = 1000;
-  const setupTotal = 5500; // Strategie & Setup inkl. Landingpage 3.000 + Drehtag 1.500 + Bearbeitung 1.000
+  const setupTotal = 5550; // Strategie & Setup inkl. Landingpage 3.000 + Drehtag 1.500 + Bearbeitung 1.050
   const setupPerMonth = setupTotal / 3;
   const totalMonthly = monthlyAdSpend + management + setupPerMonth;
   const leadsAt30 = Math.round(monthlyAdSpend / 30);
