@@ -583,8 +583,9 @@ const Pricing = () => {
 
               <p className="mt-5 text-[11px] leading-relaxed text-white/40">
                 Annahme: Cost per Lead zwischen 30 € und 50 €. Die 1.000 €/Monat Verwaltung
-                und das einmalige Setup (4.500 €) sind im Gesamt-CPL eingerechnet.
-                Werbebudget zahlst du direkt an die Plattform.
+                und das einmalige Setup (5.550 € inkl. 21 × 50 € Bearbeitung) sind im
+                Gesamt-CPL eingerechnet. Werbebudget zahlst du direkt an die Plattform.
+                Bild-Creatives sind optional und nicht im Rechner enthalten.
               </p>
             </motion.div>
           </motion.div>
