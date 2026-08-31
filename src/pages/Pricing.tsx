@@ -184,8 +184,19 @@ const Pricing = () => {
   const [configOpen, setConfigOpen] = useState(false);
   const [cplOpen, setCplOpen] = useState(false);
   const [adSpend, setAdSpend] = useState(30);
+  const [includeImageCreatives, setIncludeImageCreatives] = useState(false);
   const { role } = useAuth();
   const isAdmin = role === "admin";
+
+  const QFP_SETUP = 3000;
+  const QFP_SHOOT = 1500;
+  const QFP_EDIT = 21 * 50; // 1.050 €
+  const QFP_MANAGEMENT_MONTHLY = 1000;
+  const QFP_IMAGE_CREATIVE_PRICE = 50;
+  const QFP_IMAGE_CREATIVE_COUNT = 21;
+  const qfpImageCreativesTotal = QFP_IMAGE_CREATIVE_COUNT * QFP_IMAGE_CREATIVE_PRICE;
+  const qfpBaseTotal = QFP_SETUP + QFP_SHOOT + QFP_EDIT + QFP_MANAGEMENT_MONTHLY * 3;
+  const qfpTotal = qfpBaseTotal + (includeImageCreatives ? qfpImageCreativesTotal : 0);
 
   useEffect(() => {
     document.title = "Pakete & Preise — Marketlab Media";
