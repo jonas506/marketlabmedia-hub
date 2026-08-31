@@ -579,13 +579,37 @@ const Pricing = () => {
                 </div>
               </div>
 
-              <CplResults adSpend={adSpend} />
+              <CplResults adSpend={adSpend} includeImageCreatives={includeImageCreatives} />
+
+              <button
+                onClick={() => setIncludeImageCreatives((v) => !v)}
+                className={`group mt-4 flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
+                  includeImageCreatives
+                    ? "border-[#0083F7]66 bg-[#0083F7]15"
+                    : "border-white/10 bg-white/[0.03] hover:bg-white/[0.05]"
+                }`}
+              >
+                <span className="flex items-center gap-2 text-sm text-white/85">
+                  <span
+                    className="flex h-5 w-5 items-center justify-center rounded border transition-colors"
+                    style={{
+                      borderColor: includeImageCreatives ? BRAND.blue : "rgba(255,255,255,0.25)",
+                      background: includeImageCreatives ? BRAND.blue : "transparent",
+                    }}
+                  >
+                    {includeImageCreatives && <Check className="h-3.5 w-3.5 text-white" />}
+                  </span>
+                  21 Bild-Creatives mit einberechnen
+                </span>
+                <span className="text-base font-bold">+ 1.050 €</span>
+              </button>
 
               <p className="mt-5 text-[11px] leading-relaxed text-white/40">
                 Annahme: Cost per Lead zwischen 30 € und 50 €. Die 1.000 €/Monat Verwaltung
                 und das einmalige Setup (5.550 € inkl. 21 × 50 € Bearbeitung) sind im
                 Gesamt-CPL eingerechnet. Werbebudget zahlst du direkt an die Plattform.
-                Bild-Creatives sind optional und nicht im Rechner enthalten.
+                Bild-Creatives werden anteilig über 3 Monate mit eingerechnet, wenn der Haken
+                gesetzt ist.
               </p>
             </motion.div>
           </motion.div>
@@ -613,11 +637,18 @@ const Pricing = () => {
   );
 };
 
-const CplResults = ({ adSpend }: { adSpend: number }) => {
+const CplResults = ({
+  adSpend,
+  includeImageCreatives,
+}: {
+  adSpend: number;
+  includeImageCreatives: boolean;
+}) => {
   const monthlyAdSpend = adSpend * 30;
   const management = 1000;
   const setupTotal = 5550; // Strategie & Setup inkl. Landingpage 3.000 + Drehtag 1.500 + Bearbeitung 1.050
-  const setupPerMonth = setupTotal / 3;
+  const imageCreativeTotal = includeImageCreatives ? 21 * 50 : 0;
+  const setupPerMonth = (setupTotal + imageCreativeTotal) / 3;
   const totalMonthly = monthlyAdSpend + management + setupPerMonth;
   const leadsAt30 = Math.round(monthlyAdSpend / 30);
   const leadsAt50 = Math.round(monthlyAdSpend / 50);
@@ -634,7 +665,10 @@ const CplResults = ({ adSpend }: { adSpend: number }) => {
       <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
         <div className="text-[11px] uppercase tracking-wider text-white/50">Gesamtkosten / Monat</div>
         <div className="mt-1 text-2xl font-extrabold">{formatEUR(totalMonthly)} €</div>
-        <div className="text-[11px] text-white/40">Inkl. Verwaltung + Setup anteilig</div>
+        <div className="text-[11px] text-white/40">
+          Inkl. Verwaltung + Setup anteilig
+          {includeImageCreatives && " + Bild-Creatives"}
+        </div>
       </div>
       <div
         className="rounded-xl border p-4"
