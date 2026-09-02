@@ -507,7 +507,16 @@ const SectionHeader = ({ eyebrow, title }: { eyebrow: string; title: string }) =
   </div>
 );
 
-const PlanCard = ({ plan, index }: { plan: Plan; index: number }) => (
+const PlanCard = ({
+  plan,
+  index,
+  onTrial,
+}: {
+  plan: Plan;
+  index: number;
+  onTrial?: () => void;
+}) => (
+
   <motion.div
     initial={{ opacity: 0, y: 24 }}
     whileInView={{ opacity: 1, y: 0 }}
