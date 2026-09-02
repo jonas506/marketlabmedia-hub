@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Video,
   Users,
@@ -11,6 +11,8 @@ import {
   Minus,
   Sparkles,
   Megaphone,
+  X,
+
 } from "lucide-react";
 import logo from "@/assets/logo-light.png";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +24,10 @@ const BRAND = {
   purple: "#21089B",
   ink: "#1E1E24",
   bg: "#0a0a0f",
+  gold: "#F5B93B",
+  goldDeep: "#C98A12",
 };
+
 
 type Plan = {
   key: string;
@@ -198,13 +203,57 @@ const PRICING = {
     { icon: Handshake, title: "Kunden", desc: "Aus Gesprächen werden Abschlüsse" },
   ],
 
+  trial: {
+    bannerText: "Erst testen: 30 Tage, 2.000 € — Setup inklusive",
+    bannerCta: "Testmonat ansehen",
+    cardLink: "Setup entfällt beim Start über den Testmonat",
+    title: "Testmonat",
+    subtitle: "30 Tage · 2.000 € netto · einmalig, keine Laufzeit",
+    intro:
+      "Du entscheidest nicht über sechs Monate, sondern über dreißig Tage. In dieser Zeit steht das komplette System — danach siehst du an echten Zahlen, ob es für dich funktioniert.",
+    build: {
+      title: "Was wir aufbauen",
+      items: [
+        "Research zu Zielgruppe, Wettbewerb und Themen",
+        "Positionierung und Content-Strategie",
+        "Instagram-Profil komplett aufgesetzt",
+        "ManyChat-Automation eingerichtet",
+        "Freebie aus unserer Vorlage, auf dich angepasst",
+        "30 Testreels im Overlay-Format mit Freebie-CTA",
+        "Reporting am Ende der 30 Tage",
+      ],
+    },
+    yours: {
+      title: "Was du beisteuerst",
+      items: [
+        "Ein Strategie-Gespräch, etwa eine Stunde",
+        "Fachliche Freigabe der Posts, ein Klick pro Beitrag",
+      ],
+    },
+    after: {
+      title: "Was danach passiert",
+      text:
+        "Nach dreißig Tagen entscheidest du, ob es weiterläuft. Wenn ja, geht es ohne Setup-Kosten in Stufe 1 über — zum gleichen Monatspreis. Wenn nicht, ist es beendet und alles Aufgebaute bleibt bei dir.",
+    },
+    highlight:
+      "Der Direkteinstieg in einen Retainer kostet 2.000 € Setup. Über den Testmonat entfällt das — du bekommst denselben Aufbau plus 30 Reels zum gleichen Preis.",
+    availability: {
+      title: "Aktuelle Verfügbarkeit",
+      text: "Wir starten maximal zwei Testmonate gleichzeitig, damit die Qualität stimmt.",
+    },
+    cta: "Testmonat anfragen",
+  },
+
   closing: "Kein Werbebudget nötig. Kein Risiko. Nur ein System das funktioniert.",
+
 };
 
 const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 
 const Pricing = () => {
   const [configOpen, setConfigOpen] = useState(false);
+  const [trialOpen, setTrialOpen] = useState(false);
+
   const { role } = useAuth();
   const isAdmin = role === "admin";
 
@@ -263,11 +312,40 @@ const Pricing = () => {
           </p>
         </motion.section>
 
+        {/* TESTMONAT BANNER */}
+        <motion.button
+          type="button"
+          onClick={() => setTrialOpen(true)}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="mt-10 flex w-full flex-col items-start gap-4 rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between"
+          style={{
+            borderColor: `${BRAND.gold}66`,
+            background: `linear-gradient(120deg, ${BRAND.gold}1f, ${BRAND.goldDeep}0f)`,
+            boxShadow: `0 18px 40px -22px ${BRAND.gold}99`,
+          }}
+        >
+          <span className="flex items-center gap-3">
+            <Sparkles className="h-5 w-5 shrink-0" style={{ color: BRAND.gold }} />
+            <span className="text-base font-bold md:text-lg" style={{ color: BRAND.gold }}>
+              {PRICING.trial.bannerText}
+            </span>
+          </span>
+          <span
+            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold"
+            style={{ background: BRAND.gold, color: "#1a1200" }}
+          >
+            {PRICING.trial.bannerCta} <ArrowRight className="h-4 w-4" />
+          </span>
+        </motion.button>
+
         {/* PLAN CARDS */}
         <section className="mt-12">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {PRICING.plans.map((p, i) => (
-              <PlanCard key={p.key} plan={p} index={i} />
+              <PlanCard key={p.key} plan={p} index={i} onTrial={() => setTrialOpen(true)} />
+
             ))}
           </div>
         </section>
@@ -389,6 +467,16 @@ const Pricing = () => {
         </section>
       </div>
 
+      <TrialModal
+        open={trialOpen}
+        onClose={() => setTrialOpen(false)}
+        onCta={() => {
+          setTrialOpen(false);
+          setConfigOpen(true);
+        }}
+      />
+
+
       {isAdmin && (
         <>
           <button
@@ -419,6 +507,139 @@ const Pricing = () => {
   );
 };
 
+const TrialModal = ({
+  open,
+  onClose,
+  onCta,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onCta: () => void;
+}) => {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  const t = PRICING.trial;
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-0 sm:items-center sm:p-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          style={{ background: "rgba(4,4,10,0.78)", backdropFilter: "blur(6px)" }}
+        >
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.title}
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            transition={{ duration: 0.25 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-2xl border p-6 text-white sm:rounded-2xl md:p-8"
+            style={{
+              background: `linear-gradient(180deg, ${BRAND.gold}12, rgba(10,10,15,0.98) 30%)`,
+              borderColor: `${BRAND.gold}55`,
+              fontFamily: "'Manrope', system-ui, sans-serif",
+              boxShadow: `0 40px 80px -30px ${BRAND.goldDeep}aa`,
+            }}
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Schließen"
+              className="absolute right-4 top-4 rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" style={{ color: BRAND.gold }} />
+              <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">{t.title}</h2>
+            </div>
+            <p className="mt-1 text-sm font-semibold" style={{ color: BRAND.gold }}>
+              {t.subtitle}
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-white/70">{t.intro}</p>
+
+            <TrialList title={t.build.title} items={t.build.items} />
+            <TrialList title={t.yours.title} items={t.yours.items} />
+
+            <div className="mt-6">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                {t.after.title}
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-white/70">{t.after.text}</p>
+            </div>
+
+            <div
+              className="mt-6 rounded-xl border p-4 text-sm leading-relaxed"
+              style={{
+                borderColor: `${BRAND.gold}55`,
+                background: `${BRAND.gold}14`,
+                color: "#FBE3AE",
+              }}
+            >
+              {t.highlight}
+            </div>
+
+            <div className="mt-6">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                {t.availability.title}
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-white/70">{t.availability.text}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onCta}
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold transition-transform hover:scale-[1.01]"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDeep})`,
+                color: "#1a1200",
+                boxShadow: `0 20px 40px -18px ${BRAND.gold}aa`,
+              }}
+            >
+              {t.cta} <ArrowRight className="h-4 w-4" />
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const TrialList = ({ title, items }: { title: string; items: string[] }) => (
+  <div className="mt-6">
+    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">{title}</div>
+    <ul className="mt-3 flex flex-col gap-2">
+      {items.map((i) => (
+        <li key={i} className="flex items-start gap-2 text-sm text-white/80">
+          <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: BRAND.gold }} />
+          <span>{i}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+
 const SectionHeader = ({ eyebrow, title }: { eyebrow: string; title: string }) => (
   <div>
     <div
@@ -431,7 +652,16 @@ const SectionHeader = ({ eyebrow, title }: { eyebrow: string; title: string }) =
   </div>
 );
 
-const PlanCard = ({ plan, index }: { plan: Plan; index: number }) => (
+const PlanCard = ({
+  plan,
+  index,
+  onTrial,
+}: {
+  plan: Plan;
+  index: number;
+  onTrial?: () => void;
+}) => (
+
   <motion.div
     initial={{ opacity: 0, y: 24 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -462,6 +692,19 @@ const PlanCard = ({ plan, index }: { plan: Plan; index: number }) => (
       </span>
     </div>
     <div className="text-xs text-white/45">/ Monat</div>
+
+    {onTrial && (
+      <button
+        type="button"
+        onClick={onTrial}
+        className="mt-3 inline-flex items-center gap-1.5 self-start rounded-lg px-2 py-1 text-left text-[11px] font-semibold underline-offset-2 transition-colors hover:underline"
+        style={{ color: BRAND.gold, background: `${BRAND.gold}14` }}
+      >
+        <Sparkles className="h-3 w-3 shrink-0" />
+        {PRICING.trial.cardLink}
+      </button>
+    )}
+
 
     <div className="my-5 h-px w-full bg-white/10" />
 
