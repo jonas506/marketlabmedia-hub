@@ -34,9 +34,14 @@ Deno.serve(async (req) => {
       .from('offers').select('*').eq('id', offerId).single();
     if (oErr || !offer) throw new Error('Offer not found');
 
-    if (!offer.recipient_email) throw new Error('Recipient email missing');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(offer.recipient_email))
-      throw new Error('Invalid recipient email');
+    const rawEmail = String(offer.recipient_email ?? '').trim();
+    // Falls z. B. "Max <max@firma.de>" gespeichert wurde: Adresse extrahieren
+    const bracket = rawEmail.match(/<([^>]+)>/);
+    const recipientEmail = (bracket ? bracket[1] : rawEmail).trim().replace(/^mailto:/i, '');
+    if (!recipientEmail) throw new Error('Recipient email missing');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail))
+      throw new Error(`Invalid recipient email: "${recipientEmail}"`);
+    offer.recipient_email = recipientEmail;
 
     const acceptUrl = `${appUrl || 'https://hub.marketlab-media.de'}/angebot/${offer.token}`;
 

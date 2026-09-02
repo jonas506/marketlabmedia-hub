@@ -105,7 +105,7 @@ export default function OfferDocumentEditor({
       document: doc as any,
       subject,
       offer_number: doc.offerNumber,
-      recipient_email: recipient.email,
+      recipient_email: recipient.email.trim(),
       recipient_name: recipient.name || recipient.company,
       recipient_company: recipient.company,
       recipient_address: recipient.address,
@@ -120,7 +120,11 @@ export default function OfferDocumentEditor({
   const print = () => window.print();
 
   const send = async () => {
-    if (!recipient.email) { toast({ title: "E-Mail-Adresse fehlt", variant: "destructive" }); return; }
+    const mail = recipient.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+      toast({ title: "E-Mail-Adresse ungültig", description: "Bitte eine gültige Empfänger-Adresse eintragen (z. B. name@firma.de).", variant: "destructive" });
+      return;
+    }
     setSending(true);
     try {
       const ok = await save();
@@ -130,7 +134,7 @@ export default function OfferDocumentEditor({
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast({ title: "Angebot gesendet", description: `An ${recipient.email}` });
+      toast({ title: "Angebot gesendet", description: `An ${mail}` });
       onClose();
     } catch (e: any) {
       toast({ title: "Senden fehlgeschlagen", description: e.message, variant: "destructive" });
