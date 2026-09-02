@@ -320,21 +320,31 @@ const Pricing = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-10 flex w-full flex-col items-start gap-4 rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between"
+          className="group mt-10 flex w-full flex-col items-start gap-4 overflow-hidden rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
           style={{
-            borderColor: `${BRAND.gold}66`,
-            background: `linear-gradient(120deg, ${BRAND.gold}1f, ${BRAND.goldDeep}0f)`,
-            boxShadow: `0 18px 40px -22px ${BRAND.gold}99`,
+            borderColor: `${BRAND.gold}55`,
+            background: `linear-gradient(110deg, ${BRAND.gold}18 0%, ${BRAND.goldDeep}0d 55%, rgba(10,10,15,0.6) 100%)`,
+            boxShadow: `0 20px 50px -22px ${BRAND.gold}88, inset 0 1px 0 ${BRAND.gold}22`,
           }}
         >
           <span className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 shrink-0" style={{ color: BRAND.gold }} />
-            <span className="text-base font-bold md:text-lg" style={{ color: BRAND.gold }}>
-              {PRICING.trial.bannerText}
+            <span
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+              style={{ background: `${BRAND.gold}22`, color: BRAND.gold }}
+            >
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <span className="flex flex-col items-start gap-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.gold }}>
+                Einstieg
+              </span>
+              <span className="text-base font-bold md:text-lg" style={{ color: BRAND.gold }}>
+                {PRICING.trial.bannerText}
+              </span>
             </span>
           </span>
           <span
-            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-transform group-hover:scale-[1.02] sm:w-auto"
             style={{ background: BRAND.gold, color: "#1a1200" }}
           >
             {PRICING.trial.bannerCta} <ArrowRight className="h-4 w-4" />
@@ -537,94 +547,160 @@ const TrialModal = ({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-0 sm:items-center sm:p-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          style={{ background: "rgba(4,4,10,0.78)", backdropFilter: "blur(6px)" }}
+          style={{ background: "rgba(4,4,10,0.82)", backdropFilter: "blur(8px)" }}
         >
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label={t.title}
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.25 }}
+            exit={{ opacity: 0, y: 20, scale: 0.96 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl border p-6 text-white sm:rounded-2xl md:p-8"
+            className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border text-white"
             style={{
-              background: `linear-gradient(180deg, ${BRAND.gold}12, rgba(10,10,15,0.98) 30%)`,
+              maxHeight: "min(90vh, 800px)",
               borderColor: `${BRAND.gold}55`,
               fontFamily: "'Manrope', system-ui, sans-serif",
-              boxShadow: `0 40px 80px -30px ${BRAND.goldDeep}aa`,
+              boxShadow: `0 40px 100px -30px ${BRAND.goldDeep}88`,
+              background: "rgba(10,10,15,0.98)",
             }}
           >
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Schließen"
-              className="absolute right-4 top-4 rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" style={{ color: BRAND.gold }} />
-              <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">{t.title}</h2>
-            </div>
-            <p className="mt-1 text-sm font-semibold" style={{ color: BRAND.gold }}>
-              {t.subtitle}
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-white/70">{t.intro}</p>
-
-            <TrialList title={t.build.title} items={t.build.items} />
-            <TrialList title={t.yours.title} items={t.yours.items} />
-
-            <div className="mt-6">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                {t.after.title}
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-white/70">{t.after.text}</p>
-            </div>
-
+            {/* Header */}
             <div
-              className="mt-6 rounded-xl border p-4 text-sm leading-relaxed"
+              className="relative shrink-0 p-6 md:p-8"
               style={{
-                borderColor: `${BRAND.gold}55`,
-                background: `${BRAND.gold}14`,
-                color: "#FBE3AE",
+                background: `linear-gradient(135deg, ${BRAND.gold}20 0%, ${BRAND.goldDeep}10 50%, transparent 100%)`,
               }}
             >
-              {t.highlight}
-            </div>
+              <div
+                className="pointer-events-none absolute inset-0 opacity-30"
+                style={{
+                  background: `radial-gradient(circle at 80% 20%, ${BRAND.gold}30, transparent 45%)`,
+                }}
+              />
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Schließen"
+                className="absolute right-4 top-4 z-10 rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white md:right-6 md:top-6"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            <div className="mt-6">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                {t.availability.title}
+              <div className="relative z-0 flex flex-col items-start gap-3">
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider"
+                  style={{ background: `${BRAND.gold}22`, color: BRAND.gold }}
+                >
+                  <Sparkles className="h-3 w-3" /> Einstiegspaket
+                </span>
+                <div>
+                  <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">{t.title}</h2>
+                  <p className="mt-1 text-sm font-semibold" style={{ color: BRAND.gold }}>
+                    {t.subtitle}
+                  </p>
+                </div>
+                <p className="max-w-lg text-sm leading-relaxed text-white/70">{t.intro}</p>
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-white/70">{t.availability.text}</p>
             </div>
 
-            <button
-              type="button"
-              onClick={onCta}
-              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold transition-transform hover:scale-[1.01]"
-              style={{
-                background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDeep})`,
-                color: "#1a1200",
-                boxShadow: `0 20px 40px -18px ${BRAND.gold}aa`,
-              }}
-            >
-              {t.cta} <ArrowRight className="h-4 w-4" />
-            </button>
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 md:pt-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <TrialCard
+                  title={t.build.title}
+                  items={t.build.items}
+                  icon={Check}
+                  accent={BRAND.gold}
+                />
+                <TrialCard
+                  title={t.yours.title}
+                  items={t.yours.items}
+                  icon={Check}
+                  accent={BRAND.blue}
+                />
+              </div>
+
+              <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                  {t.after.title}
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-white/70">{t.after.text}</p>
+              </div>
+
+              <div
+                className="mt-4 rounded-xl border p-4 text-sm leading-relaxed"
+                style={{
+                  borderColor: `${BRAND.gold}55`,
+                  background: `${BRAND.gold}12`,
+                  color: "#FBE3AE",
+                }}
+              >
+                {t.highlight}
+              </div>
+
+              <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                  {t.availability.title}
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-white/70">{t.availability.text}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={onCta}
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold transition-transform hover:scale-[1.01]"
+                style={{
+                  background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDeep})`,
+                  color: "#1a1200",
+                  boxShadow: `0 20px 40px -18px ${BRAND.gold}aa`,
+                }}
+              >
+                {t.cta} <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 };
+
+const TrialCard = ({
+  title,
+  items,
+  icon: Icon,
+  accent,
+}: {
+  title: string;
+  items: string[];
+  icon: typeof Check;
+  accent: string;
+}) => (
+  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+    <div className="flex items-center gap-2">
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full" style={{ background: `${accent}22` }}>
+        <Icon className="h-3.5 w-3.5" style={{ color: accent }} />
+      </span>
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">{title}</div>
+    </div>
+    <ul className="mt-3 flex flex-col gap-2">
+      {items.map((i) => (
+        <li key={i} className="flex items-start gap-2 text-sm text-white/80">
+          <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: accent }} />
+          <span>{i}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
 
 const TrialList = ({ title, items }: { title: string; items: string[] }) => (
   <div className="mt-6">
