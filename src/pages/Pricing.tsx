@@ -548,6 +548,19 @@ const PlanCard = ({
     </div>
     <div className="text-xs text-white/45">/ Monat</div>
 
+    {onTrial && (
+      <button
+        type="button"
+        onClick={onTrial}
+        className="mt-3 inline-flex items-center gap-1.5 self-start rounded-lg px-2 py-1 text-left text-[11px] font-semibold underline-offset-2 transition-colors hover:underline"
+        style={{ color: BRAND.gold, background: `${BRAND.gold}14` }}
+      >
+        <Sparkles className="h-3 w-3 shrink-0" />
+        {PRICING.trial.cardLink}
+      </button>
+    )}
+
+
     <div className="my-5 h-px w-full bg-white/10" />
 
     <ul className="flex flex-col gap-2">
