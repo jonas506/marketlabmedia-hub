@@ -320,21 +320,31 @@ const Pricing = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-10 flex w-full flex-col items-start gap-4 rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between"
+          className="group mt-10 flex w-full flex-col items-start gap-4 overflow-hidden rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
           style={{
-            borderColor: `${BRAND.gold}66`,
-            background: `linear-gradient(120deg, ${BRAND.gold}1f, ${BRAND.goldDeep}0f)`,
-            boxShadow: `0 18px 40px -22px ${BRAND.gold}99`,
+            borderColor: `${BRAND.gold}55`,
+            background: `linear-gradient(110deg, ${BRAND.gold}18 0%, ${BRAND.goldDeep}0d 55%, rgba(10,10,15,0.6) 100%)`,
+            boxShadow: `0 20px 50px -22px ${BRAND.gold}88, inset 0 1px 0 ${BRAND.gold}22`,
           }}
         >
           <span className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 shrink-0" style={{ color: BRAND.gold }} />
-            <span className="text-base font-bold md:text-lg" style={{ color: BRAND.gold }}>
-              {PRICING.trial.bannerText}
+            <span
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+              style={{ background: `${BRAND.gold}22`, color: BRAND.gold }}
+            >
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <span className="flex flex-col items-start gap-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.gold }}>
+                Einstieg
+              </span>
+              <span className="text-base font-bold md:text-lg" style={{ color: BRAND.gold }}>
+                {PRICING.trial.bannerText}
+              </span>
             </span>
           </span>
           <span
-            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-transform group-hover:scale-[1.02] sm:w-auto"
             style={{ background: BRAND.gold, color: "#1a1200" }}
           >
             {PRICING.trial.bannerCta} <ArrowRight className="h-4 w-4" />
