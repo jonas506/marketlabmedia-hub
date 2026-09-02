@@ -1,4 +1,15 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { buildOfferPdf } from './offer-pdf.ts';
+
+const base64 = (bytes: Uint8Array) => {
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+};
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -124,11 +135,109 @@ Deno.serve(async (req) => {
       const { error: mErr } = await supabase.from('client_contract_months').insert(monthRows);
       if (mErr) throw mErr;
 
+      const acceptedAtIso = new Date().toISOString();
       await supabase.from('offers').update({
         status: 'accepted',
-        accepted_at: new Date().toISOString(),
+        accepted_at: acceptedAtIso,
         client_id: clientId,
       }).eq('id', offer.id);
+
+      // PDF erzeugen, unter Dokumente ablegen und dem Kunden per Mail bestätigen
+      try {
+        const acceptedAtLabel = new Date(acceptedAtIso).toLocaleString('de-DE', {
+          timeZone: 'Europe/Berlin',
+        }) + ' Uhr';
+        const acceptedBy = offer.recipient_name || offer.recipient_company || 'Kunde';
+        const docJson = offer.document && typeof offer.document === 'object' ? offer.document : {};
+        const pdfBytes = await buildOfferPdf(docJson, {
+          acceptedAt: acceptedAtLabel,
+          acceptedBy,
+          acceptedEmail: offer.recipient_email,
+        });
+
+        const safeNumber = String(offer.offer_number || offer.id.slice(0, 8)).replace(/[^\w.-]+/g, '-');
+        const fileName = `Angebot-${safeNumber}-angenommen.pdf`;
+        const filePath = `offers/${offer.id}/${fileName}`;
+        await supabase.storage.from('documents').upload(filePath, pdfBytes, {
+          contentType: 'application/pdf',
+          upsert: true,
+        });
+
+        const hashBuf = await crypto.subtle.digest('SHA-256', pdfBytes);
+        const fileHash = Array.from(new Uint8Array(hashBuf))
+          .map((b) => b.toString(16).padStart(2, '0')).join('');
+
+        const { data: sigDoc } = await supabase.from('signature_documents').insert({
+          title: `Angebot ${offer.offer_number || ''} – ${offer.plan_name || ''}`.trim(),
+          file_path: filePath,
+          file_name: fileName,
+          file_hash: fileHash,
+          file_size: pdfBytes.byteLength,
+          recipient_name: offer.recipient_name,
+          recipient_email: offer.recipient_email,
+          lead_id: offer.lead_id,
+          client_id: clientId,
+          subject: offer.subject || `Angebot ${offer.offer_number || ''}`,
+          message_body: 'Automatisch erzeugt aus dem angenommenen Angebot.',
+          status: 'accepted',
+          sent_at: acceptedAtIso,
+          accepted_at: acceptedAtIso,
+        }).select('id').single();
+
+        if (sigDoc) {
+          await supabase.from('signature_acceptances').insert({
+            document_id: sigDoc.id,
+            typed_name: acceptedBy,
+            consent_text: 'Angebot wurde über den persönlichen Angebotslink verbindlich angenommen.',
+            ip_address: req.headers.get('x-forwarded-for'),
+            user_agent: req.headers.get('user-agent'),
+            file_hash: fileHash,
+            accepted_at: acceptedAtIso,
+          });
+        }
+
+        const resendApiKey = Deno.env.get('RESEND_API_KEY');
+        if (resendApiKey) {
+          const b64 = base64(pdfBytes);
+          const greet = (offer.recipient_name || '').split(' ')[0];
+          const html = `
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#0B0B0F;line-height:1.65;max-width:620px;margin:0 auto;padding:24px">
+              <p style="font-size:11px;letter-spacing:2px;color:#2F6BFF;font-weight:700;margin:0 0 16px">ANGEBOT ANGENOMMEN</p>
+              <p>Hallo${greet ? ' ' + greet : ''},</p>
+              <p>vielen Dank – dein Angebot <strong>${offer.offer_number || ''}</strong> wurde am ${acceptedAtLabel} verbindlich angenommen. Damit ist der Vertrag zustande gekommen.</p>
+              <p>Im Anhang findest du das vollständige Angebot inklusive Annahmebestätigung als PDF für deine Unterlagen.</p>
+              <p>Wir melden uns zeitnah mit den nächsten Schritten zum Start.</p>
+              <p style="color:#999;font-size:12px;margin-top:24px">Marketlab Media</p>
+            </div>`;
+          const text = [
+            `Hallo${greet ? ' ' + greet : ''},`,
+            `dein Angebot ${offer.offer_number || ''} wurde am ${acceptedAtLabel} verbindlich angenommen.`,
+            'Im Anhang findest du das Angebot inkl. Annahmebestätigung als PDF.',
+            '',
+            'Marketlab Media',
+          ].join('\n');
+
+          const mailRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendApiKey}` },
+            body: JSON.stringify({
+              from: 'Marketlab Media <noreply@marketlabmedia.de>',
+              to: [offer.recipient_email],
+              bcc: ['jonas@marketlab-media.de'],
+              reply_to: 'jonas@marketlab-media.de',
+              subject: `Bestätigung: Angebot ${offer.offer_number || ''} angenommen`,
+              html,
+              text,
+              attachments: [{ filename: fileName, content: b64 }],
+            }),
+          });
+          if (!mailRes.ok) console.error('offer confirmation mail failed:', await mailRes.text());
+        }
+      } catch (postErr) {
+        // Annahme darf nie an PDF/Mail scheitern
+        console.error('offer accept post-processing failed:', postErr);
+      }
+
 
       if (offer.lead_id) {
         await supabase.from('crm_activities').insert({
