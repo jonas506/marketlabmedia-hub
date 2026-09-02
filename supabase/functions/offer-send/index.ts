@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       .from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
     if (!roleRow) throw new Error('Forbidden — admin only');
 
-    const { offerId, appUrl } = await req.json();
+    const { offerId } = await req.json();
     if (!offerId) throw new Error('offerId required');
 
     const { data: offer, error: oErr } = await supabase
@@ -43,7 +43,8 @@ Deno.serve(async (req) => {
       throw new Error(`Invalid recipient email: "${recipientEmail}"`);
     offer.recipient_email = recipientEmail;
 
-    const acceptUrl = `${appUrl || 'https://hub.marketlab-media.de'}/angebot/${offer.token}`;
+    // Immer die eigene Domain – niemals Preview-/Lovable-URLs an Kunden schicken
+    const acceptUrl = `https://hub.marketlab-media.de/angebot/${offer.token}`;
 
     // Get sender name
     const { data: profile } = await supabase
