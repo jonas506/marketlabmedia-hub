@@ -44,6 +44,14 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
   const [pickedLead, setPickedLead] = useState<any | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [draftOfferId, setDraftOfferId] = useState<string | null>(null);
+  const [draftDoc, setDraftDoc] = useState<OfferDoc | null>(null);
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftRecipient, setDraftRecipient] = useState({ email: "", name: "", company: "", address: "" });
+  const [manualCompany, setManualCompany] = useState("");
+  const [manualContact, setManualContact] = useState("");
+  const [manualEmail, setManualEmail] = useState("");
+  const [manualAddress, setManualAddress] = useState("");
+
 
   const plan = plans.find((p) => p.key === planKey)!;
   const basePrice = annual ? plan.price12 : plan.price3;
