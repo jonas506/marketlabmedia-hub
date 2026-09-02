@@ -465,6 +465,16 @@ const Pricing = () => {
         </section>
       </div>
 
+      <TrialModal
+        open={trialOpen}
+        onClose={() => setTrialOpen(false)}
+        onCta={() => {
+          setTrialOpen(false);
+          setConfigOpen(true);
+        }}
+      />
+
+
       {isAdmin && (
         <>
           <button
