@@ -11,6 +11,8 @@ import {
   Minus,
   Sparkles,
   Megaphone,
+  X,
+
 } from "lucide-react";
 import logo from "@/assets/logo-light.png";
 import { useAuth } from "@/contexts/AuthContext";
