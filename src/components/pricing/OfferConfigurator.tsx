@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { X, Plus, Minus, Search, ArrowRight } from "lucide-react";
+import { X, Plus, Minus, Search, ArrowRight, Sparkles, Megaphone, CalendarCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import OfferDocumentEditor from "./OfferDocumentEditor";
-import { buildDefaultDocument, OfferDoc } from "./offerDocument";
+import { buildDefaultDocument, OfferDoc, ProductType } from "./offerDocument";
 
 
 export type ConfigPlan = {
@@ -31,6 +31,12 @@ interface Props {
   plans: ConfigPlan[];
   addons: { name: string; price: string }[];
 }
+
+const PRODUCTS: { key: ProductType; label: string; sub: string; icon: typeof Sparkles; color: string }[] = [
+  { key: "content", label: "Content-Paket", sub: "Stufe 1–4", icon: Sparkles, color: "#0083F7" },
+  { key: "trial", label: "Testmonat", sub: "30 Tage · 2.000 €", icon: CalendarCheck, color: "#F5B93B" },
+  { key: "ads", label: "Ads Management", sub: "Setup + Verwaltung", icon: Megaphone, color: "#7B5CFF" },
+];
 
 const BRAND = { blue: "#0083F7", purple: "#21089B" };
 
