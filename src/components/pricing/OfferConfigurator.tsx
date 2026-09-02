@@ -42,8 +42,10 @@ const BRAND = { blue: "#0083F7", purple: "#21089B" };
 
 export default function OfferConfigurator({ open, onClose, plans, addons }: Props) {
   const { toast } = useToast();
+  const [productType, setProductType] = useState<ProductType>("content");
   const [planKey, setPlanKey] = useState<string>(plans[1]?.key ?? plans[0].key);
   const [annual, setAnnual] = useState(false);
+  const [adsDuration, setAdsDuration] = useState<3 | 6 | 12>(3);
   const [discountPct, setDiscountPct] = useState(0);
   const [selectedAddons, setSelectedAddons] = useState<Record<string, number>>({});
   const [leadSearch, setLeadSearch] = useState("");
@@ -60,10 +62,22 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
 
 
   const plan = plans.find((p) => p.key === planKey)!;
-  const basePrice = annual ? plan.price12 : plan.price3;
-  const monthlyPrice = Math.round(basePrice * (1 - discountPct / 100));
-  const duration = annual ? 12 : 3;
-  const totalLaufzeit = monthlyPrice * duration + plan.setup;
+
+  const pricing = useMemo(() => {
+    if (productType === "trial") {
+      return { setup: 0, monthly: 2000, duration: 1, discountable: false };
+    }
+    if (productType === "ads") {
+      const monthly = Math.round(750 * (1 - discountPct / 100));
+      return { setup: 1500, monthly, duration: adsDuration, discountable: true };
+    }
+    const base = annual ? plan.price12 : plan.price3;
+    const monthly = Math.round(base * (1 - discountPct / 100));
+    return { setup: plan.setup, monthly, duration: annual ? 12 : 3, discountable: true };
+  }, [productType, plan, annual, adsDuration, discountPct]);
+
+  const { setup: setupPrice, monthly: monthlyPrice, duration } = pricing;
+  const totalLaufzeit = monthlyPrice * duration + setupPrice;
 
   const { data: leads } = useQuery({
     enabled: open,
