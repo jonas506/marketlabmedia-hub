@@ -85,6 +85,48 @@ export default function OfferView() {
   const accepted = offer.status === "accepted";
   const totalLaufzeit = offer.monthly_price * offer.duration_months + offer.setup_price;
 
+  const doc = (offer as any).document as OfferDoc | null;
+  const hasDoc = doc && Array.isArray(doc.positions);
+
+  if (hasDoc) {
+    return (
+      <div className="min-h-screen bg-[#eef1f6] py-8">
+        <div id="offer-print-area" className="mx-auto w-fit max-w-full overflow-x-auto px-3">
+          <div className="offer-doc-shadow">
+            <OfferDocumentView doc={doc!} />
+          </div>
+        </div>
+
+        <div className="mx-auto mt-10 max-w-[794px] px-3 text-center">
+          {accepted ? (
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-5 py-3 text-emerald-700">
+              <CheckCircle2 className="h-5 w-5" />
+              <span className="font-semibold">Angebot angenommen — willkommen an Bord!</span>
+            </div>
+          ) : (
+            <>
+              <Button
+                onClick={handleAccept}
+                disabled={accepting}
+                className="h-14 w-full max-w-md px-10 text-base font-bold text-white"
+                style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})` }}
+              >
+                {accepting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
+                Angebot verbindlich annehmen
+              </Button>
+              <p className="mt-3 text-xs text-slate-500">
+                Mit einem Klick bestätigst du das Angebot rechtsverbindlich. Du erhältst anschließend eine Bestätigung.
+              </p>
+            </>
+          )}
+          <button onClick={() => window.print()} className="mt-6 block w-full text-xs text-slate-400 underline">
+            Als PDF speichern / drucken
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white" style={{ background: BRAND.bg, fontFamily: "'Manrope', system-ui, sans-serif" }}>
       <div
@@ -115,6 +157,7 @@ export default function OfferView() {
             <Row label="Gesamtinvest Laufzeit" value={`${totalLaufzeit.toLocaleString("de-DE")} € netto`} bold />
           </div>
         </div>
+
 
         {/* CTA */}
         <div className="mt-10 text-center">
