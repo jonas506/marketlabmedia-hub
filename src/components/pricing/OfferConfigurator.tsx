@@ -7,7 +7,9 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import OfferEditorDialog from "./OfferEditorDialog";
+import OfferDocumentEditor from "./OfferDocumentEditor";
+import { buildDefaultDocument, OfferDoc } from "./offerDocument";
+
 
 export type ConfigPlan = {
   key: string;
