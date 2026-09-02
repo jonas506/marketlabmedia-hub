@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         const { data: newClient, error: cErr } = await supabase
           .from('clients').insert({
             name: clientName,
-            status: 'onboarding',
+            status: 'active',
             contact_email: offer.recipient_email,
             contact_name: offer.recipient_name,
           }).select('id').single();
