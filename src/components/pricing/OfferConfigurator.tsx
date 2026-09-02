@@ -333,11 +333,15 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
         </footer>
       </aside>
 
-      <OfferEditorDialog
+      <OfferDocumentEditor
         open={editorOpen}
-        onClose={() => { setEditorOpen(false); setDraftOfferId(null); onClose(); }}
+        onClose={() => { setEditorOpen(false); setDraftOfferId(null); setDraftDoc(null); onClose(); }}
         offerId={draftOfferId}
+        initialDoc={draftDoc}
+        initialRecipient={draftRecipient}
+        subjectDefault={draftSubject}
       />
+
     </>
   );
 }
