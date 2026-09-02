@@ -201,7 +201,49 @@ const PRICING = {
     { icon: Handshake, title: "Kunden", desc: "Aus Gesprächen werden Abschlüsse" },
   ],
 
+  trial: {
+    bannerText: "Erst testen: 30 Tage, 2.000 € — Setup inklusive",
+    bannerCta: "Testmonat ansehen",
+    cardLink: "Setup entfällt beim Start über den Testmonat",
+    title: "Testmonat",
+    subtitle: "30 Tage · 2.000 € netto · einmalig, keine Laufzeit",
+    intro:
+      "Du entscheidest nicht über sechs Monate, sondern über dreißig Tage. In dieser Zeit steht das komplette System — danach siehst du an echten Zahlen, ob es für dich funktioniert.",
+    build: {
+      title: "Was wir aufbauen",
+      items: [
+        "Research zu Zielgruppe, Wettbewerb und Themen",
+        "Positionierung und Content-Strategie",
+        "Instagram-Profil komplett aufgesetzt",
+        "ManyChat-Automation eingerichtet",
+        "Freebie aus unserer Vorlage, auf dich angepasst",
+        "30 Testreels im Overlay-Format mit Freebie-CTA",
+        "Reporting am Ende der 30 Tage",
+      ],
+    },
+    yours: {
+      title: "Was du beisteuerst",
+      items: [
+        "Ein Strategie-Gespräch, etwa eine Stunde",
+        "Fachliche Freigabe der Posts, ein Klick pro Beitrag",
+      ],
+    },
+    after: {
+      title: "Was danach passiert",
+      text:
+        "Nach dreißig Tagen entscheidest du, ob es weiterläuft. Wenn ja, geht es ohne Setup-Kosten in Stufe 1 über — zum gleichen Monatspreis. Wenn nicht, ist es beendet und alles Aufgebaute bleibt bei dir.",
+    },
+    highlight:
+      "Der Direkteinstieg in einen Retainer kostet 2.000 € Setup. Über den Testmonat entfällt das — du bekommst denselben Aufbau plus 30 Reels zum gleichen Preis.",
+    availability: {
+      title: "Aktuelle Verfügbarkeit",
+      text: "Wir starten maximal zwei Testmonate gleichzeitig, damit die Qualität stimmt.",
+    },
+    cta: "Testmonat anfragen",
+  },
+
   closing: "Kein Werbebudget nötig. Kein Risiko. Nur ein System das funktioniert.",
+
 };
 
 const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
