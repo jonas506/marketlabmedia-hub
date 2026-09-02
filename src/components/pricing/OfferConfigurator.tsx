@@ -126,11 +126,15 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
       offerNumber = (num as string) || "";
     } catch { /* Nummer optional */ }
 
+    const planNameForDoc = productType === "trial" ? "Testmonat" : productType === "ads" ? "Ads Management" : plan.name;
+    const planKeyForDb = productType === "trial" ? "trial" : productType === "ads" ? "ads" : plan.key;
+
     const doc = buildDefaultDocument({
       offerNumber,
-      planName: plan.name,
+      productType,
+      planName: planNameForDoc,
       monthlyPrice,
-      setupPrice: plan.setup,
+      setupPrice,
       durationMonths: duration,
       discountPct,
       addons: addonList,
@@ -144,11 +148,11 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
     const { data: user } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("offers").insert({
       lead_id: pickedLead?.id ?? null,
-      plan_key: plan.key,
-      plan_name: plan.name,
+      plan_key: planKeyForDb,
+      plan_name: planNameForDoc,
       duration_months: duration,
       monthly_price: monthlyPrice,
-      setup_price: plan.setup,
+      setup_price: setupPrice,
       discount_pct: discountPct,
       addons: addonList,
       subject,
