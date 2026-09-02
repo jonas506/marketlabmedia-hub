@@ -89,41 +89,41 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
     });
   };
 
-  const buildInitialBody = () => {
-    const recipientName = pickedLead?.contact_name || pickedLead?.name || "";
-    const anrede = recipientName ? `Hallo ${recipientName.split(" ")[0]},` : "Hallo,";
-    const addonHtml = addonList.length > 0
-      ? `<h3 style="margin-top:24px;">Optionale Add-ons</h3><ul>${addonList.map((a) => `<li>${a.name} — ${a.price_text}${a.qty > 1 ? ` (× ${a.qty})` : ""}</li>`).join("")}</ul><p style="color:#666;font-size:13px;">Add-ons werden nach tatsächlicher Nutzung separat abgerechnet.</p>`
-      : "";
-    return `
-<p>${anrede}</p>
-<p>vielen Dank für das gute Gespräch. Anbei unser Angebot wie besprochen:</p>
-<h2 style="margin-top:24px;">Paket ${plan.name}</h2>
-<ul>
-  <li><strong>Laufzeit:</strong> ${duration} Monate</li>
-  <li><strong>Monatlich:</strong> ${monthlyPrice.toLocaleString("de-DE")} € netto${discountPct > 0 ? ` <span style="color:#0083F7;">(inkl. ${discountPct}% Rabatt)</span>` : ""}</li>
-  <li><strong>Einmaliges Setup:</strong> ${plan.setup.toLocaleString("de-DE")} € netto</li>
-  <li><strong>Gesamtinvest Laufzeit:</strong> ${totalLaufzeit.toLocaleString("de-DE")} € netto</li>
-</ul>
-${addonHtml}
-<p style="margin-top:24px;">Mit einem Klick auf den Button unten bestätigst du das Angebot verbindlich. Anschließend startet dein Onboarding.</p>
-<p>Bei Fragen einfach direkt melden.</p>
-<p>Beste Grüße</p>
-    `.trim();
-  };
-
   const handleCreateDraft = async () => {
-    if (!pickedLead) {
-      toast({ title: "Bitte einen Lead auswählen", variant: "destructive" });
+    const company = manualCompany || pickedLead?.name || "";
+    const contact = manualContact || pickedLead?.contact_name || "";
+    const email = manualEmail || pickedLead?.contact_email || "";
+    const address = manualAddress;
+
+    if (!email) {
+      toast({ title: "E-Mail fehlt", description: "Lead auswählen oder E-Mail eintragen.", variant: "destructive" });
       return;
     }
-    if (!pickedLead.contact_email) {
-      toast({ title: "Lead hat keine E-Mail hinterlegt", variant: "destructive" });
-      return;
-    }
+
+    let offerNumber = "";
+    try {
+      const { data: num } = await (supabase as any).rpc("next_offer_number");
+      offerNumber = (num as string) || "";
+    } catch { /* Nummer optional */ }
+
+    const doc = buildDefaultDocument({
+      offerNumber,
+      planName: plan.name,
+      monthlyPrice,
+      setupPrice: plan.setup,
+      durationMonths: duration,
+      discountPct,
+      addons: addonList,
+      recipientCompany: company,
+      recipientContact: contact,
+      recipientAddressLines: address.split("\n"),
+    });
+
+    const subject = `Dein Angebot ${offerNumber || ""} — Marketlab Media`.replace("  ", " ");
+
     const { data: user } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("offers").insert({
-      lead_id: pickedLead.id,
+      lead_id: pickedLead?.id ?? null,
       plan_key: plan.key,
       plan_name: plan.name,
       duration_months: duration,
@@ -131,20 +131,28 @@ ${addonHtml}
       setup_price: plan.setup,
       discount_pct: discountPct,
       addons: addonList,
-      subject: `Dein Angebot: ${plan.name} — Marketlab Media`,
-      custom_body: buildInitialBody(),
-      recipient_email: pickedLead.contact_email,
-      recipient_name: pickedLead.contact_name || pickedLead.name,
+      subject,
+      custom_body: "",
+      document: doc as any,
+      offer_number: offerNumber,
+      recipient_email: email,
+      recipient_name: contact || company,
+      recipient_company: company,
+      recipient_address: address,
       status: "draft",
       created_by: user.user?.id,
-    }).select("id").single();
+    } as any).select("id").single();
     if (error) {
       toast({ title: "Fehler", description: error.message, variant: "destructive" });
       return;
     }
     setDraftOfferId(data.id);
+    setDraftDoc(doc);
+    setDraftSubject(subject);
+    setDraftRecipient({ email, name: contact, company, address });
     setEditorOpen(true);
   };
+
 
   if (!open) return null;
 
