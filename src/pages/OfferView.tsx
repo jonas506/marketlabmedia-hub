@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import OfferDocumentView from "@/components/pricing/OfferDocumentView";
 import type { OfferDoc } from "@/components/pricing/offerDocument";
 
@@ -29,6 +33,7 @@ export default function OfferView() {
   const [offer, setOffer] = useState<Offer | null>(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +53,8 @@ export default function OfferView() {
   }, [token]);
 
   const handleAccept = async () => {
-    if (!token || !confirm("Angebot verbindlich annehmen? Damit kommt ein Vertrag zustande.")) return;
+    if (!token) return;
+    setConfirmOpen(false);
     setAccepting(true);
     try {
       const res = await fetch(FN_URL, {
@@ -109,7 +115,7 @@ export default function OfferView() {
           ) : (
             <>
               <Button
-                onClick={handleAccept}
+                onClick={() => setConfirmOpen(true)}
                 disabled={accepting}
                 className="h-14 w-full max-w-md px-10 text-base font-bold text-white"
                 style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})` }}
@@ -172,7 +178,7 @@ export default function OfferView() {
           ) : (
             <>
               <Button
-                onClick={handleAccept}
+                onClick={() => setConfirmOpen(true)}
                 disabled={accepting}
                 className="h-14 px-10 text-base font-bold text-white"
                 style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})` }}
