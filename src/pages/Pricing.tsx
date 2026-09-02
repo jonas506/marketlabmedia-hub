@@ -673,6 +673,35 @@ const TrialModal = ({
   );
 };
 
+const TrialCard = ({
+  title,
+  items,
+  icon: Icon,
+  accent,
+}: {
+  title: string;
+  items: string[];
+  icon: typeof Check;
+  accent: string;
+}) => (
+  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+    <div className="flex items-center gap-2">
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full" style={{ background: `${accent}22` }}>
+        <Icon className="h-3.5 w-3.5" style={{ color: accent }} />
+      </span>
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">{title}</div>
+    </div>
+    <ul className="mt-3 flex flex-col gap-2">
+      {items.map((i) => (
+        <li key={i} className="flex items-start gap-2 text-sm text-white/80">
+          <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: accent }} />
+          <span>{i}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 const TrialList = ({ title, items }: { title: string; items: string[] }) => (
   <div className="mt-6">
     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">{title}</div>
