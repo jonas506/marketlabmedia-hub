@@ -2370,12 +2370,16 @@ export type Database = {
           created_by: string | null
           custom_body: string
           discount_pct: number
+          document: Json
           duration_months: number
           id: string
           lead_id: string | null
           monthly_price: number
+          offer_number: string | null
           plan_key: string
           plan_name: string
+          recipient_address: string | null
+          recipient_company: string | null
           recipient_email: string
           recipient_name: string | null
           sent_at: string | null
@@ -2394,12 +2398,16 @@ export type Database = {
           created_by?: string | null
           custom_body?: string
           discount_pct?: number
+          document?: Json
           duration_months: number
           id?: string
           lead_id?: string | null
           monthly_price: number
+          offer_number?: string | null
           plan_key: string
           plan_name: string
+          recipient_address?: string | null
+          recipient_company?: string | null
           recipient_email: string
           recipient_name?: string | null
           sent_at?: string | null
@@ -2418,12 +2426,16 @@ export type Database = {
           created_by?: string | null
           custom_body?: string
           discount_pct?: number
+          document?: Json
           duration_months?: number
           id?: string
           lead_id?: string | null
           monthly_price?: number
+          offer_number?: string | null
           plan_key?: string
           plan_name?: string
+          recipient_address?: string | null
+          recipient_company?: string | null
           recipient_email?: string
           recipient_name?: string | null
           sent_at?: string | null
@@ -3639,6 +3651,7 @@ export type Database = {
         }
         Returns: number
       }
+      next_offer_number: { Args: never; Returns: string }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
