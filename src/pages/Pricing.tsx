@@ -308,11 +308,40 @@ const Pricing = () => {
           </p>
         </motion.section>
 
+        {/* TESTMONAT BANNER */}
+        <motion.button
+          type="button"
+          onClick={() => setTrialOpen(true)}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="mt-10 flex w-full flex-col items-start gap-4 rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 sm:flex-row sm:items-center sm:justify-between"
+          style={{
+            borderColor: `${BRAND.gold}66`,
+            background: `linear-gradient(120deg, ${BRAND.gold}1f, ${BRAND.goldDeep}0f)`,
+            boxShadow: `0 18px 40px -22px ${BRAND.gold}99`,
+          }}
+        >
+          <span className="flex items-center gap-3">
+            <Sparkles className="h-5 w-5 shrink-0" style={{ color: BRAND.gold }} />
+            <span className="text-base font-bold md:text-lg" style={{ color: BRAND.gold }}>
+              {PRICING.trial.bannerText}
+            </span>
+          </span>
+          <span
+            className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold"
+            style={{ background: BRAND.gold, color: "#1a1200" }}
+          >
+            {PRICING.trial.bannerCta} <ArrowRight className="h-4 w-4" />
+          </span>
+        </motion.button>
+
         {/* PLAN CARDS */}
         <section className="mt-12">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {PRICING.plans.map((p, i) => (
-              <PlanCard key={p.key} plan={p} index={i} />
+              <PlanCard key={p.key} plan={p} index={i} onTrial={() => setTrialOpen(true)} />
+
             ))}
           </div>
         </section>
