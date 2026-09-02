@@ -347,7 +347,7 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
             style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})` }}
             onClick={handleCreateDraft}
           >
-            Angebot erstellen <ArrowRight className="ml-2 h-4 w-4" />
+            Weiter zum Angebotsdokument <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </footer>
       </aside>
