@@ -336,7 +336,8 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
                 step={1}
               />
               <p className="mt-1 text-[11px] text-white/40">Wird auf den monatlichen Preis angewendet (Setup bleibt unberührt).</p>
-          </section>
+            </section>
+          )}
 
           {/* Add-ons */}
           <section>
