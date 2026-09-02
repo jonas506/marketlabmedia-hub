@@ -250,6 +250,8 @@ const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 
 const Pricing = () => {
   const [configOpen, setConfigOpen] = useState(false);
+  const [trialOpen, setTrialOpen] = useState(false);
+
   const { role } = useAuth();
   const isAdmin = role === "admin";
 
