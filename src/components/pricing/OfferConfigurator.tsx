@@ -314,7 +314,26 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
               </>
             )}
           </section>
+
+          {/* Kundendaten (optional, überschreibt Lead) */}
+          <section>
+            <Label className="text-xs uppercase tracking-wider text-white/50">Kundendaten fürs Angebot</Label>
+            <p className="mb-2 mt-1 text-[11px] text-white/40">Kann auch ohne Lead ausgefüllt werden – im nächsten Schritt jederzeit änderbar.</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Input value={manualCompany} onChange={(e) => setManualCompany(e.target.value)} placeholder="Firma" className="border-white/10 bg-white/[0.03] text-white placeholder:text-white/30" />
+              <Input value={manualContact} onChange={(e) => setManualContact(e.target.value)} placeholder="Ansprechpartner" className="border-white/10 bg-white/[0.03] text-white placeholder:text-white/30" />
+            </div>
+            <Input value={manualEmail} onChange={(e) => setManualEmail(e.target.value)} placeholder="E-Mail" type="email" className="mt-2 border-white/10 bg-white/[0.03] text-white placeholder:text-white/30" />
+            <textarea
+              value={manualAddress}
+              onChange={(e) => setManualAddress(e.target.value)}
+              rows={2}
+              placeholder={"Straße Nr.\nPLZ Ort"}
+              className="mt-2 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/30"
+            />
+          </section>
         </div>
+
 
         {/* Summary + CTA */}
         <footer className="sticky bottom-0 border-t border-white/10 bg-[#0a0a0f]/95 px-6 py-4 backdrop-blur">
