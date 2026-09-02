@@ -106,19 +106,20 @@ const PRICING = {
   ] as Plan[],
 
   ads: {
-    eyebrow: "Werbeanzeigen",
+    eyebrow: "Ads Management",
     title: "Werbeanzeigen — separat zubuchbar",
     text:
       "Ads verstärken ein System, das schon läuft. Deshalb buchbar ab Stufe 1, wenn der Lead-Mechanismus steht.",
     items: [
-      { label: "Funnel-Setup einmalig", value: "2.500 €" },
-      { label: "Laufende Kampagnensteuerung", value: "2.500 € / Monat" },
+      { label: "Kampagnen-Setup einmalig", value: "1.500 €" },
+      { label: "Laufende Verwaltung", value: "750 € / Monat" },
       { label: "Mindestlaufzeit", value: "3 Monate" },
-      { label: "Werbebudget", value: "ab 1.500 € / Monat, direkt an die Plattform" },
+      { label: "Werbebudget", value: "ca. 20–40 € / Tag, direkt an die Plattform" },
     ],
     note:
-      "Ab 3.000 € monatlichem Werbebudget +600 €, ab 7.000 € +1.200 € Steuerungsaufwand.",
+      "Das Werbebudget kommt zusätzlich dazu und wird direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag.",
   },
+
 
   comparison: [
     {
