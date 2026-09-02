@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import OfferDocumentView from "@/components/pricing/OfferDocumentView";
+import type { OfferDoc } from "@/components/pricing/offerDocument";
+
 
 const BRAND = { blue: "#0083F7", purple: "#21089B", bg: "#0a0a0f" };
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/offer-public`;
