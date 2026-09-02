@@ -7,7 +7,9 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import OfferEditorDialog from "./OfferEditorDialog";
+import OfferDocumentEditor from "./OfferDocumentEditor";
+import { buildDefaultDocument, OfferDoc } from "./offerDocument";
+
 
 export type ConfigPlan = {
   key: string;
@@ -42,6 +44,14 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
   const [pickedLead, setPickedLead] = useState<any | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [draftOfferId, setDraftOfferId] = useState<string | null>(null);
+  const [draftDoc, setDraftDoc] = useState<OfferDoc | null>(null);
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftRecipient, setDraftRecipient] = useState({ email: "", name: "", company: "", address: "" });
+  const [manualCompany, setManualCompany] = useState("");
+  const [manualContact, setManualContact] = useState("");
+  const [manualEmail, setManualEmail] = useState("");
+  const [manualAddress, setManualAddress] = useState("");
+
 
   const plan = plans.find((p) => p.key === planKey)!;
   const basePrice = annual ? plan.price12 : plan.price3;
@@ -79,41 +89,41 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
     });
   };
 
-  const buildInitialBody = () => {
-    const recipientName = pickedLead?.contact_name || pickedLead?.name || "";
-    const anrede = recipientName ? `Hallo ${recipientName.split(" ")[0]},` : "Hallo,";
-    const addonHtml = addonList.length > 0
-      ? `<h3 style="margin-top:24px;">Optionale Add-ons</h3><ul>${addonList.map((a) => `<li>${a.name} — ${a.price_text}${a.qty > 1 ? ` (× ${a.qty})` : ""}</li>`).join("")}</ul><p style="color:#666;font-size:13px;">Add-ons werden nach tatsächlicher Nutzung separat abgerechnet.</p>`
-      : "";
-    return `
-<p>${anrede}</p>
-<p>vielen Dank für das gute Gespräch. Anbei unser Angebot wie besprochen:</p>
-<h2 style="margin-top:24px;">Paket ${plan.name}</h2>
-<ul>
-  <li><strong>Laufzeit:</strong> ${duration} Monate</li>
-  <li><strong>Monatlich:</strong> ${monthlyPrice.toLocaleString("de-DE")} € netto${discountPct > 0 ? ` <span style="color:#0083F7;">(inkl. ${discountPct}% Rabatt)</span>` : ""}</li>
-  <li><strong>Einmaliges Setup:</strong> ${plan.setup.toLocaleString("de-DE")} € netto</li>
-  <li><strong>Gesamtinvest Laufzeit:</strong> ${totalLaufzeit.toLocaleString("de-DE")} € netto</li>
-</ul>
-${addonHtml}
-<p style="margin-top:24px;">Mit einem Klick auf den Button unten bestätigst du das Angebot verbindlich. Anschließend startet dein Onboarding.</p>
-<p>Bei Fragen einfach direkt melden.</p>
-<p>Beste Grüße</p>
-    `.trim();
-  };
-
   const handleCreateDraft = async () => {
-    if (!pickedLead) {
-      toast({ title: "Bitte einen Lead auswählen", variant: "destructive" });
+    const company = manualCompany || pickedLead?.name || "";
+    const contact = manualContact || pickedLead?.contact_name || "";
+    const email = manualEmail || pickedLead?.contact_email || "";
+    const address = manualAddress;
+
+    if (!email) {
+      toast({ title: "E-Mail fehlt", description: "Lead auswählen oder E-Mail eintragen.", variant: "destructive" });
       return;
     }
-    if (!pickedLead.contact_email) {
-      toast({ title: "Lead hat keine E-Mail hinterlegt", variant: "destructive" });
-      return;
-    }
+
+    let offerNumber = "";
+    try {
+      const { data: num } = await (supabase as any).rpc("next_offer_number");
+      offerNumber = (num as string) || "";
+    } catch { /* Nummer optional */ }
+
+    const doc = buildDefaultDocument({
+      offerNumber,
+      planName: plan.name,
+      monthlyPrice,
+      setupPrice: plan.setup,
+      durationMonths: duration,
+      discountPct,
+      addons: addonList,
+      recipientCompany: company,
+      recipientContact: contact,
+      recipientAddressLines: address.split("\n"),
+    });
+
+    const subject = `Dein Angebot ${offerNumber || ""} — Marketlab Media`.replace("  ", " ");
+
     const { data: user } = await supabase.auth.getUser();
     const { data, error } = await supabase.from("offers").insert({
-      lead_id: pickedLead.id,
+      lead_id: pickedLead?.id ?? null,
       plan_key: plan.key,
       plan_name: plan.name,
       duration_months: duration,
@@ -121,20 +131,28 @@ ${addonHtml}
       setup_price: plan.setup,
       discount_pct: discountPct,
       addons: addonList,
-      subject: `Dein Angebot: ${plan.name} — Marketlab Media`,
-      custom_body: buildInitialBody(),
-      recipient_email: pickedLead.contact_email,
-      recipient_name: pickedLead.contact_name || pickedLead.name,
+      subject,
+      custom_body: "",
+      document: doc as any,
+      offer_number: offerNumber,
+      recipient_email: email,
+      recipient_name: contact || company,
+      recipient_company: company,
+      recipient_address: address,
       status: "draft",
       created_by: user.user?.id,
-    }).select("id").single();
+    } as any).select("id").single();
     if (error) {
       toast({ title: "Fehler", description: error.message, variant: "destructive" });
       return;
     }
     setDraftOfferId(data.id);
+    setDraftDoc(doc);
+    setDraftSubject(subject);
+    setDraftRecipient({ email, name: contact, company, address });
     setEditorOpen(true);
   };
+
 
   if (!open) return null;
 
@@ -296,7 +314,26 @@ ${addonHtml}
               </>
             )}
           </section>
+
+          {/* Kundendaten (optional, überschreibt Lead) */}
+          <section>
+            <Label className="text-xs uppercase tracking-wider text-white/50">Kundendaten fürs Angebot</Label>
+            <p className="mb-2 mt-1 text-[11px] text-white/40">Kann auch ohne Lead ausgefüllt werden – im nächsten Schritt jederzeit änderbar.</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Input value={manualCompany} onChange={(e) => setManualCompany(e.target.value)} placeholder="Firma" className="border-white/10 bg-white/[0.03] text-white placeholder:text-white/30" />
+              <Input value={manualContact} onChange={(e) => setManualContact(e.target.value)} placeholder="Ansprechpartner" className="border-white/10 bg-white/[0.03] text-white placeholder:text-white/30" />
+            </div>
+            <Input value={manualEmail} onChange={(e) => setManualEmail(e.target.value)} placeholder="E-Mail" type="email" className="mt-2 border-white/10 bg-white/[0.03] text-white placeholder:text-white/30" />
+            <textarea
+              value={manualAddress}
+              onChange={(e) => setManualAddress(e.target.value)}
+              rows={2}
+              placeholder={"Straße Nr.\nPLZ Ort"}
+              className="mt-2 w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/30"
+            />
+          </section>
         </div>
+
 
         {/* Summary + CTA */}
         <footer className="sticky bottom-0 border-t border-white/10 bg-[#0a0a0f]/95 px-6 py-4 backdrop-blur">
@@ -310,16 +347,20 @@ ${addonHtml}
             style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})` }}
             onClick={handleCreateDraft}
           >
-            Angebot erstellen <ArrowRight className="ml-2 h-4 w-4" />
+            Weiter zum Angebotsdokument <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </footer>
       </aside>
 
-      <OfferEditorDialog
+      <OfferDocumentEditor
         open={editorOpen}
-        onClose={() => { setEditorOpen(false); setDraftOfferId(null); onClose(); }}
+        onClose={() => { setEditorOpen(false); setDraftOfferId(null); setDraftDoc(null); onClose(); }}
         offerId={draftOfferId}
+        initialDoc={draftDoc}
+        initialRecipient={draftRecipient}
+        subjectDefault={draftSubject}
       />
+
     </>
   );
 }

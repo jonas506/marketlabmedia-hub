@@ -41,6 +41,8 @@ Deno.serve(async (req) => {
         addons: offer.addons,
         subject: offer.subject,
         custom_body: offer.custom_body,
+        document: offer.document,
+        offer_number: offer.offer_number,
         recipient_name: offer.recipient_name,
         status: offer.status,
         accepted_at: offer.accepted_at,

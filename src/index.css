@@ -508,3 +508,24 @@
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ---- Angebots-PDF Druck ---- */
+@media print {
+  @page { size: A4; margin: 0; }
+  body * { visibility: hidden !important; }
+  #offer-print-area, #offer-print-area * { visibility: visible !important; }
+  #offer-print-area {
+    position: absolute !important;
+    left: 0; top: 0;
+    width: 794px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #offer-print-area .offer-preview-scale { transform: none !important; }
+  .offer-page {
+    box-shadow: none !important;
+    page-break-after: always;
+    break-after: page;
+  }
+  .offer-page:last-child { page-break-after: auto; break-after: auto; }
+}
