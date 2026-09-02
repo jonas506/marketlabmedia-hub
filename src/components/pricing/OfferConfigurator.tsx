@@ -431,9 +431,18 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
         {/* Summary + CTA */}
         <footer className="sticky bottom-0 border-t border-white/10 bg-[#0a0a0f]/95 px-6 py-4 backdrop-blur">
           <div className="mb-3 space-y-1 text-sm">
-            <div className="flex justify-between"><span className="text-white/60">Monatlich</span><span className="font-bold">{monthlyPrice.toLocaleString("de-DE")} € netto</span></div>
-            <div className="flex justify-between"><span className="text-white/60">Setup einmalig</span><span className="font-bold">{plan.setup.toLocaleString("de-DE")} € netto</span></div>
-            <div className="flex justify-between border-t border-white/10 pt-1"><span className="text-white/60">Gesamtinvest {duration} Monate</span><span className="font-extrabold" style={{ color: BRAND.blue }}>{totalLaufzeit.toLocaleString("de-DE")} € netto</span></div>
+            {productType === "trial" ? (
+              <>
+                <div className="flex justify-between"><span className="text-white/60">Testmonat einmalig</span><span className="font-bold">{monthlyPrice.toLocaleString("de-DE")} € netto</span></div>
+                <div className="flex justify-between border-t border-white/10 pt-1"><span className="text-white/60">Gesamt</span><span className="font-extrabold" style={{ color: BRAND.blue }}>{totalLaufzeit.toLocaleString("de-DE")} € netto</span></div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between"><span className="text-white/60">{productType === "ads" ? "Verwaltung / Monat" : "Monatlich"}</span><span className="font-bold">{monthlyPrice.toLocaleString("de-DE")} € netto</span></div>
+                <div className="flex justify-between"><span className="text-white/60">Setup einmalig</span><span className="font-bold">{setupPrice.toLocaleString("de-DE")} € netto</span></div>
+                <div className="flex justify-between border-t border-white/10 pt-1"><span className="text-white/60">Gesamtinvest {duration} Monate</span><span className="font-extrabold" style={{ color: BRAND.blue }}>{totalLaufzeit.toLocaleString("de-DE")} € netto</span></div>
+              </>
+            )}
           </div>
           <Button
             className="h-11 w-full font-bold text-white"
