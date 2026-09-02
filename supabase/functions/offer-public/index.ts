@@ -1,4 +1,15 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { buildOfferPdf } from './offer-pdf.ts';
+
+const base64 = (bytes: Uint8Array) => {
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+};
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
