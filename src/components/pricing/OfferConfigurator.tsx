@@ -203,71 +203,139 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
         </header>
 
         <div className="flex-1 space-y-6 px-6 py-6">
-          {/* Plan */}
+          {/* Produkttyp */}
           <section>
-            <Label className="text-xs uppercase tracking-wider text-white/50">Paket</Label>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {plans.map((p) => {
-                const active = p.key === planKey;
+            <Label className="text-xs uppercase tracking-wider text-white/50">Produkt</Label>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {PRODUCTS.map((prod) => {
+                const active = productType === prod.key;
+                const Icon = prod.icon;
                 return (
                   <button
-                    key={p.key}
-                    onClick={() => setPlanKey(p.key)}
-                    className="rounded-lg border p-3 text-left transition-all"
+                    key={prod.key}
+                    onClick={() => {
+                      setProductType(prod.key);
+                      if (prod.key === "trial") setDiscountPct(0);
+                    }}
+                    className="relative flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-all"
                     style={{
-                      borderColor: active ? BRAND.blue : "rgba(255,255,255,0.1)",
-                      background: active ? `${BRAND.blue}15` : "transparent",
+                      borderColor: active ? prod.color : "rgba(255,255,255,0.1)",
+                      background: active ? `${prod.color}15` : "transparent",
                     }}
                   >
-                    <div className="text-sm font-bold">{p.name}</div>
-                    <div className="text-xs text-white/50">
-                      ab {p.price12.toLocaleString("de-DE")} € / Mon.
+                    <Icon className="h-4 w-4" style={{ color: prod.color }} />
+                    <div>
+                      <div className="text-sm font-bold">{prod.label}</div>
+                      <div className="text-[11px] text-white/50">{prod.sub}</div>
                     </div>
+                    {active && (
+                      <span
+                        className="absolute right-2 top-2 h-2 w-2 rounded-full"
+                        style={{ background: prod.color }}
+                      />
+                    )}
                   </button>
                 );
               })}
             </div>
           </section>
 
+          {/* Content-Paket-Auswahl */}
+          {productType === "content" && (
+            <section>
+              <Label className="text-xs uppercase tracking-wider text-white/50">Paket</Label>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {plans.map((p) => {
+                  const active = p.key === planKey;
+                  return (
+                    <button
+                      key={p.key}
+                      onClick={() => setPlanKey(p.key)}
+                      className="rounded-lg border p-3 text-left transition-all"
+                      style={{
+                        borderColor: active ? BRAND.blue : "rgba(255,255,255,0.1)",
+                        background: active ? `${BRAND.blue}15` : "transparent",
+                      }}
+                    >
+                      <div className="text-sm font-bold">{p.name}</div>
+                      <div className="text-xs text-white/50">
+                        ab {p.price3.toLocaleString("de-DE")} € / Mon.
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {/* Laufzeit */}
-          <section>
-            <Label className="text-xs uppercase tracking-wider text-white/50">Laufzeit</Label>
-            <div className="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
-              {[
-                { label: "3 Monate", value: false },
-                { label: "12 Monate · -10 %", value: true },
-              ].map((o) => (
-                <button
-                  key={o.label}
-                  onClick={() => setAnnual(o.value)}
-                  className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
-                  style={{
-                    background: annual === o.value
-                      ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
-                      : "transparent",
-                    color: annual === o.value ? "#fff" : "rgba(255,255,255,0.6)",
-                  }}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          </section>
+          {productType !== "trial" && (
+            <section>
+              <Label className="text-xs uppercase tracking-wider text-white/50">Laufzeit</Label>
+              <div className="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
+                {productType === "ads" ? (
+                  <>
+                    {[
+                      { label: "3 Monate", value: 3 },
+                      { label: "6 Monate", value: 6 },
+                      { label: "12 Monate", value: 12 },
+                    ].map((o) => (
+                      <button
+                        key={o.value}
+                        onClick={() => setAdsDuration(o.value as 3 | 6 | 12)}
+                        className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
+                        style={{
+                          background: adsDuration === o.value
+                            ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
+                            : "transparent",
+                          color: adsDuration === o.value ? "#fff" : "rgba(255,255,255,0.6)",
+                        }}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {[
+                      { label: "3 Monate", value: false },
+                      { label: "12 Monate · -10 %", value: true },
+                    ].map((o) => (
+                      <button
+                        key={o.label}
+                        onClick={() => setAnnual(o.value)}
+                        className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
+                        style={{
+                          background: annual === o.value
+                            ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
+                            : "transparent",
+                          color: annual === o.value ? "#fff" : "rgba(255,255,255,0.6)",
+                        }}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Rabatt */}
-          <section>
-            <div className="flex items-center justify-between">
-              <Label className="text-xs uppercase tracking-wider text-white/50">Zusätzlicher Rabatt</Label>
-              <span className="text-sm font-bold" style={{ color: BRAND.blue }}>{discountPct} %</span>
-            </div>
-            <Slider
-              className="mt-3"
-              value={[discountPct]}
-              onValueChange={(v) => setDiscountPct(v[0])}
-              max={30}
-              step={1}
-            />
-            <p className="mt-1 text-[11px] text-white/40">Wird auf den monatlichen Preis angewendet (Setup bleibt unberührt).</p>
+          {pricing.discountable && (
+            <section>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs uppercase tracking-wider text-white/50">Zusätzlicher Rabatt</Label>
+                <span className="text-sm font-bold" style={{ color: BRAND.blue }}>{discountPct} %</span>
+              </div>
+              <Slider
+                className="mt-3"
+                value={[discountPct]}
+                onValueChange={(v) => setDiscountPct(v[0])}
+                max={30}
+                step={1}
+              />
+              <p className="mt-1 text-[11px] text-white/40">Wird auf den monatlichen Preis angewendet (Setup bleibt unberührt).</p>
           </section>
 
           {/* Add-ons */}
