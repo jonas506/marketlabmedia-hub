@@ -22,7 +22,10 @@ const BRAND = {
   purple: "#21089B",
   ink: "#1E1E24",
   bg: "#0a0a0f",
+  gold: "#F5B93B",
+  goldDeep: "#C98A12",
 };
+
 
 type Plan = {
   key: string;
