@@ -132,6 +132,7 @@ export default function OfferView() {
             Als PDF speichern / drucken
           </button>
         </div>
+        <ConfirmDialog open={confirmOpen} onOpenChange={setConfirmOpen} onConfirm={handleAccept} />
       </div>
     );
   }
@@ -191,6 +192,7 @@ export default function OfferView() {
           )}
         </div>
       </div>
+      <ConfirmDialog open={confirmOpen} onOpenChange={setConfirmOpen} onConfirm={handleAccept} />
     </div>
   );
 }
@@ -200,4 +202,22 @@ const Row = ({ label, value, bold }: { label: string; value: string; bold?: bool
     <span className="text-white/60">{label}</span>
     <span className={bold ? "text-lg font-extrabold" : "font-semibold"} style={bold ? { color: BRAND.blue } : undefined}>{value}</span>
   </div>
+);
+
+const ConfirmDialog = ({ open, onOpenChange, onConfirm }: { open: boolean; onOpenChange: (v: boolean) => void; onConfirm: () => void }) => (
+  <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Angebot verbindlich annehmen?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Mit der Bestätigung kommt ein Vertrag zwischen dir und der Marketlab Media UG (haftungsbeschränkt)
+          zu den im Angebot genannten Konditionen zustande. Du erhältst anschließend eine Bestätigung per E-Mail.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm}>Verbindlich annehmen</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 );
