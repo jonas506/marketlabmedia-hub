@@ -130,7 +130,7 @@ export default function OfferDocumentEditor({
       const ok = await save();
       if (!ok) return;
       const { data, error } = await supabase.functions.invoke("offer-send", {
-        body: { offerId, appUrl: window.location.origin },
+        body: { offerId },
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
