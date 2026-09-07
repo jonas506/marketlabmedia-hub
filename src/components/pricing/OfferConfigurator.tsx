@@ -126,8 +126,8 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
       offerNumber = (num as string) || "";
     } catch { /* Nummer optional */ }
 
-    const planNameForDoc = productType === "trial" ? "Testmonat" : productType === "ads" ? "Ads Management" : plan.name;
-    const planKeyForDb = productType === "trial" ? "trial" : productType === "ads" ? "ads" : plan.key;
+    const planNameForDoc = productType === "trial" ? "Testmonat" : productType === "quickfix" ? "Quick Fix Pro" : plan.name;
+    const planKeyForDb = productType === "trial" ? "trial" : productType === "quickfix" ? "quickfix" : plan.key;
 
     const doc = buildDefaultDocument({
       offerNumber,
