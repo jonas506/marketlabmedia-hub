@@ -109,7 +109,7 @@ export const germanDate = (d = new Date()) =>
 export const germanDateShort = (d: Date) =>
   d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-export type ProductType = "content" | "trial" | "ads";
+export type ProductType = "content" | "trial" | "ads" | "quickfix";
 
 type BuildInput = {
   offerNumber: string;
@@ -186,6 +186,39 @@ const ADS_POSITIONS = (setupPrice: number, monthlyPrice: number, durationMonths:
   });
   return positions;
 };
+
+const QUICKFIX_POSITIONS = (): OfferPosition[] => [
+  {
+    id: uid(),
+    title: "Strategie & Setup inkl. Landingpage",
+    description:
+      "Positionierung, Content-Strategie, Lead-Mechanik, ManyChat-Automation, Freebie-Anbindung und eine conversion-optimierte Landingpage.",
+    calc: "einmalig, pauschal",
+    amount: 3000,
+  },
+  {
+    id: uid(),
+    title: "Drehtag",
+    description: "Ein Produktionstag vor Ort mit 21 Videos und 21 Bild-Creatives für deine Kampagne.",
+    calc: "einmalig, pauschal",
+    amount: 1500,
+  },
+  {
+    id: uid(),
+    title: "Bearbeitung",
+    description: "Schnitt, Untertitel, Formatierung und Finalisierung von 21 Videos.",
+    calc: "21 × 50 €",
+    amount: 1050,
+  },
+  {
+    id: uid(),
+    title: "Verwaltung",
+    description:
+      "Laufende Kampagnensteuerung, Optimierung von Creatives, Zielgruppen und Bidding, monatliches Reporting. Laufzeit 3 Monate.",
+    calc: "3 × 1.000 €",
+    amount: 3000,
+  },
+];
 
 export function buildDefaultDocument(input: BuildInput): OfferDoc {
   const {
