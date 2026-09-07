@@ -317,6 +317,36 @@ export function buildDefaultDocument(input: BuildInput): OfferDoc {
       { id: uid(), label: "Zahlungsziel", value: "7 Tage" },
     ];
     paymentFootnote = "Setup zu Beginn, danach monatliche Verwaltung. Werbebudget separat.";
+  } else if (productType === "quickfix") {
+    positions = QUICKFIX_POSITIONS();
+    headerKicker = "QUICK FIX PRO · LEAD-KAMPAGNE";
+    eyebrow = "PAID ADS · LEADGENERIERUNG";
+    titleMain = "Quick Fix Pro.";
+    scopeLines = ["3 Monate", "Lead-Kampagne", "Setup, Drehtag, Bearbeitung & Verwaltung"];
+    recurringLabel = "Laufende Verwaltung";
+    recurringValue = "1.000 € / Monat";
+    footnotes = [
+      "Alle Preise netto, zzgl. 19 % USt.",
+      "Das Werbebudget wird zusätzlich fällig und direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag.",
+      "Optionale Bild-Creatives (21 Stück) können für 1.050 € hinzugebucht werden. Bild-Ads werden nach tatsächlichem Verbrauch à 50 € abgerechnet.",
+    ];
+    splitLeftText =
+      "Strategie, Landingpage, Lead-Mechanik, Drehtag mit 21 Videos und 21 Bild-Creatives, Schnitt, Verwaltung und Optimierung der Kampagne.";
+    splitRightText =
+      "Freigabe der Creatives und Zielgruppen, Zugriff auf Werbekonto und Pixel sowie fachliche Freigabe der Landingpage-Inhalte.";
+    included = [
+      "Strategie & Setup inkl. Landingpage",
+      "Drehtag mit 21 Videos und 21 Bild-Creatives",
+      "Bearbeitung von 21 Videos",
+      "3 Monate Verwaltung & Optimierung",
+      "Conversion-Tracking und Pixel-Einrichtung",
+      "Monatliches Reporting zu Spend und Leads",
+    ];
+    conditions = [
+      { id: uid(), label: "Laufzeit", value: "3 Monate" },
+      { id: uid(), label: "Zahlungsziel", value: "7 Tage" },
+    ];
+    paymentFootnote = "Setup, Drehtag und Bearbeitung zu Beginn, danach monatliche Verwaltung. Werbebudget separat.";
   } else {
     positions = CONTENT_POSITIONS(planName, setupPrice, monthlyPrice, durationMonths);
   }
