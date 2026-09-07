@@ -35,7 +35,7 @@ interface Props {
 const PRODUCTS: { key: ProductType; label: string; sub: string; icon: typeof Sparkles; color: string }[] = [
   { key: "content", label: "Content-Paket", sub: "Stufe 1–4", icon: Sparkles, color: "#0083F7" },
   { key: "trial", label: "Testmonat", sub: "30 Tage · 2.000 €", icon: CalendarCheck, color: "#F5B93B" },
-  { key: "ads", label: "Ads Management", sub: "Setup + Verwaltung", icon: Megaphone, color: "#7B5CFF" },
+  { key: "quickfix", label: "Quick Fix Pro", sub: "3 Monate · Lead-Kampagne", icon: Megaphone, color: "#7B5CFF" },
 ];
 
 const BRAND = { blue: "#0083F7", purple: "#21089B" };
