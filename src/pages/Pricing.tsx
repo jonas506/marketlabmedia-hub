@@ -365,9 +365,9 @@ const Pricing = () => {
           </div>
         </section>
 
-        {/* WERBEANZEIGEN */}
+        {/* QUICK FIX PRO */}
         <section className="mt-20">
-          <SectionHeader eyebrow={PRICING.ads.eyebrow} title={PRICING.ads.title} />
+          <SectionHeader eyebrow={PRICING.quickfix.eyebrow} title={PRICING.quickfix.title} />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -386,9 +386,9 @@ const Pricing = () => {
                   className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
                   style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})` }}
                 >
-                  <Megaphone className="h-3 w-3" /> Separat zubuchbar
+                  <Megaphone className="h-3 w-3" /> 3 Monate · Lead-Kampagne
                 </div>
-                <p className="max-w-xl text-white/70">{PRICING.ads.text}</p>
+                <p className="max-w-xl text-white/70">{PRICING.quickfix.text}</p>
                 <p className="mt-6 text-[11px] leading-relaxed text-white/40">
                   {PRICING.ads.note}
                 </p>
