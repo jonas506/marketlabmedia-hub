@@ -269,54 +269,28 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
           )}
 
           {/* Laufzeit */}
-          {productType !== "trial" && (
+          {productType !== "trial" && productType !== "quickfix" && (
             <section>
               <Label className="text-xs uppercase tracking-wider text-white/50">Laufzeit</Label>
               <div className="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
-                {productType === "ads" ? (
-                  <>
-                    {[
-                      { label: "3 Monate", value: 3 },
-                      { label: "6 Monate", value: 6 },
-                      { label: "12 Monate", value: 12 },
-                    ].map((o) => (
-                      <button
-                        key={o.value}
-                        onClick={() => setAdsDuration(o.value as 3 | 6 | 12)}
-                        className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
-                        style={{
-                          background: adsDuration === o.value
-                            ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
-                            : "transparent",
-                          color: adsDuration === o.value ? "#fff" : "rgba(255,255,255,0.6)",
-                        }}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    {[
-                      { label: "3 Monate", value: false },
-                      { label: "12 Monate · -10 %", value: true },
-                    ].map((o) => (
-                      <button
-                        key={o.label}
-                        onClick={() => setAnnual(o.value)}
-                        className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
-                        style={{
-                          background: annual === o.value
-                            ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
-                            : "transparent",
-                          color: annual === o.value ? "#fff" : "rgba(255,255,255,0.6)",
-                        }}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </>
-                )}
+                {[
+                  { label: "3 Monate", value: false },
+                  { label: "12 Monate · -10 %", value: true },
+                ].map((o) => (
+                  <button
+                    key={o.label}
+                    onClick={() => setAnnual(o.value)}
+                    className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
+                    style={{
+                      background: annual === o.value
+                        ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
+                        : "transparent",
+                      color: annual === o.value ? "#fff" : "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    {o.label}
+                  </button>
+                ))}
               </div>
             </section>
           )}
