@@ -105,19 +105,23 @@ const PRICING = {
     },
   ] as Plan[],
 
-  ads: {
-    eyebrow: "Ads Management",
-    title: "Werbeanzeigen — separat zubuchbar",
+  quickfix: {
+    eyebrow: "Quick Fix Pro",
+    title: "Lead-Kampagne in 3 Monaten",
     text:
-      "Ads verstärken ein System, das schon läuft. Deshalb buchbar ab Stufe 1, wenn der Lead-Mechanismus steht.",
+      "Für die Kapitalanlagenbranche: Strategie, Landingpage, Drehtag, Bearbeitung und 3 Monate Verwaltung — alles aus einer Hand.",
     items: [
-      { label: "Kampagnen-Setup einmalig", value: "1.500 €" },
-      { label: "Laufende Verwaltung", value: "750 € / Monat" },
-      { label: "Mindestlaufzeit", value: "3 Monate" },
+      { label: "Strategie & Setup inkl. Landingpage", value: "3.000 €" },
+      { label: "Drehtag (21 Videos + 21 Bild-Creatives)", value: "1.500 €" },
+      { label: "Bearbeitung (21 Videos)", value: "1.050 €" },
+      { label: "Verwaltung", value: "1.000 € / Monat" },
+      { label: "Gesamt (3 Monate)", value: "8.550 €" },
       { label: "Werbebudget", value: "ca. 20–40 € / Tag, direkt an die Plattform" },
+      { label: "Optional: Bild-Creatives separat", value: "1.050 €" },
+      { label: "Optional: Bild-Ads", value: "50 € / Stück" },
     ],
     note:
-      "Das Werbebudget kommt zusätzlich dazu und wird direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag.",
+      "Das Werbebudget kommt zusätzlich dazu und wird direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag. Bild-Creatives sind im Drehtag inklusive; die separate Buchung ist optional.",
   },
 
 
