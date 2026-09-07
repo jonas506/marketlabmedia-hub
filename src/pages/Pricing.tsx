@@ -255,6 +255,109 @@ const PRICING = {
 
 const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 
+const LeadCalculator = () => {
+  const [budget, setBudget] = useState(30);
+  const [cpl, setCpl] = useState(35);
+
+  const days = 30;
+  const monthlySpend = budget * days;
+  const leadsPerMonth = cpl > 0 ? monthlySpend / cpl : 0;
+  const leadsTotal = leadsPerMonth * 3;
+  const spendTotal = monthlySpend * 3;
+  const packagePrice = 8550;
+  const allInPerLead = leadsTotal > 0 ? (spendTotal + packagePrice) / leadsTotal : 0;
+
+  const Row = ({
+    label,
+    value,
+    unit,
+    min,
+    max,
+    step,
+    onChange,
+  }: {
+    label: string;
+    value: number;
+    unit: string;
+    min: number;
+    max: number;
+    step: number;
+    onChange: (v: number) => void;
+  }) => (
+    <div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-white/70">{label}</span>
+        <span className="font-bold" style={{ color: BRAND.blue }}>
+          {formatEUR(value)} {unit}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#0083F7]"
+      />
+    </div>
+  );
+
+  return (
+    <div className="mt-10 rounded-2xl border border-white/10 bg-black/25 p-6 md:p-8">
+      <div className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.blue }}>
+        Lead-Rechner
+      </div>
+      <p className="mt-1 text-sm text-white/60">
+        Was kostet ein Lead — je nach Tagesbudget und CPL?
+      </p>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="space-y-5">
+          <Row
+            label="Werbebudget pro Tag"
+            value={budget}
+            unit="€"
+            min={10}
+            max={200}
+            step={5}
+            onChange={setBudget}
+          />
+          <Row
+            label="Angenommener CPL"
+            value={cpl}
+            unit="€"
+            min={10}
+            max={150}
+            step={5}
+            onChange={setCpl}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { k: "Leads / Monat", v: `${Math.round(leadsPerMonth)}` },
+            { k: "Leads in 3 Monaten", v: `${Math.round(leadsTotal)}` },
+            { k: "Werbebudget gesamt", v: `${formatEUR(spendTotal)} €` },
+            { k: "Kosten pro Lead inkl. Paket", v: `${formatEUR(Math.round(allInPerLead))} €` },
+          ].map((c) => (
+            <div key={c.k} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <div className="text-[11px] uppercase tracking-wider text-white/45">{c.k}</div>
+              <div className="mt-1 text-xl font-extrabold">{c.v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p className="mt-5 text-[11px] leading-relaxed text-white/40">
+        Rechenbasis: 30 Tage pro Monat, Paketpreis 8.550 € netto über 3 Monate. Werbebudget wird
+        direkt an die Plattform gezahlt. Beispielrechnung, keine Ergebnisgarantie.
+      </p>
+    </div>
+  );
+};
+
+
 const Pricing = () => {
   const [configOpen, setConfigOpen] = useState(false);
   const [trialOpen, setTrialOpen] = useState(false);
@@ -408,7 +511,11 @@ const Pricing = () => {
                 ))}
               </div>
             </div>
+
+
+            <LeadCalculator />
           </motion.div>
+
         </section>
 
         {/* ADD-ONS */}
