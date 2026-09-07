@@ -390,12 +390,12 @@ const Pricing = () => {
                 </div>
                 <p className="max-w-xl text-white/70">{PRICING.quickfix.text}</p>
                 <p className="mt-6 text-[11px] leading-relaxed text-white/40">
-                  {PRICING.ads.note}
+                  {PRICING.quickfix.note}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3">
-                {PRICING.ads.items.map((item) => (
+                {PRICING.quickfix.items.map((item) => (
                   <div
                     key={item.label}
                     className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
