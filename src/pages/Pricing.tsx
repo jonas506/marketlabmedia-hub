@@ -105,19 +105,23 @@ const PRICING = {
     },
   ] as Plan[],
 
-  ads: {
-    eyebrow: "Ads Management",
-    title: "Werbeanzeigen — separat zubuchbar",
+  quickfix: {
+    eyebrow: "Quick Fix Pro",
+    title: "Lead-Kampagne in 3 Monaten",
     text:
-      "Ads verstärken ein System, das schon läuft. Deshalb buchbar ab Stufe 1, wenn der Lead-Mechanismus steht.",
+      "Für die Kapitalanlagenbranche: Strategie, Landingpage, Drehtag, Bearbeitung und 3 Monate Verwaltung — alles aus einer Hand.",
     items: [
-      { label: "Kampagnen-Setup einmalig", value: "1.500 €" },
-      { label: "Laufende Verwaltung", value: "750 € / Monat" },
-      { label: "Mindestlaufzeit", value: "3 Monate" },
+      { label: "Strategie & Setup inkl. Landingpage", value: "3.000 €" },
+      { label: "Drehtag (21 Videos + 21 Bild-Creatives)", value: "1.500 €" },
+      { label: "Bearbeitung (21 Videos)", value: "1.050 €" },
+      { label: "Verwaltung", value: "1.000 € / Monat" },
+      { label: "Gesamt (3 Monate)", value: "8.550 €" },
       { label: "Werbebudget", value: "ca. 20–40 € / Tag, direkt an die Plattform" },
+      { label: "Optional: Bild-Creatives separat", value: "1.050 €" },
+      { label: "Optional: Bild-Ads", value: "50 € / Stück" },
     ],
     note:
-      "Das Werbebudget kommt zusätzlich dazu und wird direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag.",
+      "Das Werbebudget kommt zusätzlich dazu und wird direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag. Bild-Creatives sind im Drehtag inklusive; die separate Buchung ist optional.",
   },
 
 
@@ -361,9 +365,9 @@ const Pricing = () => {
           </div>
         </section>
 
-        {/* WERBEANZEIGEN */}
+        {/* QUICK FIX PRO */}
         <section className="mt-20">
-          <SectionHeader eyebrow={PRICING.ads.eyebrow} title={PRICING.ads.title} />
+          <SectionHeader eyebrow={PRICING.quickfix.eyebrow} title={PRICING.quickfix.title} />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -382,16 +386,16 @@ const Pricing = () => {
                   className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white"
                   style={{ background: `linear-gradient(135deg, ${BRAND.purple}, ${BRAND.blue})` }}
                 >
-                  <Megaphone className="h-3 w-3" /> Separat zubuchbar
+                  <Megaphone className="h-3 w-3" /> 3 Monate · Lead-Kampagne
                 </div>
-                <p className="max-w-xl text-white/70">{PRICING.ads.text}</p>
+                <p className="max-w-xl text-white/70">{PRICING.quickfix.text}</p>
                 <p className="mt-6 text-[11px] leading-relaxed text-white/40">
-                  {PRICING.ads.note}
+                  {PRICING.quickfix.note}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3">
-                {PRICING.ads.items.map((item) => (
+                {PRICING.quickfix.items.map((item) => (
                   <div
                     key={item.label}
                     className="rounded-xl border border-white/10 bg-white/[0.03] p-4"

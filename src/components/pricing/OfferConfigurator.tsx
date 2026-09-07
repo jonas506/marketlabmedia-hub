@@ -35,7 +35,7 @@ interface Props {
 const PRODUCTS: { key: ProductType; label: string; sub: string; icon: typeof Sparkles; color: string }[] = [
   { key: "content", label: "Content-Paket", sub: "Stufe 1–4", icon: Sparkles, color: "#0083F7" },
   { key: "trial", label: "Testmonat", sub: "30 Tage · 2.000 €", icon: CalendarCheck, color: "#F5B93B" },
-  { key: "ads", label: "Ads Management", sub: "Setup + Verwaltung", icon: Megaphone, color: "#7B5CFF" },
+  { key: "quickfix", label: "Quick Fix Pro", sub: "3 Monate · Lead-Kampagne", icon: Megaphone, color: "#7B5CFF" },
 ];
 
 const BRAND = { blue: "#0083F7", purple: "#21089B" };
@@ -45,7 +45,6 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
   const [productType, setProductType] = useState<ProductType>("content");
   const [planKey, setPlanKey] = useState<string>(plans[1]?.key ?? plans[0].key);
   const [annual, setAnnual] = useState(false);
-  const [adsDuration, setAdsDuration] = useState<3 | 6 | 12>(3);
   const [discountPct, setDiscountPct] = useState(0);
   const [selectedAddons, setSelectedAddons] = useState<Record<string, number>>({});
   const [leadSearch, setLeadSearch] = useState("");
@@ -67,14 +66,14 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
     if (productType === "trial") {
       return { setup: 0, monthly: 2000, duration: 1, discountable: false };
     }
-    if (productType === "ads") {
-      const monthly = Math.round(750 * (1 - discountPct / 100));
-      return { setup: 1500, monthly, duration: adsDuration, discountable: true };
+    if (productType === "quickfix") {
+      const monthly = Math.round(1000 * (1 - discountPct / 100));
+      return { setup: 3000, monthly, duration: 3, discountable: true };
     }
     const base = annual ? plan.price12 : plan.price3;
     const monthly = Math.round(base * (1 - discountPct / 100));
     return { setup: plan.setup, monthly, duration: annual ? 12 : 3, discountable: true };
-  }, [productType, plan, annual, adsDuration, discountPct]);
+  }, [productType, plan, annual, discountPct]);
 
   const { setup: setupPrice, monthly: monthlyPrice, duration } = pricing;
   const totalLaufzeit = monthlyPrice * duration + setupPrice;
@@ -126,8 +125,8 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
       offerNumber = (num as string) || "";
     } catch { /* Nummer optional */ }
 
-    const planNameForDoc = productType === "trial" ? "Testmonat" : productType === "ads" ? "Ads Management" : plan.name;
-    const planKeyForDb = productType === "trial" ? "trial" : productType === "ads" ? "ads" : plan.key;
+    const planNameForDoc = productType === "trial" ? "Testmonat" : productType === "quickfix" ? "Quick Fix Pro" : plan.name;
+    const planKeyForDb = productType === "trial" ? "trial" : productType === "quickfix" ? "quickfix" : plan.key;
 
     const doc = buildDefaultDocument({
       offerNumber,
@@ -269,54 +268,28 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
           )}
 
           {/* Laufzeit */}
-          {productType !== "trial" && (
+          {productType !== "trial" && productType !== "quickfix" && (
             <section>
               <Label className="text-xs uppercase tracking-wider text-white/50">Laufzeit</Label>
               <div className="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
-                {productType === "ads" ? (
-                  <>
-                    {[
-                      { label: "3 Monate", value: 3 },
-                      { label: "6 Monate", value: 6 },
-                      { label: "12 Monate", value: 12 },
-                    ].map((o) => (
-                      <button
-                        key={o.value}
-                        onClick={() => setAdsDuration(o.value as 3 | 6 | 12)}
-                        className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
-                        style={{
-                          background: adsDuration === o.value
-                            ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
-                            : "transparent",
-                          color: adsDuration === o.value ? "#fff" : "rgba(255,255,255,0.6)",
-                        }}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    {[
-                      { label: "3 Monate", value: false },
-                      { label: "12 Monate · -10 %", value: true },
-                    ].map((o) => (
-                      <button
-                        key={o.label}
-                        onClick={() => setAnnual(o.value)}
-                        className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
-                        style={{
-                          background: annual === o.value
-                            ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
-                            : "transparent",
-                          color: annual === o.value ? "#fff" : "rgba(255,255,255,0.6)",
-                        }}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </>
-                )}
+                {[
+                  { label: "3 Monate", value: false },
+                  { label: "12 Monate · -10 %", value: true },
+                ].map((o) => (
+                  <button
+                    key={o.label}
+                    onClick={() => setAnnual(o.value)}
+                    className="rounded-full px-4 py-1.5 text-xs font-semibold transition"
+                    style={{
+                      background: annual === o.value
+                        ? `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})`
+                        : "transparent",
+                      color: annual === o.value ? "#fff" : "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    {o.label}
+                  </button>
+                ))}
               </div>
             </section>
           )}
@@ -438,7 +411,7 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
               </>
             ) : (
               <>
-                <div className="flex justify-between"><span className="text-white/60">{productType === "ads" ? "Verwaltung / Monat" : "Monatlich"}</span><span className="font-bold">{monthlyPrice.toLocaleString("de-DE")} € netto</span></div>
+                <div className="flex justify-between"><span className="text-white/60">{productType === "quickfix" ? "Verwaltung / Monat" : "Monatlich"}</span><span className="font-bold">{monthlyPrice.toLocaleString("de-DE")} € netto</span></div>
                 <div className="flex justify-between"><span className="text-white/60">Setup einmalig</span><span className="font-bold">{setupPrice.toLocaleString("de-DE")} € netto</span></div>
                 <div className="flex justify-between border-t border-white/10 pt-1"><span className="text-white/60">Gesamtinvest {duration} Monate</span><span className="font-extrabold" style={{ color: BRAND.blue }}>{totalLaufzeit.toLocaleString("de-DE")} € netto</span></div>
               </>

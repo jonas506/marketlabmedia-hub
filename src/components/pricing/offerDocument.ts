@@ -109,7 +109,7 @@ export const germanDate = (d = new Date()) =>
 export const germanDateShort = (d: Date) =>
   d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-export type ProductType = "content" | "trial" | "ads";
+export type ProductType = "content" | "trial" | "ads" | "quickfix";
 
 type BuildInput = {
   offerNumber: string;
@@ -186,6 +186,39 @@ const ADS_POSITIONS = (setupPrice: number, monthlyPrice: number, durationMonths:
   });
   return positions;
 };
+
+const QUICKFIX_POSITIONS = (): OfferPosition[] => [
+  {
+    id: uid(),
+    title: "Strategie & Setup inkl. Landingpage",
+    description:
+      "Positionierung, Content-Strategie, Lead-Mechanik, ManyChat-Automation, Freebie-Anbindung und eine conversion-optimierte Landingpage.",
+    calc: "einmalig, pauschal",
+    amount: 3000,
+  },
+  {
+    id: uid(),
+    title: "Drehtag",
+    description: "Ein Produktionstag vor Ort mit 21 Videos und 21 Bild-Creatives für deine Kampagne.",
+    calc: "einmalig, pauschal",
+    amount: 1500,
+  },
+  {
+    id: uid(),
+    title: "Bearbeitung",
+    description: "Schnitt, Untertitel, Formatierung und Finalisierung von 21 Videos.",
+    calc: "21 × 50 €",
+    amount: 1050,
+  },
+  {
+    id: uid(),
+    title: "Verwaltung",
+    description:
+      "Laufende Kampagnensteuerung, Optimierung von Creatives, Zielgruppen und Bidding, monatliches Reporting. Laufzeit 3 Monate.",
+    calc: "3 × 1.000 €",
+    amount: 3000,
+  },
+];
 
 export function buildDefaultDocument(input: BuildInput): OfferDoc {
   const {
@@ -284,6 +317,36 @@ export function buildDefaultDocument(input: BuildInput): OfferDoc {
       { id: uid(), label: "Zahlungsziel", value: "7 Tage" },
     ];
     paymentFootnote = "Setup zu Beginn, danach monatliche Verwaltung. Werbebudget separat.";
+  } else if (productType === "quickfix") {
+    positions = QUICKFIX_POSITIONS();
+    headerKicker = "QUICK FIX PRO · LEAD-KAMPAGNE";
+    eyebrow = "PAID ADS · LEADGENERIERUNG";
+    titleMain = "Quick Fix Pro.";
+    scopeLines = ["3 Monate", "Lead-Kampagne", "Setup, Drehtag, Bearbeitung & Verwaltung"];
+    recurringLabel = "Laufende Verwaltung";
+    recurringValue = "1.000 € / Monat";
+    footnotes = [
+      "Alle Preise netto, zzgl. 19 % USt.",
+      "Das Werbebudget wird zusätzlich fällig und direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag.",
+      "Optionale Bild-Creatives (21 Stück) können für 1.050 € hinzugebucht werden. Bild-Ads werden nach tatsächlichem Verbrauch à 50 € abgerechnet.",
+    ];
+    splitLeftText =
+      "Strategie, Landingpage, Lead-Mechanik, Drehtag mit 21 Videos und 21 Bild-Creatives, Schnitt, Verwaltung und Optimierung der Kampagne.";
+    splitRightText =
+      "Freigabe der Creatives und Zielgruppen, Zugriff auf Werbekonto und Pixel sowie fachliche Freigabe der Landingpage-Inhalte.";
+    included = [
+      "Strategie & Setup inkl. Landingpage",
+      "Drehtag mit 21 Videos und 21 Bild-Creatives",
+      "Bearbeitung von 21 Videos",
+      "3 Monate Verwaltung & Optimierung",
+      "Conversion-Tracking und Pixel-Einrichtung",
+      "Monatliches Reporting zu Spend und Leads",
+    ];
+    conditions = [
+      { id: uid(), label: "Laufzeit", value: "3 Monate" },
+      { id: uid(), label: "Zahlungsziel", value: "7 Tage" },
+    ];
+    paymentFootnote = "Setup, Drehtag und Bearbeitung zu Beginn, danach monatliche Verwaltung. Werbebudget separat.";
   } else {
     positions = CONTENT_POSITIONS(planName, setupPrice, monthlyPrice, durationMonths);
   }
