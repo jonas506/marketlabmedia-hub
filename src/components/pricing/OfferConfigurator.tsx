@@ -45,7 +45,6 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
   const [productType, setProductType] = useState<ProductType>("content");
   const [planKey, setPlanKey] = useState<string>(plans[1]?.key ?? plans[0].key);
   const [annual, setAnnual] = useState(false);
-  const [adsDuration, setAdsDuration] = useState<3 | 6 | 12>(3);
   const [discountPct, setDiscountPct] = useState(0);
   const [selectedAddons, setSelectedAddons] = useState<Record<string, number>>({});
   const [leadSearch, setLeadSearch] = useState("");
