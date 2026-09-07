@@ -406,7 +406,9 @@ const Pricing = () => {
                     </div>
                   </div>
                 ))}
+              </div>
             </div>
+
 
             <LeadCalculator />
           </motion.div>
