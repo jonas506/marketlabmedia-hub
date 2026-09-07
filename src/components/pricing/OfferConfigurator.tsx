@@ -67,14 +67,14 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
     if (productType === "trial") {
       return { setup: 0, monthly: 2000, duration: 1, discountable: false };
     }
-    if (productType === "ads") {
-      const monthly = Math.round(750 * (1 - discountPct / 100));
-      return { setup: 1500, monthly, duration: adsDuration, discountable: true };
+    if (productType === "quickfix") {
+      const monthly = Math.round(1000 * (1 - discountPct / 100));
+      return { setup: 3000, monthly, duration: 3, discountable: true };
     }
     const base = annual ? plan.price12 : plan.price3;
     const monthly = Math.round(base * (1 - discountPct / 100));
     return { setup: plan.setup, monthly, duration: annual ? 12 : 3, discountable: true };
-  }, [productType, plan, annual, adsDuration, discountPct]);
+  }, [productType, plan, annual, discountPct]);
 
   const { setup: setupPrice, monthly: monthlyPrice, duration } = pricing;
   const totalLaufzeit = monthlyPrice * duration + setupPrice;
