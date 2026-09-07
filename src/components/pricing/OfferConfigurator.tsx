@@ -412,7 +412,7 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
               </>
             ) : (
               <>
-                <div className="flex justify-between"><span className="text-white/60">{productType === "ads" ? "Verwaltung / Monat" : "Monatlich"}</span><span className="font-bold">{monthlyPrice.toLocaleString("de-DE")} € netto</span></div>
+                <div className="flex justify-between"><span className="text-white/60">{productType === "quickfix" ? "Verwaltung / Monat" : "Monatlich"}</span><span className="font-bold">{monthlyPrice.toLocaleString("de-DE")} € netto</span></div>
                 <div className="flex justify-between"><span className="text-white/60">Setup einmalig</span><span className="font-bold">{setupPrice.toLocaleString("de-DE")} € netto</span></div>
                 <div className="flex justify-between border-t border-white/10 pt-1"><span className="text-white/60">Gesamtinvest {duration} Monate</span><span className="font-extrabold" style={{ color: BRAND.blue }}>{totalLaufzeit.toLocaleString("de-DE")} € netto</span></div>
               </>
