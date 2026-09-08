@@ -12,6 +12,8 @@ import MagicInput from "@/components/crm/MagicInput";
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, useCrmPipelines, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
 import PipelineSwitcher from "@/components/crm/PipelineSwitcher";
+import { useLeadPipelines } from "@/hooks/useLeadPipelines";
+
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,6 +47,8 @@ export default function CRMHome() {
   const { data: pipelines = [] } = useCrmPipelines();
   const [activePipeline, setActivePipeline] = useState<string | null>(null);
   const { data: stages = [] } = useCrmStages(activePipeline);
+  const { data: memberships = [] } = useLeadPipelines();
+
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
   const [sortAsc, setSortAsc] = useState(false);
