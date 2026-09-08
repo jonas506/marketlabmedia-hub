@@ -71,10 +71,24 @@ export default function CRMHome() {
   };
 
   const defaultPipelineId = pipelines[0]?.id ?? null;
-  const pipelineLeads = useMemo(
-    () => leads.filter(l => (l.pipeline_id ?? defaultPipelineId) === activePipeline),
-    [leads, activePipeline, defaultPipelineId]
-  );
+  const pipelineLeads = useMemo(() => {
+    const byLead = new Map<string, typeof memberships>();
+    memberships.forEach(m => {
+      const arr = byLead.get(m.lead_id) ?? [];
+      arr.push(m);
+      byLead.set(m.lead_id, arr);
+    });
+    return leads.flatMap(l => {
+      const mine = byLead.get(l.id) ?? [];
+      if (mine.length === 0) {
+        // legacy fallback: leads without explicit assignment live in their (or the default) pipeline
+        return (l.pipeline_id ?? defaultPipelineId) === activePipeline ? [l] : [];
+      }
+      const hit = mine.find(m => m.pipeline_id === activePipeline);
+      return hit ? [{ ...l, stage: hit.stage }] : [];
+    });
+  }, [leads, memberships, activePipeline, defaultPipelineId]);
+
 
   // Leads table
   const filteredLeads = useMemo(() => {
