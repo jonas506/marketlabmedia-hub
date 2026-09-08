@@ -1614,6 +1614,7 @@ export type Database = {
           next_step: string | null
           next_step_date: string | null
           notes: string | null
+          pipeline_id: string | null
           profile_image_url: string | null
           setting_call_answers: Json
           source: string | null
@@ -1644,6 +1645,7 @@ export type Database = {
           next_step?: string | null
           next_step_date?: string | null
           notes?: string | null
+          pipeline_id?: string | null
           profile_image_url?: string | null
           setting_call_answers?: Json
           source?: string | null
@@ -1674,6 +1676,7 @@ export type Database = {
           next_step?: string | null
           next_step_date?: string | null
           notes?: string | null
+          pipeline_id?: string | null
           profile_image_url?: string | null
           setting_call_answers?: Json
           source?: string | null
@@ -1683,6 +1686,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_leads_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipelines"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_leads_status_id_fkey"
             columns: ["status_id"]
@@ -1780,6 +1790,7 @@ export type Database = {
           is_loss: boolean
           is_win: boolean
           label: string
+          pipeline_id: string | null
           sort_order: number
           value: string
         }
@@ -1790,6 +1801,7 @@ export type Database = {
           is_loss?: boolean
           is_win?: boolean
           label: string
+          pipeline_id?: string | null
           sort_order?: number
           value: string
         }
@@ -1800,10 +1812,19 @@ export type Database = {
           is_loss?: boolean
           is_win?: boolean
           label?: string
+          pipeline_id?: string | null
           sort_order?: number
           value?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_stage_config_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "crm_pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_tasks: {
         Row: {
