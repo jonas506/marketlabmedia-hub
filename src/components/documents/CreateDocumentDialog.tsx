@@ -127,6 +127,8 @@ export default function CreateDocumentDialog({
           lead_id: leadId,
           subject: subject.trim(),
           message_body: body,
+          amount_net: amount.trim() ? Number(amount.replace(/\./g, "").replace(",", ".")) : null,
+          amount_source: amountSource,
           expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
           created_by: userData.user?.id ?? null,
           status: "draft",
