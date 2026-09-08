@@ -461,3 +461,21 @@ const Row = ({ label, value }: { label: string; value: string }) => (
     <dd className="min-w-0 flex-1 break-all">{value}</dd>
   </div>
 );
+
+const Stat = ({
+  label,
+  value,
+  hint,
+  accent,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  accent: string;
+}) => (
+  <div className="rounded-xl border border-border bg-surface-elevated p-4">
+    <div className="text-xs text-muted-foreground">{label}</div>
+    <div className={`mt-1 text-2xl font-bold tabular-nums ${accent}`}>{value}</div>
+    <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>
+  </div>
+);
