@@ -10,7 +10,8 @@ import PipelineBoard from "@/components/crm/PipelineBoard";
 import MagicInput from "@/components/crm/MagicInput";
 
 import { getSourceInfo } from "@/lib/crm-constants";
-import { useCrmStages, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
+import { useCrmStages, useCrmPipelines, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
+import PipelineSwitcher from "@/components/crm/PipelineSwitcher";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,6 +32,7 @@ type Lead = {
   created_at: string;
   profile_image_url: string | null;
   instagram_handle: string | null;
+  pipeline_id: string | null;
 };
 
 export default function CRMHome() {
@@ -40,16 +42,22 @@ export default function CRMHome() {
   const [tab, setTab] = useState(defaultTab);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const { data: stages = [] } = useCrmStages();
+  const { data: pipelines = [] } = useCrmPipelines();
+  const [activePipeline, setActivePipeline] = useState<string | null>(null);
+  const { data: stages = [] } = useCrmStages(activePipeline);
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
   const [sortAsc, setSortAsc] = useState(false);
   const isMobile = useIsMobile();
 
+  useEffect(() => {
+    if (!activePipeline && pipelines.length > 0) setActivePipeline(pipelines[0].id);
+  }, [pipelines, activePipeline]);
+
   const fetchLeads = async () => {
     const { data } = await supabase
       .from("crm_leads")
-      .select("id, name, contact_name, contact_email, contact_phone, stage, source, deal_value, next_step, next_step_date, last_activity_at, created_at, profile_image_url, instagram_handle")
+      .select("id, name, contact_name, contact_email, contact_phone, stage, source, deal_value, next_step, next_step_date, last_activity_at, created_at, profile_image_url, instagram_handle, pipeline_id")
       .order("last_activity_at", { ascending: false });
     setLeads((data as Lead[]) ?? []);
     setLoading(false);
@@ -61,6 +69,12 @@ export default function CRMHome() {
     setTab(v);
     setSearchParams(v === "pipeline" ? {} : { tab: v });
   };
+
+  const defaultPipelineId = pipelines[0]?.id ?? null;
+  const pipelineLeads = useMemo(
+    () => leads.filter(l => (l.pipeline_id ?? defaultPipelineId) === activePipeline),
+    [leads, activePipeline, defaultPipelineId]
+  );
 
   // Leads table
   const filteredLeads = useMemo(() => {
@@ -116,12 +130,15 @@ export default function CRMHome() {
           </TabsList>
 
           <TabsContent value="pipeline">
+            <div className="mb-3">
+              <PipelineSwitcher pipelines={pipelines} activeId={activePipeline} onSelect={setActivePipeline} />
+            </div>
             {loading ? (
               <div className="flex justify-center py-12">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
             ) : (
-              <PipelineBoard leads={leads} onRefresh={fetchLeads} />
+              <PipelineBoard leads={pipelineLeads} onRefresh={fetchLeads} pipelineId={activePipeline} />
             )}
           </TabsContent>
 
