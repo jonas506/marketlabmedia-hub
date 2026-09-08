@@ -83,6 +83,8 @@ export default function CreateDocumentDialog({
     setRecipientEmail("");
     setLeadId(null);
     setExpiresAt("");
+    setAmount("");
+    setAmountSource(null);
   };
 
   const pickFile = (f: File | null) => {
