@@ -2749,6 +2749,9 @@ export type Database = {
       signature_documents: {
         Row: {
           accepted_at: string | null
+          amount_currency: string
+          amount_net: number | null
+          amount_source: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
@@ -2772,6 +2775,9 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          amount_currency?: string
+          amount_net?: number | null
+          amount_source?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -2795,6 +2801,9 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          amount_currency?: string
+          amount_net?: number | null
+          amount_source?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
