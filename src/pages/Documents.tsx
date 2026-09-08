@@ -51,6 +51,8 @@ interface Doc {
   viewed_at: string | null;
   accepted_at: string | null;
   created_at: string;
+  amount_net: number | null;
+  amount_source: string | null;
 }
 
 interface Acceptance {
