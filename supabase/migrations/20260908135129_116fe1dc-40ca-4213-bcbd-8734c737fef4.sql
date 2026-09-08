@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.sync_lead_open_offer_value() FROM PUBLIC, anon, authenticated;

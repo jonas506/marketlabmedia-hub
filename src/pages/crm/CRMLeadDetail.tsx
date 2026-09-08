@@ -106,6 +106,22 @@ export default function CRMLeadDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: crmStages = [] } = useCrmStages();
+  const { data: leadDocuments = [] } = useQuery({
+    queryKey: ["lead-documents", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("signature_documents")
+        .select("id, title, status, amount_net, created_at, token")
+        .eq("lead_id", id!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const openOfferTotal = leadDocuments
+    .filter(d => ["draft", "sent", "viewed"].includes(d.status))
+    .reduce((s, d) => s + Number(d.amount_net || 0), 0);
   const [lead, setLead] = useState<LeadData | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showActivity, setShowActivity] = useState(false);
@@ -875,6 +891,56 @@ export default function CRMLeadDetail() {
                     })}
                   </div>
                 )}
+              </div>
+
+              {/* ANGEBOTE / DOKUMENTE */}
+              <div className="border-b border-border">
+                <div className="flex items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <FileText className="h-3 w-3" />
+                  Angebote
+                  {openOfferTotal > 0 && (
+                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-primary">
+                      {openOfferTotal.toLocaleString("de-DE")} € offen
+                    </span>
+                  )}
+                </div>
+                <div className="px-4 pb-4 space-y-2">
+                  {leadDocuments.length === 0 ? (
+                    <p className="text-xs text-muted-foreground/60">
+                      Noch kein Angebot verknüpft.{" "}
+                      <Link to="/dokumente" className="text-primary hover:underline">Dokumente öffnen</Link>
+                    </p>
+                  ) : (
+                    leadDocuments.map(doc => (
+                      <Link
+                        key={doc.id}
+                        to="/dokumente"
+                        className="flex items-center gap-2 rounded-lg border border-border bg-background/40 px-2.5 py-2 hover:border-primary/50 transition-colors"
+                      >
+                        <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs text-foreground/80">{doc.title}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {doc.status === "accepted"
+                              ? "angenommen"
+                              : doc.status === "revoked"
+                                ? "zurückgezogen"
+                                : doc.status === "draft"
+                                  ? "Entwurf"
+                                  : doc.status === "sent"
+                                    ? "versendet"
+                                    : "angesehen"}
+                          </div>
+                        </div>
+                        {doc.amount_net != null && (
+                          <span className="shrink-0 text-xs font-semibold text-foreground/70">
+                            {Number(doc.amount_net).toLocaleString("de-DE")} €
+                          </span>
+                        )}
+                      </Link>
+                    ))
+                  )}
+                </div>
               </div>
 
               {/* TO-DOS */}
