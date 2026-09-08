@@ -292,6 +292,53 @@ export default function Documents() {
                       </AlertDialogContent>
                     </AlertDialog>
                   )}
+                  {selected.status !== "accepted" && selected.status !== "revoked" && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-1.5 text-emerald-500">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Als angenommen markieren
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Angebot als angenommen markieren?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Nutze das, wenn die Zusage außerhalb des Links erfolgt ist (z. B. per Mail oder
+                            Telefon). Die Summe zählt danach nicht mehr zu den offenen Angeboten.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => markAccepted(selected)}>
+                            Als angenommen markieren
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+
+                <div className="rounded-xl border border-border p-4">
+                  <Label htmlFor="amt" className="text-xs text-muted-foreground">
+                    Angebotssumme (netto, €)
+                  </Label>
+                  <div className="mt-1.5 flex gap-2">
+                    <Input
+                      id="amt"
+                      inputMode="decimal"
+                      value={amountDraft}
+                      onChange={(e) => setAmountDraft(e.target.value)}
+                      placeholder="z. B. 8550"
+                    />
+                    <Button variant="outline" onClick={() => saveAmount(selected)} disabled={busy}>
+                      Speichern
+                    </Button>
+                  </div>
+                  {selected.amount_source && (
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      Erkannt aus der PDF: {selected.amount_source}
+                    </p>
+                  )}
                 </div>
 
                 {acceptance && (
