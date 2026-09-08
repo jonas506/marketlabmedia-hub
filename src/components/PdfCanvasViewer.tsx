@@ -40,7 +40,7 @@ export default function PdfCanvasViewer({ url, className, onPages }: Props) {
           canvas.width = viewport.width;
           canvas.height = viewport.height;
           const ctx = canvas.getContext("2d")!;
-          await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+          await page.render({ canvasContext: ctx, viewport }).promise;
           out.push(canvas.toDataURL("image/jpeg", 0.9));
           if (cancelled) return;
           setPages([...out]);
