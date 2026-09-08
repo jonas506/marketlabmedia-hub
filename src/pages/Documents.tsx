@@ -160,6 +160,7 @@ export default function Documents() {
   const openDetail = async (doc: Doc) => {
     setSelected(doc);
     setAcceptance(null);
+    setAmountDraft(doc.amount_net != null ? String(doc.amount_net).replace(".", ",") : "");
     setPdfUrl(null);
     const [{ data: acc }, { data: signed }] = await Promise.all([
       supabase
