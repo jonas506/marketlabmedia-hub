@@ -78,6 +78,9 @@ const fmt = (d?: string | null) =>
 const fmtFull = (d?: string | null) =>
   d ? new Date(d).toLocaleString("de-DE", { timeZone: "Europe/Berlin" }) : "—";
 
+const eur = (n: number) =>
+  n.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+
 export default function Documents() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
