@@ -59,6 +59,9 @@ export default function CreateDocumentDialog({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [amountSource, setAmountSource] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
