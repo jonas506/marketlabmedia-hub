@@ -17,9 +17,10 @@ const PRESET_COLORS = [
 
 interface Props {
   stages: CrmStageConfig[];
+  pipelineId?: string | null;
 }
 
-export default function PipelineSettings({ stages: initialStages }: Props) {
+export default function PipelineSettings({ stages: initialStages, pipelineId }: Props) {
   const [open, setOpen] = useState(false);
   const [stages, setStages] = useState<CrmStageConfig[]>([]);
   const [saving, setSaving] = useState(false);
