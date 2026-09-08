@@ -177,6 +177,27 @@ export default function Documents() {
           </Button>
         </div>
 
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+          <Stat
+            label="Offene Angebotssumme"
+            value={eur(totals.open)}
+            hint={`${totals.openCount} offen (gesendet / angesehen)`}
+            accent="text-amber-500"
+          />
+          <Stat
+            label="Angenommen"
+            value={eur(totals.accepted)}
+            hint={`${totals.acceptedCount} Angebote`}
+            accent="text-emerald-500"
+          />
+          <Stat
+            label="Entwürfe"
+            value={eur(totals.draft)}
+            hint={`${totals.draftCount} noch nicht versendet`}
+            accent="text-muted-foreground"
+          />
+        </div>
+
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
