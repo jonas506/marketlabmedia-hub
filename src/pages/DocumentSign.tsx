@@ -32,6 +32,7 @@ export default function DocumentSign() {
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     document.title = "Dokument bestätigen — Marketlab Media";
