@@ -210,6 +210,9 @@ export default function Documents() {
                   <div className="hidden text-right text-xs text-muted-foreground sm:block">
                     {fmt(doc.sent_at ?? doc.created_at)}
                   </div>
+                  <div className="shrink-0 text-right text-sm font-semibold tabular-nums">
+                    {doc.amount_net != null ? eur(Number(doc.amount_net)) : "—"}
+                  </div>
                   <Badge className={`${st.className} shrink-0 border-0`}>{st.label}</Badge>
                 </button>
               );
