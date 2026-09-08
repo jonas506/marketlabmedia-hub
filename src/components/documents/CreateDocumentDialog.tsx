@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { FileText, Loader2, Search, Send, Upload, X } from "lucide-react";
+import { FileText, Loader2, ScanLine, Search, Send, Upload, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { scanPdfAmount } from "@/lib/pdf-amount";
 
 interface Lead {
   id: string;
@@ -58,6 +59,9 @@ export default function CreateDocumentDialog({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [amountSource, setAmountSource] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -79,6 +83,8 @@ export default function CreateDocumentDialog({
     setRecipientEmail("");
     setLeadId(null);
     setExpiresAt("");
+    setAmount("");
+    setAmountSource(null);
   };
 
   const pickFile = (f: File | null) => {
@@ -94,6 +100,28 @@ export default function CreateDocumentDialog({
     setFile(f);
     if (!title) setTitle(f.name.replace(/\.pdf$/i, ""));
     if (!subject) setSubject(`Dein Angebot: ${f.name.replace(/\.pdf$/i, "")}`);
+    void scan(f);
+  };
+
+  const scan = async (f: File) => {
+    setScanning(true);
+    try {
+      const res = await scanPdfAmount(f);
+      if (res.amount) {
+        setAmount(String(res.amount).replace(".", ","));
+        setAmountSource(res.source);
+      } else {
+        setAmountSource(null);
+        toast({
+          title: "Keine Summe erkannt",
+          description: "Bitte die Angebotssumme manuell eintragen.",
+        });
+      }
+    } catch {
+      setAmountSource(null);
+    } finally {
+      setScanning(false);
+    }
   };
 
   const submit = async (send: boolean) => {
@@ -126,6 +154,8 @@ export default function CreateDocumentDialog({
           lead_id: leadId,
           subject: subject.trim(),
           message_body: body,
+          amount_net: amount.trim() ? Number(amount.replace(/\./g, "").replace(",", ".")) : null,
+          amount_source: amountSource,
           expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
           created_by: userData.user?.id ?? null,
           status: "draft",
@@ -221,6 +251,34 @@ export default function CreateDocumentDialog({
               className="mt-1.5"
               placeholder="Angebot Basic — Muster GmbH"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="doc-amount" className="flex items-center gap-2">
+              Angebotssumme (netto, €)
+              {scanning && (
+                <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> PDF wird gescannt…
+                </span>
+              )}
+            </Label>
+            <Input
+              id="doc-amount"
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                setAmountSource("manuell erfasst");
+              }}
+              className="mt-1.5"
+              placeholder="z. B. 8550"
+            />
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <ScanLine className="h-3 w-3" />
+              {amountSource
+                ? `Erkannt: ${amountSource} — bitte prüfen.`
+                : "Wird beim Upload automatisch aus der PDF gelesen."}
+            </p>
           </div>
 
           {/* Recipient */}

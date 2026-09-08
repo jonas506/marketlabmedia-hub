@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -51,6 +53,8 @@ interface Doc {
   viewed_at: string | null;
   accepted_at: string | null;
   created_at: string;
+  amount_net: number | null;
+  amount_source: string | null;
 }
 
 interface Acceptance {
@@ -76,6 +80,9 @@ const fmt = (d?: string | null) =>
 const fmtFull = (d?: string | null) =>
   d ? new Date(d).toLocaleString("de-DE", { timeZone: "Europe/Berlin" }) : "—";
 
+const eur = (n: number) =>
+  n.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+
 export default function Documents() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +91,56 @@ export default function Documents() {
   const [acceptance, setAcceptance] = useState<Acceptance | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [amountDraft, setAmountDraft] = useState("");
+
+  const totals = docs.reduce(
+    (acc, d) => {
+      const v = Number(d.amount_net ?? 0);
+      if (d.status === "sent" || d.status === "viewed") {
+        acc.open += v;
+        acc.openCount += 1;
+      } else if (d.status === "accepted") {
+        acc.accepted += v;
+        acc.acceptedCount += 1;
+      } else if (d.status === "draft") {
+        acc.draft += v;
+        acc.draftCount += 1;
+      }
+      return acc;
+    },
+    { open: 0, openCount: 0, accepted: 0, acceptedCount: 0, draft: 0, draftCount: 0 },
+  );
+
+  const saveAmount = async (doc: Doc) => {
+    setBusy(true);
+    const parsed = amountDraft.trim()
+      ? Number(amountDraft.replace(/\./g, "").replace(",", "."))
+      : null;
+    if (parsed !== null && !Number.isFinite(parsed)) {
+      setBusy(false);
+      return toast({ title: "Ungültige Summe", variant: "destructive" });
+    }
+    const { error } = await supabase
+      .from("signature_documents")
+      .update({ amount_net: parsed, amount_source: "manuell erfasst" })
+      .eq("id", doc.id);
+    setBusy(false);
+    if (error) return toast({ title: "Fehler", description: error.message, variant: "destructive" });
+    toast({ title: "Summe gespeichert" });
+    setSelected({ ...doc, amount_net: parsed, amount_source: "manuell erfasst" });
+    await load();
+  };
+
+  const markAccepted = async (doc: Doc) => {
+    const { error } = await supabase
+      .from("signature_documents")
+      .update({ status: "accepted", accepted_at: new Date().toISOString() })
+      .eq("id", doc.id);
+    if (error) return toast({ title: "Fehler", description: error.message, variant: "destructive" });
+    toast({ title: "Als angenommen markiert" });
+    await load();
+    setSelected(null);
+  };
 
   const load = async () => {
     setLoading(true);
@@ -103,6 +160,7 @@ export default function Documents() {
   const openDetail = async (doc: Doc) => {
     setSelected(doc);
     setAcceptance(null);
+    setAmountDraft(doc.amount_net != null ? String(doc.amount_net).replace(".", ",") : "");
     setPdfUrl(null);
     const [{ data: acc }, { data: signed }] = await Promise.all([
       supabase
@@ -172,6 +230,27 @@ export default function Documents() {
           </Button>
         </div>
 
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+          <Stat
+            label="Offene Angebotssumme"
+            value={eur(totals.open)}
+            hint={`${totals.openCount} offen (gesendet / angesehen)`}
+            accent="text-amber-500"
+          />
+          <Stat
+            label="Angenommen"
+            value={eur(totals.accepted)}
+            hint={`${totals.acceptedCount} Angebote`}
+            accent="text-emerald-500"
+          />
+          <Stat
+            label="Entwürfe"
+            value={eur(totals.draft)}
+            hint={`${totals.draftCount} noch nicht versendet`}
+            accent="text-muted-foreground"
+          />
+        </div>
+
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -204,6 +283,9 @@ export default function Documents() {
                   </div>
                   <div className="hidden text-right text-xs text-muted-foreground sm:block">
                     {fmt(doc.sent_at ?? doc.created_at)}
+                  </div>
+                  <div className="shrink-0 text-right text-sm font-semibold tabular-nums">
+                    {doc.amount_net != null ? eur(Number(doc.amount_net)) : "—"}
                   </div>
                   <Badge className={`${st.className} shrink-0 border-0`}>{st.label}</Badge>
                 </button>
@@ -287,6 +369,53 @@ export default function Documents() {
                       </AlertDialogContent>
                     </AlertDialog>
                   )}
+                  {selected.status !== "accepted" && selected.status !== "revoked" && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-1.5 text-emerald-500">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Als angenommen markieren
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Angebot als angenommen markieren?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Nutze das, wenn die Zusage außerhalb des Links erfolgt ist (z. B. per Mail oder
+                            Telefon). Die Summe zählt danach nicht mehr zu den offenen Angeboten.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => markAccepted(selected)}>
+                            Als angenommen markieren
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+
+                <div className="rounded-xl border border-border p-4">
+                  <Label htmlFor="amt" className="text-xs text-muted-foreground">
+                    Angebotssumme (netto, €)
+                  </Label>
+                  <div className="mt-1.5 flex gap-2">
+                    <Input
+                      id="amt"
+                      inputMode="decimal"
+                      value={amountDraft}
+                      onChange={(e) => setAmountDraft(e.target.value)}
+                      placeholder="z. B. 8550"
+                    />
+                    <Button variant="outline" onClick={() => saveAmount(selected)} disabled={busy}>
+                      Speichern
+                    </Button>
+                  </div>
+                  {selected.amount_source && (
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      Erkannt aus der PDF: {selected.amount_source}
+                    </p>
+                  )}
                 </div>
 
                 {acceptance && (
@@ -331,5 +460,23 @@ const Row = ({ label, value }: { label: string; value: string }) => (
   <div className="flex gap-3">
     <dt className="w-24 shrink-0 text-muted-foreground">{label}</dt>
     <dd className="min-w-0 flex-1 break-all">{value}</dd>
+  </div>
+);
+
+const Stat = ({
+  label,
+  value,
+  hint,
+  accent,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  accent: string;
+}) => (
+  <div className="rounded-xl border border-border bg-surface-elevated p-4">
+    <div className="text-xs text-muted-foreground">{label}</div>
+    <div className={`mt-1 text-2xl font-bold tabular-nums ${accent}`}>{value}</div>
+    <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>
   </div>
 );
