@@ -121,11 +121,14 @@ export default function DocumentSign() {
         )}
 
         {/* PDF */}
-        <div className="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-            <div className="flex min-w-0 items-center gap-2 text-sm text-white/70">
+        <div className="mt-8">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2 text-sm text-white/60">
               <FileText className="h-4 w-4 shrink-0" style={{ color: BRAND.blue }} />
               <span className="truncate">{doc.file_name || "Dokument.pdf"}</span>
+              {pageCount > 0 && (
+                <span className="shrink-0 text-white/35">· {pageCount} Seite{pageCount > 1 ? "n" : ""}</span>
+              )}
             </div>
             {doc.pdf_url && (
               <a
@@ -138,13 +141,7 @@ export default function DocumentSign() {
               </a>
             )}
           </div>
-          {doc.pdf_url && (
-            <iframe
-              src={`${doc.pdf_url}#view=FitH`}
-              title="Dokument"
-              className="h-[600px] w-full bg-white"
-            />
-          )}
+          {doc.pdf_url && <PdfCanvasViewer url={doc.pdf_url} onPages={setPageCount} />}
         </div>
 
         {/* Acceptance */}
