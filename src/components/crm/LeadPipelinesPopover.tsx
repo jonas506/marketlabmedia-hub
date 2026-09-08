@@ -72,6 +72,20 @@ export default function LeadPipelinesPopover({ leadId }: { leadId: string }) {
   const mine = memberships.filter(m => m.lead_id === leadId);
   const refresh = () => qc.invalidateQueries({ queryKey: ["crm-lead-pipelines"] });
 
+  // Leads without any explicit assignment implicitly live in their current pipeline —
+  // persist that before adding a second one, so they don't vanish from the first board.
+  const seedCurrent = async () => {
+    if (mine.length > 0) return;
+    const { data } = await supabase
+      .from("crm_leads")
+      .select("stage, pipeline_id")
+      .eq("id", leadId)
+      .maybeSingle();
+    const target = data?.pipeline_id ?? pipelines[0]?.id;
+    if (data && target) await setLeadPipelineStage(leadId, target, data.stage);
+  };
+
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -95,7 +109,9 @@ export default function LeadPipelinesPopover({ leadId }: { leadId: string }) {
               pipelineId={p.id}
               name={p.name}
               stage={mine.find(m => m.pipeline_id === p.id)?.stage ?? null}
+              onBeforeAdd={seedCurrent}
               onChanged={refresh}
+
             />
           ))}
           {pipelines.length === 0 && <p className="text-sm text-muted-foreground py-2">Keine Pipelines vorhanden</p>}
