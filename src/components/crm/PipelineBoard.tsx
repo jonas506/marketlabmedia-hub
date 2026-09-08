@@ -332,11 +332,17 @@ export default function PipelineBoard({ leads, onRefresh, pipelineId }: Pipeline
     const lead = leads.find(l => l.id === leadId);
     if (!lead || lead.stage === newStage) return;
     const oldStage = lead.stage;
-    const { error } = await supabase
+    const errors: unknown[] = [];
+    if (pipelineId) {
+      const { error } = await setLeadPipelineStage(leadId, pipelineId, newStage);
+      if (error) errors.push(error);
+    }
+    const { error: leadErr } = await supabase
       .from("crm_leads")
       .update({ stage: newStage, last_activity_at: new Date().toISOString(), ...(pipelineId ? { pipeline_id: pipelineId } : {}) })
       .eq("id", leadId);
-    if (error) {
+    if (leadErr) errors.push(leadErr);
+    if (errors.length) {
       toast.error("Fehler beim Verschieben");
     } else {
       await supabase.from("crm_activities").insert({
@@ -346,9 +352,11 @@ export default function PipelineBoard({ leads, onRefresh, pipelineId }: Pipeline
         created_by: user!.id,
       });
       toast.success(`→ ${dynGetStageLabel(stages, newStage)}`);
+      await qc.invalidateQueries({ queryKey: ["crm-lead-pipelines"] });
       onRefresh();
     }
   };
+
 
   // Desktop drag handlers
   const handleDragStart = (e: React.DragEvent, id: string) => {
