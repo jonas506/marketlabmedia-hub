@@ -1,5 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { setLeadPipelineStage } from "@/hooks/useLeadPipelines";
+
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -258,6 +260,8 @@ function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeav
 
 export default function PipelineBoard({ leads, onRefresh, pipelineId }: PipelineBoardProps) {
   const { user } = useAuth();
+  const qc = useQueryClient();
+
   const isMobile = useIsMobile();
   const { data: stages = [] } = useCrmStages(pipelineId);
   const scrollRef = useRef<HTMLDivElement>(null);
