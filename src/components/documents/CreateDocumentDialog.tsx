@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { FileText, Loader2, Search, Send, Upload, X } from "lucide-react";
+import { FileText, Loader2, ScanLine, Search, Send, Upload, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { scanPdfAmount } from "@/lib/pdf-amount";
 
 interface Lead {
   id: string;
