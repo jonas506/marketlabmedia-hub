@@ -27,6 +27,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel } from "@/hooks/useCrmStages";
 import { useQuery } from "@tanstack/react-query";
+import LeadPipelinesPopover from "@/components/crm/LeadPipelinesPopover";
+
 
 const ACTIVITY_TYPES = [
   { value: "note", label: "Notiz", icon: StickyNote, color: "#F59E0B" },
