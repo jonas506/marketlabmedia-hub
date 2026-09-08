@@ -106,6 +106,22 @@ export default function CRMLeadDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: crmStages = [] } = useCrmStages();
+  const { data: leadDocuments = [] } = useQuery({
+    queryKey: ["lead-documents", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("signature_documents")
+        .select("id, title, status, amount_net, created_at, token")
+        .eq("lead_id", id!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const openOfferTotal = leadDocuments
+    .filter(d => ["draft", "sent", "viewed"].includes(d.status))
+    .reduce((s, d) => s + Number(d.amount_net || 0), 0);
   const [lead, setLead] = useState<LeadData | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showActivity, setShowActivity] = useState(false);
