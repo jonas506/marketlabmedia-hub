@@ -9,16 +9,37 @@ export type CrmStageConfig = {
   sort_order: number;
   is_win: boolean;
   is_loss: boolean;
+  pipeline_id?: string | null;
 };
 
-export function useCrmStages() {
+export type CrmPipeline = {
+  id: string;
+  name: string;
+  created_at: string;
+};
+
+export function useCrmPipelines() {
   return useQuery({
-    queryKey: ["crm-stage-config"],
+    queryKey: ["crm-pipelines"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("crm_stage_config")
+        .from("crm_pipelines")
         .select("*")
-        .order("sort_order");
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []) as CrmPipeline[];
+    },
+    staleTime: 60_000,
+  });
+}
+
+export function useCrmStages(pipelineId?: string | null) {
+  return useQuery({
+    queryKey: ["crm-stage-config", pipelineId ?? "all"],
+    queryFn: async () => {
+      let query = supabase.from("crm_stage_config").select("*").order("sort_order");
+      if (pipelineId) query = query.eq("pipeline_id", pipelineId);
+      const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as CrmStageConfig[];
     },

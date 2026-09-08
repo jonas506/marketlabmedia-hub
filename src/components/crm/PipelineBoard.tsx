@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,7 @@ type Lead = {
 interface PipelineBoardProps {
   leads: Lead[];
   onRefresh: () => void;
+  pipelineId?: string | null;
 }
 
 function getProfileImageUrl(lead: Lead): string | null {
@@ -255,10 +256,34 @@ function DropZone({ stage, isOver, children, onDragOver, onDragEnter, onDragLeav
   );
 }
 
-export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) {
+export default function PipelineBoard({ leads, onRefresh, pipelineId }: PipelineBoardProps) {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { data: stages = [] } = useCrmStages();
+  const { data: stages = [] } = useCrmStages(pipelineId);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Horizontal scrolling with mouse wheel / trackpad, no need for the bottom scrollbar
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) return;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; // native horizontal gesture
+      const target = e.target as HTMLElement;
+      // let vertical scrolling inside a column happen first
+      const scrollable = target.closest<HTMLElement>(".column-scroll");
+      if (scrollable) {
+        const atTop = scrollable.scrollTop <= 0;
+        const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
+        if ((e.deltaY < 0 && !atTop) || (e.deltaY > 0 && !atBottom)) return;
+      }
+      if (el.scrollWidth <= el.clientWidth) return;
+      el.scrollLeft += e.deltaY;
+      e.preventDefault();
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
   const { data: sourceTags = [] } = useQuery({
     queryKey: ["crm-source-tags"],
     queryFn: async () => {
@@ -309,7 +334,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
     const oldStage = lead.stage;
     const { error } = await supabase
       .from("crm_leads")
-      .update({ stage: newStage, last_activity_at: new Date().toISOString() })
+      .update({ stage: newStage, last_activity_at: new Date().toISOString(), ...(pipelineId ? { pipeline_id: pipelineId } : {}) })
       .eq("id", leadId);
     if (error) {
       toast.error("Fehler beim Verschieben");
@@ -413,7 +438,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
 
         {/* Settings */}
         <div className="flex items-center justify-end mb-2">
-          <PipelineSettings stages={stages} />
+          <PipelineSettings stages={stages} pipelineId={pipelineId} />
         </div>
 
         {/* Lead cards */}
@@ -462,9 +487,9 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
 
       {/* Kanban board */}
       <div className="flex items-center justify-end mb-2">
-        <PipelineSettings stages={stages} />
+        <PipelineSettings stages={stages} pipelineId={pipelineId} />
       </div>
-      <div className="max-w-full overflow-x-auto pb-2 flex-1 min-h-0" style={{ height: 'calc(100vh - 320px)' }}>
+      <div ref={scrollRef} className="max-w-full overflow-x-auto overscroll-x-contain pb-2 flex-1 min-h-0" style={{ height: 'calc(100vh - 320px)' }}>
         <div
           className="grid min-w-full w-max gap-3 h-full"
           style={{ gridTemplateColumns: `repeat(${pipelineStageConfigs.length}, minmax(240px, 240px)) repeat(${closedStageConfigs.length}, 180px)` }}
@@ -485,7 +510,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                 <span className="text-xs font-semibold uppercase tracking-wider">{stage.label}</span>
                 <span className="text-xs text-muted-foreground ml-auto">{byStage[stage.value]?.length ?? 0}</span>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+              <div className="column-scroll flex-1 overflow-y-auto space-y-2 min-h-0">
                 {(byStage[stage.value] ?? []).map(lead => (
                   <LeadCard key={lead.id} lead={lead} isDragging={draggedId === lead.id} onDragStart={handleDragStart} onDragEnd={handleDragEnd} sourceTags={sourceTags} />
                 ))}
@@ -526,7 +551,7 @@ export default function PipelineBoard({ leads, onRefresh }: PipelineBoardProps) 
                     <span className="text-[11px] text-muted-foreground ml-auto">{count}</span>
                   </button>
                   {!isCollapsed && count > 0 && (
-                    <div className="mt-1.5 space-y-1.5 max-h-48 overflow-y-auto">
+                    <div className="column-scroll mt-1.5 space-y-1.5 max-h-48 overflow-y-auto">
                       {(byStage[closedStage.value] ?? []).map(lead => (
                         <Link
                           key={lead.id}

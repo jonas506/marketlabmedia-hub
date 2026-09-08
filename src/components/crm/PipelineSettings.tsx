@@ -17,9 +17,10 @@ const PRESET_COLORS = [
 
 interface Props {
   stages: CrmStageConfig[];
+  pipelineId?: string | null;
 }
 
-export default function PipelineSettings({ stages: initialStages }: Props) {
+export default function PipelineSettings({ stages: initialStages, pipelineId }: Props) {
   const [open, setOpen] = useState(false);
   const [stages, setStages] = useState<CrmStageConfig[]>([]);
   const [saving, setSaving] = useState(false);
@@ -80,9 +81,13 @@ export default function PipelineSettings({ stages: initialStages }: Props) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Delete all existing, then insert fresh
-      await supabase.from("crm_stage_config").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-      
+      // Delete existing stages of this pipeline, then insert fresh
+      const del = supabase.from("crm_stage_config").delete();
+      const { error: delErr } = pipelineId
+        ? await del.eq("pipeline_id", pipelineId)
+        : await del.neq("id", "00000000-0000-0000-0000-000000000000");
+      if (delErr) throw delErr;
+
       const { error } = await supabase.from("crm_stage_config").insert(
         stages.map(s => ({
           id: s.id,
@@ -92,6 +97,7 @@ export default function PipelineSettings({ stages: initialStages }: Props) {
           sort_order: s.sort_order,
           is_win: s.is_win,
           is_loss: s.is_loss,
+          pipeline_id: pipelineId ?? s.pipeline_id ?? null,
         }))
       );
       
