@@ -224,6 +224,34 @@ export default function CreateDocumentDialog({
             />
           </div>
 
+          <div>
+            <Label htmlFor="doc-amount" className="flex items-center gap-2">
+              Angebotssumme (netto, €)
+              {scanning && (
+                <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> PDF wird gescannt…
+                </span>
+              )}
+            </Label>
+            <Input
+              id="doc-amount"
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                setAmountSource("manuell erfasst");
+              }}
+              className="mt-1.5"
+              placeholder="z. B. 8550"
+            />
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <ScanLine className="h-3 w-3" />
+              {amountSource
+                ? `Erkannt: ${amountSource} — bitte prüfen.`
+                : "Wird beim Upload automatisch aus der PDF gelesen."}
+            </p>
+          </div>
+
           {/* Recipient */}
           <div className="space-y-3 rounded-xl border border-border p-4">
             <div className="flex items-center justify-between">
