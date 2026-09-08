@@ -12,6 +12,8 @@ import MagicInput from "@/components/crm/MagicInput";
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, useCrmPipelines, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
 import PipelineSwitcher from "@/components/crm/PipelineSwitcher";
+import { useLeadPipelines } from "@/hooks/useLeadPipelines";
+
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,6 +47,8 @@ export default function CRMHome() {
   const { data: pipelines = [] } = useCrmPipelines();
   const [activePipeline, setActivePipeline] = useState<string | null>(null);
   const { data: stages = [] } = useCrmStages(activePipeline);
+  const { data: memberships = [] } = useLeadPipelines();
+
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
   const [sortAsc, setSortAsc] = useState(false);
@@ -71,10 +75,24 @@ export default function CRMHome() {
   };
 
   const defaultPipelineId = pipelines[0]?.id ?? null;
-  const pipelineLeads = useMemo(
-    () => leads.filter(l => (l.pipeline_id ?? defaultPipelineId) === activePipeline),
-    [leads, activePipeline, defaultPipelineId]
-  );
+  const pipelineLeads = useMemo(() => {
+    const byLead = new Map<string, typeof memberships>();
+    memberships.forEach(m => {
+      const arr = byLead.get(m.lead_id) ?? [];
+      arr.push(m);
+      byLead.set(m.lead_id, arr);
+    });
+    return leads.flatMap(l => {
+      const mine = byLead.get(l.id) ?? [];
+      if (mine.length === 0) {
+        // legacy fallback: leads without explicit assignment live in their (or the default) pipeline
+        return (l.pipeline_id ?? defaultPipelineId) === activePipeline ? [l] : [];
+      }
+      const hit = mine.find(m => m.pipeline_id === activePipeline);
+      return hit ? [{ ...l, stage: hit.stage }] : [];
+    });
+  }, [leads, memberships, activePipeline, defaultPipelineId]);
+
 
   // Leads table
   const filteredLeads = useMemo(() => {

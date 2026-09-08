@@ -27,6 +27,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel } from "@/hooks/useCrmStages";
 import { useQuery } from "@tanstack/react-query";
+import LeadPipelinesPopover from "@/components/crm/LeadPipelinesPopover";
+
 
 const ACTIVITY_TYPES = [
   { value: "note", label: "Notiz", icon: StickyNote, color: "#F59E0B" },
@@ -642,11 +644,14 @@ export default function CRMLeadDetail() {
                 </SelectContent>
               </Select>
 
+              <LeadPipelinesPopover leadId={lead.id} />
+
               {sourceInfo && (
                 <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${sourceInfo.color}`}>
                   {sourceInfo.label}
                 </span>
               )}
+
             </div>
 
             {/* Quick-add activity buttons */}
