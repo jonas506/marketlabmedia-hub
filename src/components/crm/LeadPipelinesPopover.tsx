@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCrmPipelines, useCrmStages } from "@/hooks/useCrmStages";
 import { useLeadPipelines, setLeadPipelineStage, removeLeadFromPipeline } from "@/hooks/useLeadPipelines";
 
-function PipelineRow({ leadId, pipelineId, name, stage, onChanged }: {
+function PipelineRow({ leadId, pipelineId, name, stage, onBeforeAdd, onChanged }: {
   leadId: string;
   pipelineId: string;
   name: string;
   stage: string | null;
+  onBeforeAdd: () => Promise<void>;
   onChanged: () => void;
 }) {
   const { data: stages = [] } = useCrmStages(pipelineId);
@@ -22,6 +23,7 @@ function PipelineRow({ leadId, pipelineId, name, stage, onChanged }: {
     if (checked) {
       const first = stages[0]?.value;
       if (!first) return toast.error("Diese Pipeline hat noch keine Stufen");
+      await onBeforeAdd();
       const { error } = await setLeadPipelineStage(leadId, pipelineId, first);
       if (error) return toast.error("Konnte nicht hinzugefügt werden");
     } else {
@@ -30,6 +32,7 @@ function PipelineRow({ leadId, pipelineId, name, stage, onChanged }: {
     }
     onChanged();
   };
+
 
   const changeStage = async (v: string) => {
     const { error } = await setLeadPipelineStage(leadId, pipelineId, v);
