@@ -100,6 +100,28 @@ export default function CreateDocumentDialog({
     setFile(f);
     if (!title) setTitle(f.name.replace(/\.pdf$/i, ""));
     if (!subject) setSubject(`Dein Angebot: ${f.name.replace(/\.pdf$/i, "")}`);
+    void scan(f);
+  };
+
+  const scan = async (f: File) => {
+    setScanning(true);
+    try {
+      const res = await scanPdfAmount(f);
+      if (res.amount) {
+        setAmount(String(res.amount).replace(".", ","));
+        setAmountSource(res.source);
+      } else {
+        setAmountSource(null);
+        toast({
+          title: "Keine Summe erkannt",
+          description: "Bitte die Angebotssumme manuell eintragen.",
+        });
+      }
+    } catch {
+      setAmountSource(null);
+    } finally {
+      setScanning(false);
+    }
   };
 
   const submit = async (send: boolean) => {
