@@ -89,6 +89,56 @@ export default function Documents() {
   const [acceptance, setAcceptance] = useState<Acceptance | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [amountDraft, setAmountDraft] = useState("");
+
+  const totals = docs.reduce(
+    (acc, d) => {
+      const v = Number(d.amount_net ?? 0);
+      if (d.status === "sent" || d.status === "viewed") {
+        acc.open += v;
+        acc.openCount += 1;
+      } else if (d.status === "accepted") {
+        acc.accepted += v;
+        acc.acceptedCount += 1;
+      } else if (d.status === "draft") {
+        acc.draft += v;
+        acc.draftCount += 1;
+      }
+      return acc;
+    },
+    { open: 0, openCount: 0, accepted: 0, acceptedCount: 0, draft: 0, draftCount: 0 },
+  );
+
+  const saveAmount = async (doc: Doc) => {
+    setBusy(true);
+    const parsed = amountDraft.trim()
+      ? Number(amountDraft.replace(/\./g, "").replace(",", "."))
+      : null;
+    if (parsed !== null && !Number.isFinite(parsed)) {
+      setBusy(false);
+      return toast({ title: "Ungültige Summe", variant: "destructive" });
+    }
+    const { error } = await supabase
+      .from("signature_documents")
+      .update({ amount_net: parsed, amount_source: "manuell erfasst" })
+      .eq("id", doc.id);
+    setBusy(false);
+    if (error) return toast({ title: "Fehler", description: error.message, variant: "destructive" });
+    toast({ title: "Summe gespeichert" });
+    setSelected({ ...doc, amount_net: parsed, amount_source: "manuell erfasst" });
+    await load();
+  };
+
+  const markAccepted = async (doc: Doc) => {
+    const { error } = await supabase
+      .from("signature_documents")
+      .update({ status: "accepted", accepted_at: new Date().toISOString() })
+      .eq("id", doc.id);
+    if (error) return toast({ title: "Fehler", description: error.message, variant: "destructive" });
+    toast({ title: "Als angenommen markiert" });
+    await load();
+    setSelected(null);
+  };
 
   const load = async () => {
     setLoading(true);
