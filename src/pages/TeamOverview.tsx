@@ -45,6 +45,23 @@ const TeamOverview = () => {
   const [editRole, setEditRole] = useState("");
   const [editName, setEditName] = useState("");
   const [editLoading, setEditLoading] = useState(false);
+  const [accessMember, setAccessMember] = useState<{ user_id: string; name: string } | null>(null);
+
+  const { data: assignments = [] } = useClientAssignments();
+  const setAccess = useSetClientAccess();
+  const { data: allClients = [] } = useQuery({
+    queryKey: ["all-clients-simple"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, name, status")
+        .neq("status", "archived")
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["team-overview"],
