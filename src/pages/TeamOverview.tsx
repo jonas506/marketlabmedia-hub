@@ -235,6 +235,16 @@ const TeamOverview = () => {
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
+                    {member.role === "cutter" && (
+                      <button
+                        onClick={() => setAccessMember({ user_id: member.user_id, name: member.name || "Mitglied" })}
+                        className="flex items-center gap-1 rounded-md px-1.5 py-1.5 text-[10px] font-mono text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
+                        title="Kundenzugriff verwalten"
+                      >
+                        <Users className="h-3.5 w-3.5" />
+                        {assignments.filter((a) => a.user_id === member.user_id).length}
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDelete(member.user_id, member.name || "Mitglied")}
                       className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
