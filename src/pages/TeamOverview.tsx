@@ -10,10 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Plus, Mail, Trash2, Pencil } from "lucide-react";
+import { Plus, Mail, Trash2, Pencil, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useClientAssignments, useSetClientAccess } from "@/hooks/useClientAssignments";
 
 const PHASE_CONFIG: Record<string, { label: string; color: string }> = {
   filmed: { label: "Gedreht", color: "bg-muted text-muted-foreground" },
