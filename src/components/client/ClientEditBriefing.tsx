@@ -169,7 +169,7 @@ const ClientEditBriefing = ({ client, canEdit }: { client: any; canEdit: boolean
     payload.reference_links = list("reference_links").filter(Boolean);
     const { error } = await supabase
       .from("client_edit_briefings")
-      .upsert(payload, { onConflict: "client_id" });
+      .upsert(payload as any, { onConflict: "client_id" });
     setSaving(false);
     if (error) {
       toast.error(error.message);
