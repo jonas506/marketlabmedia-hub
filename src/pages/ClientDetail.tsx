@@ -216,6 +216,12 @@ const ClientDetail = () => {
             <ReferralPageEditor clientId={client.id} clientName={client.name} canEdit={canEdit} />
           </ErrorBoundary>
         );
+      case "briefing":
+        return (
+          <ErrorBoundary level="section">
+            <ClientEditBriefing client={client} canEdit={role === "admin" || role === "head_of_content"} />
+          </ErrorBoundary>
+        );
       case "activity":
         return (
           <ErrorBoundary level="section">
@@ -227,6 +233,7 @@ const ClientDetail = () => {
           <ErrorBoundary level="section">
             <div className="space-y-4">
               <ClientInfoPanel client={client} canEdit={canEdit} />
+              <ClientAccessPanel clientId={client.id} />
               <ClientContractsCard clientId={client.id} />
             </div>
           </ErrorBoundary>
