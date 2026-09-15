@@ -401,6 +401,51 @@ const TeamOverview = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Kundenzugriff Dialog */}
+      <Dialog open={!!accessMember} onOpenChange={(o) => !o && setAccessMember(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg">
+              Kundenzugriff – {accessMember?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            Nur ausgewählte Kunden sind für diese Person sichtbar.
+          </p>
+          <div className="max-h-[50vh] space-y-1 overflow-y-auto py-1">
+            {allClients.map((c) => {
+              const checked = assignments.some(
+                (a) => a.user_id === accessMember?.user_id && a.client_id === c.id
+              );
+              return (
+                <label
+                  key={c.id}
+                  className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg px-2 hover:bg-surface-elevated"
+                >
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(v) =>
+                      accessMember &&
+                      setAccess.mutate({
+                        clientId: c.id,
+                        userId: accessMember.user_id,
+                        enabled: !!v,
+                      })
+                    }
+                  />
+                  <span className="truncate text-sm">{c.name}</span>
+                </label>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setAccessMember(null)} className="font-mono text-xs">
+              Fertig
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ErrorBoundary>
     </AppLayout>
   );
