@@ -425,6 +425,35 @@ export type Database = {
           },
         ]
       }
+      client_assignments: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_checkins: {
         Row: {
           answers: Json
@@ -591,6 +620,119 @@ export type Database = {
             foreignKeyName: "client_contracts_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_edit_briefings: {
+        Row: {
+          broll_rules: string | null
+          client_id: string
+          created_at: string
+          cut_frequency: string | null
+          donts: Json
+          dos: Json
+          export_format: string | null
+          export_framerate: string | null
+          export_resolution: string | null
+          file_naming: string | null
+          font_size_note: string | null
+          hook_rules: string | null
+          id: string
+          logo_usage: string | null
+          motion: string | null
+          music_style: string | null
+          music_volume: string | null
+          notes: string | null
+          outro_cta: string | null
+          overlay_font: string | null
+          pacing: string | null
+          reference_links: Json
+          sfx_allowed: boolean | null
+          subtitle_animation: string | null
+          subtitle_font: string | null
+          subtitle_highlight_color: string | null
+          subtitle_max_chars: string | null
+          subtitle_position: string | null
+          subtitle_style: string | null
+          text_case: string | null
+          transitions: string | null
+          updated_at: string
+        }
+        Insert: {
+          broll_rules?: string | null
+          client_id: string
+          created_at?: string
+          cut_frequency?: string | null
+          donts?: Json
+          dos?: Json
+          export_format?: string | null
+          export_framerate?: string | null
+          export_resolution?: string | null
+          file_naming?: string | null
+          font_size_note?: string | null
+          hook_rules?: string | null
+          id?: string
+          logo_usage?: string | null
+          motion?: string | null
+          music_style?: string | null
+          music_volume?: string | null
+          notes?: string | null
+          outro_cta?: string | null
+          overlay_font?: string | null
+          pacing?: string | null
+          reference_links?: Json
+          sfx_allowed?: boolean | null
+          subtitle_animation?: string | null
+          subtitle_font?: string | null
+          subtitle_highlight_color?: string | null
+          subtitle_max_chars?: string | null
+          subtitle_position?: string | null
+          subtitle_style?: string | null
+          text_case?: string | null
+          transitions?: string | null
+          updated_at?: string
+        }
+        Update: {
+          broll_rules?: string | null
+          client_id?: string
+          created_at?: string
+          cut_frequency?: string | null
+          donts?: Json
+          dos?: Json
+          export_format?: string | null
+          export_framerate?: string | null
+          export_resolution?: string | null
+          file_naming?: string | null
+          font_size_note?: string | null
+          hook_rules?: string | null
+          id?: string
+          logo_usage?: string | null
+          motion?: string | null
+          music_style?: string | null
+          music_volume?: string | null
+          notes?: string | null
+          outro_cta?: string | null
+          overlay_font?: string | null
+          pacing?: string | null
+          reference_links?: Json
+          sfx_allowed?: boolean | null
+          subtitle_animation?: string | null
+          subtitle_font?: string | null
+          subtitle_highlight_color?: string | null
+          subtitle_max_chars?: string | null
+          subtitle_position?: string | null
+          subtitle_style?: string | null
+          text_case?: string | null
+          transitions?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_edit_briefings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -3704,6 +3846,10 @@ export type Database = {
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_client_access: {
+        Args: { _client_id: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

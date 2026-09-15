@@ -19,6 +19,8 @@ import ClientCheckins from "@/components/client/ClientCheckins";
 import ClientDashboard from "@/components/client/ClientDashboard";
 import ClientTimeInvestment from "@/components/client/ClientTimeInvestment";
 import ReferralPageEditor from "@/components/client/ReferralPageEditor";
+import ClientEditBriefing from "@/components/client/ClientEditBriefing";
+import ClientAccessPanel from "@/components/client/ClientAccessPanel";
 import OnboardingBanner from "@/components/OnboardingBanner";
 import ArchiveClientButton from "@/components/ArchiveClientButton";
 
@@ -27,7 +29,7 @@ import {
   ArrowLeft, Globe, FileText, Copy, Check, ExternalLink, Share2,
   Upload, Loader2, LayoutDashboard, Clapperboard, ListChecks,
   Smartphone, ClipboardList, MessageCircleHeart,
-  TrendingUp, Clock, Info, Menu, Heart,
+  TrendingUp, Clock, Info, Menu, Heart, Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -40,6 +42,7 @@ const MODULE_ITEMS = [
   { key: "pipeline", label: "Pipeline", icon: Clapperboard },
   { key: "tasks", label: "Aufgaben", icon: ListChecks },
   { key: "stories", label: "Stories", icon: Smartphone },
+  { key: "briefing", label: "Schnitt-Briefing", icon: Palette },
   { key: "checklists", label: "Checklisten", icon: ClipboardList },
   { key: "checkins", label: "Check-ins", icon: MessageCircleHeart },
   { key: "marketing", label: "Marketing", icon: TrendingUp },
@@ -213,6 +216,12 @@ const ClientDetail = () => {
             <ReferralPageEditor clientId={client.id} clientName={client.name} canEdit={canEdit} />
           </ErrorBoundary>
         );
+      case "briefing":
+        return (
+          <ErrorBoundary level="section">
+            <ClientEditBriefing client={client} canEdit={role === "admin" || role === "head_of_content"} />
+          </ErrorBoundary>
+        );
       case "activity":
         return (
           <ErrorBoundary level="section">
@@ -224,6 +233,7 @@ const ClientDetail = () => {
           <ErrorBoundary level="section">
             <div className="space-y-4">
               <ClientInfoPanel client={client} canEdit={canEdit} />
+              <ClientAccessPanel clientId={client.id} />
               <ClientContractsCard clientId={client.id} />
             </div>
           </ErrorBoundary>

@@ -10,10 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Plus, Mail, Trash2, Pencil } from "lucide-react";
+import { Plus, Mail, Trash2, Pencil, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useClientAssignments, useSetClientAccess } from "@/hooks/useClientAssignments";
 
 const PHASE_CONFIG: Record<string, { label: string; color: string }> = {
   filmed: { label: "Gedreht", color: "bg-muted text-muted-foreground" },
@@ -43,6 +45,23 @@ const TeamOverview = () => {
   const [editRole, setEditRole] = useState("");
   const [editName, setEditName] = useState("");
   const [editLoading, setEditLoading] = useState(false);
+  const [accessMember, setAccessMember] = useState<{ user_id: string; name: string } | null>(null);
+
+  const { data: assignments = [] } = useClientAssignments();
+  const setAccess = useSetClientAccess();
+  const { data: allClients = [] } = useQuery({
+    queryKey: ["all-clients-simple"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, name, status")
+        .neq("status", "archived")
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["team-overview"],
@@ -216,6 +235,16 @@ const TeamOverview = () => {
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
+                    {member.role === "cutter" && (
+                      <button
+                        onClick={() => setAccessMember({ user_id: member.user_id, name: member.name || "Mitglied" })}
+                        className="flex items-center gap-1 rounded-md px-1.5 py-1.5 text-[10px] font-mono text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
+                        title="Kundenzugriff verwalten"
+                      >
+                        <Users className="h-3.5 w-3.5" />
+                        {assignments.filter((a) => a.user_id === member.user_id).length}
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDelete(member.user_id, member.name || "Mitglied")}
                       className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
@@ -368,6 +397,51 @@ const TeamOverview = () => {
             </Button>
             <Button onClick={handleUpdate} disabled={editLoading} className="font-mono text-xs">
               {editLoading ? "Wird gespeichert..." : "Speichern"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Kundenzugriff Dialog */}
+      <Dialog open={!!accessMember} onOpenChange={(o) => !o && setAccessMember(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg">
+              Kundenzugriff – {accessMember?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            Nur ausgewählte Kunden sind für diese Person sichtbar.
+          </p>
+          <div className="max-h-[50vh] space-y-1 overflow-y-auto py-1">
+            {allClients.map((c) => {
+              const checked = assignments.some(
+                (a) => a.user_id === accessMember?.user_id && a.client_id === c.id
+              );
+              return (
+                <label
+                  key={c.id}
+                  className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg px-2 hover:bg-surface-elevated"
+                >
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(v) =>
+                      accessMember &&
+                      setAccess.mutate({
+                        clientId: c.id,
+                        userId: accessMember.user_id,
+                        enabled: !!v,
+                      })
+                    }
+                  />
+                  <span className="truncate text-sm">{c.name}</span>
+                </label>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setAccessMember(null)} className="font-mono text-xs">
+              Fertig
             </Button>
           </DialogFooter>
         </DialogContent>
