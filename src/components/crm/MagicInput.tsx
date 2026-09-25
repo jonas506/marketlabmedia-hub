@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Loader2, Tag, X, Check } from "lucide-react";
+import { Plus, Sparkles, Loader2, Tag, X, Check, Globe } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface MagicInputProps {
@@ -26,6 +26,8 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const [newTagName, setNewTagName] = useState("");
   const [addingTag, setAddingTag] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [importing, setImporting] = useState(false);
   const sourceRef = useRef<HTMLDivElement>(null);
 
   const { data: sourceTags = [] } = useQuery({
@@ -95,11 +97,62 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
 
   const selectedTag = sourceTags.find(t => t.name === selectedSource);
 
+  const handleImportUrl = async () => {
+    if (!websiteUrl.trim()) return;
+    setImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("lead-from-url", { body: { url: websiteUrl.trim() } });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      const name = data.company || data.contact_name || new URL(data.website).host.replace(/^www\./, "");
+      const { error: insErr } = await supabase.from("crm_leads").insert({
+        name,
+        contact_name: data.contact_name || null,
+        contact_email: data.email || null,
+        contact_phone: data.phone || null,
+        instagram_handle: data.instagram || null,
+        linkedin_url: data.linkedin || null,
+        website: data.website,
+        description: data.description || null,
+        ai_summary: data.summary || null,
+        profile_image_url: data.profile_image_url || null,
+        source: selectedSource || null,
+        stage: "interessiert",
+        created_by: user!.id,
+      });
+      if (insErr) throw insErr;
+      const found = [data.phone && "Telefon", data.email && "E-Mail", data.contact_name && "Ansprechpartner"].filter(Boolean).join(", ");
+      toast.success(`${name} angelegt${found ? ` · ${found} gefunden` : ""}`);
+      setWebsiteUrl("");
+      onLeadCreated();
+    } catch (e) {
+      toast.error(e instanceof Error && e.message ? e.message : "Import fehlgeschlagen");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="bg-card border border-border rounded-xl p-4 mb-6">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="h-4 w-4 text-primary" />
         <span className="text-sm font-semibold">Neuen Lead erfassen</span>
+      </div>
+      <div className="flex gap-2 mb-2">
+        <div className="relative flex-1">
+          <Globe className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Website-Link einfügen – Lead wird automatisch angelegt"
+            value={websiteUrl}
+            onChange={e => setWebsiteUrl(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleImportUrl(); } }}
+            className="pl-8"
+            disabled={importing}
+          />
+        </div>
+        <Button onClick={handleImportUrl} disabled={importing || !websiteUrl.trim()} size="sm" variant="secondary" className="shrink-0 h-9">
+          {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          <span className="ml-1">{importing ? "Analysiere…" : "Importieren"}</span>
+        </Button>
       </div>
       <div className="flex flex-col sm:flex-row gap-2 items-start">
         <Input
