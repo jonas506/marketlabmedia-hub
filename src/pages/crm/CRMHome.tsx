@@ -138,7 +138,7 @@ export default function CRMHome() {
           <h1 className="text-2xl font-bold">CRM</h1>
         </div>
 
-        <MagicInput onLeadCreated={fetchLeads} />
+        <MagicInput onLeadCreated={fetchLeads} pipelineId={activePipeline} />
 
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
