@@ -75,6 +75,10 @@ Erfinde nichts. Bevorzuge Daten aus dem Impressum.`,
     let parsed: Record<string, string | null> = {};
     try { parsed = JSON.parse(d.choices?.[0]?.message?.content || "{}"); } catch { /* ignore */ }
 
+    for (const k of Object.keys(parsed)) {
+      const v = parsed[k];
+      if (typeof v === "string" && ["null", "", "n/a", "unbekannt"].includes(v.trim().toLowerCase())) parsed[k] = null;
+    }
     return json({ ...parsed, website: url, profile_image_url: main.metadata?.ogImage || null });
   } catch (e) {
     console.error(e);
