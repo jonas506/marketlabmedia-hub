@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Sparkles, Loader2, Tag, X, Check, Globe } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCrmStages } from "@/hooks/useCrmStages";
+import { setLeadPipelineStage } from "@/hooks/useLeadPipelines";
 
 interface MagicInputProps {
   onLeadCreated: () => void;
+  pipelineId?: string | null;
 }
 
 const TAG_COLORS = [
@@ -16,7 +19,7 @@ const TAG_COLORS = [
   "#EC4899", "#14B8A6", "#F97316", "#6366F1", "#84CC16",
 ];
 
-export default function MagicInput({ onLeadCreated }: MagicInputProps) {
+export default function MagicInput({ onLeadCreated, pipelineId }: MagicInputProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [contactName, setContactName] = useState("");
@@ -29,6 +32,13 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const sourceRef = useRef<HTMLDivElement>(null);
+  const { data: stages = [] } = useCrmStages(pipelineId);
+  const firstStage = (pipelineId && stages[0]?.value) || "interessiert";
+  const placeInPipeline = async (leadId?: string) => {
+    if (!leadId || !pipelineId) return;
+    await setLeadPipelineStage(leadId, pipelineId, firstStage);
+    queryClient.invalidateQueries({ queryKey: ["crm-lead-pipelines"] });
+  };
 
   const { data: sourceTags = [] } = useQuery({
     queryKey: ["crm-source-tags"],
@@ -75,13 +85,15 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
   const handleCreate = async () => {
     if (!contactName.trim()) { toast.error("Name fehlt"); return; }
     setSaving(true);
-    const { error } = await supabase.from("crm_leads").insert({
+    const { data: created, error } = await supabase.from("crm_leads").insert({
       name: companyName.trim() || contactName.trim(),
       contact_name: contactName.trim(),
       source: selectedSource || null,
-      stage: "interessiert",
+      stage: firstStage,
+      pipeline_id: pipelineId || null,
       created_by: user!.id,
-    });
+    }).select("id").single();
+    await placeInPipeline(created?.id);
     setSaving(false);
     if (error) { toast.error("Fehler beim Erstellen"); return; }
     toast.success(`${contactName.trim()} hinzugefügt`);
@@ -104,7 +116,7 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
       const { data, error } = await supabase.functions.invoke("lead-from-url", { body: { url: websiteUrl.trim() } });
       if (error || data?.error) throw new Error(data?.error || error?.message);
       const name = data.company || data.contact_name || new URL(data.website).host.replace(/^www\./, "");
-      const { error: insErr } = await supabase.from("crm_leads").insert({
+      const { data: created, error: insErr } = await supabase.from("crm_leads").insert({
         name,
         contact_name: data.contact_name || null,
         contact_email: data.email || null,
@@ -116,10 +128,12 @@ export default function MagicInput({ onLeadCreated }: MagicInputProps) {
         ai_summary: data.summary || null,
         profile_image_url: data.profile_image_url || null,
         source: selectedSource || null,
-        stage: "interessiert",
+        stage: firstStage,
+        pipeline_id: pipelineId || null,
         created_by: user!.id,
-      });
+      }).select("id").single();
       if (insErr) throw insErr;
+      await placeInPipeline(created?.id);
       const found = [data.phone && "Telefon", data.email && "E-Mail", data.contact_name && "Ansprechpartner"].filter(Boolean).join(", ");
       toast.success(`${name} angelegt${found ? ` · ${found} gefunden` : ""}`);
       setWebsiteUrl("");
