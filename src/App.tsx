@@ -53,6 +53,7 @@ import CourseSignup from "./pages/CourseSignup";
 import CourseLogin from "./pages/CourseLogin";
 import CourseAdmin from "./pages/admin/CourseAdmin";
 import OfferView from "./pages/OfferView";
+import PositioningAnalysis from "./pages/PositioningAnalysis";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -110,6 +111,7 @@ const App = () => (
                   <Route path="/ref/:slug" element={<ReferralLanding />} />
                   <Route path="/pakete" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/positionierungs-analyse" element={<PositioningAnalysis />} />
                   <Route path="/angebot/:token" element={<OfferView />} />
                   <Route path="/dokument/:token" element={<DocumentSign />} />
                   <Route path="/kurs/anmelden" element={<CourseSignup />} />
