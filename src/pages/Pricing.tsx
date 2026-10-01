@@ -261,7 +261,7 @@ const LeadCalculator = () => {
   const leadsPerMonth = cpl > 0 ? monthlySpend / cpl : 0;
   const leadsTotal = leadsPerMonth * 3;
   const spendTotal = monthlySpend * 3;
-  const packagePrice = 8550;
+  const packagePrice = 10050;
   const allInPerLead = leadsTotal > 0 ? (spendTotal + packagePrice) / leadsTotal : 0;
 
   const Row = ({
