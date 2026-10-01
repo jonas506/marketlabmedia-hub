@@ -33,7 +33,7 @@ interface Props {
 }
 
 const PRODUCTS: { key: ProductType; label: string; sub: string; icon: typeof Sparkles; color: string }[] = [
-  { key: "content", label: "Content-Paket", sub: "Stufe 1–4", icon: Sparkles, color: "#0083F7" },
+  { key: "content", label: "Content-Paket", sub: "Basis · All-in-One · Premium", icon: Sparkles, color: "#0083F7" },
   { key: "trial", label: "Testmonat", sub: "30 Tage · 2.000 €", icon: CalendarCheck, color: "#F5B93B" },
   { key: "quickfix", label: "Quick Fix Pro", sub: "3 Monate · Lead-Kampagne", icon: Megaphone, color: "#7B5CFF" },
 ];
@@ -70,9 +70,13 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
       const monthly = Math.round(1500 * (1 - discountPct / 100));
       return { setup: 3000, monthly, duration: 3, discountable: true };
     }
+    if (productType === "ads") {
+      const monthly = Math.round(750 * (1 - discountPct / 100));
+      return { setup: 1500, monthly, duration: annual ? 12 : 6, discountable: true };
+    }
     const base = annual ? plan.price12 : plan.price3;
     const monthly = Math.round(base * (1 - discountPct / 100));
-    return { setup: plan.setup, monthly, duration: annual ? 12 : 3, discountable: true };
+    return { setup: plan.setup, monthly, duration: annual ? 12 : 6, discountable: true };
   }, [productType, plan, annual, discountPct]);
 
   const { setup: setupPrice, monthly: monthlyPrice, duration } = pricing;
@@ -273,7 +277,7 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
               <Label className="text-xs uppercase tracking-wider text-white/50">Laufzeit</Label>
               <div className="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 p-1">
                 {[
-                  { label: "3 Monate", value: false },
+                  { label: "6 Monate", value: false },
                   { label: "12 Monate · -10 %", value: true },
                 ].map((o) => (
                   <button

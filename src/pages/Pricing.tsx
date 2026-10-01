@@ -52,56 +52,49 @@ const PRICING = {
     titleLead: "Unsere Pakete —",
     titleAccent: "planbar, skalierbar, für organisches Wachstum.",
     subline:
-      "Mindestlaufzeit 6 Monate · Setup entfällt beim Start über den Testmonat · Alle Preise netto",
+      "Mindestlaufzeit 6 Monate · Setup einmalig 3.000 € · Werbeanzeigen separat: 1.500 € Setup + 750 €/Monat · Alle Preise netto",
   },
 
   plans: [
     {
-      key: "stufe_1",
-      name: "Stufe 1",
-      tagline: "Reichweite und erste Anfragen",
-      monthly: 2000,
+      key: "basis",
+      name: "Content Basis",
+      tagline: "Der Einstieg mit eigenem Drehtag",
+      monthly: 2500,
       highlights: [
-        "30 Testreels pro Monat",
-        "ManyChat-Automation",
-        "Freebie zur Lead-Erfassung",
+        "12 Reels pro Monat",
+        "4 Carousels pro Monat",
+        "1 Drehtag pro Quartal (nur Reels)",
         "Posting, Captions und Reporting",
+        "1 Feedbackrunde pro Beitrag",
       ],
     },
     {
-      key: "stufe_2",
-      name: "Stufe 2",
-      tagline: "Aus Reichweite werden Gespräche",
-      monthly: 3000,
+      key: "all_in_one",
+      name: "All-in-One",
+      tagline: "Komplette Social-Media-Betreuung",
+      monthly: 5000,
       popular: true,
       highlights: [
-        "Alles aus Stufe 1",
-        "4 Carousels pro Monat",
-        "Wöchentliche Story-Sequenz",
+        "20 Reels pro Monat",
+        "10 Carousels pro Monat",
+        "Stories komplett",
+        "1 Drehtag pro Monat bei dir vor Ort (nur Reels)",
+        "ManyChat-Automation und Freebie",
       ],
     },
     {
-      key: "stufe_3",
-      name: "Stufe 3",
-      tagline: "Dein Gesicht im Content",
-      monthly: 4000,
+      key: "premium",
+      name: "Premium",
+      tagline: "All-in-One plus Werbeanzeigen",
+      monthly: 7500,
       highlights: [
-        "Alles aus Stufe 2",
-        "20 zusätzliche Reels aus deinem Material",
-        "Anleitung zur Aufnahme mit dem Smartphone",
+        "Alles aus All-in-One",
+        "30 Reels und 15 Carousels pro Monat",
+        "Werbeanzeigen-Verwaltung inklusive",
+        "Wöchentlicher Strategie-Call",
       ],
-    },
-    {
-      key: "stufe_4",
-      name: "Stufe 4",
-      tagline: "Wir drehen, du gibst frei",
-      monthly: 5000,
-      highlights: [
-        "Alles aus Stufe 3",
-        "Ein Drehtag pro Monat bei dir vor Ort",
-        "Equipment, Regie und B-Roll inklusive",
-      ],
-      note: "Drehtage im Umkreis von 2 Stunden inklusive, darüber Zonenzuschlag. Begrenzte Verfügbarkeit.",
+      note: "Werbebudget ca. 20–40 € pro Tag zusätzlich, direkt an die Plattform. Drehtage im Umkreis von 2 Stunden inklusive.",
     },
   ] as Plan[],
 
@@ -126,61 +119,43 @@ const PRICING = {
     {
       title: "Content",
       rows: [
-        { label: "Testreels pro Monat", values: [30, 30, 30, 30] },
-        { label: "Carousels pro Monat", values: ["—", 4, 4, 4] },
-        { label: "Story-Sequenz wöchentlich", values: [false, true, true, true] },
-        { label: "Zusätzliche Reels", values: ["—", "—", 20, 20] },
-        { label: "Material kommt von", values: ["—", "—", "dir", "uns"] },
+        { label: "Reels pro Monat", values: [12, 20, 30] },
+        { label: "Carousels pro Monat", values: [4, 10, 15] },
+        { label: "Stories komplett", values: [false, true, true] },
+        { label: "Feedbackrunden", values: ["1", "2", "unbegrenzt"] },
+      ],
+    },
+    {
+      title: "Drehtag (nur Reels)",
+      rows: [
+        { label: "Drehtage", values: ["1 / Quartal", "1 / Monat", "1 / Monat"] },
+        { label: "Equipment, Regie und B-Roll", values: [true, true, true] },
       ],
     },
     {
       title: "Lead-Mechanik",
       rows: [
-        { label: "ManyChat-Automation", values: [true, true, true, true] },
-        { label: "Freebie", values: [true, true, true, true] },
-        { label: "Reporting-Dashboard", values: [true, true, true, true] },
-      ],
-    },
-    {
-      title: "Distribution",
-      rows: [
-        { label: "Posting und Veröffentlichung", values: [true, true, true, true] },
-        { label: "Captions inklusive CTA", values: [true, true, true, true] },
-        { label: "Hashtag- und SEO-Optimierung", values: [true, true, true, true] },
-      ],
-    },
-    {
-      title: "Drehtag",
-      rows: [
-        { label: "Drehtage pro Monat", values: ["—", "—", "—", 1] },
-        { label: "Equipment (Kamera, Licht, Ton)", values: [false, false, false, true] },
-        { label: "Regie und Hook-Coaching am Set", values: [false, false, false, true] },
-        { label: "B-Roll und Cutaway-Material", values: [false, false, false, true] },
+        { label: "ManyChat-Automation", values: [true, true, true] },
+        { label: "Freebie", values: [true, true, true] },
+        { label: "Werbeanzeigen-Verwaltung", values: [false, false, true] },
+        { label: "Reporting-Dashboard", values: [true, true, true] },
       ],
     },
     {
       title: "Strategie",
       rows: [
-        { label: "Datengetriebene Content-Strategie", values: [true, true, true, true] },
-        { label: "Monatliche Performance-Analyse", values: [true, true, true, true] },
-        { label: "Hook- und Format-Testing", values: [true, true, true, true] },
-        { label: "Zugang zur Academy", values: [true, true, true, true] },
-        { label: "Eigener Ansprechpartner", values: [true, true, true, true] },
+        { label: "Datengetriebene Content-Strategie", values: [true, true, true] },
+        { label: "Monatliche Performance-Analyse", values: [true, true, true] },
+        { label: "Wöchentlicher Strategie-Call", values: [false, false, true] },
+        { label: "Zugang zur Academy", values: [true, true, true] },
+        { label: "Eigener Ansprechpartner", values: [true, true, true] },
       ],
     },
     {
       title: "Kommerziell",
       rows: [
-        { label: "Mindestlaufzeit", values: ["6 Monate", "6 Monate", "6 Monate", "6 Monate"] },
-        {
-          label: "Setup einmalig",
-          values: [
-            "entfällt mit Testmonat",
-            "entfällt mit Testmonat",
-            "entfällt mit Testmonat",
-            "entfällt mit Testmonat",
-          ],
-        },
+        { label: "Mindestlaufzeit", values: ["6 Monate", "6 Monate", "6 Monate"] },
+        { label: "Setup einmalig", values: ["3.000 €", "3.000 €", "3.000 €"] },
       ],
     },
   ] as TableSection[],
@@ -235,10 +210,10 @@ const PRICING = {
     after: {
       title: "Was danach passiert",
       text:
-        "Nach dreißig Tagen entscheidest du, ob es weiterläuft. Wenn ja, geht es ohne Setup-Kosten in Stufe 1 über — zum gleichen Monatspreis. Wenn nicht, ist es beendet und alles Aufgebaute bleibt bei dir.",
+        "Nach dreißig Tagen entscheidest du, ob es weiterläuft. Wenn ja, geht es ohne Setup-Kosten in Content Basis über. Wenn nicht, ist es beendet und alles Aufgebaute bleibt bei dir.",
     },
     highlight:
-      "Der Direkteinstieg in einen Retainer kostet 2.000 € Setup. Über den Testmonat entfällt das — du bekommst denselben Aufbau plus 30 Reels zum gleichen Preis.",
+      "Der Direkteinstieg in ein Paket kostet 3.000 € Setup. Über den Testmonat entfällt das — du bekommst denselben Aufbau plus 30 Reels zum gleichen Preis.",
     availability: {
       title: "Aktuelle Verfügbarkeit",
       text: "Wir starten maximal zwei Testmonate gleichzeitig, damit die Qualität stimmt.",
@@ -457,7 +432,7 @@ const Pricing = () => {
 
         {/* PLAN CARDS */}
         <section className="mt-12">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {PRICING.plans.map((p, i) => (
               <PlanCard key={p.key} plan={p} index={i} onTrial={() => setTrialOpen(true)} />
 
@@ -616,7 +591,7 @@ const Pricing = () => {
               name: p.name,
               price3: p.monthly,
               price12: p.monthly,
-              setup: 0,
+              setup: 3000,
             }))}
             addons={PRICING.addons}
           />
