@@ -12,12 +12,21 @@ import {
   Sparkles,
   Megaphone,
   X,
-
+  SlidersHorizontal,
 } from "lucide-react";
 import logo from "@/assets/logo-light.png";
 import { useAuth } from "@/contexts/AuthContext";
 import OfferConfigurator from "@/components/pricing/OfferConfigurator";
 import { Wand2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const BRAND = {
   blue: "#0083F7",
@@ -230,6 +239,10 @@ const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 const LeadCalculator = () => {
   const [budget, setBudget] = useState(30);
   const [cpl, setCpl] = useState(35);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [appointmentRate, setAppointmentRate] = useState(25);
+  const [closingRate, setClosingRate] = useState(20);
+  const [commissionPerDeal, setCommissionPerDeal] = useState(5000);
 
   const days = 30;
   const monthlySpend = budget * days;
@@ -238,6 +251,12 @@ const LeadCalculator = () => {
   const spendTotal = monthlySpend * 3;
   const packagePrice = 10050;
   const allInPerLead = leadsTotal > 0 ? (spendTotal + packagePrice) / leadsTotal : 0;
+  const appointmentsTotal = leadsTotal * (appointmentRate / 100);
+  const dealsTotal = appointmentsTotal * (closingRate / 100);
+  const commissionTotal = dealsTotal * commissionPerDeal;
+  const totalInvestment = packagePrice + spendTotal;
+  const projectedProfit = commissionTotal - totalInvestment;
+  const returnMultiple = totalInvestment > 0 ? commissionTotal / totalInvestment : 0;
 
   const Row = ({
     label,
@@ -263,14 +282,14 @@ const LeadCalculator = () => {
           {formatEUR(value)} {unit}
         </span>
       </div>
-      <input
-        type="range"
+      <Slider
         min={min}
         max={max}
         step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#0083F7]"
+        value={[value]}
+        onValueChange={(next) => onChange(next[0] ?? value)}
+        aria-label={label}
+        className="mt-3 w-full cursor-pointer [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:border-4 [&_[role=slider]]:border-[#0083F7] [&_[role=slider]]:bg-[#0a0a0f] [&_[data-orientation=horizontal]>span:first-child]:bg-white/15 [&_[data-orientation=horizontal]>span:first-child_span]:bg-[#0083F7]"
       />
     </div>
   );
@@ -278,8 +297,20 @@ const LeadCalculator = () => {
   return (
     <div className="mt-8 rounded-2xl border border-white/10 bg-black/25 p-4 md:p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <div className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.blue }}>
-          Lead-Rechner
+        <div className="flex items-center gap-3">
+          <div className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.blue }}>
+            Lead-Rechner
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setDetailsOpen(true)}
+            className="h-9 min-h-9 border-white/15 bg-white/[0.04] px-3 text-xs text-white hover:bg-white/10 hover:text-white"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Detailrechnung
+          </Button>
         </div>
         <p className="text-xs text-white/50">Was kostet ein Lead — je nach Tagesbudget und CPL?</p>
       </div>
@@ -325,6 +356,81 @@ const LeadCalculator = () => {
         Rechenbasis: 30 Tage pro Monat, Paketpreis 10.050 € netto über 3 Monate. Werbebudget wird
         direkt an die Plattform gezahlt. Beispielrechnung, keine Ergebnisgarantie.
       </p>
+
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="max-h-[92vh] w-[calc(100%-24px)] max-w-2xl overflow-y-auto border-white/15 bg-[#0a0a0f] p-5 text-white sm:p-7">
+          <DialogHeader className="pr-8 text-left">
+            <DialogTitle className="text-2xl font-extrabold">Lead-Kampagne im Detail</DialogTitle>
+            <DialogDescription className="text-white/55">
+              Ziehe die Regler nach links oder rechts und sieh sofort, wie viele Termine, Abschlüsse und Provisionen möglich sind.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-6 py-2 md:grid-cols-[0.9fr_1.1fr]">
+            <div className="space-y-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <Row
+                label="Terminrate"
+                value={appointmentRate}
+                unit="%"
+                min={1}
+                max={100}
+                step={1}
+                onChange={setAppointmentRate}
+              />
+              <Row
+                label="Abschlussrate"
+                value={closingRate}
+                unit="%"
+                min={1}
+                max={100}
+                step={1}
+                onChange={setClosingRate}
+              />
+              <Row
+                label="Provision pro Deal"
+                value={commissionPerDeal}
+                unit="€"
+                min={500}
+                max={50000}
+                step={250}
+                onChange={setCommissionPerDeal}
+              />
+
+              <div className="border-t border-white/10 pt-4 text-xs text-white/50">
+                Grundlage: {Math.round(leadsTotal)} Leads aus {formatEUR(spendTotal)} € Werbebudget über 3 Monate.
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 content-start">
+              {[
+                { k: "Termine", v: appointmentsTotal.toFixed(1) },
+                { k: "Abschlüsse", v: dealsTotal.toFixed(1) },
+                { k: "Provision gesamt", v: `${formatEUR(Math.round(commissionTotal))} €`, accent: true },
+                { k: "Gesamtinvestition", v: `${formatEUR(totalInvestment)} €` },
+                { k: "Ergebnis nach Kosten", v: `${projectedProfit >= 0 ? "+" : ""}${formatEUR(Math.round(projectedProfit))} €`, accent: projectedProfit >= 0 },
+                { k: "Umsatzfaktor", v: `${returnMultiple.toFixed(2).replace(".", ",")}×` },
+              ].map((item) => (
+                <div
+                  key={item.k}
+                  className="min-h-[92px] rounded-lg border border-white/10 bg-white/[0.03] p-3"
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-white/45">{item.k}</div>
+                  <div
+                    className="mt-2 break-words text-lg font-extrabold"
+                    style={item.accent ? { color: BRAND.blue } : undefined}
+                  >
+                    {item.v}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[10px] leading-relaxed text-white/40">
+            Die Werte sind eine Beispielrechnung und keine Ergebnisgarantie. Abschlussrate bezieht sich auf wahrgenommene Termine.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
