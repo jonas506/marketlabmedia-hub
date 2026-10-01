@@ -236,6 +236,36 @@ const PRICING = {
 
 const formatEUR = (n: number) => new Intl.NumberFormat("de-DE").format(n);
 
+type CalculatorSliderProps = {
+  label: string;
+  value: number;
+  unit: string;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+};
+
+const CalculatorSlider = ({ label, value, unit, min, max, step, onChange }: CalculatorSliderProps) => (
+  <div>
+    <div className="flex items-center justify-between gap-3 text-sm">
+      <span className="text-white/70">{label}</span>
+      <span className="shrink-0 font-bold" style={{ color: BRAND.blue }}>
+        {formatEUR(value)} {unit}
+      </span>
+    </div>
+    <Slider
+      min={min}
+      max={max}
+      step={step}
+      value={[value]}
+      onValueChange={(next) => onChange(next[0] ?? value)}
+      aria-label={label}
+      className="mt-3 w-full cursor-grab touch-none active:cursor-grabbing [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:border-4 [&_[role=slider]]:border-[#0083F7] [&_[role=slider]]:bg-[#0a0a0f] [&_[data-orientation=horizontal]>span:first-child]:bg-white/15 [&_[data-orientation=horizontal]>span:first-child_span]:bg-[#0083F7]"
+    />
+  </div>
+);
+
 const LeadCalculator = () => {
   const [budget, setBudget] = useState(30);
   const [cpl, setCpl] = useState(35);
@@ -257,42 +287,6 @@ const LeadCalculator = () => {
   const totalInvestment = packagePrice + spendTotal;
   const projectedProfit = commissionTotal - totalInvestment;
   const returnMultiple = totalInvestment > 0 ? commissionTotal / totalInvestment : 0;
-
-  const Row = ({
-    label,
-    value,
-    unit,
-    min,
-    max,
-    step,
-    onChange,
-  }: {
-    label: string;
-    value: number;
-    unit: string;
-    min: number;
-    max: number;
-    step: number;
-    onChange: (v: number) => void;
-  }) => (
-    <div>
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-white/70">{label}</span>
-        <span className="font-bold" style={{ color: BRAND.blue }}>
-          {formatEUR(value)} {unit}
-        </span>
-      </div>
-      <Slider
-        min={min}
-        max={max}
-        step={step}
-        value={[value]}
-        onValueChange={(next) => onChange(next[0] ?? value)}
-        aria-label={label}
-        className="mt-3 w-full cursor-pointer [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:border-4 [&_[role=slider]]:border-[#0083F7] [&_[role=slider]]:bg-[#0a0a0f] [&_[data-orientation=horizontal]>span:first-child]:bg-white/15 [&_[data-orientation=horizontal]>span:first-child_span]:bg-[#0083F7]"
-      />
-    </div>
-  );
 
   return (
     <div className="mt-8 rounded-2xl border border-white/10 bg-black/25 p-4 md:p-5">
@@ -317,7 +311,7 @@ const LeadCalculator = () => {
 
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.2fr] md:items-center">
         <div className="space-y-3">
-          <Row
+          <CalculatorSlider
             label="Werbebudget pro Tag"
             value={budget}
             unit="€"
@@ -326,7 +320,7 @@ const LeadCalculator = () => {
             step={5}
             onChange={setBudget}
           />
-          <Row
+          <CalculatorSlider
             label="Angenommener CPL"
             value={cpl}
             unit="€"
@@ -368,7 +362,26 @@ const LeadCalculator = () => {
 
           <div className="grid gap-6 py-2 md:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <Row
+              <CalculatorSlider
+                label="Werbebudget pro Tag"
+                value={budget}
+                unit="€"
+                min={10}
+                max={200}
+                step={5}
+                onChange={setBudget}
+              />
+              <CalculatorSlider
+                label="Angenommener CPL"
+                value={cpl}
+                unit="€"
+                min={10}
+                max={150}
+                step={5}
+                onChange={setCpl}
+              />
+              <div className="border-t border-white/10" />
+              <CalculatorSlider
                 label="Terminrate"
                 value={appointmentRate}
                 unit="%"
@@ -377,7 +390,7 @@ const LeadCalculator = () => {
                 step={1}
                 onChange={setAppointmentRate}
               />
-              <Row
+              <CalculatorSlider
                 label="Abschlussrate"
                 value={closingRate}
                 unit="%"
@@ -386,7 +399,7 @@ const LeadCalculator = () => {
                 step={1}
                 onChange={setClosingRate}
               />
-              <Row
+              <CalculatorSlider
                 label="Provision pro Deal"
                 value={commissionPerDeal}
                 unit="€"
