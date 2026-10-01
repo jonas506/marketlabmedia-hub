@@ -116,12 +116,9 @@ const PRICING = {
       { label: "Bearbeitung (21 Videos)", value: "1.050 €" },
       { label: "Verwaltung", value: "1.500 € / Monat" },
       { label: "Gesamt (3 Monate)", value: "10.050 €" },
-      { label: "Werbebudget", value: "ca. 20–40 € / Tag, direkt an die Plattform" },
-      { label: "Optional: Bild-Creatives (21 Stück)", value: "1.050 €" },
-      { label: "Optional: Bild-Ads", value: "50 € / Stück" },
     ],
     note:
-      "Das Werbebudget kommt zusätzlich dazu und wird direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag. Bild-Creatives und Bild-Ads sind nicht im Paket enthalten und können optional hinzugebucht werden.",
+      "Werbebudget ca. 20–40 € pro Tag zusätzlich, direkt an die Plattform. Optional buchbar: Bild-Creatives (21 Stück) für 1.050 €, Bild-Ads à 50 €.",
   },
 
 
@@ -264,7 +261,7 @@ const LeadCalculator = () => {
   const leadsPerMonth = cpl > 0 ? monthlySpend / cpl : 0;
   const leadsTotal = leadsPerMonth * 3;
   const spendTotal = monthlySpend * 3;
-  const packagePrice = 8550;
+  const packagePrice = 10050;
   const allInPerLead = leadsTotal > 0 ? (spendTotal + packagePrice) / leadsTotal : 0;
 
   const Row = ({
@@ -298,22 +295,22 @@ const LeadCalculator = () => {
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#0083F7]"
+        className="mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#0083F7]"
       />
     </div>
   );
 
   return (
-    <div className="mt-10 rounded-2xl border border-white/10 bg-black/25 p-6 md:p-8">
-      <div className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.blue }}>
-        Lead-Rechner
+    <div className="mt-8 rounded-2xl border border-white/10 bg-black/25 p-4 md:p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.blue }}>
+          Lead-Rechner
+        </div>
+        <p className="text-xs text-white/50">Was kostet ein Lead — je nach Tagesbudget und CPL?</p>
       </div>
-      <p className="mt-1 text-sm text-white/60">
-        Was kostet ein Lead — je nach Tagesbudget und CPL?
-      </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="space-y-5">
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.2fr] md:items-center">
+        <div className="space-y-3">
           <Row
             label="Werbebudget pro Tag"
             value={budget}
@@ -334,23 +331,23 @@ const LeadCalculator = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
           {[
             { k: "Leads / Monat", v: `${Math.round(leadsPerMonth)}` },
             { k: "Leads in 3 Monaten", v: `${Math.round(leadsTotal)}` },
-            { k: "Werbebudget gesamt", v: `${formatEUR(spendTotal)} €` },
-            { k: "Kosten pro Lead inkl. Paket", v: `${formatEUR(Math.round(allInPerLead))} €` },
+            { k: "Budget gesamt", v: `${formatEUR(spendTotal)} €` },
+            { k: "€ / Lead inkl. Paket", v: `${formatEUR(Math.round(allInPerLead))} €` },
           ].map((c) => (
-            <div key={c.k} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[11px] uppercase tracking-wider text-white/45">{c.k}</div>
-              <div className="mt-1 text-xl font-extrabold">{c.v}</div>
+            <div key={c.k} className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-white/45">{c.k}</div>
+              <div className="mt-0.5 text-base font-extrabold">{c.v}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <p className="mt-5 text-[11px] leading-relaxed text-white/40">
-        Rechenbasis: 30 Tage pro Monat, Paketpreis 8.550 € netto über 3 Monate. Werbebudget wird
+      <p className="mt-3 text-[10px] leading-relaxed text-white/40">
+        Rechenbasis: 30 Tage pro Monat, Paketpreis 10.050 € netto über 3 Monate. Werbebudget wird
         direkt an die Plattform gezahlt. Beispielrechnung, keine Ergebnisgarantie.
       </p>
     </div>
@@ -476,7 +473,7 @@ const Pricing = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5 }}
-            className="mt-10 overflow-hidden rounded-2xl border p-8 md:p-10"
+            className="mt-8 overflow-hidden rounded-2xl border p-6 md:p-8"
             style={{
               borderColor: `${BRAND.purple}66`,
               background: `linear-gradient(135deg, ${BRAND.purple}18, ${BRAND.blue}10)`,
