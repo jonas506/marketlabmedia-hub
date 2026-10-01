@@ -295,7 +295,7 @@ const LeadCalculator = () => {
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#0083F7]"
+        className="mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-[#0083F7]"
       />
     </div>
   );
@@ -473,7 +473,7 @@ const Pricing = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5 }}
-            className="mt-10 overflow-hidden rounded-2xl border p-8 md:p-10"
+            className="mt-8 overflow-hidden rounded-2xl border p-6 md:p-8"
             style={{
               borderColor: `${BRAND.purple}66`,
               background: `linear-gradient(135deg, ${BRAND.purple}18, ${BRAND.blue}10)`,
