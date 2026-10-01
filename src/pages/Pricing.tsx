@@ -301,16 +301,16 @@ const LeadCalculator = () => {
   );
 
   return (
-    <div className="mt-10 rounded-2xl border border-white/10 bg-black/25 p-6 md:p-8">
-      <div className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.blue }}>
-        Lead-Rechner
+    <div className="mt-8 rounded-2xl border border-white/10 bg-black/25 p-4 md:p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: BRAND.blue }}>
+          Lead-Rechner
+        </div>
+        <p className="text-xs text-white/50">Was kostet ein Lead — je nach Tagesbudget und CPL?</p>
       </div>
-      <p className="mt-1 text-sm text-white/60">
-        Was kostet ein Lead — je nach Tagesbudget und CPL?
-      </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="space-y-5">
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.2fr] md:items-center">
+        <div className="space-y-3">
           <Row
             label="Werbebudget pro Tag"
             value={budget}
@@ -331,23 +331,23 @@ const LeadCalculator = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
           {[
             { k: "Leads / Monat", v: `${Math.round(leadsPerMonth)}` },
             { k: "Leads in 3 Monaten", v: `${Math.round(leadsTotal)}` },
-            { k: "Werbebudget gesamt", v: `${formatEUR(spendTotal)} €` },
-            { k: "Kosten pro Lead inkl. Paket", v: `${formatEUR(Math.round(allInPerLead))} €` },
+            { k: "Budget gesamt", v: `${formatEUR(spendTotal)} €` },
+            { k: "€ / Lead inkl. Paket", v: `${formatEUR(Math.round(allInPerLead))} €` },
           ].map((c) => (
-            <div key={c.k} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[11px] uppercase tracking-wider text-white/45">{c.k}</div>
-              <div className="mt-1 text-xl font-extrabold">{c.v}</div>
+            <div key={c.k} className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-white/45">{c.k}</div>
+              <div className="mt-0.5 text-base font-extrabold">{c.v}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <p className="mt-5 text-[11px] leading-relaxed text-white/40">
-        Rechenbasis: 30 Tage pro Monat, Paketpreis 8.550 € netto über 3 Monate. Werbebudget wird
+      <p className="mt-3 text-[10px] leading-relaxed text-white/40">
+        Rechenbasis: 30 Tage pro Monat, Paketpreis 10.050 € netto über 3 Monate. Werbebudget wird
         direkt an die Plattform gezahlt. Beispielrechnung, keine Ergebnisgarantie.
       </p>
     </div>
