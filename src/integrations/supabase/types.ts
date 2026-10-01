@@ -2698,6 +2698,42 @@ export type Database = {
         }
         Relationships: []
       }
+      positioning_analysis_leads: {
+        Row: {
+          company: string
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          industry: string
+          monthly_revenue: string
+          phone: string
+          source: string
+        }
+        Insert: {
+          company: string
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          industry: string
+          monthly_revenue: string
+          phone: string
+          source?: string
+        }
+        Update: {
+          company?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          industry?: string
+          monthly_revenue?: string
+          phone?: string
+          source?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
