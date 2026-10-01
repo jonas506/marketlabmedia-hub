@@ -116,12 +116,9 @@ const PRICING = {
       { label: "Bearbeitung (21 Videos)", value: "1.050 €" },
       { label: "Verwaltung", value: "1.500 € / Monat" },
       { label: "Gesamt (3 Monate)", value: "10.050 €" },
-      { label: "Werbebudget", value: "ca. 20–40 € / Tag, direkt an die Plattform" },
-      { label: "Optional: Bild-Creatives (21 Stück)", value: "1.050 €" },
-      { label: "Optional: Bild-Ads", value: "50 € / Stück" },
     ],
     note:
-      "Das Werbebudget kommt zusätzlich dazu und wird direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag. Bild-Creatives und Bild-Ads sind nicht im Paket enthalten und können optional hinzugebucht werden.",
+      "Werbebudget ca. 20–40 € pro Tag zusätzlich, direkt an die Plattform. Optional buchbar: Bild-Creatives (21 Stück) für 1.050 €, Bild-Ads à 50 €.",
   },
 
 
