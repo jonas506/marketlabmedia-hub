@@ -67,7 +67,7 @@ export default function OfferConfigurator({ open, onClose, plans, addons }: Prop
       return { setup: 0, monthly: 2000, duration: 1, discountable: false };
     }
     if (productType === "quickfix") {
-      const monthly = Math.round(1000 * (1 - discountPct / 100));
+      const monthly = Math.round(1500 * (1 - discountPct / 100));
       return { setup: 3000, monthly, duration: 3, discountable: true };
     }
     const base = annual ? plan.price12 : plan.price3;

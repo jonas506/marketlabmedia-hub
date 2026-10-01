@@ -199,7 +199,7 @@ const QUICKFIX_POSITIONS = (): OfferPosition[] => [
   {
     id: uid(),
     title: "Drehtag",
-    description: "Ein Produktionstag vor Ort mit 21 Videos und 21 Bild-Creatives für deine Kampagne.",
+    description: "Ein Produktionstag vor Ort mit 21 Videos für deine Kampagne.",
     calc: "einmalig, pauschal",
     amount: 1500,
   },
@@ -215,8 +215,8 @@ const QUICKFIX_POSITIONS = (): OfferPosition[] => [
     title: "Verwaltung",
     description:
       "Laufende Kampagnensteuerung, Optimierung von Creatives, Zielgruppen und Bidding, monatliches Reporting. Laufzeit 3 Monate.",
-    calc: "3 × 1.000 €",
-    amount: 3000,
+    calc: "3 × 1.500 €",
+    amount: 4500,
   },
 ];
 
@@ -324,19 +324,19 @@ export function buildDefaultDocument(input: BuildInput): OfferDoc {
     titleMain = "Quick Fix Pro.";
     scopeLines = ["3 Monate", "Lead-Kampagne", "Setup, Drehtag, Bearbeitung & Verwaltung"];
     recurringLabel = "Laufende Verwaltung";
-    recurringValue = "1.000 € / Monat";
+    recurringValue = "1.500 € / Monat";
     footnotes = [
       "Alle Preise netto, zzgl. 19 % USt.",
       "Das Werbebudget wird zusätzlich fällig und direkt an die Plattform gezahlt. Für eine grundlegende Kampagne empfehlen wir ca. 20–40 € pro Tag.",
-      "Optionale Bild-Creatives (21 Stück) können für 1.050 € hinzugebucht werden. Bild-Ads werden nach tatsächlichem Verbrauch à 50 € abgerechnet.",
+      "Bild-Creatives und Bild-Ads sind nicht im Paket enthalten. Optional: 21 Bild-Creatives für 1.050 €, Bild-Ads nach tatsächlichem Verbrauch à 50 €.",
     ];
     splitLeftText =
-      "Strategie, Landingpage, Lead-Mechanik, Drehtag mit 21 Videos und 21 Bild-Creatives, Schnitt, Verwaltung und Optimierung der Kampagne.";
+      "Strategie, Landingpage, Lead-Mechanik, Drehtag mit 21 Videos, Schnitt, Verwaltung und Optimierung der Kampagne.";
     splitRightText =
       "Freigabe der Creatives und Zielgruppen, Zugriff auf Werbekonto und Pixel sowie fachliche Freigabe der Landingpage-Inhalte.";
     included = [
       "Strategie & Setup inkl. Landingpage",
-      "Drehtag mit 21 Videos und 21 Bild-Creatives",
+      "Drehtag mit 21 Videos",
       "Bearbeitung von 21 Videos",
       "3 Monate Verwaltung & Optimierung",
       "Conversion-Tracking und Pixel-Einrichtung",
