@@ -15,6 +15,13 @@
       "when": 1791638507429,
       "tag": "0001_positioning_admin_panel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791647017240,
+      "tag": "0002_sync_positioning_leads_to_crm",
+      "breakpoints": true
     }
   ]
 }
