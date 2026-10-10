@@ -2700,6 +2700,7 @@ export type Database = {
       }
       positioning_analysis_leads: {
         Row: {
+          admin_notes: string | null
           company: string
           contact_name: string
           created_at: string
@@ -2708,9 +2709,18 @@ export type Database = {
           industry: string
           monthly_revenue: string
           phone: string
+          session_id: string | null
           source: string
+          status: string
+          status_updated_at: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
+          admin_notes?: string | null
           company: string
           contact_name: string
           created_at?: string
@@ -2719,9 +2729,18 @@ export type Database = {
           industry: string
           monthly_revenue: string
           phone: string
+          session_id?: string | null
           source?: string
+          status?: string
+          status_updated_at?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
+          admin_notes?: string | null
           company?: string
           contact_name?: string
           created_at?: string
@@ -2730,7 +2749,36 @@ export type Database = {
           industry?: string
           monthly_revenue?: string
           phone?: string
+          session_id?: string | null
           source?: string
+          status?: string
+          status_updated_at?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
+      positioning_funnel_events: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          step: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          step: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          step?: string
         }
         Relationships: []
       }
@@ -3895,6 +3943,7 @@ export type Database = {
         Returns: boolean
       }
       is_course_student: { Args: { _user_id: string }; Returns: boolean }
+      is_funnel_admin: { Args: never; Returns: boolean }
       is_internal: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
