@@ -45,8 +45,6 @@ function Hero({ onStart }: { onStart: () => void }) {
           preload="auto"
           playsInline
           controls={!muted}
-          onPlay={() => setMuted(false)}
-          onPause={() => setMuted(true)}
           onClick={() => (muted ? enableSound() : undefined)}
         />
         {muted && (
