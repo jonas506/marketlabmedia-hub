@@ -112,6 +112,7 @@ const App = () => (
                   <Route path="/pakete" element={<Pricing />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/positionierungs-analyse" element={<PositioningAnalysis />} />
+                  <Route path="/positionierungs-analyse/admin" element={<PositioningAdmin />} />
                   <Route path="/angebot/:token" element={<OfferView />} />
                   <Route path="/dokument/:token" element={<DocumentSign />} />
                   <Route path="/kurs/anmelden" element={<CourseSignup />} />
