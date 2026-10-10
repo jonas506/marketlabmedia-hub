@@ -54,6 +54,7 @@ import CourseLogin from "./pages/CourseLogin";
 import CourseAdmin from "./pages/admin/CourseAdmin";
 import OfferView from "./pages/OfferView";
 import PositioningAnalysis from "./pages/PositioningAnalysis";
+import PositioningAdmin from "./pages/PositioningAdmin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
