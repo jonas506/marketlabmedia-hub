@@ -49,17 +49,24 @@
 .pa-page .pa-play { width: 112px; height: 112px; padding: 0; border-radius: 50%; background: transparent; }
 .pa-page .pa-booking { margin-top: 80px; }
 .pa-page .pa-footer { margin-top: 72px; }
-.pa-step-progress { display: flex; gap: 16px; list-style: none; padding: 0; margin: 0 0 36px; }
-.pa-step-progress li { flex: 1; display: flex; gap: 10px; align-items: center; color: hsl(var(--pa-faint)); }
+.pa-page .pa-booking-card { padding: 32px; border-radius: 16px; box-shadow: none; }
+.pa-step-progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0 0 24px; margin: 0 0 28px; border-bottom: 1px solid hsl(var(--pa-line)); }
+.pa-step-progress li { min-width: 0; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; color: hsl(var(--pa-faint)); }
 .pa-step-progress li>span { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 28px; border: 1px solid hsl(var(--pa-line)); border-radius: 50%; font-size: 12px; }
-.pa-step-progress b { font-size: 12px; font-weight: 500; }
+.pa-step-progress b { font-size: 12px; font-weight: 500; line-height: 1.4; overflow-wrap: break-word; }
 .pa-step-progress .is-current { color: hsl(var(--pa-strong)); }
 .pa-step-progress .is-current>span { background: hsl(var(--pa-blue)); border-color: hsl(var(--pa-blue)); }
 .pa-answer-options { display: grid; gap: 12px; }
 .pa-page .pa-answer { min-height: 60px; height: auto; padding: 16px 20px; display: flex; justify-content: space-between; gap: 16px; border: 1px solid hsl(var(--pa-line)); border-radius: 8px; background: hsl(var(--pa-ink-soft)); color: hsl(var(--pa-strong)); font-size: 16px; white-space: normal; text-align: left; }
 .pa-answer svg { flex-shrink: 0; }
 .pa-page .pa-answer:hover, .pa-page .pa-answer.is-selected { border-color: hsl(var(--pa-blue)); background: hsl(var(--pa-blue) / .12); }
-.pa-form-actions { display: flex; align-items: center; gap: 16px; margin-top: 32px; }
-.pa-page .pa-form-actions .pa-submit { margin-top: 0; flex: 1; }
+.pa-page .pa-form-grid { gap: 20px; }
+.pa-page .pa-form-grid label { gap: 8px; min-width: 0; }
+.pa-page .pa-form-grid label>span { font-size: 12px; text-transform: none; letter-spacing: 0 !important; color: hsl(var(--pa-body)); }
+.pa-page .pa-form-grid input { height: 48px; padding: 10px 12px; border: 1px solid hsl(var(--pa-line)); border-radius: 6px; background: hsl(var(--pa-ink) / .5); font-size: 16px; font-weight: 400; }
+.pa-page .pa-form-grid input:focus { border-color: hsl(var(--pa-blue)); box-shadow: 0 0 0 3px hsl(var(--pa-blue) / .12); }
+.pa-form-actions { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
+.pa-page .pa-form-actions .pa-submit { min-width: 0; min-height: 52px; margin-top: 0; flex: 1; padding: 14px 20px; border-radius: 8px; font-size: 16px; line-height: 1.4; box-shadow: none; }
+.pa-page .pa-form-actions .pa-submit svg { flex-shrink: 0; }
 .pa-page .pa-back { min-height: 44px; color: hsl(var(--pa-muted)); }
-@media(max-width:760px) { .pa-page .pa-cta { padding: 18px 24px; font-size: 16px; } .pa-page .pa-play { width: 84px; height: 84px; } .pa-step-progress { gap: 8px; } .pa-step-progress li { flex-direction: column; align-items: flex-start; gap: 8px; } .pa-step-progress b { font-size: 10px; } .pa-form-actions { gap: 8px; } .pa-page .pa-form-actions .pa-submit { padding-inline: 14px; } }
+@media(max-width:760px) { .pa-page .pa-cta { padding: 18px 24px; font-size: 16px; } .pa-page .pa-play { width: 84px; height: 84px; } .pa-page .pa-booking-card { padding: 22px 20px; border-radius: 12px; margin-top: 28px; } .pa-step-progress { gap: 10px; } .pa-step-progress b { font-size: 11px; } .pa-page .pa-form-grid { gap: 18px; } .pa-form-actions { flex-direction: column-reverse; gap: 8px; align-items: stretch; } .pa-page .pa-form-actions .pa-submit { width: 100%; flex: none; padding-inline: 12px; font-size: 15px; } .pa-page .pa-back { align-self: center; } .pa-page .pa-privacy { margin-top: 12px !important; line-height: 1.6; } }
