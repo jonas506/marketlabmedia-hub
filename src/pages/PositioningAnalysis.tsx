@@ -21,8 +21,16 @@ function Header() {
 
 function Hero({ onStart }: { onStart: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const play = () => { setPlaying(true); videoRef.current?.play(); };
+  const [muted, setMuted] = useState(true);
+  const enableSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = false;
+    video.currentTime = 0;
+    video.play();
+    setMuted(false);
+    trackStep("video");
+  };
   return <section className="pa-hero">
     <p className="pa-eyebrow">Für Kapitalanlagevertriebe & Finanzdienstleister</p>
     <h1>Wie du 2026 Anfragen bekommst, die sich wie <em>Empfehlungen</em> anfühlen.</h1>
@@ -32,15 +40,15 @@ function Hero({ onStart }: { onStart: () => void }) {
         <video
           ref={videoRef}
           src={VSL_URL}
-          preload="metadata"
+          autoPlay
+          muted
+          preload="auto"
           playsInline
-          controls={playing}
-          onPlay={() => { setPlaying(true); trackStep("video"); }}
-          onPause={() => setPlaying(false)}
-          onClick={() => (playing ? videoRef.current?.pause() : play())}
+          controls={!muted}
+          onClick={() => (muted ? enableSound() : undefined)}
         />
-        {!playing && (
-          <Button type="button" className="pa-play" aria-label="Video abspielen" onClick={play}>
+        {muted && (
+          <Button type="button" className="pa-play" aria-label="Ton einschalten und Video neu starten" onClick={enableSound}>
             <span><Play fill="currentColor" /></span>
           </Button>
         )}
