@@ -1,5 +1,10 @@
 // Public VSL proxy: streams whitelisted Google Drive videos for public marketing pages.
-import corsHeaders from "../_shared/cors.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, range",
+  "Access-Control-Expose-Headers": "content-length, content-range, accept-ranges",
+};
 
 // Only these Drive files may be streamed publicly.
 const ALLOWED_FILE_IDS = new Set<string>([
