@@ -88,6 +88,9 @@ function BookingForm() {
     if (saveError) { setError("Das hat noch nicht geklappt. Bitte versuche es erneut."); return; }
     trackStep("eingetragen");
     if (typeof window.fbq === "function") window.fbq("track", "Lead");
+    void supabase.functions.invoke("meta-conversions", {
+      body: { email: form.email, phone: form.phone, name: form.name, eventSourceUrl: window.location.href, userAgent: navigator.userAgent },
+    }).then(() => {});
     setSubmitted(true);
     requestAnimationFrame(() => document.getElementById("termin")?.scrollIntoView({ behavior: "smooth" }));
   }
