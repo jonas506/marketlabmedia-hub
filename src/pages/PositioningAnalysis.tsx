@@ -6,6 +6,7 @@ import jonasPhoto from "@/assets/positioning/jonas-fesser.webp.asset.json";
 import marketlabLogo from "@/assets/positioning/logo-marketlab-media-white.png.asset.json";
 import { cases, fitItems, noFitItems, trustMarks } from "./positioning/content";
 import "./positioning/positioning-analysis.css";
+import { getSessionId, getUtm, trackStep } from "./positioning/tracking";
 
 const VSL_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/landing-page-assets/positioning-vsl.mp4`;
 
@@ -36,7 +37,7 @@ function Hero() {
           preload="metadata"
           playsInline
           controls={playing}
-          onPlay={() => setPlaying(true)}
+          onPlay={() => { setPlaying(true); trackStep("video"); }}
           onPause={() => setPlaying(false)}
           onClick={() => (playing ? videoRef.current?.pause() : play())}
         />
@@ -124,9 +125,11 @@ function BookingForm() {
     const { error: saveError } = await supabase.from("positioning_analysis_leads").insert({
       industry: form.industry, monthly_revenue: form.revenue, company: form.company,
       contact_name: form.name, email: form.email, phone: form.phone,
+      session_id: getSessionId(), ...getUtm(),
     });
     setPending(false);
     if (saveError) { setError("Das hat noch nicht geklappt. Bitte versuche es erneut."); return; }
+    trackStep("eingetragen");
     if (typeof window.fbq === "function") window.fbq("track", "Lead");
     setStep(2);
     requestAnimationFrame(() => document.getElementById("termin")?.scrollIntoView({ behavior: "smooth" }));
@@ -136,7 +139,7 @@ function BookingForm() {
     <p className="pa-eyebrow">Schritt {step} von 2 · {step === 1 ? "Kurz vorstellen" : "Termin wählen"}</p>
     <h2>Hol dir deine kostenlose <em>Positionierungs-Analyse</em>.</h2>
     <div className="pa-booking-card">
-      {step === 1 ? <form onSubmit={submit} noValidate>
+      {step === 1 ? <form onSubmit={submit} onFocus={() => trackStep("formular")} noValidate>
         <div className="pa-form-grid">
           <label><span>Branche</span><select required value={form.industry} onChange={e => update("industry", e.target.value)}><option value="">Bitte wählen</option><option>Kapitalanlagevertrieb</option><option>Finanzdienstleister</option><option>Immobilienmakler</option><option>Sonstiges</option></select></label>
           <label><span>Monatlicher Umsatz</span><select required value={form.revenue} onChange={e => update("revenue", e.target.value)}><option value="">Bitte wählen</option><option>Unter 20.000 €</option><option>20.000 bis 50.000 €</option><option>50.000 bis 100.000 €</option><option>Über 100.000 €</option></select></label>
