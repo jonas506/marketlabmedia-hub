@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Check, Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,9 @@ import jonasPhoto from "@/assets/positioning/jonas-fesser.webp.asset.json";
 import marketlabLogo from "@/assets/positioning/logo-marketlab-media-white.png.asset.json";
 import { cases, fitItems, noFitItems, trustMarks } from "./positioning/content";
 import "./positioning/positioning-analysis.css";
+
+const VSL_FILE_ID = "1I1VJLLDJNg4QQ5J3c4F3fAYpW2Tw0h7z";
+const VSL_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vsl-video-proxy?file_id=${VSL_FILE_ID}`;
 
 const CTA = "Jetzt Positionierungs-Analyse sichern";
 
