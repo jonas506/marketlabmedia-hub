@@ -103,7 +103,7 @@ function BookingForm() {
         {step < 3 ? <div className="pa-answer-options" role="group" aria-label={step === 1 ? "Branche" : "Monatlicher Umsatz"}>
           {(step === 1 ? ["Kapitalanlagevertrieb", "Finanzdienstleister", "Immobilienmakler", "Sonstiges"] : ["Unter 20.000 €", "20.000 bis 50.000 €", "50.000 bis 100.000 €", "Über 100.000 €"]).map(option => {
             const selected = (step === 1 ? form.industry : form.revenue) === option;
-            return <Button type="button" key={option} variant="outline" className={`pa-answer ${selected ? "is-selected" : ""}`} aria-pressed={selected} onClick={() => { update(step === 1 ? "industry" : "revenue", option); setError(""); }}><span>{option}</span>{selected ? <Check size={20} /> : <ArrowRight size={20} />}</Button>;
+            return <Button type="button" key={option} variant="outline" className={`pa-answer ${selected ? "is-selected" : ""}`} aria-pressed={selected} onClick={() => { update(step === 1 ? "industry" : "revenue", option); setError(""); if (selected) return; setStep(step + 1); }}><span>{option}</span>{selected ? <Check size={20} /> : <ArrowRight size={20} />}</Button>;
           })}
         </div> : <div className="pa-form-grid">
           <label><span>Firma</span><input autoComplete="organization" required value={form.company} onChange={e => update("company", e.target.value)} /></label>
