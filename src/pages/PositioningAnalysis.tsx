@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import marketlabLogo from "@/assets/positioning/logo-marketlab-media-white.png.asset.json";
 import { isStepComplete, type PositioningFormData } from "./positioning/form-steps";
 import "./positioning/positioning-analysis.css";
-import { getSessionId, getUtm, trackStep } from "./positioning/tracking";
+import { getSessionId, getUtm, initMetaPixel, trackStep } from "./positioning/tracking";
 
 const VSL_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/landing-page-assets/positioning-vsl.mp4`;
 
@@ -139,7 +139,7 @@ export default function PositioningAnalysis() {
     trackStep("formular");
     requestAnimationFrame(() => document.getElementById("termin")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
   };
-  useEffect(() => { getUtm(); trackStep("besuch"); }, []);
+  useEffect(() => { getUtm(); trackStep("besuch"); initMetaPixel(); }, []);
   useEffect(() => {
     const previousTitle = document.title;
     document.title = "Kostenlose Positionierungs-Analyse · Marketlab Media";
