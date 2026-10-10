@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Check, Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,8 @@ import jonasPhoto from "@/assets/positioning/jonas-fesser.webp.asset.json";
 import marketlabLogo from "@/assets/positioning/logo-marketlab-media-white.png.asset.json";
 import { cases, fitItems, noFitItems, trustMarks } from "./positioning/content";
 import "./positioning/positioning-analysis.css";
+
+const VSL_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/landing-page-assets/positioning-vsl.mp4`;
 
 const CTA = "Jetzt Positionierungs-Analyse sichern";
 
@@ -18,14 +20,31 @@ function Header() {
 }
 
 function Hero() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
   const goToBooking = () => document.getElementById("termin")?.scrollIntoView({ behavior: "smooth" });
+  const play = () => { setPlaying(true); videoRef.current?.play(); };
   return <section className="pa-hero">
     <p className="pa-eyebrow">Für Kapitalanlagevertriebe & Finanzdienstleister</p>
     <h1>Wie du 2026 Anfragen bekommst, die sich wie <em>Empfehlungen</em> anfühlen.</h1>
     <p className="pa-subline">Das System hinter über 2.000 Reels und Ads für die Immobilien- und Finanzbranche. Kurz erklärt im Video.</p>
     <div className="pa-video-shell">
-      <div className="pa-video" aria-label="Video folgt">
-        <button type="button" className="pa-play" aria-label="Video abspielen"><span><Play fill="currentColor" /></span></button>
+      <div className="pa-video" aria-label="Video">
+        <video
+          ref={videoRef}
+          src={VSL_URL}
+          preload="metadata"
+          playsInline
+          controls={playing}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onClick={() => (playing ? videoRef.current?.pause() : play())}
+        />
+        {!playing && (
+          <button type="button" className="pa-play" aria-label="Video abspielen" onClick={play}>
+            <span><Play fill="currentColor" /></span>
+          </button>
+        )}
       </div>
     </div>
     <Button type="button" className="pa-cta" onClick={goToBooking}>{CTA}</Button>
