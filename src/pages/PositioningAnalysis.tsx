@@ -167,6 +167,7 @@ function Footer() {
 declare global { interface Window { fbq?: (...args: unknown[]) => void } }
 
 export default function PositioningAnalysis() {
+  useEffect(() => { getUtm(); trackStep("besuch"); }, []);
   useEffect(() => {
     const previousTitle = document.title;
     document.title = "Kostenlose Positionierungs-Analyse · Marketlab Media";
