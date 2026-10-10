@@ -25,3 +25,29 @@ export function getUtm() {
   sessionStorage.setItem("pa_utm", JSON.stringify(utm));
   return utm;
 }
+
+declare global {
+  interface Window { fbq?: (...args: unknown[]) => void; _fbq?: unknown; }
+}
+
+const META_PIXEL_ID = "2349392999129892";
+let pixelInitialized = false;
+
+/** Loads the Meta Pixel once and fires PageView. Scoped to the public funnel pages. */
+export function initMetaPixel() {
+  if (pixelInitialized || typeof window.fbq === "function") return;
+  pixelInitialized = true;
+  const w = window as unknown as Record<string, unknown>;
+  const fbq = ((...args: unknown[]) => { (fbq as unknown as { queue: unknown[] }).queue.push(args); }) as unknown as Record<string, unknown>;
+  fbq.queue = [];
+  fbq.loaded = true;
+  fbq.version = "2.0";
+  w.fbq = fbq;
+  if (!w._fbq) w._fbq = fbq;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://connect.facebook.net/en_US/fbevents.js";
+  document.head.appendChild(script);
+  window.fbq!("init", META_PIXEL_ID);
+  window.fbq!("track", "PageView");
+}
