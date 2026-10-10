@@ -37,17 +37,17 @@ let pixelInitialized = false;
 export function initMetaPixel() {
   if (pixelInitialized || typeof window.fbq === "function") return;
   pixelInitialized = true;
-  const w = window as unknown as Record<string, unknown>;
-  const fbq = ((...args: unknown[]) => { (fbq as unknown as { queue: unknown[] }).queue.push(args); }) as unknown as Record<string, unknown>;
+  type Fbq = ((...args: unknown[]) => void) & { queue: unknown[]; loaded: boolean; version: string };
+  const fbq = ((...args: unknown[]) => { fbq.queue.push(args); }) as Fbq;
   fbq.queue = [];
   fbq.loaded = true;
   fbq.version = "2.0";
-  w.fbq = fbq;
-  if (!w._fbq) w._fbq = fbq;
+  window.fbq = fbq;
+  if (!window._fbq) window._fbq = fbq;
   const script = document.createElement("script");
   script.async = true;
   script.src = "https://connect.facebook.net/en_US/fbevents.js";
   document.head.appendChild(script);
-  window.fbq!("init", META_PIXEL_ID);
-  window.fbq!("track", "PageView");
+  fbq("init", META_PIXEL_ID);
+  fbq("track", "PageView");
 }
