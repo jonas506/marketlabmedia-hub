@@ -1,10 +1,9 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Check, Play, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import jonasPhoto from "@/assets/positioning/jonas-fesser.webp.asset.json";
 import marketlabLogo from "@/assets/positioning/logo-marketlab-media-white.png.asset.json";
-import { cases, fitItems, noFitItems, trustMarks } from "./positioning/content";
+import { isStepComplete, type PositioningFormData } from "./positioning/form-steps";
 import "./positioning/positioning-analysis.css";
 import { getSessionId, getUtm, trackStep } from "./positioning/tracking";
 
@@ -20,10 +19,9 @@ function Header() {
   return <header className="pa-header"><span /><img src={marketlabLogo.url} alt="Marketlab Media" /><span /></header>;
 }
 
-function Hero() {
+function Hero({ onStart }: { onStart: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
-  const goToBooking = () => document.getElementById("termin")?.scrollIntoView({ behavior: "smooth" });
   const play = () => { setPlaying(true); videoRef.current?.play(); };
   return <section className="pa-hero">
     <p className="pa-eyebrow">Für Kapitalanlagevertriebe & Finanzdienstleister</p>
@@ -42,85 +40,36 @@ function Hero() {
           onClick={() => (playing ? videoRef.current?.pause() : play())}
         />
         {!playing && (
-          <button type="button" className="pa-play" aria-label="Video abspielen" onClick={play}>
+          <Button type="button" className="pa-play" aria-label="Video abspielen" onClick={play}>
             <span><Play fill="currentColor" /></span>
-          </button>
+          </Button>
         )}
       </div>
     </div>
-    <Button type="button" className="pa-cta" onClick={goToBooking}>{CTA}</Button>
-    <div className="pa-qualifiers"><span>Kostenlos</span><span>Kein Preis, kein Paket</span><span>Ehrliche Einschätzung</span></div>
+    <Button type="button" className="pa-cta" onClick={onStart}>{CTA}</Button>
   </section>;
 }
 
-function LogoMarquee() {
-  const marks = [...trustMarks, ...trustMarks];
-  return <section className="pa-marquee-wrap" aria-label="Ausgewählte Kunden">
-    <p>Vertrauen uns bereits</p>
-    <div className="pa-marquee"><div className="pa-marquee-track">
-      {marks.map((mark, index) => mark.logo
-        ? <img key={`${mark.name}-${index}`} src={mark.logo} alt={index < trustMarks.length ? mark.name : ""} />
-        : <span key={`${mark.name}-${index}`}>{mark.name}</span>)}
-    </div></div>
-  </section>;
-}
-
-function StatRow({ stats }: { stats: string[][] }) {
-  return <div className="pa-stats">{stats.map(([value, label]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>;
-}
-
-function CaseRow({ item, index }: { item: typeof cases[number]; index: number }) {
-  const image = <div className="pa-case-image"><img src={item.image} alt={`${item.name} Kundenergebnis`} /><span>Case 0{index + 1}</span></div>;
-  const copy = <div className="pa-case-copy"><img src={item.logo} alt={item.name} /><p>{item.quote}</p><StatRow stats={item.stats} /></div>;
-  return <article className={`pa-case ${item.imageRight ? "pa-case-reverse" : ""}`}>{image}{copy}</article>;
-}
-
-function Results() {
-  return <section className="pa-section pa-results"><SectionLabel number="01">Ergebnisse</SectionLabel>
-    <h2>Drei Kunden. Drei Wege zur <em>Monopol-Positionierung</em>.</h2>
-    <div>{cases.map((item, index) => <CaseRow key={item.name} item={item} index={index} />)}</div>
-  </section>;
-}
-
-function FitColumn({ title, items, positive }: { title: string; items: string[]; positive?: boolean }) {
-  const Icon = positive ? Check : X;
-  return <div className="pa-fit-column"><h3>{title}</h3>{items.map(item => <div className="pa-fit-item" key={item}>
-    <span className={positive ? "is-positive" : "is-negative"}><Icon /></span><p>{item}</p>
-  </div>)}</div>;
-}
-
-function FitSection() {
-  return <section className="pa-section"><SectionLabel number="02">Für wen</SectionLabel>
-    <h2>Der Termin ist nicht für <em>jeden</em>.</h2>
-    <div className="pa-fit-grid"><FitColumn title="Passt, wenn du …" items={fitItems} positive /><FitColumn title="Passt nicht, wenn …" items={noFitItems} /></div>
-  </section>;
-}
-
-function FounderBlock() {
-  return <section className="pa-section pa-founder">
-    <div className="pa-founder-image"><img src={jonasPhoto.url} alt="Jonas Fesser, Gründer von Marketlab Media" /><div><strong>Jonas Fesser</strong><span>Gründer · Marketlab Media</span></div></div>
-    <div className="pa-founder-copy"><SectionLabel number="03">Dein Gespräch</SectionLabel>
-      <h2>Wir fangen nie mit Ads an. Sondern mit deiner <em>Stärke</em>.</h2>
-      <p>In der kostenlosen Positionierungs-Analyse schauen wir uns an, wo du heute vergleichbar bist und was dich unvergleichbar machen würde. Wenn wir dir nicht helfen können, sagen wir dir das ehrlich.</p>
-      <StatRow stats={[["2.000+", "Reels und Ads"], ["1 Mio. €+", "Kundenumsatz"], ["30 Mio.", "Reichweite"]]} />
-      <Button type="button" className="pa-cta" onClick={() => document.getElementById("termin")?.scrollIntoView({ behavior: "smooth" })}>{CTA}</Button>
-    </div>
-  </section>;
-}
-
-type FormData = { industry: string; revenue: string; company: string; name: string; email: string; phone: string };
+type FormData = PositioningFormData;
 const emptyForm: FormData = { industry: "", revenue: "", company: "", name: "", email: "", phone: "" };
 
 function BookingForm() {
   const [form, setForm] = useState(emptyForm);
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const update = (key: keyof FormData, value: string) => setForm(current => ({ ...current, [key]: value }));
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (Object.values(form).some(value => !value.trim())) { setError("Bitte fülle alle Felder aus."); return; }
+    if (!isStepComplete(step, form)) {
+      setError(step === 1 ? "Bitte wähle deine Branche." : step === 2 ? "Bitte wähle deinen monatlichen Umsatz." : "Bitte fülle alle Kontaktdaten aus und gib eine gültige E-Mail-Adresse an.");
+      return;
+    }
+    setError("");
+    if (step < 3) { setStep(step + 1); return; }
+    if (![1, 2, 3].every(current => isStepComplete(current, form))) { setStep(1); return; }
     setPending(true); setError("");
     const { error: saveError } = await supabase.from("positioning_analysis_leads").insert({
       industry: form.industry, monthly_revenue: form.revenue, company: form.company,
@@ -131,30 +80,39 @@ function BookingForm() {
     if (saveError) { setError("Das hat noch nicht geklappt. Bitte versuche es erneut."); return; }
     trackStep("eingetragen");
     if (typeof window.fbq === "function") window.fbq("track", "Lead");
-    setStep(2);
+    setSubmitted(true);
     requestAnimationFrame(() => document.getElementById("termin")?.scrollIntoView({ behavior: "smooth" }));
   }
 
   return <section id="termin" className="pa-booking pa-section">
-    <p className="pa-eyebrow">Schritt {step} von 2 · {step === 1 ? "Kurz vorstellen" : "Termin wählen"}</p>
-    <h2>Hol dir deine kostenlose <em>Positionierungs-Analyse</em>.</h2>
+    <p className="pa-eyebrow">{submitted ? "Termin wählen" : `Schritt ${step} von 3`}</p>
+    <h2>{submitted ? <>Deine <em>Positionierungs-Analyse</em>.</> : step === 1 ? <>In welcher <em>Branche</em> bist du tätig?</> : step === 2 ? <>Wie hoch ist dein monatlicher <em>Umsatz</em>?</> : <>Wie können wir dich <em>erreichen</em>?</>}</h2>
     <div className="pa-booking-card">
-      {step === 1 ? <form onSubmit={submit} onFocus={() => trackStep("formular")} noValidate>
-        <div className="pa-form-grid">
-          <label><span>Branche</span><select required value={form.industry} onChange={e => update("industry", e.target.value)}><option value="">Bitte wählen</option><option>Kapitalanlagevertrieb</option><option>Finanzdienstleister</option><option>Immobilienmakler</option><option>Sonstiges</option></select></label>
-          <label><span>Monatlicher Umsatz</span><select required value={form.revenue} onChange={e => update("revenue", e.target.value)}><option value="">Bitte wählen</option><option>Unter 20.000 €</option><option>20.000 bis 50.000 €</option><option>50.000 bis 100.000 €</option><option>Über 100.000 €</option></select></label>
-          <label><span>Firma</span><input required value={form.company} onChange={e => update("company", e.target.value)} /></label>
-          <label><span>Name</span><input required value={form.name} onChange={e => update("name", e.target.value)} /></label>
-          <label><span>E-Mail</span><input type="email" required value={form.email} onChange={e => update("email", e.target.value)} /></label>
-          <label><span>Telefon</span><input type="tel" required value={form.phone} onChange={e => update("phone", e.target.value)} /></label>
-        </div>
+      {!submitted ? <form onSubmit={submit} onFocus={() => trackStep("formular")} noValidate>
+        <ol className="pa-step-progress" aria-label="Formularfortschritt">
+          {["Branche", "Monatlicher Umsatz", "Kontaktdaten"].map((label, index) => <li key={label} className={step >= index + 1 ? "is-current" : ""} aria-current={step === index + 1 ? "step" : undefined}><span>{step > index + 1 ? <Check size={16} /> : index + 1}</span><b>{label}</b></li>)}
+        </ol>
+        {step < 3 ? <div className="pa-answer-options" role="group" aria-label={step === 1 ? "Branche" : "Monatlicher Umsatz"}>
+          {(step === 1 ? ["Kapitalanlagevertrieb", "Finanzdienstleister", "Immobilienmakler", "Sonstiges"] : ["Unter 20.000 €", "20.000 bis 50.000 €", "50.000 bis 100.000 €", "Über 100.000 €"]).map(option => {
+            const selected = (step === 1 ? form.industry : form.revenue) === option;
+            return <Button type="button" key={option} variant="outline" className={`pa-answer ${selected ? "is-selected" : ""}`} aria-pressed={selected} onClick={() => { update(step === 1 ? "industry" : "revenue", option); setError(""); }}><span>{option}</span>{selected ? <Check size={20} /> : <ArrowRight size={20} />}</Button>;
+          })}
+        </div> : <div className="pa-form-grid">
+          <label><span>Firma</span><input autoComplete="organization" required value={form.company} onChange={e => update("company", e.target.value)} /></label>
+          <label><span>Name</span><input autoComplete="name" required value={form.name} onChange={e => update("name", e.target.value)} /></label>
+          <label><span>E-Mail</span><input autoComplete="email" type="email" required value={form.email} onChange={e => update("email", e.target.value)} /></label>
+          <label><span>Telefon</span><input autoComplete="tel" type="tel" required value={form.phone} onChange={e => update("phone", e.target.value)} /></label>
+        </div>}
         {error && <p className="pa-form-error" role="alert">{error}</p>}
-        <Button className="pa-cta pa-submit" disabled={pending}>{pending ? "Wird gespeichert …" : "Weiter zur Terminauswahl"}</Button>
+        <div className="pa-form-actions">
+          {step > 1 && <Button type="button" variant="ghost" className="pa-back" disabled={pending} onClick={() => { setStep(step - 1); setError(""); }}><ArrowLeft size={18} />Zurück</Button>}
+          <Button type="submit" className="pa-cta pa-submit" disabled={pending}>{pending ? "Wird gespeichert …" : step < 3 ? "Weiter" : "Weiter zur Terminauswahl"}<ArrowRight size={18} /></Button>
+        </div>
         <p className="pa-privacy">Deine Daten nutzen wir nur zur Vorbereitung des Termins.</p>
       </form> : <div className="pa-calendar">
         <p>Danke, {form.name.trim().split(" ")[0]}. Wähl jetzt einen Termin, der dir passt.</p>
         <iframe title="Termin für Positionierungs-Analyse wählen" src="https://calendar.app.google/i2jtG5DapbEjzWba6" />
-        <div><a href="https://calendar.app.google/i2jtG5DapbEjzWba6" target="_blank" rel="noreferrer">Kalender in neuem Tab öffnen</a><button type="button" onClick={() => setStep(1)}>Angaben ändern</button></div>
+        <div><a href="https://calendar.app.google/i2jtG5DapbEjzWba6" target="_blank" rel="noreferrer">Kalender in neuem Tab öffnen</a></div>
       </div>}
     </div>
   </section>;
@@ -167,6 +125,12 @@ function Footer() {
 declare global { interface Window { fbq?: (...args: unknown[]) => void } }
 
 export default function PositioningAnalysis() {
+  const [formOpen, setFormOpen] = useState(false);
+  const startForm = () => {
+    setFormOpen(true);
+    trackStep("formular");
+    requestAnimationFrame(() => document.getElementById("termin")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
+  };
   useEffect(() => { getUtm(); trackStep("besuch"); }, []);
   useEffect(() => {
     const previousTitle = document.title;
@@ -176,5 +140,5 @@ export default function PositioningAnalysis() {
     description?.setAttribute("content", "Kostenlose Positionierungs-Analyse für Kapitalanlagevertriebe und Finanzdienstleister mit Marketlab Media.");
     return () => { document.title = previousTitle; if (description && previousDescription) description.setAttribute("content", previousDescription); };
   }, []);
-  return <main className="pa-page"><Header /><Hero /><LogoMarquee /><Results /><FitSection /><FounderBlock /><BookingForm /><Footer /></main>;
+  return <main className="pa-page"><Header /><Hero onStart={startForm} />{formOpen && <BookingForm />}<Footer /></main>;
 }
