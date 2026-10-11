@@ -2705,6 +2705,7 @@ export type Database = {
           contact_name: string
           created_at: string
           email: string
+          fbclid: string | null
           id: string
           industry: string
           monthly_revenue: string
@@ -2725,6 +2726,7 @@ export type Database = {
           contact_name: string
           created_at?: string
           email: string
+          fbclid?: string | null
           id?: string
           industry: string
           monthly_revenue: string
@@ -2745,6 +2747,7 @@ export type Database = {
           contact_name?: string
           created_at?: string
           email?: string
+          fbclid?: string | null
           id?: string
           industry?: string
           monthly_revenue?: string
@@ -2764,21 +2767,39 @@ export type Database = {
       positioning_funnel_events: {
         Row: {
           created_at: string
+          fbclid: string | null
           id: string
           session_id: string
           step: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
           created_at?: string
+          fbclid?: string | null
           id?: string
           session_id: string
           step: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
           created_at?: string
+          fbclid?: string | null
           id?: string
           session_id?: string
           step?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }
