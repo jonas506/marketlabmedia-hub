@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
   try {
     const [events, leads] = await Promise.all([
       fetchAll<{ session_id: string; step: string; created_at: string; utm_source: string | null }>((a, b) =>
-        db.from("positioning_funnel_events").select("session_id, step, created_at, utm_source").in("step", ["besuch", "video", "formular"])
+        db.from("positioning_funnel_events").select("session_id, step, created_at, utm_source").in("step", ["besuch", "video", "formular", "eingetragen"])
           .gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
       fetchAll<{ created_at: string; status: string; monthly_revenue: string; industry: string; utm_source: string | null; session_id: string | null }>((a, b) =>
         db.from("positioning_analysis_leads").select("created_at, status, monthly_revenue, industry, utm_source, session_id")
@@ -71,21 +71,21 @@ Deno.serve(async (req) => {
       events.forEach((e) => { if (e.utm_source && ADS_RE.test(e.utm_source)) adsSessions.add(e.session_id); });
     }
 
-    type Day = { date: string; besucher: number; video: number; formular: number; leads: number; ab_leads: number; termine: number; angebote: number; abschluss: number; unqualifiziert: number };
+    type Day = { date: string; besucher: number; video: number; formular: number; eingetragen: number; leads: number; ab_leads: number; termine: number; angebote: number; abschluss: number; unqualifiziert: number };
     const days = new Map<string, Day>();
-    const sets = new Map<string, { besuch: Set<string>; video: Set<string>; formular: Set<string> }>();
+    const sets = new Map<string, { besuch: Set<string>; video: Set<string>; formular: Set<string>; eingetragen: Set<string> }>();
     for (let t = Date.parse(from); t <= Date.parse(to); t += 86400000) {
       const d = new Date(t).toISOString().slice(0, 10);
-      days.set(d, { date: d, besucher: 0, video: 0, formular: 0, leads: 0, ab_leads: 0, termine: 0, angebote: 0, abschluss: 0, unqualifiziert: 0 });
-      sets.set(d, { besuch: new Set(), video: new Set(), formular: new Set() });
+      days.set(d, { date: d, besucher: 0, video: 0, formular: 0, eingetragen: 0, leads: 0, ab_leads: 0, termine: 0, angebote: 0, abschluss: 0, unqualifiziert: 0 });
+      sets.set(d, { besuch: new Set(), video: new Set(), formular: new Set(), eingetragen: new Set() });
     }
 
     for (const e of events) {
       const s = sets.get(berlinDay(e.created_at));
       if (!s || (onlyAds && !adsSessions.has(e.session_id))) continue;
-      s[e.step as "besuch" | "video" | "formular"].add(e.session_id);
+      s[e.step as "besuch" | "video" | "formular" | "eingetragen"].add(e.session_id);
     }
-    for (const [d, s] of sets) { const day = days.get(d)!; day.besucher = s.besuch.size; day.video = s.video.size; day.formular = s.formular.size; }
+    for (const [d, s] of sets) { const day = days.get(d)!; day.besucher = s.besuch.size; day.video = s.video.size; day.formular = s.formular.size; day.eingetragen = s.eingetragen.size; }
 
     for (const l of leads) {
       const day = days.get(berlinDay(l.created_at));
