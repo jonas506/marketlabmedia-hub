@@ -13,17 +13,29 @@ export function trackStep(step: FunnelStep) {
   if (sent.has(step)) return;
   sent.add(step);
   // duplicates per session are rejected by a unique constraint; errors are ignored on purpose
-  void supabase.from("positioning_funnel_events").insert({ session_id: getSessionId(), step }).then(() => {});
+  void supabase.from("positioning_funnel_events").insert({ session_id: getSessionId(), step, ...getUtm() }).then(() => {});
+  if (step === "video") window.fbq?.("track", "ViewContent", { content_name: "Positionierungs-Analyse VSL" });
 }
 
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid"] as const;
+/** First-touch attribution: values from the first visit of the session win over later URLs. */
 export function getUtm() {
   const p = new URLSearchParams(window.location.search);
-  const stored = JSON.parse(sessionStorage.getItem("pa_utm") || "{}");
-  const keys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
+  const stored = JSON.parse(sessionStorage.getItem("pa_utm") || "null") as Record<string, string | null> | null;
+  if (stored) return stored;
   const utm: Record<string, string | null> = {};
-  keys.forEach(k => { utm[k] = p.get(k) || stored[k] || null; });
+  UTM_KEYS.forEach(k => { utm[k] = p.get(k) || null; });
   sessionStorage.setItem("pa_utm", JSON.stringify(utm));
   return utm;
+}
+
+function readCookie(name: string) {
+  return document.cookie.split("; ").find(c => c.startsWith(name + "="))?.split("=")[1] ?? null;
+}
+/** Meta browser identifiers for the Conversions API; fbc is built from fbclid if the cookie is missing. */
+export function getMetaIds() {
+  const fbclid = getUtm().fbclid;
+  return { fbp: readCookie("_fbp"), fbc: readCookie("_fbc") || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null) };
 }
 
 declare global {

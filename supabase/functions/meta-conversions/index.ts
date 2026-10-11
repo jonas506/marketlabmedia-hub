@@ -20,7 +20,8 @@ serve(async (req) => {
     if (!token) return new Response(JSON.stringify({ error: "META_ACCESS_TOKEN not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const body = await req.json();
-    const { email, phone, name, eventSourceUrl, userAgent, clientIp, eventName = "Lead" } = body ?? {};
+    const { email, phone, name, eventSourceUrl, userAgent, eventName = "Lead", eventId, fbp, fbc } = body ?? {};
+    const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0].trim() || null;
 
     const userData: Record<string, unknown> = {};
     if (email) userData.em = [await sha256(email)];
@@ -32,11 +33,14 @@ serve(async (req) => {
     }
     if (userAgent) userData.client_user_agent = userAgent;
     if (clientIp) userData.client_ip_address = clientIp;
+    if (typeof fbp === "string" && fbp) userData.fbp = fbp;
+    if (typeof fbc === "string" && fbc) userData.fbc = fbc;
 
     const payload = {
       data: [{
         event_name: eventName,
         event_time: Math.floor(Date.now() / 1000),
+        ...(typeof eventId === "string" && eventId ? { event_id: eventId } : {}),
         action_source: "website",
         event_source_url: eventSourceUrl,
         user_data: userData,

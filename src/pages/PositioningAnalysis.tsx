@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import marketlabLogo from "@/assets/positioning/logo-marketlab-media-white.png.asset.json";
 import { isStepComplete, type PositioningFormData } from "./positioning/form-steps";
 import "./positioning/positioning-analysis.css";
-import { getSessionId, getUtm, initMetaPixel, trackStep } from "./positioning/tracking";
+import { getMetaIds, getSessionId, getUtm, initMetaPixel, trackStep } from "./positioning/tracking";
 
 const VSL_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/landing-page-assets/positioning-vsl.mp4`;
 
@@ -87,9 +87,10 @@ function BookingForm() {
     setPending(false);
     if (saveError) { setError("Das hat noch nicht geklappt. Bitte versuche es erneut."); return; }
     trackStep("eingetragen");
-    if (typeof window.fbq === "function") window.fbq("track", "Lead");
+    const eventId = crypto.randomUUID();
+    if (typeof window.fbq === "function") window.fbq("track", "Lead", { content_name: "Positionierungs-Analyse" }, { eventID: eventId });
     void supabase.functions.invoke("meta-conversions", {
-      body: { email: form.email, phone: form.phone, name: form.name, eventSourceUrl: window.location.href, userAgent: navigator.userAgent },
+      body: { email: form.email, phone: form.phone, name: form.name, eventSourceUrl: window.location.href, userAgent: navigator.userAgent, eventId, ...getMetaIds() },
     }).then(() => {});
     void supabase.functions.invoke("notify-lead-whatsapp", {
       body: { phone: form.phone, name: form.name },

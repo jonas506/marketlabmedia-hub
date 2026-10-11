@@ -54,37 +54,38 @@ Deno.serve(async (req) => {
 
   try {
     const [events, leads] = await Promise.all([
-      fetchAll<{ session_id: string; step: string; created_at: string }>((a, b) =>
-        db.from("positioning_funnel_events").select("session_id, step, created_at").in("step", ["besuch", "video"])
+      fetchAll<{ session_id: string; step: string; created_at: string; utm_source: string | null }>((a, b) =>
+        db.from("positioning_funnel_events").select("session_id, step, created_at, utm_source").in("step", ["besuch", "video", "formular"])
           .gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
       fetchAll<{ created_at: string; status: string; monthly_revenue: string; industry: string; utm_source: string | null; session_id: string | null }>((a, b) =>
         db.from("positioning_analysis_leads").select("created_at, status, monthly_revenue, industry, utm_source, session_id")
           .gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
     ]);
 
-    // Funnel events carry no UTM; for nur_ads, sessions are attributed via ads leads' session_id.
+    // nur_ads: an event counts if it carries an ads utm_source itself, or (older events without UTM) its session belongs to an ads lead.
     const adsSessions = new Set<string>();
     if (onlyAds) {
       const all = await fetchAll<{ session_id: string | null; utm_source: string | null }>((a, b) =>
         db.from("positioning_analysis_leads").select("session_id, utm_source").not("session_id", "is", null).range(a, b));
       all.forEach((l) => { if (l.session_id && l.utm_source && ADS_RE.test(l.utm_source)) adsSessions.add(l.session_id); });
+      events.forEach((e) => { if (e.utm_source && ADS_RE.test(e.utm_source)) adsSessions.add(e.session_id); });
     }
 
-    type Day = { date: string; besucher: number; video: number; leads: number; ab_leads: number; termine: number; angebote: number; abschluss: number; unqualifiziert: number };
+    type Day = { date: string; besucher: number; video: number; formular: number; leads: number; ab_leads: number; termine: number; angebote: number; abschluss: number; unqualifiziert: number };
     const days = new Map<string, Day>();
-    const sets = new Map<string, { besuch: Set<string>; video: Set<string> }>();
+    const sets = new Map<string, { besuch: Set<string>; video: Set<string>; formular: Set<string> }>();
     for (let t = Date.parse(from); t <= Date.parse(to); t += 86400000) {
       const d = new Date(t).toISOString().slice(0, 10);
-      days.set(d, { date: d, besucher: 0, video: 0, leads: 0, ab_leads: 0, termine: 0, angebote: 0, abschluss: 0, unqualifiziert: 0 });
-      sets.set(d, { besuch: new Set(), video: new Set() });
+      days.set(d, { date: d, besucher: 0, video: 0, formular: 0, leads: 0, ab_leads: 0, termine: 0, angebote: 0, abschluss: 0, unqualifiziert: 0 });
+      sets.set(d, { besuch: new Set(), video: new Set(), formular: new Set() });
     }
 
     for (const e of events) {
       const s = sets.get(berlinDay(e.created_at));
       if (!s || (onlyAds && !adsSessions.has(e.session_id))) continue;
-      (e.step === "besuch" ? s.besuch : s.video).add(e.session_id);
+      s[e.step as "besuch" | "video" | "formular"].add(e.session_id);
     }
-    for (const [d, s] of sets) { const day = days.get(d)!; day.besucher = s.besuch.size; day.video = s.video.size; }
+    for (const [d, s] of sets) { const day = days.get(d)!; day.besucher = s.besuch.size; day.video = s.video.size; day.formular = s.formular.size; }
 
     for (const l of leads) {
       const day = days.get(berlinDay(l.created_at));
