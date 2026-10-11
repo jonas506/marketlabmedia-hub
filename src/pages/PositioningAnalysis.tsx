@@ -91,6 +91,9 @@ function BookingForm() {
     void supabase.functions.invoke("meta-conversions", {
       body: { email: form.email, phone: form.phone, name: form.name, eventSourceUrl: window.location.href, userAgent: navigator.userAgent },
     }).then(() => {});
+    void supabase.functions.invoke("notify-lead-whatsapp", {
+      body: { phone: form.phone, name: form.name },
+    }).then(() => {});
     setSubmitted(true);
     requestAnimationFrame(() => document.getElementById("termin")?.scrollIntoView({ behavior: "smooth" }));
   }
