@@ -23,3 +23,5 @@ project_id = "winsekbpsgwtwfdehyms"
     verify_jwt = false
 
 
+  [functions.ads-stats]
+    verify_jwt = false
