@@ -71,9 +71,9 @@ Deno.serve(async (req) => {
       events.forEach((e) => { if (e.utm_source && ADS_RE.test(e.utm_source)) adsSessions.add(e.session_id); });
     }
 
-    type Day = { date: string; besucher: number; video: number; formular: number; leads: number; ab_leads: number; termine: number; angebote: number; abschluss: number; unqualifiziert: number };
+    type Day = { date: string; besucher: number; video: number; formular: number; eingetragen: number; leads: number; ab_leads: number; termine: number; angebote: number; abschluss: number; unqualifiziert: number };
     const days = new Map<string, Day>();
-    const sets = new Map<string, { besuch: Set<string>; video: Set<string>; formular: Set<string> }>();
+    const sets = new Map<string, { besuch: Set<string>; video: Set<string>; formular: Set<string>; eingetragen: Set<string> }>();
     for (let t = Date.parse(from); t <= Date.parse(to); t += 86400000) {
       const d = new Date(t).toISOString().slice(0, 10);
       days.set(d, { date: d, besucher: 0, video: 0, formular: 0, eingetragen: 0, leads: 0, ab_leads: 0, termine: 0, angebote: 0, abschluss: 0, unqualifiziert: 0 });
@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     for (const e of events) {
       const s = sets.get(berlinDay(e.created_at));
       if (!s || (onlyAds && !adsSessions.has(e.session_id))) continue;
-      s[e.step as "besuch" | "video" | "formular"].add(e.session_id);
+      s[e.step as "besuch" | "video" | "formular" | "eingetragen"].add(e.session_id);
     }
     for (const [d, s] of sets) { const day = days.get(d)!; day.besucher = s.besuch.size; day.video = s.video.size; day.formular = s.formular.size; day.eingetragen = s.eingetragen.size; }
 
