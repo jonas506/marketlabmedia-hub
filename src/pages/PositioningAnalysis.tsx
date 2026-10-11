@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import marketlabLogo from "@/assets/positioning/logo-marketlab-media-white.png.asset.json";
 import { isStepComplete, type PositioningFormData } from "./positioning/form-steps";
 import "./positioning/positioning-analysis.css";
-import { getMetaIds, getSessionId, getUtm, initMetaPixel, trackStep } from "./positioning/tracking";
+import { getConsent, getMetaIds, getSessionId, getUtm, hasTrackingConsent, initMetaPixel, setConsent, trackStep, type Consent } from "./positioning/tracking";
+import { ConsentBanner } from "./positioning/ConsentBanner";
 
 const VSL_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/landing-page-assets/positioning-vsl.mp4`;
 
@@ -86,12 +87,14 @@ function BookingForm() {
     });
     setPending(false);
     if (saveError) { setError("Das hat noch nicht geklappt. Bitte versuche es erneut."); return; }
-    trackStep("eingetragen");
-    const eventId = crypto.randomUUID();
-    if (typeof window.fbq === "function") window.fbq("track", "Lead", { content_name: "Positionierungs-Analyse" }, { eventID: eventId });
-    void supabase.functions.invoke("meta-conversions", {
-      body: { email: form.email, phone: form.phone, name: form.name, eventSourceUrl: window.location.href, userAgent: navigator.userAgent, eventId, ...getMetaIds() },
-    }).then(() => {});
+    if (hasTrackingConsent()) {
+      trackStep("eingetragen");
+      const eventId = crypto.randomUUID();
+      if (typeof window.fbq === "function") window.fbq("track", "Lead", { content_name: "Positionierungs-Analyse" }, { eventID: eventId });
+      void supabase.functions.invoke("meta-conversions", {
+        body: { email: form.email, phone: form.phone, name: form.name, eventSourceUrl: window.location.href, userAgent: navigator.userAgent, eventId, ...getMetaIds() },
+      }).then(() => {});
+    }
     void supabase.functions.invoke("notify-lead-whatsapp", {
       body: { phone: form.phone, name: form.name },
     }).then(() => {});
@@ -133,8 +136,8 @@ function BookingForm() {
   </section>;
 }
 
-function Footer() {
-  return <footer className="pa-footer"><img src={marketlabLogo.url} alt="Marketlab Media" /><div><span>© 2026 Marketlab Media UG</span><a href="https://marketlab-media.de/impressum">Impressum</a><a href="https://marketlab-media.de/datenschutz">Datenschutz</a></div></footer>;
+function Footer({ onConsentSettings }: { onConsentSettings: () => void }) {
+  return <footer className="pa-footer"><img src={marketlabLogo.url} alt="Marketlab Media" /><div><span>© 2026 Marketlab Media UG</span><a href="https://marketlab-media.de/impressum">Impressum</a><a href="https://marketlab-media.de/datenschutz">Datenschutz</a><button type="button" className="pa-footer-link" onClick={onConsentSettings}>Cookie-Einstellungen</button></div></footer>;
 }
 
 declare global { interface Window { fbq?: (...args: unknown[]) => void } }
@@ -146,7 +149,10 @@ export default function PositioningAnalysis() {
     trackStep("formular");
     requestAnimationFrame(() => document.getElementById("termin")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
   };
-  useEffect(() => { getUtm(); trackStep("besuch"); initMetaPixel(); }, []);
+  const [consent, setConsentState] = useState<Consent | null>(() => getConsent());
+  const [bannerOpen, setBannerOpen] = useState(() => getConsent() === null);
+  useEffect(() => { if (consent === "all") { getUtm(); trackStep("besuch"); initMetaPixel(); } }, [consent]);
+  const decide = (value: Consent) => { setConsent(value); setConsentState(value); setBannerOpen(false); };
   useEffect(() => {
     const previousTitle = document.title;
     document.title = "Kostenlose Positionierungs-Analyse · Marketlab Media";
@@ -155,5 +161,5 @@ export default function PositioningAnalysis() {
     description?.setAttribute("content", "Kostenlose Positionierungs-Analyse für Kapitalanlagevertriebe und Finanzdienstleister mit Marketlab Media.");
     return () => { document.title = previousTitle; if (description && previousDescription) description.setAttribute("content", previousDescription); };
   }, []);
-  return <main className="pa-page"><Header /><Hero onStart={startForm} />{formOpen && <BookingForm />}<Footer /></main>;
+  return <main className="pa-page"><Header /><Hero onStart={startForm} />{formOpen && <BookingForm />}<Footer onConsentSettings={() => setBannerOpen(true)} />{bannerOpen && <ConsentBanner current={consent} onDecide={decide} />}</main>;
 }
