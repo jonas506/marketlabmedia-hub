@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
-import { ShieldCheck, ExternalLink, Clock, Film, LayoutGrid, Megaphone, Youtube, Image as ImageIcon, Send, Loader2, CheckSquare, Square, ChevronLeft, ChevronRight, PlayCircle, Check } from "lucide-react";
+import { ShieldCheck, ExternalLink, Clock, Film, LayoutGrid, Megaphone, Youtube, Image as ImageIcon, Send, Loader2, CheckSquare, Square, ChevronLeft, ChevronRight, PlayCircle, Check, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -68,6 +68,22 @@ export default function InternalReview() {
       qc.invalidateQueries({ queryKey: ["content_pieces"] });
     },
     onError: (err: any) => toast.error("Freigabe fehlgeschlagen", { description: err.message }),
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from("content_pieces").delete().in("id", ids);
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      toast.success(`${count} ${count === 1 ? "Piece" : "Pieces"} gelöscht`);
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["internal-review-list"] });
+      qc.invalidateQueries({ queryKey: ["internal-review-count"] });
+      qc.invalidateQueries({ queryKey: ["content_pieces"] });
+    },
+    onError: (err: any) => toast.error("Löschen fehlgeschlagen", { description: err.message }),
   });
 
   const toggle = (id: string) => {
@@ -215,6 +231,29 @@ export default function InternalReview() {
                               </a>
                             </Button>
                           )}
+                          <Button
+                            size="sm"
+                            onClick={() => bulkApprove.mutate([p.id])}
+                            disabled={bulkApprove.isPending}
+                            className="flex-shrink-0 gap-1 bg-[hsl(var(--runway-green))] hover:bg-[hsl(var(--runway-green))]/90 text-white border-0"
+                            title="Freigeben & an Kunde senden"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Freigeben</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              if (!confirm(`„${p.title || "Ohne Titel"}" wirklich löschen?`)) return;
+                              bulkDelete.mutate([p.id]);
+                            }}
+                            disabled={bulkDelete.isPending}
+                            className="flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Löschen"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </li>
                       );
                     })}
@@ -230,6 +269,19 @@ export default function InternalReview() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-2xl border border-border bg-card/95 backdrop-blur px-4 py-3 shadow-xl">
           <span className="text-sm font-medium">{selected.size} ausgewählt</span>
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Abwählen</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              if (!confirm(`${selected.size} Pieces wirklich löschen?`)) return;
+              bulkDelete.mutate(Array.from(selected));
+            }}
+            disabled={bulkDelete.isPending}
+            className="gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+          >
+            {bulkDelete.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+            Löschen
+          </Button>
           <Button
             size="sm"
             onClick={() => {
