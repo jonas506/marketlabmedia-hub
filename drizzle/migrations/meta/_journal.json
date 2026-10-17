@@ -29,6 +29,13 @@
       "when": 1791741924981,
       "tag": "0003_funnel_events_utm",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792228532797,
+      "tag": "0004_positioning_slack_after_insert",
+      "breakpoints": true
     }
   ]
 }
