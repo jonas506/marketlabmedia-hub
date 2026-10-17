@@ -1,5 +1,4 @@
-// @vitest-environment node
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { buildLeadMessage, sendSlack, TEST_MESSAGE } from "../../../supabase/functions/lead-slack-notify/message";
 
 const lead = {
@@ -9,6 +8,9 @@ const lead = {
   email: "private@example.test", phone: "+49123456789",
 };
 describe("minimal funnel Slack data", () => {
+  // jsdom lacks the runtime's AbortSignal.timeout; all HTTP is mocked here.
+  beforeAll(() => vi.stubGlobal("AbortSignal", { timeout: () => new AbortController().signal }));
+  afterAll(() => vi.unstubAllGlobals());
   it("never includes surname, email or telephone", () => {
     const message = buildLeadMessage(lead);
     expect(message).toContain("Jonas");
