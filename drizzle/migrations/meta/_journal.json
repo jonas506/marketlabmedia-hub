@@ -36,6 +36,13 @@
       "when": 1792228532797,
       "tag": "0004_positioning_slack_after_insert",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792228648120,
+      "tag": "0005_retire_positioning_slack",
+      "breakpoints": true
     }
   ]
 }
