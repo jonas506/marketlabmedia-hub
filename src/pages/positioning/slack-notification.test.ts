@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildLeadMessage, sendSlack, TEST_MESSAGE } from "./message";
+import { buildLeadMessage, sendSlack, TEST_MESSAGE } from "../../../supabase/functions/lead-slack-notify/message";
 
 const lead = {
   id: "c80c5f7d-e56d-4c88-88bb-6dd5a08a43ce", contact_name: "Jonas Fesser",
@@ -37,7 +37,7 @@ describe("minimal funnel Slack data", () => {
     log.mockRestore();
   });
   it("posts the test message without any lead payload", async () => {
-    const request = vi.fn(async () => new Response("ok"));
+    const request = vi.fn<typeof fetch>(async () => new Response("ok"));
     expect(await sendSlack("https://hooks.slack.com/services/test-only", TEST_MESSAGE, request)).toBe(true);
     const body = JSON.parse(String(request.mock.calls[0]?.[1]?.body));
     expect(body.text).toBe("🧪 Test · Slack-Benachrichtigung Hub");
