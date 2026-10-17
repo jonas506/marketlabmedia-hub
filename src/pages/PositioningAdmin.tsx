@@ -37,7 +37,7 @@ function Distribution({ title, data }: { title: string; data: { name: string; va
 export default function PositioningAdmin() {
   const { user, loading, signOut } = useAuth();
   const qc = useQueryClient();
-  const [range, setRange] = useState<Range>(() => new URLSearchParams(window.location.search).get("range") === "all" ? "all" : "30");
+  const [range, setRange] = useState<Range>("30");
   const [from, setFrom] = useState(""); const [to, setTo] = useState("");
   const [statusFilter, setStatusFilter] = useState("alle");
 
@@ -136,7 +136,7 @@ export default function PositioningAdmin() {
         {shown.length === 0 ? <p className="text-sm text-muted-foreground py-6 text-center">Keine Leads im Zeitraum.</p> :
           <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead className="text-left text-muted-foreground"><tr><th className="p-2">Datum</th><th className="p-2">Kontakt</th><th className="p-2">Firma / Branche</th><th className="p-2">Umsatz</th><th className="p-2">Score</th><th className="p-2">Quelle</th><th className="p-2">Status</th></tr></thead>
-            <tbody>{shown.map(l => <tr key={l.id} id={`lead-${l.id}`} className="border-t border-border align-top">
+            <tbody>{shown.map(l => <tr key={l.id} className="border-t border-border align-top">
               <td className="p-2 whitespace-nowrap">{new Date(l.created_at).toLocaleString("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short", timeStyle: "short" })}</td>
               <td className="p-2"><div className="font-medium">{l.contact_name}</div><a className="text-primary block" href={`mailto:${l.email}`}>{l.email}</a><a className="text-muted-foreground" href={`tel:${l.phone}`}>{l.phone}</a></td>
               <td className="p-2"><div>{l.company}</div><div className="text-muted-foreground">{l.industry}</div></td>
