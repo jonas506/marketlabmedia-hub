@@ -1,3 +1,3 @@
 # Roll back funnel Slack notification
-- [ ] Remove only the newly added Slack trigger, function, outbox and source files.
-- [ ] Restore the admin page and verify unchanged lead-saving configuration.
+- [x] Remove the new Slack trigger, function and source files; retire the unused outbox with all access revoked (table deletion blocked by Cloud safeguards).
+- [x] Restore the admin page; six existing form/scoring tests passed and lead-saving code remains unchanged.
