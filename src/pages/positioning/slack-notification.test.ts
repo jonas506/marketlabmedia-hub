@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 import { buildLeadMessage, sendSlack, TEST_MESSAGE } from "../../../supabase/functions/lead-slack-notify/message";
 
