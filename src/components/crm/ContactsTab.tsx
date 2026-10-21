@@ -1,20 +1,23 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Search, Download, Tag, Users2, CalendarPlus, CalendarClock, Copy, X, Ban, MessageCircle, Linkedin, Mail, Instagram, Phone, FileText, User } from "lucide-react";
+import { Search, Download, Tag, Users2, CalendarPlus, CalendarClock, Copy, X, Ban, MessageCircle, Linkedin, Mail, Instagram, Phone, FileText, User, ArrowUpDown, SlidersHorizontal, BookmarkPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCrmContacts, useCrmEvents, useCrmEventGuests, useContactLeads, isOpenLeadStage } from "@/hooks/useCrmContacts";
 import { SEGMENTS, RELATIONSHIPS, GUEST_STATUSES, labelOf, colorOf, isFollowupDue, isWarmStale, toCsv } from "@/lib/crm-contacts";
+import { cn } from "@/lib/utils";
 import DuplicateFinder from "./DuplicateFinder";
 import ContactImportDialog from "./ContactImportDialog";
+import type { CrmContact } from "@/hooks/useCrmContacts";
 
 export const CHANNEL_ICON: Record<string, typeof Mail> = {
   whatsapp: MessageCircle, linkedin: Linkedin, mail: Mail, instagram: Instagram, telefon: Phone, brief: FileText, persoenlich: User,
@@ -22,28 +25,57 @@ export const CHANNEL_ICON: Record<string, typeof Mail> = {
 
 const ALL = "__all";
 
+interface Filters {
+  segment: string; rel: string; region: string; tag: string;
+  eventF: string; eventStatus: string; staleDays: string; followupDue: boolean; dnc: string;
+}
+const EMPTY_FILTERS: Filters = { segment: ALL, rel: ALL, region: "", tag: ALL, eventF: ALL, eventStatus: ALL, staleDays: "", followupDue: false, dnc: ALL };
+
+interface SavedView { name: string; filters: Filters }
+
+const PRESET_VIEWS: { name: string; filters: Partial<Filters> }[] = [
+  { name: "Alle", filters: {} },
+  { name: "Follow-up fällig", filters: { followupDue: true } },
+  { name: "Ins Schwarze Kandidaten", filters: { tag: "ins-schwarze-kandidat" } },
+  { name: "Immo & Finanz", filters: { segment: "immo_finanz" } },
+  { name: "Kunden", filters: { rel: "kunde" } },
+];
+
+const LS_KEY = "crm-contact-views";
+
+type SortKey = "full_name" | "company" | "segment" | "region" | "last_contact_at" | "next_followup_date";
+
 export default function ContactsTab() {
   const qc = useQueryClient();
+  const nav = useNavigate();
   const { data: contacts = [], isLoading } = useCrmContacts();
   const { data: events = [] } = useCrmEvents();
   const { data: guests = [] } = useCrmEventGuests();
   const { data: leads = [] } = useContactLeads();
 
   const [q, setQ] = useState("");
-  const [segment, setSegment] = useState(ALL);
-  const [rel, setRel] = useState(ALL);
-  const [region, setRegion] = useState("");
-  const [tag, setTag] = useState(ALL);
-  const [eventF, setEventF] = useState(ALL);
-  const [eventStatus, setEventStatus] = useState(ALL);
-  const [staleDays, setStaleDays] = useState("");
-  const [followupDue, setFollowupDue] = useState(false);
-  const [dnc, setDnc] = useState(ALL);
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [activeView, setActiveView] = useState("Alle");
+  const [savedViews, setSavedViews] = useState<SavedView[]>(() => {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) ?? "[]"); } catch { return []; }
+  });
+  const [sortKey, setSortKey] = useState<SortKey>("full_name");
+  const [sortAsc, setSortAsc] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulk, setBulk] = useState<null | "tag" | "segment" | "event" | "followup">(null);
   const [bulkValue, setBulkValue] = useState("");
   const [dupOpen, setDupOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [saveViewOpen, setSaveViewOpen] = useState(false);
+  const [viewName, setViewName] = useState("");
+
+  const setF = (patch: Partial<Filters>) => { setFilters(f => ({ ...f, ...patch })); setActiveView(""); };
+  const applyView = (name: string, patch: Partial<Filters>) => { setFilters({ ...EMPTY_FILTERS, ...patch }); setActiveView(name); };
+
+  const mittelstandswerk = events.find(e => /mittelstandswerk/i.test(e.name));
+  const dynamicViews = mittelstandswerk
+    ? [{ name: "Mittelstandswerk Zusagen", filters: { eventF: mittelstandswerk.id, eventStatus: "zusage" } }]
+    : [];
 
   const eventById = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
   const guestsByContact = useMemo(() => {
@@ -60,25 +92,31 @@ export default function ContactsTab() {
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    const r = region.trim().toLowerCase();
-    const days = Number(staleDays);
-    return contacts.filter(c => {
+    const r = filters.region.trim().toLowerCase();
+    const days = Number(filters.staleDays);
+    const list = contacts.filter(c => {
       if (s && ![c.full_name, c.company, c.email, c.city, c.region].some(v => v?.toLowerCase().includes(s))) return false;
-      if (segment !== ALL && c.segment !== segment) return false;
-      if (rel !== ALL && c.relationship !== rel) return false;
+      if (filters.segment !== ALL && c.segment !== filters.segment) return false;
+      if (filters.rel !== ALL && c.relationship !== filters.rel) return false;
       if (r && !(c.region?.toLowerCase().includes(r) || c.city?.toLowerCase().includes(r))) return false;
-      if (tag !== ALL && !(c.tags ?? []).includes(tag)) return false;
-      if (eventF !== ALL) {
-        const g = (guestsByContact.get(c.id) ?? []).find(x => x.event_id === eventF);
-        if (!g || (eventStatus !== ALL && g.status !== eventStatus)) return false;
+      if (filters.tag !== ALL && !(c.tags ?? []).includes(filters.tag)) return false;
+      if (filters.eventF !== ALL) {
+        const g = (guestsByContact.get(c.id) ?? []).find(x => x.event_id === filters.eventF);
+        if (!g || (filters.eventStatus !== ALL && g.status !== filters.eventStatus)) return false;
       }
       if (days > 0 && c.last_contact_at && Date.now() - new Date(c.last_contact_at).getTime() < days * 86400000) return false;
-      if (followupDue && !isFollowupDue(c)) return false;
-      if (dnc === "yes" && !c.do_not_contact) return false;
-      if (dnc === "no" && c.do_not_contact) return false;
+      if (filters.followupDue && !isFollowupDue(c)) return false;
+      if (filters.dnc === "yes" && !c.do_not_contact) return false;
+      if (filters.dnc === "no" && c.do_not_contact) return false;
       return true;
     });
-  }, [contacts, q, segment, rel, region, tag, eventF, eventStatus, staleDays, followupDue, dnc, guestsByContact]);
+    const val = (c: CrmContact) => (c[sortKey] ?? "") as string;
+    list.sort((a, b) => {
+      const cmp = String(val(a)).localeCompare(String(val(b)), "de");
+      return sortAsc ? cmp : -cmp;
+    });
+    return list;
+  }, [contacts, q, filters, guestsByContact, sortKey, sortAsc]);
 
   const toggle = (id: string) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const allSelected = filtered.length > 0 && filtered.every(c => selected.has(c.id));
@@ -117,9 +155,25 @@ export default function ContactsTab() {
     URL.revokeObjectURL(url);
   };
 
+  const saveView = () => {
+    const name = viewName.trim();
+    if (!name) return;
+    const next = [...savedViews.filter(v => v.name !== name), { name, filters }];
+    setSavedViews(next);
+    localStorage.setItem(LS_KEY, JSON.stringify(next));
+    setActiveView(name);
+    setSaveViewOpen(false); setViewName("");
+    toast.success(`Ansicht „${name}“ gespeichert`);
+  };
+
+  const activeFilterCount = Object.entries(filters).filter(([k, v]) => {
+    const empty = EMPTY_FILTERS[k as keyof Filters];
+    return v !== empty;
+  }).length;
+
   const sel = (value: string, onChange: (v: string) => void, placeholder: string, items: { value: string; label: string }[]) => (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-9 w-[150px] text-xs"><SelectValue placeholder={placeholder} /></SelectTrigger>
+      <SelectTrigger className="h-8 w-full text-xs"><SelectValue placeholder={placeholder} /></SelectTrigger>
       <SelectContent>
         <SelectItem value={ALL}>{placeholder}: alle</SelectItem>
         {items.map(i => <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}
@@ -127,27 +181,72 @@ export default function ContactsTab() {
     </Select>
   );
 
+  const SortTh = ({ field, children, className }: { field: SortKey; children: React.ReactNode; className?: string }) => (
+    <th className={cn("px-3 py-2 font-medium cursor-pointer hover:text-foreground select-none", className)}
+      onClick={() => { if (sortKey === field) setSortAsc(!sortAsc); else { setSortKey(field); setSortAsc(true); } }}>
+      <span className="inline-flex items-center gap-1">
+        {children}
+        {sortKey === field && <ArrowUpDown className="h-3 w-3" />}
+      </span>
+    </th>
+  );
+
   return (
     <div className="space-y-3">
+      {/* Gespeicherte Ansichten */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {[...PRESET_VIEWS, ...dynamicViews].map(v => (
+          <button key={v.name} onClick={() => applyView(v.name, v.filters)}
+            className={cn("rounded-full px-3 py-1 text-xs font-medium transition-colors border",
+              activeView === v.name ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>
+            {v.name}
+          </button>
+        ))}
+        {savedViews.map(v => (
+          <button key={v.name} onClick={() => applyView(v.name, v.filters)}
+            className={cn("rounded-full px-3 py-1 text-xs font-medium transition-colors border",
+              activeView === v.name ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>
+            {v.name}
+          </button>
+        ))}
+        <button onClick={() => setSaveViewOpen(true)} title="Aktuelle Filter als Ansicht speichern"
+          className="rounded-full px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground border border-dashed border-border inline-flex items-center gap-1">
+          <BookmarkPlus className="h-3 w-3" />Speichern
+        </button>
+      </div>
+
+      {/* Filterleiste */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Name, Firma, E-Mail, Ort…" value={q} onChange={e => setQ(e.target.value)} className="pl-9 h-9" />
         </div>
-        {sel(segment, setSegment, "Segment", [...SEGMENTS])}
-        {sel(rel, setRel, "Beziehung", [...RELATIONSHIPS])}
-        <Input placeholder="Region / Ort" value={region} onChange={e => setRegion(e.target.value)} className="h-9 w-[140px] text-xs" />
-        {sel(tag, setTag, "Tag", allTags.map(t => ({ value: t, label: t })))}
-        {sel(eventF, setEventF, "Event", events.map(e => ({ value: e.id, label: e.name })))}
-        {eventF !== ALL && sel(eventStatus, setEventStatus, "Status", [...GUEST_STATUSES])}
-        <Input type="number" min={0} placeholder="Kein Kontakt seit X Tagen" value={staleDays} onChange={e => setStaleDays(e.target.value)} className="h-9 w-[190px] text-xs" />
-        <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-          <Checkbox checked={followupDue} onCheckedChange={v => setFollowupDue(!!v)} /> Follow-up fällig
-        </label>
-        {sel(dnc, setDnc, "Nicht kontaktieren", [{ value: "yes", label: "Nur gesperrte" }, { value: "no", label: "Ohne gesperrte" }])}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
+              <SlidersHorizontal className="h-3.5 w-3.5" />Filter{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-72 space-y-2 p-3">
+            {sel(filters.segment, v => setF({ segment: v }), "Segment", [...SEGMENTS])}
+            {sel(filters.rel, v => setF({ rel: v }), "Beziehung", [...RELATIONSHIPS])}
+            <Input placeholder="Region / Ort" value={filters.region} onChange={e => setF({ region: e.target.value })} className="h-8 text-xs" />
+            {sel(filters.tag, v => setF({ tag: v }), "Tag", allTags.map(t => ({ value: t, label: t })))}
+            {sel(filters.eventF, v => setF({ eventF: v, eventStatus: ALL }), "Event", events.map(e => ({ value: e.id, label: e.name })))}
+            {filters.eventF !== ALL && sel(filters.eventStatus, v => setF({ eventStatus: v }), "Status", [...GUEST_STATUSES])}
+            <Input type="number" min={0} placeholder="Kein Kontakt seit X Tagen" value={filters.staleDays} onChange={e => setF({ staleDays: e.target.value })} className="h-8 text-xs" />
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+              <Checkbox checked={filters.followupDue} onCheckedChange={v => setF({ followupDue: !!v })} /> Follow-up fällig
+            </label>
+            {sel(filters.dnc, v => setF({ dnc: v }), "Nicht kontaktieren", [{ value: "yes", label: "Nur gesperrte" }, { value: "no", label: "Ohne gesperrte" }])}
+            <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => { setFilters(EMPTY_FILTERS); setActiveView("Alle"); }}>
+              Filter zurücksetzen
+            </Button>
+          </PopoverContent>
+        </Popover>
         <div className="ml-auto flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setDupOpen(true)}><Copy className="h-3.5 w-3.5 mr-1" />Dubletten</Button>
-          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>Kontakte importieren</Button>
+          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>Importieren</Button>
         </div>
       </div>
 
@@ -163,33 +262,35 @@ export default function ContactsTab() {
         </div>
       )}
 
-      <div className="border border-border rounded-lg overflow-auto">
+      <div className="border border-border rounded-lg overflow-auto max-h-[70vh]">
         <table className="w-full text-sm">
-          <thead className="bg-muted/40">
+          <thead className="bg-muted/40 sticky top-0 z-10">
             <tr className="text-left text-xs text-muted-foreground">
               <th className="px-3 py-2 w-8"><Checkbox checked={allSelected} onCheckedChange={v => setSelected(v ? new Set(filtered.map(c => c.id)) : new Set())} /></th>
-              <th className="px-3 py-2 font-medium">Name</th>
-              <th className="px-3 py-2 font-medium">Firma</th>
-              <th className="px-3 py-2 font-medium">Segment</th>
-              <th className="px-3 py-2 font-medium">Region</th>
-              <th className="px-3 py-2 font-medium">Letzter Kontakt</th>
-              <th className="px-3 py-2 font-medium">Follow-up</th>
+              <SortTh field="full_name">Name</SortTh>
+              <SortTh field="company">Firma</SortTh>
+              <SortTh field="segment">Segment</SortTh>
+              <SortTh field="region">Region</SortTh>
+              <SortTh field="last_contact_at">Letzter Kontakt</SortTh>
+              <SortTh field="next_followup_date">Follow-up</SortTh>
               <th className="px-3 py-2 font-medium">Events</th>
               <th className="px-3 py-2 font-medium">Leads</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filtered.slice(0, 500).map(c => {
+            {filtered.map(c => {
               const Icon = c.last_channel ? CHANNEL_ICON[c.last_channel] : null;
               const due = isFollowupDue(c);
               return (
-                <tr key={c.id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-3 py-2.5"><Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggle(c.id)} /></td>
+                <tr key={c.id} onClick={() => nav(`/crm/kontakt/${c.id}`)} className="hover:bg-muted/20 transition-colors cursor-pointer">
+                  <td className="px-3 py-2.5" onClick={e => e.stopPropagation()}>
+                    <Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggle(c.id)} />
+                  </td>
                   <td className="px-3 py-2.5">
-                    <Link to={`/crm/kontakt/${c.id}`} className="font-medium hover:text-primary transition-colors inline-flex items-center gap-1.5">
+                    <span className="font-medium inline-flex items-center gap-1.5">
                       {c.full_name}
                       {c.do_not_contact && <Ban className="h-3 w-3 text-destructive" aria-label="Nicht kontaktieren" />}
-                    </Link>
+                    </span>
                     {isWarmStale(c) && <span className="ml-1.5 text-[10px] text-amber-400">30+ Tage still</span>}
                   </td>
                   <td className="px-3 py-2.5 text-muted-foreground">{c.company || "—"}</td>
@@ -231,7 +332,7 @@ export default function ContactsTab() {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-muted-foreground">{filtered.length} von {contacts.length} Kontakten{filtered.length > 500 ? " · erste 500 angezeigt" : ""}</p>
+      <p className="text-xs text-muted-foreground">{filtered.length} von {contacts.length} Kontakten</p>
 
       <Dialog open={!!bulk} onOpenChange={o => { if (!o) { setBulk(null); setBulkValue(""); } }}>
         <DialogContent>
@@ -251,6 +352,15 @@ export default function ContactsTab() {
             </Select>
           )}
           <DialogFooter><Button onClick={applyBulk} disabled={!bulkValue}>Für {selected.size} übernehmen</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={saveViewOpen} onOpenChange={setSaveViewOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Ansicht speichern</DialogTitle></DialogHeader>
+          <Input autoFocus placeholder="Name der Ansicht" value={viewName} onChange={e => setViewName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && saveView()} />
+          <DialogFooter><Button onClick={saveView} disabled={!viewName.trim()}>Speichern</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

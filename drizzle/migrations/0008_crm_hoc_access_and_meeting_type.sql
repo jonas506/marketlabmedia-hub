@@ -1,0 +1,15 @@
+ALTER TYPE public.crm_activity_type ADD VALUE IF NOT EXISTS 'meeting';
+
+CREATE POLICY "HoC full access on crm_activities" ON public.crm_activities FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_tasks" ON public.crm_tasks FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_files" ON public.crm_files FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_contacts" ON public.crm_contacts FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_leads" ON public.crm_leads FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_events" ON public.crm_events FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_event_guests" ON public.crm_event_guests FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_lead_pipelines" ON public.crm_lead_pipelines FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_pipelines" ON public.crm_pipelines FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_pipeline_stages" ON public.crm_pipeline_stages FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_stage_config" ON public.crm_stage_config FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_source_tags" ON public.crm_source_tags FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));
+CREATE POLICY "HoC full access on crm_lead_statuses" ON public.crm_lead_statuses FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'head_of_content')) WITH CHECK (public.has_role(auth.uid(), 'head_of_content'));

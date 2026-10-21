@@ -1,11 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Briefcase, Search, ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Briefcase, Search, ArrowUpDown, Plus, User, Building2 } from "lucide-react";
 import PipelineBoard from "@/components/crm/PipelineBoard";
 import MagicInput from "@/components/crm/MagicInput";
 import ContactsTab from "@/components/crm/ContactsTab";
@@ -21,6 +24,7 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Lead = {
   id: string;
@@ -57,6 +61,33 @@ export default function CRMHome() {
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
   const [sortAsc, setSortAsc] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const [newOpen, setNewOpen] = useState(false);
+  const [newMode, setNewMode] = useState<"lead" | "kontakt">("lead");
+  const [contactName, setContactName] = useState("");
+  const [contactCompany, setContactCompany] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactSaving, setContactSaving] = useState(false);
+
+  const createContact = async () => {
+    if (!contactName.trim() || contactSaving) return;
+    setContactSaving(true);
+    const { data, error } = await supabase.from("crm_contacts").insert({
+      full_name: contactName.trim(),
+      company: contactCompany.trim() || null,
+      email: contactEmail.trim() || null,
+      created_by: user?.id ?? null,
+    } as any).select("id").single();
+    setContactSaving(false);
+    if (error || !data) { toast.error("Kontakt konnte nicht angelegt werden"); return; }
+    toast.success("Kontakt angelegt");
+    setNewOpen(false);
+    setContactName(""); setContactCompany(""); setContactEmail("");
+    qc.invalidateQueries({ queryKey: ["crm-contacts"] });
+    navigate(`/crm/kontakt/${data.id}`);
+  };
 
   useEffect(() => {
     if (!activePipeline && pipelines.length > 0) setActivePipeline(pipelines[0].id);
@@ -148,11 +179,12 @@ export default function CRMHome() {
         <div className="flex items-center gap-3">
           <Briefcase className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">CRM</h1>
+          <Button size="sm" className="ml-auto" onClick={() => setNewOpen(true)}>
+            <Plus className="h-4 w-4 mr-1.5" />Neu
+          </Button>
         </div>
 
         <CrmStatsTiles />
-
-        <MagicInput onLeadCreated={fetchLeads} pipelineId={activePipeline} />
 
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
@@ -312,6 +344,33 @@ export default function CRMHome() {
 
         </Tabs>
       </div>
+
+      <Dialog open={newOpen} onOpenChange={setNewOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Neu anlegen</DialogTitle></DialogHeader>
+          <div className="flex gap-2">
+            <Button variant={newMode === "lead" ? "default" : "outline"} size="sm" onClick={() => setNewMode("lead")}>
+              <Building2 className="h-3.5 w-3.5 mr-1.5" />Lead
+            </Button>
+            <Button variant={newMode === "kontakt" ? "default" : "outline"} size="sm" onClick={() => setNewMode("kontakt")}>
+              <User className="h-3.5 w-3.5 mr-1.5" />Kontakt
+            </Button>
+          </div>
+          {newMode === "lead" ? (
+            <MagicInput onLeadCreated={() => { fetchLeads(); setNewOpen(false); }} pipelineId={activePipeline} />
+          ) : (
+            <div className="space-y-3">
+              <Input autoFocus placeholder="Name *" value={contactName} onChange={e => setContactName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && createContact()} />
+              <Input placeholder="Firma" value={contactCompany} onChange={e => setContactCompany(e.target.value)} />
+              <Input placeholder="E-Mail" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
+              <Button className="w-full" onClick={createContact} disabled={!contactName.trim() || contactSaving}>
+                Kontakt anlegen
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

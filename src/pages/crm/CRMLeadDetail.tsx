@@ -6,51 +6,29 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
-  ArrowLeft, StickyNote, Phone, Mail, Users2, Globe,
-  ChevronDown, ChevronRight, Plus, DollarSign,
-  Search, CheckSquare, CalendarIcon, Clock,
-  Sparkles, Upload, Link2, Loader2, AlertTriangle,
-  Paperclip, FileText, Image, Trash2, X,
+  ArrowLeft, Globe, Sparkles, Upload, Link2, Loader2, AlertTriangle,
+  FileText, Image, Trash2, X, Mail, User,
 } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { getSourceInfo } from "@/lib/crm-constants";
-import { useCrmStages, getStageColor as dynGetStageColor, getStageLabel as dynGetStageLabel } from "@/hooks/useCrmStages";
+import { useCrmStages, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
 import { useQuery } from "@tanstack/react-query";
 import LeadPipelinesPopover from "@/components/crm/LeadPipelinesPopover";
-
-
-const ACTIVITY_TYPES = [
-  { value: "note", label: "Notiz", icon: StickyNote, color: "#F59E0B" },
-  { value: "call", label: "Anruf", icon: Phone, color: "#22C55E" },
-  { value: "email", label: "Email", icon: Mail, color: "#0083F7" },
-  { value: "sms", label: "Meeting", icon: Users2, color: "#8B5CF6" },
-] as const;
-
-const ACTIVITY_ICON_MAP: Record<string, { icon: typeof StickyNote; color: string }> = {
-  note: { icon: StickyNote, color: "#F59E0B" },
-  call: { icon: Phone, color: "#22C55E" },
-  email: { icon: Mail, color: "#0083F7" },
-  sms: { icon: Users2, color: "#8B5CF6" },
-  status_change: { icon: StickyNote, color: "#F59E0B" },
-  task_completed: { icon: CheckSquare, color: "#22C55E" },
-  created: { icon: StickyNote, color: "#6B7280" },
-};
-
-const TIMELINE_FILTERS = ["Alle", "Notizen", "Anrufe", "Emails", "Meetings"] as const;
-const FILTER_MAP: Record<string, string | null> = {
-  Alle: null, Notizen: "note", Anrufe: "call", Emails: "email", Meetings: "sms",
-};
+import CrmDetailHeader, { buildQuickActions } from "@/components/crm/detail/CrmDetailHeader";
+import DetailsPanel, { type DetailGroup, linkHref } from "@/components/crm/detail/DetailsPanel";
+import ActivityPanel from "@/components/crm/detail/ActivityPanel";
+import { NextStepCard, TasksCard, OffersCard } from "@/components/crm/detail/SideCards";
+import type { CrmActivity } from "@/lib/crm-activity";
 
 const SETTING_CALL_QUESTIONS = [
   "Wie kommst du gerade an deine Kunden? (Empfehlung, Netzwerk, Ads, Bestand?)",
@@ -65,6 +43,7 @@ const SETTING_CALL_QUESTIONS = [
 interface LeadData {
   id: string;
   name: string;
+  contact_id: string | null;
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
@@ -78,27 +57,8 @@ interface LeadData {
   next_step_date: string | null;
   instagram_handle: string | null;
   linkedin_url: string | null;
-  ai_summary: string | null;
-  setting_call_answers: Record<string, string> | null;
-}
-
-interface Activity {
-  id: string;
-  type: string;
-  title: string;
-  body: string | null;
   created_at: string;
-}
-
-interface CrmTask {
-  id: string;
-  title: string;
-  due_date: string | null;
-  due_time: string | null;
-  is_completed: boolean;
-  completed_at: string | null;
-  lead_id: string | null;
-  assigned_to: string;
+  setting_call_answers: Record<string, string> | null;
 }
 
 export default function CRMLeadDetail() {
@@ -106,6 +66,35 @@ export default function CRMLeadDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: crmStages = [] } = useCrmStages();
+
+  const [lead, setLead] = useState<LeadData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState<CrmActivity[]>([]);
+  const [crmTasks, setCrmTasks] = useState<any[]>([]);
+  const [leadFiles, setLeadFiles] = useState<any[]>([]);
+  const [editingSettingIdx, setEditingSettingIdx] = useState<number | null>(null);
+
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryText, setSummaryText] = useState<string | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
+
+  // Email compose
+  const [showEmailCompose, setShowEmailCompose] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+
+  // Files & import
+  const [fileUploading, setFileUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [importDragOver, setImportDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importUrl, setImportUrl] = useState("");
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<any>(null);
+  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
+
   const { data: leadDocuments = [] } = useQuery({
     queryKey: ["lead-documents", id],
     enabled: !!id,
@@ -119,75 +108,41 @@ export default function CRMLeadDetail() {
       return data ?? [];
     },
   });
-  const openOfferTotal = leadDocuments
-    .filter(d => ["draft", "sent", "viewed"].includes(d.status))
-    .reduce((s, d) => s + Number(d.amount_net || 0), 0);
-  const [lead, setLead] = useState<LeadData | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [showActivity, setShowActivity] = useState(false);
-  const [activityType, setActivityType] = useState<string>("note");
-  const [activityTitle, setActivityTitle] = useState("");
-  const [activityBody, setActivityBody] = useState("");
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [timelineFilter, setTimelineFilter] = useState<string>("Alle");
-  const [timelineSearch, setTimelineSearch] = useState("");
-  const [summaryLoading, setSummaryLoading] = useState(false);
-  const [summaryText, setSummaryText] = useState<string | null>(null);
-  const [showSummary, setShowSummary] = useState(false);
-  const timelineEndRef = useRef<HTMLDivElement>(null);
 
-  const [contactOpen, setContactOpen] = useState(true);
-  const [tasksOpen, setTasksOpen] = useState(true);
-  const [smartImportOpen, setSmartImportOpen] = useState(false);
-  const [settingCallOpen, setSettingCallOpen] = useState(true);
-  const [editingSettingIdx, setEditingSettingIdx] = useState<number | null>(null);
+  const { data: linkedContact } = useQuery({
+    queryKey: ["crm-contact", lead?.contact_id],
+    enabled: !!lead?.contact_id,
+    queryFn: async () => (await supabase.from("crm_contacts").select("id, full_name").eq("id", lead!.contact_id!).single()).data,
+  });
 
-  const [crmTasks, setCrmTasks] = useState<CrmTask[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskDate, setNewTaskDate] = useState<Date | undefined>();
-  const [newTaskTime, setNewTaskTime] = useState("");
-
-  const [importUrl, setImportUrl] = useState("");
-  const [importLoading, setImportLoading] = useState(false);
-  const [importResult, setImportResult] = useState<any>(null);
-  const [showLinkedInHint, setShowLinkedInHint] = useState(false);
-
-  // Email compose
-  const [showEmailCompose, setShowEmailCompose] = useState(false);
-  const [emailTo, setEmailTo] = useState("");
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailBody, setEmailBody] = useState("");
-  const [emailSending, setEmailSending] = useState(false);
-
-  // Files
-  const [filesOpen, setFilesOpen] = useState(true);
-  const [leadFiles, setLeadFiles] = useState<any[]>([]);
-  const [fileUploading, setFileUploading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [importDragOver, setImportDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: sourceTags = [] } = useQuery({
+    queryKey: ["crm-source-tags"],
+    queryFn: async () => (await supabase.from("crm_source_tags").select("*").order("name")).data ?? [],
+  });
 
   const fetchLead = async () => {
     if (!id) return;
     const [{ data: leadData }, { data: actData }, { data: taskData }, { data: fileData }] = await Promise.all([
       supabase.from("crm_leads").select("*").eq("id", id).single(),
-      supabase.from("crm_activities").select("*").eq("lead_id", id).order("created_at", { ascending: true }),
-      supabase.from("crm_tasks").select("*").eq("lead_id", id).order("is_completed").order("due_date", { ascending: true, nullsFirst: false }),
+      supabase.from("crm_activities").select("id, type, title, body, created_at, created_by, lead_id, contact_id, metadata").eq("lead_id", id).order("created_at", { ascending: false }),
+      supabase.from("crm_tasks").select("id, title, due_date, is_completed").eq("lead_id", id).order("is_completed").order("due_date", { ascending: true, nullsFirst: false }),
       supabase.from("crm_files").select("*").eq("lead_id", id).order("created_at", { ascending: false }),
     ]);
     if (leadData) setLead(leadData as any);
-    setActivities((actData || []) as any[]);
+    setActivities((actData || []) as CrmActivity[]);
     setCrmTasks((taskData || []) as any[]);
     setLeadFiles((fileData || []) as any[]);
+    setLoading(false);
   };
 
   useEffect(() => { fetchLead(); }, [id]);
 
-  useEffect(() => {
-    if (activities.length > 0) {
-      setTimeout(() => timelineEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    }
-  }, [activities]);
+  const saveField = async (field: string, value: any) => {
+    if (!id) return;
+    const { error } = await supabase.from("crm_leads").update({ [field]: value } as any).eq("id", id);
+    if (error) { toast.error("Speichern fehlgeschlagen"); return; }
+    setLead(p => p ? { ...p, [field]: value } : p);
+  };
 
   const generateSummary = async () => {
     if (!lead || activities.length === 0) return;
@@ -198,16 +153,11 @@ export default function CRMLeadDetail() {
         .map(a => `[${new Date(a.created_at).toLocaleDateString("de-DE")}] ${a.title}${a.body ? ": " + a.body.slice(0, 200) : ""}`)
         .join("\n");
       const res = await supabase.functions.invoke("crm-lead-summary", {
-        body: {
-          lead_name: lead.name,
-          contact_name: lead.contact_name,
-          stage: lead.stage,
-          timeline: timelineText,
-        }
+        body: { lead_name: lead.name, contact_name: lead.contact_name, stage: lead.stage, timeline: timelineText },
       });
       if (res.error) throw res.error;
       setSummaryText(res.data?.summary || "Keine Zusammenfassung verfügbar.");
-    } catch (err: any) {
+    } catch {
       toast.error("Zusammenfassung fehlgeschlagen");
       setSummaryText(null);
       setShowSummary(false);
@@ -216,24 +166,18 @@ export default function CRMLeadDetail() {
     }
   };
 
-  // File upload handler
   const uploadFiles = useCallback(async (files: FileList | File[]) => {
     if (!id || !user || files.length === 0) return;
     setFileUploading(true);
     try {
       for (const file of Array.from(files)) {
-        const ext = file.name.split(".").pop() || "";
         const storagePath = `${id}/${Date.now()}-${file.name}`;
         const { error: uploadErr } = await supabase.storage.from("crm-files").upload(storagePath, file);
         if (uploadErr) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
         const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
         await supabase.from("crm_files").insert({
-          lead_id: id,
-          name: file.name,
-          file_url: urlData.publicUrl,
-          mime_type: file.type || "application/octet-stream",
-          file_size: file.size,
-          uploaded_by: user.id,
+          lead_id: id, name: file.name, file_url: urlData.publicUrl,
+          mime_type: file.type || "application/octet-stream", file_size: file.size, uploaded_by: user.id,
         });
       }
       toast.success(`${files.length === 1 ? "Datei" : `${files.length} Dateien`} hochgeladen`);
@@ -246,58 +190,11 @@ export default function CRMLeadDetail() {
   }, [id, user]);
 
   const deleteFile = async (fileId: string, fileUrl: string) => {
-    // Extract storage path from URL
     const pathMatch = fileUrl.split("/crm-files/")[1];
-    if (pathMatch) {
-      await supabase.storage.from("crm-files").remove([decodeURIComponent(pathMatch)]);
-    }
+    if (pathMatch) await supabase.storage.from("crm-files").remove([decodeURIComponent(pathMatch)]);
     await supabase.from("crm_files").delete().eq("id", fileId);
     setLeadFiles(prev => prev.filter(f => f.id !== fileId));
     toast.success("Datei gelöscht");
-  };
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files);
-  }, [uploadFiles]);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-  }, []);
-
-  const { data: sourceTags = [] } = useQuery({
-    queryKey: ["crm-source-tags"],
-    queryFn: async () => {
-      const { data } = await supabase.from("crm_source_tags").select("*").order("name");
-      return data ?? [];
-    },
-  });
-
-  const saveField = async (field: string, value: any) => {
-    if (!id) return;
-    await supabase.from("crm_leads").update({ [field]: value } as any).eq("id", id);
-    setEditingField(null);
-  };
-
-  const addActivity = async () => {
-    if (!activityTitle.trim() || !id || !user) return;
-    const { error } = await supabase.from("crm_activities").insert({
-      lead_id: id, type: activityType as any, title: activityTitle,
-      body: activityBody || null, created_by: user.id,
-    });
-    if (error) { toast.error(error.message); return; }
-    toast.success("Eintrag erstellt");
-    setShowActivity(false);
-    setActivityTitle("");
-    setActivityBody("");
-    fetchLead();
   };
 
   const sendEmail = async () => {
@@ -311,9 +208,7 @@ export default function CRMLeadDetail() {
       if (data?.error) throw new Error(data.error);
       toast.success("E-Mail gesendet");
       setShowEmailCompose(false);
-      setEmailTo("");
-      setEmailSubject("");
-      setEmailBody("");
+      setEmailTo(""); setEmailSubject(""); setEmailBody("");
       fetchLead();
     } catch (err: any) {
       toast.error(err.message || "E-Mail konnte nicht gesendet werden");
@@ -322,24 +217,9 @@ export default function CRMLeadDetail() {
     }
   };
 
-  const openEmailCompose = () => {
-    setEmailTo(lead?.contact_email || "");
-    setEmailSubject("");
-    setEmailBody("");
-    setShowEmailCompose(true);
-  };
-
-  const deleteActivity = async (activityId: string) => {
-    const { error } = await supabase.from("crm_activities").delete().eq("id", activityId);
-    if (error) { toast.error("Fehler beim Löschen"); return; }
-    setActivities(prev => prev.filter(a => a.id !== activityId));
-    toast.success("Eintrag gelöscht");
-  };
-
   const deleteLead = async () => {
     if (!id) return;
     if (!confirm("Lead wirklich endgültig löschen? Alle zugehörigen Daten werden ebenfalls entfernt.")) return;
-    // Delete related data first
     await Promise.all([
       supabase.from("crm_activities").delete().eq("lead_id", id),
       supabase.from("crm_tasks").delete().eq("lead_id", id),
@@ -351,32 +231,30 @@ export default function CRMLeadDetail() {
     navigate("/crm");
   };
 
-  const addCrmTask = async () => {
-    if (!newTaskTitle.trim() || !id || !user) return;
-    const { error } = await supabase.from("crm_tasks").insert({
-      lead_id: id, title: newTaskTitle,
-      due_date: newTaskDate ? format(newTaskDate, "yyyy-MM-dd") : null,
-      due_time: newTaskTime || null,
-      assigned_to: user.id,
-    } as any);
-    if (error) { toast.error(error.message); return; }
-    toast.success("To-Do erstellt");
-    setNewTaskTitle("");
-    setNewTaskDate(undefined);
-    setNewTaskTime("");
-    fetchLead();
-  };
-
-  const toggleCrmTask = async (task: CrmTask) => {
-    const completed = !task.is_completed;
-    await supabase.from("crm_tasks").update({
-      is_completed: completed, completed_at: completed ? new Date().toISOString() : null,
-    }).eq("id", task.id);
-    fetchLead();
-  };
-
-  // Smart Import handlers
+  // Smart Import
   const isLinkedInUrl = (url: string) => /linkedin\.com/i.test(url);
+
+  const logImportActivity = async (title: string, body: string | null) => {
+    if (!id || !user) return;
+    await supabase.from("crm_activities").insert({ lead_id: id, type: "note" as any, title, body, created_by: user.id });
+  };
+
+  const applyContactInfo = async (ci: any) => {
+    const updates: any = {};
+    if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
+    if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
+    if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
+    if (ci.website && !lead?.website) updates.website = ci.website;
+    if (ci.instagram && !lead?.instagram_handle) updates.instagram_handle = ci.instagram;
+    if (ci.linkedin && !lead?.linkedin_url) updates.linkedin_url = ci.linkedin;
+    if (Object.keys(updates).length > 0) {
+      await supabase.from("crm_leads").update(updates).eq("id", id!);
+      setLead(p => p ? { ...p, ...updates } : p);
+    }
+  };
+
+  const importBody = (aiResult: any) =>
+    aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : "");
 
   const handleUrlImport = async () => {
     if (!importUrl.trim() || !id || !user) return;
@@ -394,32 +272,13 @@ export default function CRMLeadDetail() {
       if (scrapeErr) throw new Error(scrapeErr.message);
       const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || "";
       if (!markdown) throw new Error("Keine Inhalte gefunden");
-
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: markdown, lead_name: lead?.name, source_type: "url" },
       });
       if (aiErr) throw new Error(aiErr.message);
       setImportResult(aiResult);
-
-      if (aiResult.contact_info) {
-        const ci = aiResult.contact_info;
-        const updates: any = {};
-        if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
-        if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
-        if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
-        if (ci.website && !lead?.website) updates.website = ci.website;
-        if (Object.keys(updates).length > 0) {
-          await supabase.from("crm_leads").update(updates).eq("id", id);
-          setLead(p => p ? { ...p, ...updates } : p);
-        }
-      }
-
-      await supabase.from("crm_activities").insert({
-        lead_id: id, type: "note" as any,
-        title: `🔗 Website analysiert: ${importUrl}`,
-        body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
-        created_by: user.id,
-      });
+      if (aiResult.contact_info) await applyContactInfo(aiResult.contact_info);
+      await logImportActivity(`🔗 Website analysiert: ${importUrl}`, importBody(aiResult));
       toast.success("Website analysiert & importiert");
       setImportUrl("");
       fetchLead();
@@ -449,15 +308,9 @@ export default function CRMLeadDetail() {
     setImportLoading(true);
     setImportResult(null);
     try {
-      // If it's an image, analyze with AI vision + upload to storage
       if (file.type.startsWith("image/")) {
-        // Convert to base64 for AI vision
         const arrayBuffer = await file.arrayBuffer();
-        const base64 = btoa(
-          new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-        );
-
-        // Upload to storage in parallel with AI analysis
+        const base64 = btoa(new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ""));
         const storagePath = `${id}/${Date.now()}-${file.name}`;
         const [uploadResult, aiResult] = await Promise.all([
           supabase.storage.from("crm-files").upload(storagePath, file),
@@ -465,107 +318,42 @@ export default function CRMLeadDetail() {
             body: { image_base64: base64, image_mime_type: file.type, lead_name: lead?.name, source_type: "image" },
           }),
         ]);
-
         if (uploadResult.error) throw new Error(uploadResult.error.message);
         const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
         await supabase.from("crm_files").insert({
           lead_id: id, name: file.name, file_url: urlData.publicUrl,
           mime_type: file.type, file_size: file.size, uploaded_by: user.id,
         });
-
         const aiData = aiResult.data;
         if (aiData && !aiResult.error) {
           setImportResult(aiData);
-
-          // Auto-fill lead fields from AI analysis
-          if (aiData.contact_info) {
-            const ci = aiData.contact_info;
-            const updates: any = {};
-            if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
-            if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
-            if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
-            if (ci.website && !lead?.website) updates.website = ci.website;
-            if (ci.instagram && !lead?.instagram_handle) updates.instagram_handle = ci.instagram;
-            if (ci.linkedin && !lead?.linkedin_url) updates.linkedin_url = ci.linkedin;
-            if (Object.keys(updates).length > 0) {
-              await supabase.from("crm_leads").update(updates).eq("id", id);
-              setLead(p => p ? { ...p, ...updates } : p);
-            }
-          }
-
-          // Set source based on detected channel
+          if (aiData.contact_info) await applyContactInfo(aiData.contact_info);
           if (aiData.source_channel && !lead?.source) {
-            const channelMap: Record<string, string> = {
-              instagram: "Instagram", linkedin: "LinkedIn", whatsapp: "WhatsApp",
-              email: "Email", phone: "Telefon", website: "Website",
-            };
+            const channelMap: Record<string, string> = { instagram: "Instagram", linkedin: "LinkedIn", whatsapp: "WhatsApp", email: "Email", phone: "Telefon", website: "Website" };
             const sourceName = channelMap[aiData.source_channel] || aiData.source_channel;
             await supabase.from("crm_leads").update({ source: sourceName }).eq("id", id);
             setLead(p => p ? { ...p, source: sourceName } : p);
           }
-
-          // Log activity with AI-generated title
-          const channelEmoji: Record<string, string> = {
-            instagram: "📸", linkedin: "💼", whatsapp: "💬", email: "✉️", phone: "📞", website: "🌐",
-          };
-          const emoji = aiData.source_channel ? (channelEmoji[aiData.source_channel] || "📋") : "📋";
+          const emoji = aiData.source_channel ? "📋" : "📋";
           const actTitle = aiData.activity_title || `${emoji} Kontakt analysiert`;
-          const dateHint = aiData.interaction_date ? ` · ${new Date(aiData.interaction_date).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}` : "";
-          
-          await supabase.from("crm_activities").insert({
-            lead_id: id, type: "note" as any,
-            title: `${emoji} ${actTitle}${dateHint}`,
-            body: aiData.summary + (aiData.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiData.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
-            created_by: user.id,
-          });
-
+          await logImportActivity(actTitle, importBody(aiData));
           toast.success("Bild analysiert & Infos extrahiert");
         } else {
-          await supabase.from("crm_activities").insert({
-            lead_id: id, type: "note" as any,
-            title: `🖼️ Bild hochgeladen: ${file.name}`,
-            body: null, created_by: user.id,
-          });
+          await logImportActivity(`🖼️ Bild hochgeladen: ${file.name}`, null);
           toast.success("Bild hochgeladen");
         }
-
         fetchLead();
         return;
       }
-
-      let text: string;
-      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-        text = await extractPdfText(file);
-      } else {
-        text = await file.text();
-      }
+      const text = file.type === "application/pdf" || file.name.endsWith(".pdf") ? await extractPdfText(file) : await file.text();
       if (!text.trim()) throw new Error("Dokument ist leer");
-
       const { data: aiResult, error: aiErr } = await supabase.functions.invoke("crm-smart-import", {
         body: { content: text, lead_name: lead?.name, source_type: "pdf" },
       });
       if (aiErr) throw new Error(aiErr.message);
       setImportResult(aiResult);
-
-      if (aiResult.contact_info) {
-        const ci = aiResult.contact_info;
-        const updates: any = {};
-        if (ci.name && !lead?.contact_name) updates.contact_name = ci.name;
-        if (ci.email && !lead?.contact_email) updates.contact_email = ci.email;
-        if (ci.phone && !lead?.contact_phone) updates.contact_phone = ci.phone;
-        if (ci.website && !lead?.website) updates.website = ci.website;
-        if (Object.keys(updates).length > 0) {
-          await supabase.from("crm_leads").update(updates).eq("id", id);
-          setLead(p => p ? { ...p, ...updates } : p);
-        }
-      }
-
-      await supabase.from("crm_activities").insert({
-        lead_id: id, type: "note" as any,
-        title: `📄 Dokument analysiert: ${file.name}`,
-        body: aiResult.summary + (aiResult.key_points?.length ? "\n\n**Wichtige Punkte:**\n" + aiResult.key_points.map((p: string) => `• ${p}`).join("\n") : ""),
-        created_by: user.id,
-      });
+      if (aiResult.contact_info) await applyContactInfo(aiResult.contact_info);
+      await logImportActivity(`📄 Dokument analysiert: ${file.name}`, importBody(aiResult));
       setShowLinkedInHint(false);
       toast.success("Dokument analysiert");
       fetchLead();
@@ -587,692 +375,149 @@ export default function CRMLeadDetail() {
     fetchLead();
   };
 
-  const filteredActivities = activities.filter(act => {
-    const typeFilter = FILTER_MAP[timelineFilter];
-    if (typeFilter && act.type !== typeFilter) return false;
-    if (timelineSearch) {
-      const q = timelineSearch.toLowerCase();
-      return act.title.toLowerCase().includes(q) || (act.body || "").toLowerCase().includes(q);
-    }
-    return true;
-  });
-
-  if (!lead) return (
-    <AppLayout>
-      <div className="flex items-center justify-center h-64 text-muted-foreground">Laden...</div>
-    </AppLayout>
-  );
+  if (loading || !lead) {
+    return (
+      <AppLayout>
+        <div className="space-y-4">
+          <Skeleton className="h-16 w-2/3" />
+          <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_320px]">
+            <Skeleton className="h-64" /><Skeleton className="h-96" /><Skeleton className="h-64" />
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   const stageColor = dynGetStageColor(crmStages, lead.stage);
   const sourceInfo = getSourceInfo(lead.source);
+  const answeredCount = Object.values(lead.setting_call_answers || {}).filter(v => v && String(v).trim()).length;
+
+  const groups: DetailGroup[] = [
+    {
+      title: "Kontakt",
+      fields: [
+        { key: "contact_name", label: "Ansprechpartner", value: lead.contact_name },
+        { key: "contact_email", label: "E-Mail", value: lead.contact_email, href: linkHref("email", lead.contact_email) },
+        { key: "contact_phone", label: "Telefon", value: lead.contact_phone, href: linkHref("tel", lead.contact_phone) },
+        { key: "website", label: "Website", value: lead.website, href: linkHref("link", lead.website) },
+        { key: "linkedin_url", label: "LinkedIn", value: lead.linkedin_url, href: linkHref("link", lead.linkedin_url) },
+        { key: "instagram_handle", label: "Instagram", value: lead.instagram_handle },
+      ],
+    },
+    {
+      title: "CRM",
+      fields: [
+        { key: "deal_value", label: "Deal-Wert", value: lead.deal_value ? `${Number(lead.deal_value).toLocaleString("de-DE")} €` : null },
+        { key: "source", label: "Quelle", value: lead.source, type: "select", options: sourceTags.map((s: any) => ({ value: s.name, label: s.name })) },
+        { key: "next_step_date", label: "Follow-up", value: lead.next_step_date, type: "date" },
+      ],
+    },
+    {
+      title: "System",
+      fields: [
+        { key: "created_at", label: "Erstellt am", value: lead.created_at ? format(new Date(lead.created_at), "dd.MM.yyyy") : null },
+      ],
+    },
+  ];
+
+  const background = lead.notes ? (
+    <div className="rounded-lg border border-primary/30 bg-card p-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5">Hintergrund</p>
+      <Textarea key={lead.notes} defaultValue={lead.notes} className="min-h-[60px] border-none bg-transparent p-0 text-sm text-foreground/80 focus-visible:ring-0"
+        onBlur={e => { const v = e.target.value.trim(); if (v !== (lead.notes ?? "")) saveField("notes", v || null); }} />
+    </div>
+  ) : undefined;
 
   return (
     <AppLayout>
       <ErrorBoundary level="section">
-        <div className="flex flex-col h-[calc(100vh-48px)] -m-6">
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-card shrink-0">
-            <div className="flex items-center gap-3">
-              <Link to="/crm" className="text-muted-foreground hover:text-foreground transition-colors">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-              
-              {/* Name – click to edit */}
-              {editingField === "name" ? (
-                <Input
-                  autoFocus
-                  value={lead.name}
-                  onChange={e => setLead(p => p ? { ...p, name: e.target.value } : p)}
-                  onBlur={() => saveField("name", lead.name)}
-                  onKeyDown={e => e.key === "Enter" && saveField("name", lead.name)}
-                  className="h-8 text-lg font-bold w-64 bg-background border-border"
-                />
-              ) : (
-                <button onClick={() => setEditingField("name")} className="text-lg font-bold text-foreground hover:text-primary transition-colors">
-                  {lead.name}
-                </button>
-              )}
+        <div className="space-y-5">
+          <Link to="/crm" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" />CRM
+          </Link>
 
-              {/* Stage */}
-              <Select
-                value={lead.stage}
-                onValueChange={v => {
-                  setLead(p => p ? { ...p, stage: v } : p);
-                  saveField("stage", v);
-                }}
-              >
-                <SelectTrigger
-                  className="h-7 w-auto gap-1.5 px-2.5 border-border bg-transparent text-xs font-medium"
-                  style={{ color: stageColor, borderColor: stageColor + "44" }}
-                >
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stageColor }} />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {crmStages.map(s => (
-                    <SelectItem key={s.value} value={s.value}>
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
-                        {s.label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <LeadPipelinesPopover leadId={lead.id} />
-
-              {sourceInfo && (
-                <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${sourceInfo.color}`}>
-                  {sourceInfo.label}
-                </span>
-              )}
-
-            </div>
-
-            {/* Quick-add activity buttons */}
-            <div className="flex items-center gap-1.5">
-              {ACTIVITY_TYPES.map(t => (
-                <Button
-                  key={t.value}
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 h-8 text-xs border-border bg-transparent"
-                  onClick={() => {
-                    if (t.value === "email") {
-                      openEmailCompose();
-                    } else {
-                      setActivityType(t.value);
-                      setShowActivity(true);
-                    }
-                  }}
-                >
-                  <t.icon className="h-3.5 w-3.5" style={{ color: t.color }} />
-                  {t.label}
+          <CrmDetailHeader
+            name={lead.name}
+            subtitle={lead.contact_name}
+            badges={
+              <>
+                <Select value={lead.stage} onValueChange={v => saveField("stage", v)}>
+                  <SelectTrigger className="h-7 w-auto gap-1.5 px-2.5 border-border bg-transparent text-xs font-medium"
+                    style={{ color: stageColor, borderColor: stageColor + "44" }}>
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stageColor }} />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {crmStages.map(s => (
+                      <SelectItem key={s.value} value={s.value}>
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                          {s.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <LeadPipelinesPopover leadId={lead.id} />
+                {sourceInfo && (
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${sourceInfo.color}`} style={sourceInfo.style}>{sourceInfo.label}</span>
+                )}
+                {linkedContact && (
+                  <Link to={`/crm/kontakt/${linkedContact.id}`} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground hover:text-primary">
+                    <User className="h-3 w-3" />{linkedContact.full_name}
+                  </Link>
+                )}
+              </>
+            }
+            actions={buildQuickActions({
+              email: lead.contact_email, phone: lead.contact_phone,
+              linkedin_url: lead.linkedin_url, instagram_handle: lead.instagram_handle,
+            })}
+            extra={
+              <>
+                <Button size="sm" variant="outline" onClick={() => { setEmailTo(lead.contact_email || ""); setEmailSubject(""); setEmailBody(""); setShowEmailCompose(true); }}>
+                  <Mail className="h-4 w-4 mr-1.5" />E-Mail
                 </Button>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs text-destructive/60 hover:text-destructive hover:bg-destructive/10"
-                onClick={deleteLead}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
+                <Button variant="ghost" size="sm" className="text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={deleteLead}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            }
+          />
 
-          {/* Two-column layout */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* LEFT PANEL */}
-            <div className="w-[340px] shrink-0 border-r border-border overflow-y-auto bg-card/50">
+          <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_320px] items-start">
+            {/* Links: Details */}
+            <DetailsPanel groups={groups} onSave={(key, value) => {
+              if (key === "created_at") return;
+              if (key === "deal_value") {
+                const n = Number(String(value ?? "").replace(/[^\d.,-]/g, "").replace(",", "."));
+                saveField("deal_value", value && !isNaN(n) ? n : null);
+                return;
+              }
+              saveField(key, value);
+            }} />
 
-              {/* KONTAKT + INFO – always visible */}
-              <div className="border-b border-border">
-                <button
-                  onClick={() => setContactOpen(!contactOpen)}
-                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {contactOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                  <Users2 className="h-3 w-3" />
-                  Info & Kontakt
-                </button>
-                {contactOpen && (
-                  <div className="px-4 pb-4 space-y-2.5">
-                    {/* Inline-editable fields */}
-                    {[
-                      { field: "contact_name", icon: Users2, label: "Ansprechpartner", value: lead.contact_name },
-                      { field: "contact_email", icon: Mail, label: "Email", value: lead.contact_email },
-                      { field: "contact_phone", icon: Phone, label: "Telefon", value: lead.contact_phone },
-                      { field: "website", icon: Globe, label: "Website", value: lead.website },
-                      { field: "instagram_handle", icon: Image, label: "Instagram", value: lead.instagram_handle },
-                      { field: "linkedin_url", icon: Link2, label: "LinkedIn", value: lead.linkedin_url },
-                    ].map(({ field, icon: Icon, label, value }) => {
-                      const isLink = ["website", "instagram_handle", "linkedin_url"].includes(field);
-                      const linkHref = value
-                        ? field === "instagram_handle"
-                          ? (value.startsWith("http") ? value : `https://instagram.com/${value.replace(/^@/, "")}`)
-                          : field === "linkedin_url"
-                            ? (value.startsWith("http") ? value : `https://${value}`)
-                            : (value.startsWith("http") ? value : `https://${value}`)
-                        : null;
-                      return (
-                        <div key={field} className="flex items-center gap-2">
-                          <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          {editingField === field ? (
-                            <Input
-                              autoFocus
-                              value={value || ""}
-                              onChange={e => setLead(p => p ? { ...p, [field]: e.target.value } : p)}
-                              onBlur={() => saveField(field, (lead as any)[field])}
-                              onKeyDown={e => e.key === "Enter" && saveField(field, (lead as any)[field])}
-                              className="h-6 bg-background border-border text-xs flex-1"
-                              placeholder={field === "instagram_handle" ? "@handle" : field === "linkedin_url" ? "linkedin.com/in/..." : label}
-                            />
-                          ) : (
-                            <div className="flex items-center gap-1 flex-1 min-w-0">
-                              <button onClick={() => setEditingField(field)} className="text-xs text-foreground/60 hover:text-foreground transition-colors truncate text-left">
-                                {value || <span className="text-muted-foreground/50">{label}...</span>}
-                              </button>
-                              {isLink && linkHref && (
-                                <a href={linkHref} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="shrink-0">
-                                  <Globe className="h-3 w-3 text-muted-foreground hover:text-primary transition-colors" />
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-
-                    {/* Deal value */}
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      {editingField === "deal_value" ? (
-                        <Input
-                          autoFocus
-                          type="number"
-                          value={lead.deal_value ?? ""}
-                          onChange={e => setLead(p => p ? { ...p, deal_value: e.target.value ? Number(e.target.value) : null } : p)}
-                          onBlur={() => saveField("deal_value", lead.deal_value)}
-                          onKeyDown={e => e.key === "Enter" && saveField("deal_value", lead.deal_value)}
-                          className="h-6 bg-background border-border text-xs flex-1 w-24"
-                          placeholder="0"
-                        />
-                      ) : (
-                        <button onClick={() => setEditingField("deal_value")} className="text-xs text-foreground/60 hover:text-foreground transition-colors">
-                          {lead.deal_value ? `${Number(lead.deal_value).toLocaleString("de-DE")} €` : <span className="text-muted-foreground/50">Deal-Wert…</span>}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Source */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">Quelle:</span>
-                      <Select value={lead.source || ""} onValueChange={v => { setLead(p => p ? { ...p, source: v } : p); saveField("source", v); }}>
-                        <SelectTrigger className="h-6 w-auto gap-1 px-2 border-none bg-transparent text-xs">
-                          <SelectValue placeholder="Wählen..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {sourceTags.map(s => (
-                            <SelectItem key={s.id} value={s.name}>
-                              <span className="flex items-center gap-1.5">
-                                <span className="h-2 w-2 rounded-full shrink-0" style={{ background: s.color }} />
-                                {s.name}
-                              </span>
-                            </SelectItem>
-                          ))}
-                          {sourceTags.length === 0 && (
-                            <div className="px-3 py-2 text-xs text-muted-foreground">Noch keine Quellen erstellt</div>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Notes */}
-                    <div className="pt-1">
-                      {editingField === "notes" ? (
-                        <Textarea
-                          autoFocus
-                          value={lead.notes || ""}
-                          onChange={e => setLead(p => p ? { ...p, notes: e.target.value } : p)}
-                          onBlur={() => saveField("notes", lead.notes)}
-                          rows={3}
-                          className="bg-background border-border text-sm"
-                          placeholder="Notizen..."
-                        />
-                      ) : (
-                        <button onClick={() => setEditingField("notes")} className="text-sm text-left w-full">
-                          {lead.notes ? (
-                            <span className="text-foreground/70 whitespace-pre-wrap">{lead.notes}</span>
-                          ) : (
-                            <span className="text-muted-foreground/50 hover:text-muted-foreground">Notizen hinzufügen...</span>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
+            {/* Mitte: Tabs */}
+            <Tabs defaultValue="aktivitaet">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <TabsList>
+                  <TabsTrigger value="aktivitaet">Aktivität</TabsTrigger>
+                  <TabsTrigger value="qualifizierung">Qualifizierung{answeredCount > 0 ? ` · ${answeredCount}/${SETTING_CALL_QUESTIONS.length}` : ""}</TabsTrigger>
+                  <TabsTrigger value="dateien">Dateien{leadFiles.length > 0 ? ` · ${leadFiles.length}` : ""}</TabsTrigger>
+                </TabsList>
+                <Button variant="ghost" size="sm" className="h-7 px-2.5 text-xs gap-1.5 text-muted-foreground hover:text-primary"
+                  onClick={generateSummary} disabled={summaryLoading || activities.length === 0}>
+                  {summaryLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  Zusammenfassung
+                </Button>
               </div>
 
-              {/* SETTING CALL */}
-              <div className="border-b border-border">
-                <button
-                  onClick={() => setSettingCallOpen(!settingCallOpen)}
-                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {settingCallOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                  <Sparkles className="h-3 w-3" />
-                  Setting Call
-                  <span className="ml-1 text-[10px] text-muted-foreground">
-                    {Object.values(lead.setting_call_answers || {}).filter(v => v && String(v).trim()).length}/{SETTING_CALL_QUESTIONS.length}
-                  </span>
-                </button>
-                {settingCallOpen && (
-                  <div className="px-4 pb-4 space-y-3">
-                    {SETTING_CALL_QUESTIONS.map((q, idx) => {
-                      const key = `q${idx + 1}`;
-                      const answers = lead.setting_call_answers || {};
-                      const value = answers[key] || "";
-                      const isEditing = editingSettingIdx === idx;
-                      return (
-                        <div key={key} className="space-y-1">
-                          <p className="text-[11px] font-medium text-foreground/80 leading-snug">
-                            {idx + 1}. {q}
-                          </p>
-                          {isEditing ? (
-                            <Textarea
-                              autoFocus
-                              defaultValue={value}
-                              rows={2}
-                              className="bg-background border-border text-xs"
-                              placeholder="Antwort..."
-                              onBlur={async (e) => {
-                                const next = { ...answers, [key]: e.target.value };
-                                setLead(p => p ? { ...p, setting_call_answers: next } : p);
-                                setEditingSettingIdx(null);
-                                await saveField("setting_call_answers", next);
-                              }}
-                            />
-                          ) : (
-                            <button
-                              onClick={() => setEditingSettingIdx(idx)}
-                              className="text-xs text-left w-full min-h-[24px] px-2 py-1 rounded hover:bg-muted/30 transition-colors"
-                            >
-                              {value ? (
-                                <span className="text-foreground/70 whitespace-pre-wrap">{value}</span>
-                              ) : (
-                                <span className="text-muted-foreground/50">Antwort hinzufügen...</span>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* ANGEBOTE / DOKUMENTE */}
-              <div className="border-b border-border">
-                <div className="flex items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  <FileText className="h-3 w-3" />
-                  Angebote
-                  {openOfferTotal > 0 && (
-                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-primary">
-                      {openOfferTotal.toLocaleString("de-DE")} € offen
-                    </span>
-                  )}
-                </div>
-                <div className="px-4 pb-4 space-y-2">
-                  {leadDocuments.length === 0 ? (
-                    <p className="text-xs text-muted-foreground/60">
-                      Noch kein Angebot verknüpft.{" "}
-                      <Link to="/dokumente" className="text-primary hover:underline">Dokumente öffnen</Link>
-                    </p>
-                  ) : (
-                    leadDocuments.map(doc => (
-                      <Link
-                        key={doc.id}
-                        to="/dokumente"
-                        className="flex items-center gap-2 rounded-lg border border-border bg-background/40 px-2.5 py-2 hover:border-primary/50 transition-colors"
-                      >
-                        <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-xs text-foreground/80">{doc.title}</div>
-                          <div className="text-[10px] text-muted-foreground">
-                            {doc.status === "accepted"
-                              ? "angenommen"
-                              : doc.status === "revoked"
-                                ? "zurückgezogen"
-                                : doc.status === "draft"
-                                  ? "Entwurf"
-                                  : doc.status === "sent"
-                                    ? "versendet"
-                                    : "angesehen"}
-                          </div>
-                        </div>
-                        {doc.amount_net != null && (
-                          <span className="shrink-0 text-xs font-semibold text-foreground/70">
-                            {Number(doc.amount_net).toLocaleString("de-DE")} €
-                          </span>
-                        )}
-                      </Link>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* TO-DOS */}
-              <div className="border-b border-border">
-                <button
-                  onClick={() => setTasksOpen(!tasksOpen)}
-                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {tasksOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                  <CheckSquare className="h-3 w-3" />
-                  To-Dos
-                  <span className="ml-1 text-[10px] text-muted-foreground">{crmTasks.filter(t => !t.is_completed).length}</span>
-                </button>
-                {tasksOpen && (
-                  <div className="px-4 pb-4 space-y-2">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Follow up, Anrufen..."
-                        value={newTaskTitle}
-                        onChange={e => setNewTaskTitle(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && addCrmTask()}
-                        className="h-7 text-xs bg-background border-border flex-1"
-                      />
-                      <Button size="sm" className="h-7 px-2 text-xs" onClick={addCrmTask} disabled={!newTaskTitle.trim()}>
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className={cn("h-7 gap-1.5 text-xs border-border bg-transparent", !newTaskDate && "text-muted-foreground")}>
-                            <CalendarIcon className="h-3 w-3" />
-                            {newTaskDate ? format(newTaskDate, "dd.MM.yyyy") : "Datum"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={newTaskDate} onSelect={setNewTaskDate} initialFocus className="p-3 pointer-events-auto" />
-                        </PopoverContent>
-                      </Popover>
-                      <div className="relative">
-                        <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                        <Input
-                          type="time"
-                          value={newTaskTime}
-                          onChange={e => setNewTaskTime(e.target.value)}
-                          className="h-7 w-24 pl-7 text-xs bg-background border-border"
-                        />
-                      </div>
-                    </div>
-
-                    {crmTasks.map(task => {
-                      const today = new Date().toISOString().split("T")[0];
-                      const isOverdue = task.due_date && !task.is_completed && task.due_date < today;
-                      return (
-                        <div key={task.id} className={cn("flex items-center gap-2 py-1.5", task.is_completed && "opacity-40")}>
-                          <Checkbox checked={task.is_completed} onCheckedChange={() => toggleCrmTask(task)} className="shrink-0" />
-                          <span className={cn("flex-1 text-xs truncate", task.is_completed && "line-through text-muted-foreground")}>{task.title}</span>
-                          {task.due_date && (
-                            <span className={cn("text-[10px] font-mono shrink-0", isOverdue ? "text-destructive font-semibold" : "text-muted-foreground")}>
-                              {format(new Date(task.due_date), "dd.MM")}
-                              {task.due_time && ` ${task.due_time.slice(0, 5)}`}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {crmTasks.length === 0 && <p className="text-xs text-muted-foreground">Keine To-Dos</p>}
-                  </div>
-                )}
-              </div>
-
-              {/* DATEIEN – drag & drop */}
-              <div className="border-b border-border">
-                <button
-                  onClick={() => setFilesOpen(!filesOpen)}
-                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {filesOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                  <Paperclip className="h-3 w-3" />
-                  Dateien
-                  <span className="ml-1 text-[10px] text-muted-foreground">{leadFiles.length}</span>
-                </button>
-                {filesOpen && (
-                  <div className="px-4 pb-4 space-y-2">
-                    {/* Drop zone */}
-                    <div
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onClick={() => fileInputRef.current?.click()}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed py-5 cursor-pointer transition-all",
-                        dragOver
-                          ? "border-primary bg-primary/10 scale-[1.02]"
-                          : "border-border hover:border-muted-foreground/40 hover:bg-muted/30"
-                      )}
-                    >
-                      {fileUploading ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                      ) : (
-                        <Upload className="h-5 w-5 text-muted-foreground" />
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {fileUploading ? "Lädt hoch..." : dragOver ? "Loslassen zum Hochladen" : "Dateien hierher ziehen oder klicken"}
-                      </span>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.md,.pptx"
-                        className="hidden"
-                        onChange={e => {
-                          if (e.target.files) uploadFiles(e.target.files);
-                          e.target.value = "";
-                        }}
-                      />
-                    </div>
-
-                    {/* File list */}
-                    {leadFiles.map(file => {
-                      const isImage = file.mime_type?.startsWith("image/");
-                      return (
-                        <div key={file.id} className="flex items-center gap-2 group rounded-md px-2 py-1.5 hover:bg-muted/30 transition-colors">
-                          {isImage ? (
-                            <Image className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-                          ) : (
-                            <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          )}
-                          <a
-                            href={file.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 text-xs truncate text-foreground/70 hover:text-foreground transition-colors"
-                          >
-                            {file.name}
-                          </a>
-                          <span className="text-[10px] text-muted-foreground shrink-0">
-                            {file.file_size > 1048576
-                              ? `${(file.file_size / 1048576).toFixed(1)} MB`
-                              : `${Math.round(file.file_size / 1024)} KB`}
-                          </span>
-                          <button
-                            onClick={() => deleteFile(file.id, file.file_url)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                    {leadFiles.length === 0 && !fileUploading && (
-                      <p className="text-xs text-muted-foreground text-center">Keine Dateien</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="border-b border-border">
-                <button
-                  onClick={() => setSmartImportOpen(!smartImportOpen)}
-                  className="flex items-center gap-2 w-full px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {smartImportOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                  <Sparkles className="h-3 w-3" />
-                  Smart Import
-                </button>
-                {smartImportOpen && (
-                  <div className="px-4 pb-4 space-y-3">
-                    <div className="flex gap-1.5">
-                      <div className="relative flex-1">
-                        <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                        <Input
-                          placeholder="https://beispiel.de"
-                          value={importUrl}
-                          onChange={e => setImportUrl(e.target.value)}
-                          onKeyDown={e => e.key === "Enter" && handleUrlImport()}
-                          className="h-8 pl-7 text-xs bg-background border-border"
-                          disabled={importLoading}
-                        />
-                      </div>
-                      <Button size="sm" className="h-8 px-2.5 text-xs gap-1" onClick={handleUrlImport} disabled={importLoading || !importUrl.trim()}>
-                        {importLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                        Go
-                      </Button>
-                    </div>
-
-                    {showLinkedInHint && (
-                      <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
-                        <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                        <p>LinkedIn → "Als PDF speichern" → hier hochladen ↓</p>
-                      </div>
-                    )}
-
-                    <div
-                      className={cn(
-                        "relative rounded-lg border-2 border-dashed py-3 transition-all",
-                        importDragOver
-                          ? "border-primary bg-primary/10 scale-[1.02]"
-                          : "border-border hover:bg-muted/50"
-                      )}
-                      onDrop={e => {
-                        e.preventDefault();
-                        setImportDragOver(false);
-                        if (e.dataTransfer.files?.[0]) {
-                          const fakeEvent = { target: { files: e.dataTransfer.files, value: "" } } as any;
-                          handlePdfImport(fakeEvent);
-                        }
-                      }}
-                      onDragOver={e => { e.preventDefault(); setImportDragOver(true); }}
-                      onDragLeave={e => { e.preventDefault(); setImportDragOver(false); }}
-                    >
-                      <input type="file" accept="image/*,.txt,.pdf,.md,.csv" onChange={handlePdfImport} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={importLoading} />
-                      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                        {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                        {importLoading ? "Analysiert..." : importDragOver ? "Loslassen…" : "Datei/Bild hochladen oder reinziehen"}
-                      </div>
-                    </div>
-
-                    {importResult && (
-                      <div className="space-y-3 rounded-lg bg-primary/5 p-4 border border-primary/20">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-primary/15 flex items-center justify-center">
-                              <Sparkles className="h-3 w-3 text-primary" />
-                            </div>
-                            <span className="text-xs font-semibold text-primary">AI-Analyse</span>
-                            {importResult.source_channel && (
-                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                                via {importResult.source_channel}
-                              </span>
-                            )}
-                          </div>
-                          <button onClick={() => setImportResult(null)} className="text-muted-foreground hover:text-foreground">
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-
-                        <p className="text-[13px] text-foreground/80 leading-relaxed">{importResult.summary}</p>
-
-                        {importResult.key_points?.length > 0 && (
-                          <div className="rounded-md border border-border/60 bg-background/50 p-3 space-y-1.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Erkenntnisse</p>
-                            {importResult.key_points.map((p: string, i: number) => (
-                              <div key={i} className="flex items-start gap-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary/60 mt-[5px] shrink-0" />
-                                <p className="text-xs text-foreground/70 leading-relaxed">{p}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {importResult.contact_info && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {importResult.contact_info.name && <Badge variant="secondary" className="text-[10px] gap-1">👤 {importResult.contact_info.name}</Badge>}
-                            {importResult.contact_info.email && <Badge variant="secondary" className="text-[10px] gap-1">✉️ {importResult.contact_info.email}</Badge>}
-                            {importResult.contact_info.phone && <Badge variant="secondary" className="text-[10px] gap-1">📞 {importResult.contact_info.phone}</Badge>}
-                            {importResult.contact_info.instagram && <Badge variant="secondary" className="text-[10px] gap-1">📸 {importResult.contact_info.instagram}</Badge>}
-                            {importResult.contact_info.company && <Badge variant="secondary" className="text-[10px] gap-1">🏢 {importResult.contact_info.company}</Badge>}
-                          </div>
-                        )}
-
-                        {importResult.next_steps?.length > 0 && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full h-8 text-xs gap-1.5 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-                            onClick={() => createTasksFromResult(importResult.next_steps)}
-                          >
-                            <Plus className="h-3 w-3" />
-                            {importResult.next_steps.length} Aufgabe(n) erstellen
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* RIGHT PANEL – Activity Timeline */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-2.5 border-b border-border shrink-0">
-                <div className="flex items-center gap-1">
-                  {TIMELINE_FILTERS.map(f => (
-                    <button
-                      key={f}
-                      onClick={() => setTimelineFilter(f)}
-                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                        timelineFilter === f ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2.5 text-xs gap-1.5 text-muted-foreground hover:text-primary"
-                    onClick={generateSummary}
-                    disabled={summaryLoading || activities.length === 0}
-                  >
-                    {summaryLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                    Zusammenfassung
-                  </Button>
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                    <Input
-                      placeholder="Suchen..."
-                      value={timelineSearch}
-                      onChange={e => setTimelineSearch(e.target.value)}
-                      className="h-7 w-36 pl-7 text-xs bg-transparent border-border"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto px-5 py-3">
-                {/* AI Summary panel */}
+              <TabsContent value="aktivitaet" className="mt-4">
                 {showSummary && (
-                  <div className="mb-4 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-transparent overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-primary/10 bg-primary/5">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
-                          <Sparkles className="h-3.5 w-3.5 text-primary" />
-                        </div>
-                        <span className="text-sm font-semibold text-primary">KI-Zusammenfassung</span>
-                      </div>
-                      <button onClick={() => setShowSummary(false)} className="h-6 w-6 rounded-md hover:bg-primary/10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                  <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-primary/10">
+                      <span className="text-sm font-semibold text-primary flex items-center gap-2"><Sparkles className="h-3.5 w-3.5" />KI-Zusammenfassung</span>
+                      <button onClick={() => setShowSummary(false)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                     </div>
                     <div className="px-4 py-3">
                       {summaryLoading ? (
@@ -1281,169 +526,201 @@ export default function CRMLeadDetail() {
                           <span className="text-sm text-muted-foreground">Analyse läuft…</span>
                         </div>
                       ) : summaryText ? (
-                        <div className="space-y-2.5">
-                          {summaryText.split('\n').filter(l => l.trim()).map((line, i) => {
-                            const boldMatch = line.match(/^\*\*(.+?):\*\*\s*(.*)$/);
-                            if (boldMatch) {
-                              return (
-                                <div key={i} className="flex gap-2">
-                                  <span className="text-xs font-bold text-primary/80 whitespace-nowrap mt-0.5">{boldMatch[1]}:</span>
-                                  <span className="text-[13px] text-foreground/80 leading-relaxed">{boldMatch[2]}</span>
-                                </div>
-                              );
-                            }
-                            return <p key={i} className="text-[13px] text-foreground/80 leading-relaxed">{line}</p>;
-                          })}
+                        <div className="space-y-2">
+                          {summaryText.split("\n").filter(l => l.trim()).map((line, i) => (
+                            <p key={i} className="text-[13px] text-foreground/80 leading-relaxed">{line.replace(/^\*\*(.+?):\*\*\s*/, "$1: ")}</p>
+                          ))}
                         </div>
                       ) : null}
                     </div>
                   </div>
                 )}
+                <ActivityPanel activities={activities} leadId={id} contactId={lead.contact_id} onChanged={fetchLead} background={background} />
+              </TabsContent>
 
-                <div className="relative">
-                  {filteredActivities.length > 0 && (
-                    <div className="absolute left-[15px] top-4 bottom-4 w-px bg-border" />
-                  )}
-                   <div className="space-y-0">
-                    {filteredActivities.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-12 text-sm">Noch keine Einträge</p>
-                    ) : filteredActivities.map(act => {
-                      const config = ACTIVITY_ICON_MAP[act.type] || ACTIVITY_ICON_MAP.note;
-                      const Icon = config.icon;
-                      const isAiEntry = act.body?.includes("**Wichtige Punkte:**") || act.title.includes("analysiert") || act.title.includes("Dokument analysiert");
-
-                      // Compact body: max 2 lines for normal, short summary for AI
-                      const renderBody = (body: string) => {
-                        if (!isAiEntry) {
-                          const short = body.length > 120 ? body.slice(0, 120) + "…" : body;
-                          return <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{short}</p>;
-                        }
-                        const summary = body.split("\n\n")[0];
-                        const short = summary.length > 150 ? summary.slice(0, 150) + "…" : summary;
-                        return <p className="text-[11px] text-foreground/70 mt-0.5 line-clamp-2">{short}</p>;
-                      };
-
-                      // Detect channel
-                      const titleLower = act.title.toLowerCase();
-                      const detectedChannel = titleLower.includes("instagram") || act.title.includes("📸") ? "instagram"
-                        : titleLower.includes("linkedin") || act.title.includes("💼") ? "linkedin"
-                        : titleLower.includes("whatsapp") || act.title.includes("💬") ? "whatsapp"
-                        : titleLower.includes("email") || titleLower.includes("e-mail") || act.title.includes("✉️") ? "email"
-                        : titleLower.includes("telefon") || act.title.includes("📞") ? "phone"
-                        : null;
-                      const channelLabels: Record<string, { label: string; color: string }> = {
-                        instagram: { label: "IG", color: "bg-pink-500/15 text-pink-400 border-pink-500/20" },
-                        linkedin: { label: "LI", color: "bg-blue-500/15 text-blue-400 border-blue-500/20" },
-                        whatsapp: { label: "WA", color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
-                        email: { label: "Mail", color: "bg-sky-500/15 text-sky-400 border-sky-500/20" },
-                        phone: { label: "Tel", color: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
-                      };
-                      const channelInfo = detectedChannel ? channelLabels[detectedChannel] : null;
-
-                      return (
-                        <div key={act.id} className="group flex gap-3 py-2 relative">
-                          <div className={cn(
-                            "relative z-10 flex items-center justify-center shrink-0 rounded-full bg-background border",
-                            isAiEntry ? "h-7 w-7 border-primary/30" : "h-7 w-7 border-border"
-                          )}>
-                            {isAiEntry
-                              ? <Sparkles className="h-3 w-3 text-primary" />
-                              : <Icon className="h-3 w-3" style={{ color: config.color }} />
-                            }
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <p className={cn("text-xs font-medium text-foreground truncate flex-1", isAiEntry && "text-primary")}>{act.title}</p>
-                              {channelInfo && (
-                                <span className={cn("text-[9px] font-semibold px-1 py-0.5 rounded border shrink-0", channelInfo.color)}>
-                                  {channelInfo.label}
-                                </span>
-                              )}
-                              <span className="text-[10px] text-muted-foreground shrink-0">
-                                {new Date(act.created_at).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
-                              </span>
-                              <button
-                                onClick={() => deleteActivity(act.id)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                                title="Löschen"
-                              >
-                                <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                              </button>
-                            </div>
-                            {act.body && renderBody(act.body)}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div ref={timelineEndRef} />
+              <TabsContent value="qualifizierung" className="mt-4">
+                <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Setting-Call-Fragen</h2>
+                    <span className="text-xs text-muted-foreground">{answeredCount}/{SETTING_CALL_QUESTIONS.length}</span>
                   </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${(answeredCount / SETTING_CALL_QUESTIONS.length) * 100}%` }} />
+                  </div>
+                  {SETTING_CALL_QUESTIONS.map((q, idx) => {
+                    const key = `q${idx + 1}`;
+                    const answers = lead.setting_call_answers || {};
+                    const value = answers[key] || "";
+                    return (
+                      <div key={key} className="space-y-1">
+                        <p className="text-xs font-medium text-foreground/80 leading-snug">{idx + 1}. {q}</p>
+                        {editingSettingIdx === idx ? (
+                          <Textarea autoFocus defaultValue={value} rows={2} className="bg-background text-xs" placeholder="Antwort…"
+                            onBlur={async e => {
+                              const next = { ...answers, [key]: e.target.value };
+                              setLead(p => p ? { ...p, setting_call_answers: next } : p);
+                              setEditingSettingIdx(null);
+                              await saveField("setting_call_answers", next);
+                            }} />
+                        ) : (
+                          <button onClick={() => setEditingSettingIdx(idx)}
+                            className="text-xs text-left w-full min-h-[24px] px-2 py-1 rounded hover:bg-muted/30 transition-colors">
+                            {value ? <span className="text-foreground/70 whitespace-pre-wrap">{value}</span> : <span className="text-muted-foreground/50">Antwort hinzufügen…</span>}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              </TabsContent>
+
+              <TabsContent value="dateien" className="mt-4 space-y-4">
+                {/* Upload */}
+                <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dateien</h2>
+                  <div
+                    onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files); }}
+                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={e => { e.preventDefault(); setDragOver(false); }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed py-6 cursor-pointer transition-all",
+                      dragOver ? "border-primary bg-primary/10" : "border-border hover:border-muted-foreground/40 hover:bg-muted/30"
+                    )}
+                  >
+                    {fileUploading ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
+                    <span className="text-xs text-muted-foreground">{fileUploading ? "Lädt hoch…" : dragOver ? "Loslassen zum Hochladen" : "Dateien hierher ziehen oder klicken"}</span>
+                    <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.md,.pptx" className="hidden"
+                      onChange={e => { if (e.target.files) uploadFiles(e.target.files); e.target.value = ""; }} />
+                  </div>
+                  {leadFiles.map(file => {
+                    const isImage = file.mime_type?.startsWith("image/");
+                    return (
+                      <div key={file.id} className="flex items-center gap-2 group rounded-md px-2 py-1.5 hover:bg-muted/30 transition-colors">
+                        {isImage ? <Image className="h-3.5 w-3.5 text-blue-400 shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                        <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs truncate text-foreground/70 hover:text-foreground">{file.name}</a>
+                        <span className="text-[10px] text-muted-foreground shrink-0">
+                          {file.file_size > 1048576 ? `${(file.file_size / 1048576).toFixed(1)} MB` : `${Math.round(file.file_size / 1024)} KB`}
+                        </span>
+                        <button onClick={() => deleteFile(file.id, file.file_url)} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {leadFiles.length === 0 && !fileUploading && <p className="text-xs text-muted-foreground text-center">Keine Dateien</p>}
+                </div>
+
+                {/* Smart Import */}
+                <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"><Sparkles className="h-3 w-3" />Smart Import</h2>
+                  <div className="flex gap-1.5">
+                    <div className="relative flex-1">
+                      <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                      <Input placeholder="https://beispiel.de" value={importUrl} onChange={e => setImportUrl(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleUrlImport()} className="h-8 pl-7 text-xs bg-background" disabled={importLoading} />
+                    </div>
+                    <Button size="sm" className="h-8 px-2.5 text-xs gap-1" onClick={handleUrlImport} disabled={importLoading || !importUrl.trim()}>
+                      {importLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}Go
+                    </Button>
+                  </div>
+                  {showLinkedInHint && (
+                    <div className="flex items-start gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-2.5 text-xs text-amber-300">
+                      <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                      <p>LinkedIn → „Als PDF speichern“ → hier hochladen ↓</p>
+                    </div>
+                  )}
+                  <div
+                    className={cn("relative rounded-lg border-2 border-dashed py-3 transition-all",
+                      importDragOver ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50")}
+                    onDrop={e => {
+                      e.preventDefault(); setImportDragOver(false);
+                      if (e.dataTransfer.files?.[0]) handlePdfImport({ target: { files: e.dataTransfer.files, value: "" } } as any);
+                    }}
+                    onDragOver={e => { e.preventDefault(); setImportDragOver(true); }}
+                    onDragLeave={e => { e.preventDefault(); setImportDragOver(false); }}
+                  >
+                    <input type="file" accept="image/*,.txt,.pdf,.md,.csv" onChange={handlePdfImport} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={importLoading} />
+                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                      {importLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                      {importLoading ? "Analysiert…" : importDragOver ? "Loslassen…" : "Datei/Bild hochladen oder reinziehen"}
+                    </div>
+                  </div>
+                  {importResult && (
+                    <div className="space-y-3 rounded-lg bg-primary/5 p-4 border border-primary/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-primary flex items-center gap-2"><Sparkles className="h-3 w-3" />AI-Analyse</span>
+                        <button onClick={() => setImportResult(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
+                      </div>
+                      <p className="text-[13px] text-foreground/80 leading-relaxed">{importResult.summary}</p>
+                      {importResult.key_points?.length > 0 && (
+                        <div className="rounded-md border border-border/60 bg-background/50 p-3 space-y-1.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Erkenntnisse</p>
+                          {importResult.key_points.map((p: string, i: number) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <div className="h-1.5 w-1.5 rounded-full bg-primary/60 mt-[5px] shrink-0" />
+                              <p className="text-xs text-foreground/70 leading-relaxed">{p}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {importResult.contact_info && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {importResult.contact_info.name && <Badge variant="secondary" className="text-[10px]">👤 {importResult.contact_info.name}</Badge>}
+                          {importResult.contact_info.email && <Badge variant="secondary" className="text-[10px]">✉️ {importResult.contact_info.email}</Badge>}
+                          {importResult.contact_info.phone && <Badge variant="secondary" className="text-[10px]">📞 {importResult.contact_info.phone}</Badge>}
+                        </div>
+                      )}
+                      {importResult.next_steps?.length > 0 && (
+                        <Button size="sm" variant="outline" className="w-full h-8 text-xs gap-1.5 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                          onClick={() => createTasksFromResult(importResult.next_steps)}>
+                          {importResult.next_steps.length} Aufgabe(n) erstellen
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {/* Rechts: Karten */}
+            <div className="space-y-4">
+              <NextStepCard
+                date={lead.next_step_date}
+                text={lead.next_step}
+                onSave={(date, text) => {
+                  if (date !== lead.next_step_date) saveField("next_step_date", date);
+                  if (text !== undefined && text !== lead.next_step) saveField("next_step", text);
+                }}
+              />
+              <TasksCard tasks={crmTasks} leadId={id} onChanged={fetchLead} />
+              <OffersCard documents={leadDocuments} />
             </div>
           </div>
         </div>
-
-        {/* Add activity dialog */}
-        <Dialog open={showActivity} onOpenChange={setShowActivity}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{ACTIVITY_TYPES.find(t => t.value === activityType)?.label || "Eintrag"} hinzufügen</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <Input placeholder="Titel *" value={activityTitle} onChange={e => setActivityTitle(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && addActivity()} />
-              <Textarea placeholder="Details (optional)" value={activityBody} onChange={e => setActivityBody(e.target.value)} rows={3} />
-              <Button onClick={addActivity} className="w-full">Hinzufügen</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Email compose dialog */}
         <Dialog open={showEmailCompose} onOpenChange={setShowEmailCompose}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                E-Mail senden
-              </DialogTitle>
+              <DialogTitle className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" />E-Mail senden</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">An</label>
-                <Input
-                  placeholder="email@beispiel.de"
-                  value={emailTo}
-                  onChange={e => setEmailTo(e.target.value)}
-                  className="bg-background border-border"
-                />
+                <Input placeholder="email@beispiel.de" value={emailTo} onChange={e => setEmailTo(e.target.value)} className="bg-background" />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Betreff</label>
-                <Input
-                  placeholder="Betreff eingeben..."
-                  value={emailSubject}
-                  onChange={e => setEmailSubject(e.target.value)}
-                  className="bg-background border-border"
-                />
+                <Input placeholder="Betreff eingeben…" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} className="bg-background" />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Nachricht</label>
-                <Textarea
-                  placeholder="Ihre Nachricht..."
-                  value={emailBody}
-                  onChange={e => setEmailBody(e.target.value)}
-                  rows={8}
-                  className="bg-background border-border"
-                />
+                <Textarea placeholder="Ihre Nachricht…" value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={8} className="bg-background" />
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] text-muted-foreground">
-                  Gesendet von noreply@marketlabmedia.de
-                </span>
-                <Button
-                  onClick={sendEmail}
-                  disabled={emailSending || !emailTo.trim() || !emailSubject.trim() || !emailBody.trim()}
-                  className="gap-2"
-                >
+                <span className="text-[10px] text-muted-foreground">Gesendet von noreply@marketlabmedia.de</span>
+                <Button onClick={sendEmail} disabled={emailSending || !emailTo.trim() || !emailSubject.trim() || !emailBody.trim()} className="gap-2">
                   {emailSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                   Senden
                 </Button>
