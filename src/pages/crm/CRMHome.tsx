@@ -179,11 +179,12 @@ export default function CRMHome() {
         <div className="flex items-center gap-3">
           <Briefcase className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">CRM</h1>
+          <Button size="sm" className="ml-auto" onClick={() => setNewOpen(true)}>
+            <Plus className="h-4 w-4 mr-1.5" />Neu
+          </Button>
         </div>
 
         <CrmStatsTiles />
-
-        <MagicInput onLeadCreated={fetchLeads} pipelineId={activePipeline} />
 
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
