@@ -25,6 +25,7 @@ export function useCrmPipelines() {
       const { data, error } = await supabase
         .from("crm_pipelines")
         .select("*")
+        .eq("is_hidden", false)
         .order("created_at");
       if (error) throw error;
       return (data ?? []) as CrmPipeline[];

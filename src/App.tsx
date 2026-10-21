@@ -24,6 +24,9 @@ import PromptLibrary from "./pages/PromptLibrary";
 import MarketingDashboard from "./pages/MarketingDashboard";
 import CRMHome from "./pages/crm/CRMHome";
 import CRMLeadDetail from "./pages/crm/CRMLeadDetail";
+import CRMContactDetail from "./pages/crm/CRMContactDetail";
+import CRMEventDetail from "./pages/crm/CRMEventDetail";
+import CRMApiDocs from "./pages/crm/CRMApiDocs";
 
 import ContractTimeline from "./pages/ContractTimeline";
 import ActivityPage from "./pages/ActivityPage";
@@ -143,6 +146,9 @@ const App = () => (
                   <Route path="/time-tracking" element={<Navigate to="/crew" replace />} />
                   <Route path="/crm" element={<ProtectedRoute><CRMHome /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
+                  <Route path="/crm/kontakt/:id" element={<ProtectedRoute><CRMContactDetail /></ProtectedRoute>} />
+                  <Route path="/crm/event/:id" element={<ProtectedRoute><CRMEventDetail /></ProtectedRoute>} />
+                  <Route path="/crm/api" element={<ProtectedRoute><CRMApiDocs /></ProtectedRoute>} />
                   <Route path="/crm/pipelines" element={<Navigate to="/crm" replace />} />
                   <Route path="/crm/campaigns" element={<Navigate to="/marketing" replace />} />
                   <Route path="/finanzen" element={<ProtectedRoute><Finanzen /></ProtectedRoute>} />

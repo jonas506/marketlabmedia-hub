@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Briefcase, Search, ArrowUpDown } from "lucide-react";
 import PipelineBoard from "@/components/crm/PipelineBoard";
 import MagicInput from "@/components/crm/MagicInput";
+import ContactsTab from "@/components/crm/ContactsTab";
+import EventsTab from "@/components/crm/EventsTab";
+import CrmStatsTiles from "@/components/crm/CrmStatsTiles";
 
 import { getSourceInfo } from "@/lib/crm-constants";
 import { useCrmStages, useCrmPipelines, getStageLabel as dynGetStageLabel, getStageColor as dynGetStageColor } from "@/hooks/useCrmStages";
@@ -40,7 +43,7 @@ type Lead = {
 export default function CRMHome() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const defaultTab = tabParam === "leads" ? "leads" : "pipeline";
+  const defaultTab = ["leads", "pipeline", "events"].includes(tabParam ?? "") ? tabParam! : "kontakte";
   const [tab, setTab] = useState(defaultTab);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +51,7 @@ export default function CRMHome() {
   const [activePipeline, setActivePipeline] = useState<string | null>(null);
   const { data: stages = [] } = useCrmStages(activePipeline);
   const { data: memberships = [] } = useLeadPipelines();
+  const { data: allStages = [] } = useCrmStages(null);
 
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
@@ -71,7 +75,7 @@ export default function CRMHome() {
 
   const handleTabChange = (v: string) => {
     setTab(v);
-    setSearchParams(v === "pipeline" ? {} : { tab: v });
+    setSearchParams(v === "kontakte" ? {} : { tab: v });
   };
 
   const defaultPipelineId = pipelines[0]?.id ?? null;
@@ -138,14 +142,20 @@ export default function CRMHome() {
           <h1 className="text-2xl font-bold">CRM</h1>
         </div>
 
+        <CrmStatsTiles />
+
         <MagicInput onLeadCreated={fetchLeads} pipelineId={activePipeline} />
 
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
+            <TabsTrigger value="kontakte">Kontakte</TabsTrigger>
             <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
             <TabsTrigger value="leads">Alle Leads</TabsTrigger>
-            
+            <TabsTrigger value="events">Events</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="kontakte"><ContactsTab /></TabsContent>
+          <TabsContent value="events"><EventsTab /></TabsContent>
 
           <TabsContent value="pipeline">
             <div className="mb-3">
@@ -203,9 +213,9 @@ export default function CRMHome() {
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <span
                           className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                          style={{ background: dynGetStageColor(stages, lead.stage) + "22", color: dynGetStageColor(stages, lead.stage) }}
+                          style={{ background: dynGetStageColor(allStages, lead.stage) + "22", color: dynGetStageColor(allStages, lead.stage) }}
                         >
-                          {dynGetStageLabel(stages, lead.stage)}
+                          {dynGetStageLabel(allStages, lead.stage)}
                         </span>
                         {sourceInfo && (
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`} style={sourceInfo.style}>
@@ -254,9 +264,9 @@ export default function CRMHome() {
                           <td className="px-3 py-2.5">
                             <span
                               className="text-xs px-2 py-0.5 rounded-full font-medium"
-                              style={{ background: dynGetStageColor(stages, lead.stage) + "22", color: dynGetStageColor(stages, lead.stage) }}
+                              style={{ background: dynGetStageColor(allStages, lead.stage) + "22", color: dynGetStageColor(allStages, lead.stage) }}
                             >
-                              {dynGetStageLabel(stages, lead.stage)}
+                              {dynGetStageLabel(allStages, lead.stage)}
                             </span>
                           </td>
                           <td className="px-3 py-2.5">

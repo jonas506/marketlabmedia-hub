@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import AppLayout from "@/components/AppLayout";
@@ -177,9 +178,12 @@ const TeamOverview = () => {
           </p>
         </div>
         {isAdmin && (
+          <div className="flex gap-2">
+          <Button asChild size="sm" variant="outline" className="font-mono text-xs"><Link to="/crm/api">CRM-API</Link></Button>
           <Button onClick={() => setInviteOpen(true)} size="sm" className="gap-1.5 font-mono text-xs">
             <Plus className="h-3.5 w-3.5" /> Einladen
           </Button>
+          </div>
         )}
       </div>
 
