@@ -43,6 +43,13 @@
       "when": 1792228648120,
       "tag": "0005_retire_positioning_slack",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792618547813,
+      "tag": "0006_crm_contacts_events",
+      "breakpoints": true
     }
   ]
 }

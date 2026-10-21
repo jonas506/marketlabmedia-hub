@@ -1657,6 +1657,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "crm_activities_contact_fk"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "crm_activities_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
@@ -1664,6 +1671,198 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crm_contacts: {
+        Row: {
+          city: string | null
+          company: string | null
+          created_at: string
+          created_by: string | null
+          do_not_contact: boolean
+          email: string | null
+          external_ref: string | null
+          first_name: string | null
+          full_name: string
+          id: string
+          instagram_handle: string | null
+          last_channel: Database["public"]["Enums"]["crm_channel"] | null
+          last_contact_at: string | null
+          lat: number | null
+          linkedin_url: string | null
+          lon: number | null
+          next_followup_date: string | null
+          notes: string | null
+          phone: string | null
+          region: string | null
+          relationship: Database["public"]["Enums"]["crm_relationship"]
+          role: string | null
+          segment: Database["public"]["Enums"]["crm_segment"]
+          source: string | null
+          tags: string[]
+          updated_at: string
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          do_not_contact?: boolean
+          email?: string | null
+          external_ref?: string | null
+          first_name?: string | null
+          full_name: string
+          id?: string
+          instagram_handle?: string | null
+          last_channel?: Database["public"]["Enums"]["crm_channel"] | null
+          last_contact_at?: string | null
+          lat?: number | null
+          linkedin_url?: string | null
+          lon?: number | null
+          next_followup_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          relationship?: Database["public"]["Enums"]["crm_relationship"]
+          role?: string | null
+          segment?: Database["public"]["Enums"]["crm_segment"]
+          source?: string | null
+          tags?: string[]
+          updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          do_not_contact?: boolean
+          email?: string | null
+          external_ref?: string | null
+          first_name?: string | null
+          full_name?: string
+          id?: string
+          instagram_handle?: string | null
+          last_channel?: Database["public"]["Enums"]["crm_channel"] | null
+          last_contact_at?: string | null
+          lat?: number | null
+          linkedin_url?: string | null
+          lon?: number | null
+          next_followup_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          region?: string | null
+          relationship?: Database["public"]["Enums"]["crm_relationship"]
+          role?: string | null
+          segment?: Database["public"]["Enums"]["crm_segment"]
+          source?: string | null
+          tags?: string[]
+          updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      crm_event_guests: {
+        Row: {
+          contact_id: string
+          created_at: string
+          event_id: string
+          id: string
+          invited_at: string | null
+          invited_via: Database["public"]["Enums"]["crm_channel"] | null
+          note: string | null
+          plus_ones: number
+          responded_at: string | null
+          status: Database["public"]["Enums"]["crm_guest_status"]
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          invited_at?: string | null
+          invited_via?: Database["public"]["Enums"]["crm_channel"] | null
+          note?: string | null
+          plus_ones?: number
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["crm_guest_status"]
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          invited_at?: string | null
+          invited_via?: Database["public"]["Enums"]["crm_channel"] | null
+          note?: string | null
+          plus_ones?: number
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["crm_guest_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_event_guests_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_event_guests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "crm_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_events: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          date: string | null
+          description: string | null
+          id: string
+          landing_url: string | null
+          location: string | null
+          name: string
+          price_net: number
+          slug: string
+          start_time: string | null
+          status: Database["public"]["Enums"]["crm_event_status"]
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          landing_url?: string | null
+          location?: string | null
+          name: string
+          price_net?: number
+          slug: string
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["crm_event_status"]
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          landing_url?: string | null
+          location?: string | null
+          name?: string
+          price_net?: number
+          slug?: string
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["crm_event_status"]
+        }
+        Relationships: []
       }
       crm_files: {
         Row: {
@@ -1779,6 +1978,7 @@ export type Database = {
         Row: {
           ai_summary: string | null
           contact_email: string | null
+          contact_id: string | null
           contact_name: string | null
           contact_phone: string | null
           created_at: string
@@ -1810,6 +2010,7 @@ export type Database = {
         Insert: {
           ai_summary?: string | null
           contact_email?: string | null
+          contact_id?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -1841,6 +2042,7 @@ export type Database = {
         Update: {
           ai_summary?: string | null
           contact_email?: string | null
+          contact_id?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -1870,6 +2072,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_leads_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_leads_pipeline_id_fkey"
             columns: ["pipeline_id"]
@@ -1928,16 +2137,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_hidden: boolean
           name: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_hidden?: boolean
           name: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_hidden?: boolean
           name?: string
         }
         Relationships: []
@@ -2051,6 +2263,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_tasks_contact_fk"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_tasks_lead_id_fkey"
             columns: ["lead_id"]
@@ -3955,6 +4174,25 @@ export type Database = {
         Args: { p_client_id: string; p_context?: Json; p_trigger_type: string }
         Returns: undefined
       }
+      crm_match_contact: {
+        Args: {
+          _company: string
+          _email: string
+          _linkedin: string
+          _name: string
+          _phone: string
+          _ref: string
+        }
+        Returns: string
+      }
+      crm_merge_contacts: {
+        Args: { _drop: string; _keep: string }
+        Returns: undefined
+      }
+      crm_upsert_contact: {
+        Args: { _c: Json; _created_by?: string }
+        Returns: Json
+      }
       delete_client_piece_comment: {
         Args: { _comment_id: string; _token: string }
         Returns: boolean
@@ -4036,7 +4274,45 @@ export type Database = {
         | "opportunity_change"
         | "task_completed"
         | "created"
+        | "whatsapp"
+        | "linkedin"
+        | "instagram"
+        | "brief"
+        | "event"
+      crm_channel:
+        | "whatsapp"
+        | "linkedin"
+        | "mail"
+        | "instagram"
+        | "telefon"
+        | "brief"
+        | "persoenlich"
       crm_email_direction: "inbound" | "outbound"
+      crm_event_status: "geplant" | "aktiv" | "vorbei"
+      crm_guest_status:
+        | "angefragt"
+        | "eingeladen"
+        | "vielleicht"
+        | "zusage"
+        | "spaeter"
+        | "absage"
+        | "bounce"
+        | "erschienen"
+      crm_relationship:
+        | "kunde"
+        | "lead"
+        | "netzwerk"
+        | "event_kontakt"
+        | "partner"
+        | "team"
+        | "kalt"
+      crm_segment:
+        | "immo_finanz"
+        | "mittelstand"
+        | "kunde"
+        | "partner"
+        | "creator"
+        | "sonstiges"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4174,8 +4450,50 @@ export const Constants = {
         "opportunity_change",
         "task_completed",
         "created",
+        "whatsapp",
+        "linkedin",
+        "instagram",
+        "brief",
+        "event",
+      ],
+      crm_channel: [
+        "whatsapp",
+        "linkedin",
+        "mail",
+        "instagram",
+        "telefon",
+        "brief",
+        "persoenlich",
       ],
       crm_email_direction: ["inbound", "outbound"],
+      crm_event_status: ["geplant", "aktiv", "vorbei"],
+      crm_guest_status: [
+        "angefragt",
+        "eingeladen",
+        "vielleicht",
+        "zusage",
+        "spaeter",
+        "absage",
+        "bounce",
+        "erschienen",
+      ],
+      crm_relationship: [
+        "kunde",
+        "lead",
+        "netzwerk",
+        "event_kontakt",
+        "partner",
+        "team",
+        "kalt",
+      ],
+      crm_segment: [
+        "immo_finanz",
+        "mittelstand",
+        "kunde",
+        "partner",
+        "creator",
+        "sonstiges",
+      ],
     },
   },
 } as const
