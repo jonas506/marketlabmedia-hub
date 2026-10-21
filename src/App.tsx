@@ -78,7 +78,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode; allowCourseStudents?: boolean }> = ({ children, allowCourseStudents }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode; allowCourseStudents?: boolean; adminOnly?: boolean }> = ({ children, allowCourseStudents, adminOnly }) => {
   const { user, role, roleLoaded, loading } = useAuth();
   if (loading || (user && !roleLoaded)) {
     return (
@@ -90,6 +90,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowCourseStudents?
   if (!user) return <Navigate to={allowCourseStudents ? "/kurs/login" : "/login"} replace />;
   // Course students (no internal role) must not access internal app routes.
   if (!allowCourseStudents && !role) return <Navigate to="/kurs" replace />;
+  // Admin-only areas (e.g. CRM) are hidden from Head of Content and Cutters.
+  if (adminOnly && role !== "admin") return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
@@ -144,11 +146,11 @@ const App = () => (
                   <Route path="/contracts" element={<ProtectedRoute><ContractTimeline /></ProtectedRoute>} />
                   <Route path="/crew" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/time-tracking" element={<Navigate to="/crew" replace />} />
-                  <Route path="/crm" element={<ProtectedRoute><CRMHome /></ProtectedRoute>} />
-                  <Route path="/crm/lead/:id" element={<ProtectedRoute><CRMLeadDetail /></ProtectedRoute>} />
-                  <Route path="/crm/kontakt/:id" element={<ProtectedRoute><CRMContactDetail /></ProtectedRoute>} />
-                  <Route path="/crm/event/:id" element={<ProtectedRoute><CRMEventDetail /></ProtectedRoute>} />
-                  <Route path="/crm/api" element={<ProtectedRoute><CRMApiDocs /></ProtectedRoute>} />
+                  <Route path="/crm" element={<ProtectedRoute adminOnly><CRMHome /></ProtectedRoute>} />
+                  <Route path="/crm/lead/:id" element={<ProtectedRoute adminOnly><CRMLeadDetail /></ProtectedRoute>} />
+                  <Route path="/crm/kontakt/:id" element={<ProtectedRoute adminOnly><CRMContactDetail /></ProtectedRoute>} />
+                  <Route path="/crm/event/:id" element={<ProtectedRoute adminOnly><CRMEventDetail /></ProtectedRoute>} />
+                  <Route path="/crm/api" element={<ProtectedRoute adminOnly><CRMApiDocs /></ProtectedRoute>} />
                   <Route path="/crm/pipelines" element={<Navigate to="/crm" replace />} />
                   <Route path="/crm/campaigns" element={<Navigate to="/marketing" replace />} />
                   <Route path="/finanzen" element={<ProtectedRoute><Finanzen /></ProtectedRoute>} />
