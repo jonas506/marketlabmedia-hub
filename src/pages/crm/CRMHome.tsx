@@ -98,6 +98,14 @@ export default function CRMHome() {
   }, [leads, memberships, activePipeline, defaultPipelineId]);
 
 
+  // Stage shown in "Alle Leads": prefer a known stage (legacy column may hold deleted stage ids)
+  const displayStage = (lead: Lead) => {
+    const known = (v?: string) => !!v && allStages.some(s => s.value === v);
+    if (known(lead.stage)) return lead.stage;
+    const m = memberships.find(x => x.lead_id === lead.id && known(x.stage));
+    return m?.stage ?? lead.stage;
+  };
+
   // Leads table
   const filteredLeads = useMemo(() => {
     let result = leads;
@@ -213,9 +221,9 @@ export default function CRMHome() {
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <span
                           className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                          style={{ background: dynGetStageColor(allStages, lead.stage) + "22", color: dynGetStageColor(allStages, lead.stage) }}
+                          style={{ background: dynGetStageColor(allStages, displayStage(lead)) + "22", color: dynGetStageColor(allStages, displayStage(lead)) }}
                         >
-                          {dynGetStageLabel(allStages, lead.stage)}
+                          {dynGetStageLabel(allStages, displayStage(lead))}
                         </span>
                         {sourceInfo && (
                           <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${sourceInfo.color}`} style={sourceInfo.style}>
@@ -264,9 +272,9 @@ export default function CRMHome() {
                           <td className="px-3 py-2.5">
                             <span
                               className="text-xs px-2 py-0.5 rounded-full font-medium"
-                              style={{ background: dynGetStageColor(allStages, lead.stage) + "22", color: dynGetStageColor(allStages, lead.stage) }}
+                              style={{ background: dynGetStageColor(allStages, displayStage(lead)) + "22", color: dynGetStageColor(allStages, displayStage(lead)) }}
                             >
-                              {dynGetStageLabel(allStages, lead.stage)}
+                              {dynGetStageLabel(allStages, displayStage(lead))}
                             </span>
                           </td>
                           <td className="px-3 py-2.5">
