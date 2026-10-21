@@ -183,6 +183,7 @@ const TeamOverview = () => {
           <Button onClick={() => setInviteOpen(true)} size="sm" className="gap-1.5 font-mono text-xs">
             <Plus className="h-3.5 w-3.5" /> Einladen
           </Button>
+          </div>
         )}
       </div>
 
