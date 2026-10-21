@@ -344,6 +344,33 @@ export default function CRMHome() {
 
         </Tabs>
       </div>
+
+      <Dialog open={newOpen} onOpenChange={setNewOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Neu anlegen</DialogTitle></DialogHeader>
+          <div className="flex gap-2">
+            <Button variant={newMode === "lead" ? "default" : "outline"} size="sm" onClick={() => setNewMode("lead")}>
+              <Building2 className="h-3.5 w-3.5 mr-1.5" />Lead
+            </Button>
+            <Button variant={newMode === "kontakt" ? "default" : "outline"} size="sm" onClick={() => setNewMode("kontakt")}>
+              <User className="h-3.5 w-3.5 mr-1.5" />Kontakt
+            </Button>
+          </div>
+          {newMode === "lead" ? (
+            <MagicInput onLeadCreated={() => { fetchLeads(); setNewOpen(false); }} pipelineId={activePipeline} />
+          ) : (
+            <div className="space-y-3">
+              <Input autoFocus placeholder="Name *" value={contactName} onChange={e => setContactName(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && createContact()} />
+              <Input placeholder="Firma" value={contactCompany} onChange={e => setContactCompany(e.target.value)} />
+              <Input placeholder="E-Mail" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
+              <Button className="w-full" onClick={createContact} disabled={!contactName.trim() || contactSaving}>
+                Kontakt anlegen
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
