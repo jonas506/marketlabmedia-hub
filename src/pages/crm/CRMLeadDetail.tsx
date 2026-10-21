@@ -499,7 +499,7 @@ export default function CRMLeadDetail() {
 
             {/* Mitte: Tabs */}
             <Tabs defaultValue="aktivitaet">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <TabsList>
                   <TabsTrigger value="aktivitaet">Aktivität</TabsTrigger>
                   <TabsTrigger value="qualifizierung">Qualifizierung{answeredCount > 0 ? ` · ${answeredCount}/${SETTING_CALL_QUESTIONS.length}` : ""}</TabsTrigger>
