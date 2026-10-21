@@ -61,6 +61,33 @@ export default function CRMHome() {
   const [sortField, setSortField] = useState<keyof Lead>("last_activity_at");
   const [sortAsc, setSortAsc] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const [newOpen, setNewOpen] = useState(false);
+  const [newMode, setNewMode] = useState<"lead" | "kontakt">("lead");
+  const [contactName, setContactName] = useState("");
+  const [contactCompany, setContactCompany] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactSaving, setContactSaving] = useState(false);
+
+  const createContact = async () => {
+    if (!contactName.trim() || contactSaving) return;
+    setContactSaving(true);
+    const { data, error } = await supabase.from("crm_contacts").insert({
+      full_name: contactName.trim(),
+      company: contactCompany.trim() || null,
+      email: contactEmail.trim() || null,
+      created_by: user?.id ?? null,
+    } as any).select("id").single();
+    setContactSaving(false);
+    if (error || !data) { toast.error("Kontakt konnte nicht angelegt werden"); return; }
+    toast.success("Kontakt angelegt");
+    setNewOpen(false);
+    setContactName(""); setContactCompany(""); setContactEmail("");
+    qc.invalidateQueries({ queryKey: ["crm-contacts"] });
+    navigate(`/crm/kontakt/${data.id}`);
+  };
 
   useEffect(() => {
     if (!activePipeline && pipelines.length > 0) setActivePipeline(pipelines[0].id);
