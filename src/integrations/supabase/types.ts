@@ -4279,6 +4279,7 @@ export type Database = {
         | "instagram"
         | "brief"
         | "event"
+        | "meeting"
       crm_channel:
         | "whatsapp"
         | "linkedin"
@@ -4455,6 +4456,7 @@ export const Constants = {
         "instagram",
         "brief",
         "event",
+        "meeting",
       ],
       crm_channel: [
         "whatsapp",
