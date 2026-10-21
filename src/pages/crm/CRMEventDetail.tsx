@@ -40,7 +40,7 @@ export default function CRMEventDetail() {
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["crm-event-guests"] });
   const update = async (gid: string, patch: Record<string, unknown>) => {
-    const { error } = await supabase.from("crm_event_guests").update(patch).eq("id", gid);
+    const { error } = await supabase.from("crm_event_guests").update(patch as never).eq("id", gid);
     if (error) toast.error("Speichern fehlgeschlagen"); else refresh();
   };
   const addGuest = async (cid: string) => {

@@ -1,0 +1,2 @@
+ALTER TABLE public.crm_activities ALTER COLUMN lead_id DROP NOT NULL;
+ALTER TABLE public.crm_activities ADD CONSTRAINT crm_activities_lead_or_contact CHECK (lead_id IS NOT NULL OR contact_id IS NOT NULL) NOT VALID;

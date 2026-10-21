@@ -1624,7 +1624,7 @@ export type Database = {
           created_by: string
           file_urls: string[] | null
           id: string
-          lead_id: string
+          lead_id: string | null
           metadata: Json | null
           title: string
           type: Database["public"]["Enums"]["crm_activity_type"]
@@ -1637,7 +1637,7 @@ export type Database = {
           created_by: string
           file_urls?: string[] | null
           id?: string
-          lead_id: string
+          lead_id?: string | null
           metadata?: Json | null
           title: string
           type: Database["public"]["Enums"]["crm_activity_type"]
@@ -1650,7 +1650,7 @@ export type Database = {
           created_by?: string
           file_urls?: string[] | null
           id?: string
-          lead_id?: string
+          lead_id?: string | null
           metadata?: Json | null
           title?: string
           type?: Database["public"]["Enums"]["crm_activity_type"]
