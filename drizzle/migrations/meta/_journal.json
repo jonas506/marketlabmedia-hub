@@ -64,6 +64,13 @@
       "when": 1792620333126,
       "tag": "0008_crm_hoc_access_and_meeting_type",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792621227966,
+      "tag": "0009_remove_hoc_crm_policies",
+      "breakpoints": true
     }
   ]
 }
