@@ -50,6 +50,13 @@
       "when": 1792618547813,
       "tag": "0006_crm_contacts_events",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792619059373,
+      "tag": "0007_crm_activities_optional_lead",
+      "breakpoints": true
     }
   ]
 }
