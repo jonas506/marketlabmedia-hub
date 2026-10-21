@@ -1,11 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Briefcase, Search, ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Briefcase, Search, ArrowUpDown, Plus, User, Building2 } from "lucide-react";
 import PipelineBoard from "@/components/crm/PipelineBoard";
 import MagicInput from "@/components/crm/MagicInput";
 import ContactsTab from "@/components/crm/ContactsTab";
@@ -21,6 +24,7 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Lead = {
   id: string;
