@@ -1,0 +1,13 @@
+DROP POLICY IF EXISTS "HoC full access on crm_activities" ON public.crm_activities;
+DROP POLICY IF EXISTS "HoC full access on crm_contacts" ON public.crm_contacts;
+DROP POLICY IF EXISTS "HoC full access on crm_event_guests" ON public.crm_event_guests;
+DROP POLICY IF EXISTS "HoC full access on crm_events" ON public.crm_events;
+DROP POLICY IF EXISTS "HoC full access on crm_files" ON public.crm_files;
+DROP POLICY IF EXISTS "HoC full access on crm_lead_pipelines" ON public.crm_lead_pipelines;
+DROP POLICY IF EXISTS "HoC full access on crm_lead_statuses" ON public.crm_lead_statuses;
+DROP POLICY IF EXISTS "HoC full access on crm_leads" ON public.crm_leads;
+DROP POLICY IF EXISTS "HoC full access on crm_pipeline_stages" ON public.crm_pipeline_stages;
+DROP POLICY IF EXISTS "HoC full access on crm_pipelines" ON public.crm_pipelines;
+DROP POLICY IF EXISTS "HoC full access on crm_source_tags" ON public.crm_source_tags;
+DROP POLICY IF EXISTS "HoC full access on crm_stage_config" ON public.crm_stage_config;
+DROP POLICY IF EXISTS "HoC full access on crm_tasks" ON public.crm_tasks;
