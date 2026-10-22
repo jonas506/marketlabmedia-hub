@@ -8,4 +8,6 @@
 - [x] Verifiziert: Notiz auf Kontakt + Lead speichert & erscheint; 694 Kontakte laden; Filter funktionieren; Build OK
 
 ## Offen
-- (keine)
+- [ ] Angebotsannahme: Pflichtfelder, Protokoll und Bestätigungs-Mails
+- [ ] PDF-Seite 1: Gültigkeitsdatum und Netto-Gesamtbetrag erkennen; Ablauf sperren
+- [ ] Annahme und Ablauf testen
