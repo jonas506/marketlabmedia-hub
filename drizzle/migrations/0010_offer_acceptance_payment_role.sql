@@ -1,0 +1,4 @@
+ALTER TABLE public.signature_acceptances ADD COLUMN company_role text, ADD COLUMN payment_variant text CHECK (payment_variant IN ('A', 'B'));
+ALTER TABLE public.offers ADD COLUMN company_role text, ADD COLUMN payment_variant text CHECK (payment_variant IN ('A', 'B')), ADD COLUMN acceptance_consent_text text;
+COMMENT ON COLUMN public.signature_acceptances.company_role IS 'Company function entered at acceptance; null for legacy acceptances';
+COMMENT ON COLUMN public.signature_acceptances.payment_variant IS 'A: upfront payment with 5 percent discount; B: monthly with setup immediately and monthly fee in advance';
