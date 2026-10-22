@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import PdfCanvasViewer from "@/components/PdfCanvasViewer";
+import AcceptanceFields from '@/components/documents/AcceptanceFields';
+import { isExpired, paymentLabel, validAcceptance } from '@/lib/offer-acceptance';
 
 const BRAND = { blue: "#0083F7", purple: "#21089B", bg: "#0a0a0f" };
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/document-public`;
@@ -18,9 +20,10 @@ interface DocData {
   file_name: string | null;
   status: string;
   accepted_at: string | null;
+  expires_at: string | null;
   consent_text: string;
   pdf_url: string | null;
-  acceptance: { typed_name: string; accepted_at: string } | null;
+  acceptance: { typed_name: string; accepted_at: string; company_role: string | null; payment_variant: string | null } | null;
 }
 
 export default function DocumentSign() {
@@ -30,6 +33,13 @@ export default function DocumentSign() {
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [consent, setConsent] = useState(false);
+  const [companyRole, setCompanyRole] = useState('');
+  const [payment, setPayment] = useState('');
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState(0);
@@ -52,13 +62,14 @@ export default function DocumentSign() {
   }, [token]);
 
   const handleAccept = async () => {
+    if (!doc || isExpired(doc.expires_at) || !validAcceptance(companyRole, payment) || !consent || name.trim().length < 2) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
       const res = await fetch(FN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, typed_name: name.trim(), consent }),
+        body: JSON.stringify({ token, typed_name: name.trim(), consent, company_role: companyRole.trim(), payment_variant: payment }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Fehler bei der Bestätigung");
@@ -68,7 +79,7 @@ export default function DocumentSign() {
               ...d,
               status: "accepted",
               accepted_at: data.accepted_at,
-              acceptance: { typed_name: name.trim(), accepted_at: data.accepted_at },
+              acceptance: { typed_name: name.trim(), accepted_at: data.accepted_at, company_role: companyRole.trim(), payment_variant: payment },
             }
           : d,
       );
@@ -99,7 +110,8 @@ export default function DocumentSign() {
   }
 
   const accepted = doc.status === "accepted";
-  const canSubmit = name.trim().length >= 2 && consent && !submitting;
+  const expired = isExpired(doc.expires_at, now);
+  const canSubmit = name.trim().length >= 2 && validAcceptance(companyRole, payment) && consent && !submitting && !expired;
 
   return (
     <div className="min-h-screen text-white" style={{ background: BRAND.bg, fontFamily: "'Manrope', system-ui, sans-serif" }}>
@@ -113,6 +125,7 @@ export default function DocumentSign() {
           Marketlab Media · Dokument
         </div>
         <h1 className="text-3xl font-extrabold md:text-4xl">{doc.title}</h1>
+        {doc.expires_at && <p className="mt-3 text-sm text-muted-foreground">Gültig bis {new Date(doc.expires_at).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' })}</p>}
 
         {doc.message_body && (
           <div className="mt-6 space-y-3 text-sm leading-relaxed text-white/70">
@@ -158,6 +171,10 @@ export default function DocumentSign() {
                   ? new Date(doc.accepted_at).toLocaleString("de-DE", { timeZone: "Europe/Berlin" })
                   : ""}
               </p>
+              <dl className="mt-4 space-y-2 text-left text-sm">
+                <div><dt className="text-muted-foreground">Funktion</dt><dd>{doc.acceptance?.company_role ?? '—'}</dd></div>
+                <div><dt className="text-muted-foreground">Zahlungsvariante</dt><dd>{paymentLabel(doc.acceptance?.payment_variant)}</dd></div>
+              </dl>
               <p className="mt-3 text-xs text-white/40">
                 Eine Bestätigung mit Protokoll wurde per E-Mail versendet.
               </p>
@@ -180,6 +197,9 @@ export default function DocumentSign() {
                 placeholder="Max Mustermann"
                 className="mt-2 h-12 border-white/15 bg-white/5 text-white placeholder:text-white/30"
               />
+
+              <AcceptanceFields role={companyRole} onRoleChange={setCompanyRole} payment={payment} onPaymentChange={setPayment} />
+              {expired && <p className="mt-4 text-sm text-destructive">Dieses Angebot ist abgelaufen und kann nicht mehr angenommen werden.</p>}
 
               <div className="mt-4 flex items-start gap-3">
                 <Checkbox

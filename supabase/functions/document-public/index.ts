@@ -1,4 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { CONSENT_TEXT, escapeHtml, isExpired, validAcceptance } from '../_shared/offer-acceptance.ts';
+import { paymentLabel } from '../_shared/offer-acceptance.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,9 +13,6 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
-
-const CONSENT_TEXT =
-  'Ich habe das Dokument gelesen und nehme es hiermit verbindlich an. Mit dieser Bestätigung kommt ein rechtsgültiger Vertrag zustande.';
 
 const APP_URL = 'https://hub.marketlab-media.de';
 
@@ -70,8 +69,8 @@ Deno.serve(async (req) => {
     if (!doc || doc.status === 'draft') return json({ error: 'Dokument nicht gefunden' }, 404);
     if (doc.status === 'revoked') return json({ error: 'Dieses Dokument wurde zurückgezogen.' }, 410);
 
-    const expired = doc.expires_at && new Date(doc.expires_at) < new Date();
-    if (expired && doc.status !== 'accepted') {
+    const expired = isExpired(doc.expires_at);
+    if (req.method === 'POST' && expired && doc.status !== 'accepted') {
       return json({ error: 'Der Link ist abgelaufen.' }, 410);
     }
 
@@ -92,7 +91,7 @@ Deno.serve(async (req) => {
       if (doc.status === 'accepted') {
         const { data: a } = await supabase
           .from('signature_acceptances')
-          .select('typed_name, accepted_at, consent_text')
+          .select('typed_name, company_role, payment_variant, accepted_at, consent_text')
           .eq('document_id', doc.id)
           .maybeSingle();
         acceptance = a ?? null;
@@ -121,6 +120,10 @@ Deno.serve(async (req) => {
 
     const typedName = typeof body.typed_name === 'string' ? body.typed_name.trim() : '';
     const consent = body.consent === true;
+    const companyRole = typeof body.company_role === 'string' ? body.company_role.trim() : '';
+    if (!validAcceptance(companyRole, body.payment_variant)) {
+      return json({ error: 'Bitte Funktion im Unternehmen und Zahlungsvariante angeben.' }, 400);
+    }
     if (typedName.length < 2 || typedName.length > 120) {
       return json({ error: 'Bitte gib deinen vollständigen Namen ein.' }, 400);
     }
@@ -136,6 +139,8 @@ Deno.serve(async (req) => {
     const { error: aErr } = await supabase.from('signature_acceptances').insert({
       document_id: doc.id,
       typed_name: typedName,
+      company_role: companyRole,
+      payment_variant: body.payment_variant,
       consent_text: CONSENT_TEXT,
       ip_address: ip,
       user_agent: ua,
@@ -144,10 +149,11 @@ Deno.serve(async (req) => {
     });
     if (aErr) throw aErr;
 
-    await supabase
+    const { error: updateError } = await supabase
       .from('signature_documents')
       .update({ status: 'accepted', accepted_at: acceptedAt.toISOString() })
       .eq('id', doc.id);
+    if (updateError) throw updateError;
 
     // Confirmation emails with 7-day download link
     const { data: longSigned } = await supabase.storage
@@ -158,11 +164,13 @@ Deno.serve(async (req) => {
     const protocol = `
       <table style="width:100%;border-collapse:collapse;font-size:13px;color:#333;margin-top:8px">
         <tr><td style="padding:6px 0;color:#777">Dokument</td><td style="padding:6px 0"><strong>${doc.title}</strong></td></tr>
-        <tr><td style="padding:6px 0;color:#777">Angenommen von</td><td style="padding:6px 0"><strong>${typedName}</strong></td></tr>
+        <tr><td style="padding:6px 0;color:#777">Angenommen von</td><td style="padding:6px 0"><strong>${escapeHtml(typedName)}</strong></td></tr>
+        <tr><td style="padding:6px 0;color:#777">Funktion</td><td style="padding:6px 0">${escapeHtml(companyRole)}</td></tr>
+        <tr><td style="padding:6px 0;color:#777">Zahlungsvariante</td><td style="padding:6px 0">${escapeHtml(paymentLabel(String(body.payment_variant)))}</td></tr>
         <tr><td style="padding:6px 0;color:#777">E-Mail</td><td style="padding:6px 0">${doc.recipient_email}</td></tr>
         <tr><td style="padding:6px 0;color:#777">Zeitpunkt</td><td style="padding:6px 0">${stamp} (Europe/Berlin)</td></tr>
         <tr><td style="padding:6px 0;color:#777">IP-Adresse</td><td style="padding:6px 0">${ip ?? '—'}</td></tr>
-        <tr><td style="padding:6px 0;color:#777">Gerät</td><td style="padding:6px 0;word-break:break-all">${ua ?? '—'}</td></tr>
+        <tr><td style="padding:6px 0;color:#777">Gerät</td><td style="padding:6px 0;word-break:break-all">${escapeHtml(ua ?? '—')}</td></tr>
         <tr><td style="padding:6px 0;color:#777">Datei-Prüfsumme</td><td style="padding:6px 0;word-break:break-all">${doc.file_hash ?? '—'}</td></tr>
       </table>
       <p style="font-size:12px;color:#777;margin-top:14px">Zustimmungstext: „${CONSENT_TEXT}"</p>
@@ -182,20 +190,9 @@ Deno.serve(async (req) => {
 
     await sendMail([doc.recipient_email], `Bestätigt: ${doc.title}`, html);
 
-    const { data: admins } = await supabase
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin');
-    const adminIds = (admins ?? []).map((a: { user_id: string }) => a.user_id);
-    if (adminIds.length > 0) {
-      const { data: profs } = await supabase
-        .from('profiles')
-        .select('email')
-        .in('user_id', adminIds);
-      const emails = (profs ?? []).map((p: { email: string }) => p.email).filter(Boolean);
-      if (emails.length > 0) {
+    {
         await sendMail(
-          emails,
+          ['jonas@marketlab-media.de'],
           `✅ Angenommen: ${doc.title} — ${typedName}`,
           `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1E1E24;max-width:640px;margin:0 auto;padding:24px">
             <h2 style="margin:0 0 8px">Dokument angenommen</h2>
@@ -204,7 +201,6 @@ Deno.serve(async (req) => {
             <p style="margin-top:24px"><a href="${APP_URL}/dokumente" style="color:#0083F7">Im Hub öffnen</a></p>
           </div>`,
         );
-      }
     }
 
     return json({ success: true, accepted_at: acceptedAt.toISOString(), typed_name: typedName });

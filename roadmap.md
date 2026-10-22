@@ -7,5 +7,11 @@
 - [x] Kontaktliste: Ansichten-Chips, Sortierung, klickbare Zeilen, „+ Neu"-Dialog
 - [x] Verifiziert: Notiz auf Kontakt + Lead speichert & erscheint; 694 Kontakte laden; Filter funktionieren; Build OK
 
+## Angebotsannahme (abgeschlossen 22.10.2026)
+- [x] Pflicht-Funktion und Zahlungswahl in beiden Annahmeabläufen, gespeichertes Protokoll und Bestätigungs-Mails
+- [x] PDF-Seite 1: explizites Gültigkeitsdatum und Netto-Gesamtbetrag erkennen; Datum manuell bearbeitbar
+- [x] Fünf Regeltests bestanden; PDF-Upload, Pflichtangaben, echte Annahme und Protokoll im Browser geprüft
+- [x] Ablauf deaktiviert Button und verweigert serverseitige Annahme; Testdaten entfernt
+
 ## Offen
 - (keine)

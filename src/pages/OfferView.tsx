@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import OfferDocumentView from "@/components/pricing/OfferDocumentView";
 import type { OfferDoc } from "@/components/pricing/offerDocument";
+import AcceptanceFields from '@/components/documents/AcceptanceFields';
+import { CONSENT_TEXT, deadlineFromDate, isExpired, parseGermanDate, paymentLabel, validAcceptance } from '@/lib/offer-acceptance';
 
 
 const BRAND = { blue: "#0083F7", purple: "#21089B", bg: "#0a0a0f" };
@@ -26,6 +28,9 @@ interface Offer {
   recipient_name: string | null;
   status: string;
   accepted_at: string | null;
+  document?: OfferDoc | null;
+  company_role: string | null;
+  payment_variant: string | null;
 }
 
 export default function OfferView() {
@@ -35,6 +40,15 @@ export default function OfferView() {
   const [accepting, setAccepting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [companyRole, setCompanyRole] = useState('');
+  const [payment, setPayment] = useState('');
+  const [now, setNow] = useState(Date.now());
+  const date = offer?.document?.validValue ? parseGermanDate(offer.document.validValue) : null;
+  const expired = isExpired(date ? deadlineFromDate(date) : null, now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     document.title = "Dein Angebot — Marketlab Media";
@@ -53,18 +67,18 @@ export default function OfferView() {
   }, [token]);
 
   const handleAccept = async () => {
-    if (!token) return;
+    if (!token || expired || !validAcceptance(companyRole, payment)) return;
     setConfirmOpen(false);
     setAccepting(true);
     try {
       const res = await fetch(FN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, company_role: companyRole.trim(), payment_variant: payment, consent: true }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Fehler bei der Bestätigung");
-      setOffer((o) => o ? { ...o, status: "accepted", accepted_at: new Date().toISOString() } : o);
+      setOffer((o) => o ? { ...o, status: "accepted", accepted_at: data.accepted_at ?? new Date().toISOString(), company_role: companyRole.trim(), payment_variant: payment } : o);
     } catch (e: any) {
       alert("Fehler: " + e.message);
     } finally {
@@ -94,15 +108,21 @@ export default function OfferView() {
   const accepted = offer.status === "accepted";
   const totalLaufzeit = offer.monthly_price * offer.duration_months + offer.setup_price;
 
-  const doc = (offer as any).document as OfferDoc | null;
+  const doc = offer.document;
   const hasDoc = doc && Array.isArray(doc.positions);
 
-  if (hasDoc) {
+  const confirmation = <ConfirmDialog open={confirmOpen} onOpenChange={setConfirmOpen} onConfirm={handleAccept} companyRole={companyRole} onCompanyRoleChange={setCompanyRole} payment={payment} onPaymentChange={setPayment} expired={expired} />;
+  const protocol = accepted && <dl className="mt-4 space-y-2 text-sm text-muted-foreground">
+    <div><dt>Funktion</dt><dd>{offer.company_role ?? '—'}</dd></div>
+    <div><dt>Zahlungsvariante</dt><dd>{paymentLabel(offer.payment_variant)}</dd></div>
+  </dl>;
+
+  if (hasDoc && doc) {
     return (
       <div className="min-h-screen bg-[#eef1f6] py-8">
         <div id="offer-print-area" className="mx-auto w-fit max-w-full overflow-x-auto px-3">
           <div className="offer-doc-shadow">
-            <OfferDocumentView doc={doc!} />
+            <OfferDocumentView doc={doc} />
           </div>
         </div>
 
@@ -116,7 +136,7 @@ export default function OfferView() {
             <>
               <Button
                 onClick={() => setConfirmOpen(true)}
-                disabled={accepting}
+                disabled={accepting || expired}
                 className="h-14 w-full max-w-md px-10 text-base font-bold text-white"
                 style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})` }}
               >
@@ -128,11 +148,13 @@ export default function OfferView() {
               </p>
             </>
           )}
+          {expired && !accepted && <p className="mt-3 text-sm text-destructive">Dieses Angebot ist abgelaufen.</p>}
+          {protocol}
           <button onClick={() => window.print()} className="mt-6 block w-full text-xs text-slate-400 underline">
             Als PDF speichern / drucken
           </button>
         </div>
-        <ConfirmDialog open={confirmOpen} onOpenChange={setConfirmOpen} onConfirm={handleAccept} />
+        {confirmation}
       </div>
     );
   }
@@ -180,7 +202,7 @@ export default function OfferView() {
             <>
               <Button
                 onClick={() => setConfirmOpen(true)}
-                disabled={accepting}
+                disabled={accepting || expired}
                 className="h-14 px-10 text-base font-bold text-white"
                 style={{ background: `linear-gradient(135deg,${BRAND.blue},${BRAND.purple})` }}
               >
@@ -190,9 +212,11 @@ export default function OfferView() {
               <p className="mt-3 text-xs text-white/40">Mit einem Klick bestätigst du das Angebot rechtsverbindlich.</p>
             </>
           )}
+          {expired && !accepted && <p className="mt-3 text-sm text-destructive">Dieses Angebot ist abgelaufen.</p>}
+          {protocol}
         </div>
       </div>
-      <ConfirmDialog open={confirmOpen} onOpenChange={setConfirmOpen} onConfirm={handleAccept} />
+      {confirmation}
     </div>
   );
 }
@@ -204,19 +228,25 @@ const Row = ({ label, value, bold }: { label: string; value: string; bold?: bool
   </div>
 );
 
-const ConfirmDialog = ({ open, onOpenChange, onConfirm }: { open: boolean; onOpenChange: (v: boolean) => void; onConfirm: () => void }) => (
+const ConfirmDialog = ({ open, onOpenChange, onConfirm, companyRole, onCompanyRoleChange, payment, onPaymentChange, expired }: {
+  open: boolean; onOpenChange: (v: boolean) => void; onConfirm: () => void;
+  companyRole: string; onCompanyRoleChange: (v: string) => void;
+  payment: string; onPaymentChange: (v: string) => void; expired: boolean;
+}) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
-    <AlertDialogContent>
+    <AlertDialogContent className="max-h-[90vh] overflow-y-auto">
       <AlertDialogHeader>
         <AlertDialogTitle>Angebot verbindlich annehmen?</AlertDialogTitle>
         <AlertDialogDescription>
           Mit der Bestätigung kommt ein Vertrag zwischen dir und der Marketlab Media UG (haftungsbeschränkt)
           zu den im Angebot genannten Konditionen zustande. Du erhältst anschließend eine Bestätigung per E-Mail.
+          {' '}{CONSENT_TEXT}
         </AlertDialogDescription>
       </AlertDialogHeader>
+      <AcceptanceFields role={companyRole} onRoleChange={onCompanyRoleChange} payment={payment} onPaymentChange={onPaymentChange} />
       <AlertDialogFooter>
         <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-        <AlertDialogAction onClick={onConfirm}>Verbindlich annehmen</AlertDialogAction>
+        <AlertDialogAction disabled={expired || !validAcceptance(companyRole, payment)} onClick={onConfirm}>Verbindlich annehmen</AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

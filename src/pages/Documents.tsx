@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import CreateDocumentDialog from "@/components/documents/CreateDocumentDialog";
+import { deadlineFromDate, paymentLabel } from '@/lib/offer-acceptance';
 
 interface Doc {
   id: string;
@@ -59,6 +60,8 @@ interface Doc {
 
 interface Acceptance {
   typed_name: string;
+  company_role: string | null;
+  payment_variant: string | null;
   consent_text: string;
   ip_address: string | null;
   user_agent: string | null;
@@ -92,6 +95,18 @@ export default function Documents() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [amountDraft, setAmountDraft] = useState("");
+  const [expiryDraft, setExpiryDraft] = useState('');
+
+  const saveExpiry = async (doc: Doc) => {
+    setBusy(true);
+    const expires_at = expiryDraft ? deadlineFromDate(expiryDraft) : null;
+    const { error } = await supabase.from('signature_documents').update({ expires_at }).eq('id', doc.id);
+    setBusy(false);
+    if (error) return toast({ title: 'Fehler', description: error.message, variant: 'destructive' });
+    setSelected({ ...doc, expires_at });
+    toast({ title: 'Gültigkeit gespeichert' });
+    await load();
+  };
 
   const totals = docs.reduce(
     (acc, d) => {
@@ -159,13 +174,14 @@ export default function Documents() {
 
   const openDetail = async (doc: Doc) => {
     setSelected(doc);
+    setExpiryDraft(doc.expires_at ? new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(doc.expires_at)) : '');
     setAcceptance(null);
     setAmountDraft(doc.amount_net != null ? String(doc.amount_net).replace(".", ",") : "");
     setPdfUrl(null);
     const [{ data: acc }, { data: signed }] = await Promise.all([
       supabase
         .from("signature_acceptances")
-        .select("typed_name, consent_text, ip_address, user_agent, file_hash, accepted_at")
+        .select("typed_name, company_role, payment_variant, consent_text, ip_address, user_agent, file_hash, accepted_at")
         .eq("document_id", doc.id)
         .maybeSingle(),
       supabase.storage.from("documents").createSignedUrl(doc.file_path, 3600),
@@ -418,6 +434,16 @@ export default function Documents() {
                   )}
                 </div>
 
+                {selected.status !== 'accepted' && (
+                  <div>
+                    <Label htmlFor="expiry-date">Gültig bis</Label>
+                    <div className="mt-1.5 flex gap-2">
+                      <Input id="expiry-date" type="date" value={expiryDraft} onChange={(event) => setExpiryDraft(event.target.value)} />
+                      <Button variant="outline" disabled={busy} onClick={() => saveExpiry(selected)}>Speichern</Button>
+                    </div>
+                  </div>
+                )}
+
                 {acceptance && (
                   <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-emerald-500">
@@ -425,6 +451,8 @@ export default function Documents() {
                     </div>
                     <dl className="mt-3 space-y-2 text-xs">
                       <Row label="Name" value={acceptance.typed_name} />
+                      <Row label="Funktion" value={acceptance.company_role ?? '—'} />
+                      <Row label="Zahlungsvariante" value={paymentLabel(acceptance.payment_variant)} />
                       <Row label="Zeitpunkt" value={fmtFull(acceptance.accepted_at)} />
                       <Row label="IP-Adresse" value={acceptance.ip_address ?? "—"} />
                       <Row label="Gerät" value={acceptance.user_agent ?? "—"} />

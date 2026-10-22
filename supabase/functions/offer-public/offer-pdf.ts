@@ -20,6 +20,9 @@ export async function buildOfferPdf(doc: any, meta: {
   acceptedAt: string;
   acceptedBy: string;
   acceptedEmail: string;
+  companyRole: string;
+  paymentVariant: string;
+  consentText: string;
 }): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   const reg = await pdf.embedFont(StandardFonts.Helvetica);
@@ -186,45 +189,12 @@ export async function buildOfferPdf(doc: any, meta: {
   }
 
   // Annahmebestätigung
-  nl(24);
-  page.drawRectangle({
-    x: M,
-    y: y - 66,
-    width: W,
-    height: 78,
-    color: rgb(0.945, 0.965, 1),
-    borderColor: BLUE,
-    borderWidth: 1,
-  });
-  nl(4);
-  page.drawText('ANGEBOT VERBINDLICH ANGENOMMEN', {
-    x: M + 14,
-    y,
-    size: 9,
-    font: bold,
-    color: BLUE,
-  });
-  nl(16);
-  page.drawText(clean(`Angenommen von: ${meta.acceptedBy} (${meta.acceptedEmail})`), {
-    x: M + 14,
-    y,
-    size: 9.5,
-    font: reg,
-    color: DARK,
-  });
-  nl(14);
-  page.drawText(clean(`Zeitpunkt: ${meta.acceptedAt}`), {
-    x: M + 14,
-    y,
-    size: 9.5,
-    font: reg,
-    color: DARK,
-  });
-  nl(14);
-  page.drawText(
-    clean('Die Annahme erfolgte elektronisch ueber den persoenlichen Angebotslink.'),
-    { x: M + 14, y, size: 8.5, font: reg, color: GREY },
-  );
+  heading('ANGEBOT VERBINDLICH ANGENOMMEN');
+  text(`Angenommen von: ${meta.acceptedBy} (${meta.acceptedEmail})`);
+  text(`Funktion: ${meta.companyRole}`);
+  text(`Zahlungsvariante: ${meta.paymentVariant}`);
+  text(`Zeitpunkt: ${meta.acceptedAt}`);
+  text(`Zustimmung: ${meta.consentText}`, { size: 8.5, color: GREY });
 
   // Footer auf jeder Seite
   const footer = clean(

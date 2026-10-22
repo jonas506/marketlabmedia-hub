@@ -2787,9 +2787,11 @@ export type Database = {
       }
       offers: {
         Row: {
+          acceptance_consent_text: string | null
           accepted_at: string | null
           addons: Json
           client_id: string | null
+          company_role: string | null
           created_at: string
           created_by: string | null
           custom_body: string
@@ -2800,6 +2802,7 @@ export type Database = {
           lead_id: string | null
           monthly_price: number
           offer_number: string | null
+          payment_variant: string | null
           plan_key: string
           plan_name: string
           recipient_address: string | null
@@ -2815,9 +2818,11 @@ export type Database = {
           viewed_at: string | null
         }
         Insert: {
+          acceptance_consent_text?: string | null
           accepted_at?: string | null
           addons?: Json
           client_id?: string | null
+          company_role?: string | null
           created_at?: string
           created_by?: string | null
           custom_body?: string
@@ -2828,6 +2833,7 @@ export type Database = {
           lead_id?: string | null
           monthly_price: number
           offer_number?: string | null
+          payment_variant?: string | null
           plan_key: string
           plan_name: string
           recipient_address?: string | null
@@ -2843,9 +2849,11 @@ export type Database = {
           viewed_at?: string | null
         }
         Update: {
+          acceptance_consent_text?: string | null
           accepted_at?: string | null
           addons?: Json
           client_id?: string | null
+          company_role?: string | null
           created_at?: string
           created_by?: string | null
           custom_body?: string
@@ -2856,6 +2864,7 @@ export type Database = {
           lead_id?: string | null
           monthly_price?: number
           offer_number?: string | null
+          payment_variant?: string | null
           plan_key?: string
           plan_name?: string
           recipient_address?: string | null
@@ -3200,31 +3209,37 @@ export type Database = {
       signature_acceptances: {
         Row: {
           accepted_at: string
+          company_role: string | null
           consent_text: string
           document_id: string
           file_hash: string | null
           id: string
           ip_address: string | null
+          payment_variant: string | null
           typed_name: string
           user_agent: string | null
         }
         Insert: {
           accepted_at?: string
+          company_role?: string | null
           consent_text: string
           document_id: string
           file_hash?: string | null
           id?: string
           ip_address?: string | null
+          payment_variant?: string | null
           typed_name: string
           user_agent?: string | null
         }
         Update: {
           accepted_at?: string
+          company_role?: string | null
           consent_text?: string
           document_id?: string
           file_hash?: string | null
           id?: string
           ip_address?: string | null
+          payment_variant?: string | null
           typed_name?: string
           user_agent?: string | null
         }

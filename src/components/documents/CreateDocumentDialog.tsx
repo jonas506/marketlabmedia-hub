@@ -16,6 +16,7 @@ import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@
 import { FileText, Loader2, ScanLine, Search, Send, Upload, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { scanPdfAmount } from "@/lib/pdf-amount";
+import { deadlineFromDate } from '@/lib/offer-acceptance';
 
 interface Lead {
   id: string;
@@ -107,10 +108,12 @@ export default function CreateDocumentDialog({
     setScanning(true);
     try {
       const res = await scanPdfAmount(f);
-      if (res.amount) {
+      setExpiresAt(res.validUntil ?? '');
+      if (res.amount !== null) {
         setAmount(String(res.amount).replace(".", ","));
         setAmountSource(res.source);
       } else {
+        setAmount('');
         setAmountSource(null);
         toast({
           title: "Keine Summe erkannt",
@@ -156,7 +159,7 @@ export default function CreateDocumentDialog({
           message_body: body,
           amount_net: amount.trim() ? Number(amount.replace(/\./g, "").replace(",", ".")) : null,
           amount_source: amountSource,
-          expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+          expires_at: expiresAt ? deadlineFromDate(expiresAt) : null,
           created_by: userData.user?.id ?? null,
           status: "draft",
         })
@@ -392,10 +395,10 @@ export default function CreateDocumentDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
             Abbrechen
           </Button>
-          <Button variant="outline" onClick={() => submit(false)} disabled={busy}>
+          <Button variant="outline" onClick={() => submit(false)} disabled={busy || scanning}>
             Als Entwurf speichern
           </Button>
-          <Button onClick={() => submit(true)} disabled={busy} className="gap-2">
+          <Button onClick={() => submit(true)} disabled={busy || scanning} className="gap-2">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             Senden
           </Button>

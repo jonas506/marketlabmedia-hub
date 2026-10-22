@@ -1,4 +1,6 @@
 # Architecture Rules
+- Share acceptance validation, payment labels and Berlin end-of-day deadlines between public offer/document handlers and the UI so legal acceptance rules cannot diverge.
+- Extract uploaded offer totals and validity only from explicit first-page PDF lines; do not guess totals from the largest amount.
 
 - Keep public marketing funnels isolated in their own page folder and scoped stylesheet so campaign styling cannot affect the internal hub.
 - Keep positioning-form step validation in a shared pure helper so the three-step progression can be tested independently of presentation.
