@@ -1,4 +1,7 @@
 # Architecture Rules
+- Storage policies resolve board folders through strategy_boards and require a non-null client ID before cutter has_client_access checks; receipts use staff-owner folders, not client folders.
+- Public media buckets retain public object delivery but not anonymous listing; private referral downloads are limited to assets referenced by active referral pages.
+- Persist CRM file paths and create short-lived signed URLs at download time, accepting legacy stored URLs through the shared path parser.
 - Share acceptance validation, payment labels and Berlin end-of-day deadlines between public offer/document handlers and the UI so legal acceptance rules cannot diverge.
 - Extract uploaded offer totals and validity only from explicit first-page PDF lines; do not guess totals from the largest amount.
 

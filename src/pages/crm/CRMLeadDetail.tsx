@@ -29,6 +29,7 @@ import DetailsPanel, { type DetailGroup, linkHref } from "@/components/crm/detai
 import ActivityPanel from "@/components/crm/detail/ActivityPanel";
 import { NextStepCard, TasksCard, OffersCard } from "@/components/crm/detail/SideCards";
 import type { CrmActivity } from "@/lib/crm-activity";
+import { crmStoragePath } from '@/lib/storage-path';
 
 const SETTING_CALL_QUESTIONS = [
   "Wie kommst du gerade an deine Kunden? (Empfehlung, Netzwerk, Ads, Bestand?)",
@@ -174,9 +175,8 @@ export default function CRMLeadDetail() {
         const storagePath = `${id}/${Date.now()}-${file.name}`;
         const { error: uploadErr } = await supabase.storage.from("crm-files").upload(storagePath, file);
         if (uploadErr) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
-        const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
         await supabase.from("crm_files").insert({
-          lead_id: id, name: file.name, file_url: urlData.publicUrl,
+          lead_id: id, name: file.name, file_url: storagePath,
           mime_type: file.type || "application/octet-stream", file_size: file.size, uploaded_by: user.id,
         });
       }
@@ -190,11 +190,27 @@ export default function CRMLeadDetail() {
   }, [id, user]);
 
   const deleteFile = async (fileId: string, fileUrl: string) => {
-    const pathMatch = fileUrl.split("/crm-files/")[1];
-    if (pathMatch) await supabase.storage.from("crm-files").remove([decodeURIComponent(pathMatch)]);
+    const path = crmStoragePath(fileUrl);
+    if (path) {
+      const { error } = await supabase.storage.from('crm-files').remove([path]);
+      if (error) return toast.error('Datei konnte nicht gelöscht werden');
+    }
     await supabase.from("crm_files").delete().eq("id", fileId);
     setLeadFiles(prev => prev.filter(f => f.id !== fileId));
     toast.success("Datei gelöscht");
+  };
+
+  const openFile = async (fileUrl: string) => {
+    const path = crmStoragePath(fileUrl);
+    if (!path) return toast.error('Ungültiger Dateipfad');
+    const tab = window.open('about:blank', '_blank');
+    if (tab) tab.opener = null;
+    const { data, error } = await supabase.storage.from('crm-files').createSignedUrl(path, 60);
+    if (error || !data) {
+      tab?.close();
+      return toast.error('Datei konnte nicht geladen werden');
+    }
+    if (tab) tab.location.href = data.signedUrl;
   };
 
   const sendEmail = async () => {
@@ -319,9 +335,8 @@ export default function CRMLeadDetail() {
           }),
         ]);
         if (uploadResult.error) throw new Error(uploadResult.error.message);
-        const { data: urlData } = supabase.storage.from("crm-files").getPublicUrl(storagePath);
         await supabase.from("crm_files").insert({
-          lead_id: id, name: file.name, file_url: urlData.publicUrl,
+          lead_id: id, name: file.name, file_url: storagePath,
           mime_type: file.type, file_size: file.size, uploaded_by: user.id,
         });
         const aiData = aiResult.data;
@@ -598,7 +613,7 @@ export default function CRMLeadDetail() {
                     return (
                       <div key={file.id} className="flex items-center gap-2 group rounded-md px-2 py-1.5 hover:bg-muted/30 transition-colors">
                         {isImage ? <Image className="h-3.5 w-3.5 text-blue-400 shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                        <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs truncate text-foreground/70 hover:text-foreground">{file.name}</a>
+                        <Button variant="link" onClick={() => openFile(file.file_url)} className="min-w-0 flex-1 justify-start truncate p-0 text-xs">{file.name}</Button>
                         <span className="text-[10px] text-muted-foreground shrink-0">
                           {file.file_size > 1048576 ? `${(file.file_size / 1048576).toFixed(1)} MB` : `${Math.round(file.file_size / 1024)} KB`}
                         </span>

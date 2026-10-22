@@ -4263,6 +4263,16 @@ export type Database = {
           read_ct: number
         }[]
       }
+      storage_client_id: {
+        Args: { _bucket: string; _name: string }
+        Returns: string
+      }
+      storage_published_referral: { Args: { _name: string }; Returns: boolean }
+      storage_team_access: {
+        Args: { _bucket: string; _name: string }
+        Returns: boolean
+      }
+      storage_team_delete: { Args: { _bucket: string }; Returns: boolean }
       submit_client_piece_review: {
         Args: {
           _action: string
