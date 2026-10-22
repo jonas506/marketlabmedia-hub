@@ -14,4 +14,6 @@
 - [x] Ablauf deaktiviert Button und verweigert serverseitige Annahme; Testdaten entfernt
 
 ## Offen
-- (keine)
+- [ ] Storage: alle 14 Bucket-Abläufe und Pfade prüfen
+- [ ] Offene Storage-Policies durch rollengebundene Regeln ersetzen
+- [ ] Rollen und Dateiabläufe testen, Scan neu prüfen und Ergebnistabelle liefern
