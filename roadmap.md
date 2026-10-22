@@ -14,6 +14,15 @@
 - [x] Ablauf deaktiviert Button und verweigert serverseitige Annahme; Testdaten entfernt
 
 ## Offen
-- [ ] Storage: alle 14 Bucket-Abläufe und Pfade prüfen
-- [ ] Offene Storage-Policies durch rollengebundene Regeln ersetzen
-- [ ] Rollen und Dateiabläufe testen, Scan neu prüfen und Ergebnistabelle liefern
+- [ ] Echte HoC-/Cutter-Dateiabläufe prüfen — Rollenwechsel zur Testanmeldung wurde abgelehnt
+- [ ] Kunden-Login mit eigener Dateizuordnung prüfen — keine Kunden-Login-Zuordnung im bestehenden System
+- [ ] Nichtleerer Freigabe-Swiper und veröffentlichte Empfehlungsmedien end-to-end prüfen — bisher nur leeres Portal/Seitenaufruf verifiziert
+
+## Storage-Härtung (umgesetzt 22.10.2026)
+- [x] Alle 14 Buckets und App-Dateipfade geprüft; Board-ID wird auf Kunden-ID aufgelöst
+- [x] 47 alte Policies durch 56 Rollen-Policies und eine Veröffentlichungspolicy ersetzt; keine offenen Löschregeln
+- [x] CRM-Dateien nur Admin, geschützte Downloads statt ungültiger öffentlicher URLs
+- [x] Admin: Upload/Download/Update/Signieren/Löschen in allen 14 Buckets getestet; Testobjekte entfernt
+- [x] Anonymes Hochladen/Signieren unveröffentlichter Dateien verweigert; öffentliche Objektauslieferung in 7 öffentlichen Buckets geprüft
+- [x] Neuer Scan: 0 Storage-Findings; 4 bereits bestehende Warnungen zu E-Mail-Funktionen bleiben
+- [x] Download-Pfad-Test bestanden; Seiten fehlerfrei; echte Vertragslink-Ansicht und CRM-Download angeklickt
