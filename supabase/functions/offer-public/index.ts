@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { buildOfferPdf } from './offer-pdf.ts';
+import { CONSENT_TEXT, deadlineFromDate, escapeHtml, isExpired, parseGermanDate, paymentLabel, validAcceptance } from '../_shared/offer-acceptance.ts';
 
 const base64 = (bytes: Uint8Array) => {
   let bin = '';
@@ -57,6 +58,8 @@ Deno.serve(async (req) => {
         recipient_name: offer.recipient_name,
         status: offer.status,
         accepted_at: offer.accepted_at,
+        company_role: offer.company_role,
+        payment_variant: offer.payment_variant,
       };
       return new Response(JSON.stringify(publicOffer), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -69,6 +72,16 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: true, alreadyAccepted: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
+      }
+
+      const body = await req.json();
+      const companyRole = typeof body.company_role === 'string' ? body.company_role.trim() : '';
+      if (!validAcceptance(companyRole, body.payment_variant) || body.consent !== true) {
+        throw new Error('Bitte Funktion im Unternehmen und Zahlungsvariante angeben und die Annahme bestätigen.');
+      }
+      const validDate = parseGermanDate(String(offer.document?.validValue ?? ''));
+      if (isExpired(validDate ? deadlineFromDate(validDate) : null)) {
+        return new Response(JSON.stringify({ error: 'Dieses Angebot ist abgelaufen.' }), { status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
       // Resolve or create client
@@ -136,11 +149,15 @@ Deno.serve(async (req) => {
       if (mErr) throw mErr;
 
       const acceptedAtIso = new Date().toISOString();
-      await supabase.from('offers').update({
+      const { error: acceptError } = await supabase.from('offers').update({
         status: 'accepted',
+        company_role: companyRole,
+        payment_variant: body.payment_variant,
+        acceptance_consent_text: CONSENT_TEXT,
         accepted_at: acceptedAtIso,
         client_id: clientId,
       }).eq('id', offer.id);
+      if (acceptError) throw acceptError;
 
       // PDF erzeugen, unter Dokumente ablegen und dem Kunden per Mail bestätigen
       try {
@@ -153,6 +170,9 @@ Deno.serve(async (req) => {
           acceptedAt: acceptedAtLabel,
           acceptedBy,
           acceptedEmail: offer.recipient_email,
+          companyRole,
+          paymentVariant: paymentLabel(body.payment_variant),
+          consentText: CONSENT_TEXT,
         });
 
         const safeNumber = String(offer.offer_number || offer.id.slice(0, 8)).replace(/[^\w.-]+/g, '-');
@@ -188,7 +208,9 @@ Deno.serve(async (req) => {
           await supabase.from('signature_acceptances').insert({
             document_id: sigDoc.id,
             typed_name: acceptedBy,
-            consent_text: 'Angebot wurde über den persönlichen Angebotslink verbindlich angenommen.',
+            company_role: companyRole,
+            payment_variant: body.payment_variant,
+            consent_text: CONSENT_TEXT,
             ip_address: req.headers.get('x-forwarded-for'),
             user_agent: req.headers.get('user-agent'),
             file_hash: fileHash,
@@ -206,6 +228,8 @@ Deno.serve(async (req) => {
               <p>Hallo${greet ? ' ' + greet : ''},</p>
               <p>vielen Dank – dein Angebot <strong>${offer.offer_number || ''}</strong> wurde am ${acceptedAtLabel} verbindlich angenommen. Damit ist der Vertrag zustande gekommen.</p>
               <p>Im Anhang findest du das vollständige Angebot inklusive Annahmebestätigung als PDF für deine Unterlagen.</p>
+              <p><strong>Funktion:</strong> ${escapeHtml(companyRole)}<br><strong>Zahlungsvariante:</strong> ${escapeHtml(paymentLabel(body.payment_variant))}</p>
+              <p style="font-size:12px">Zustimmung: ${escapeHtml(CONSENT_TEXT)}</p>
               <p>Wir melden uns zeitnah mit den nächsten Schritten zum Start.</p>
               <p style="color:#999;font-size:12px;margin-top:24px">Marketlab Media</p>
             </div>`;
@@ -213,6 +237,9 @@ Deno.serve(async (req) => {
             `Hallo${greet ? ' ' + greet : ''},`,
             `dein Angebot ${offer.offer_number || ''} wurde am ${acceptedAtLabel} verbindlich angenommen.`,
             'Im Anhang findest du das Angebot inkl. Annahmebestätigung als PDF.',
+            `Funktion: ${companyRole}`,
+            `Zahlungsvariante: ${paymentLabel(body.payment_variant)}`,
+            `Zustimmung: ${CONSENT_TEXT}`,
             '',
             'Marketlab Media',
           ].join('\n');
@@ -248,7 +275,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      return new Response(JSON.stringify({ success: true, contractId: contract.id }), {
+      return new Response(JSON.stringify({ success: true, contractId: contract.id, accepted_at: acceptedAtIso }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
