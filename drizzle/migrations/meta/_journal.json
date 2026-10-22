@@ -78,6 +78,13 @@
       "when": 1792668596767,
       "tag": "0010_offer_acceptance_payment_role",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792668997004,
+      "tag": "0011_harden_all_storage_policies",
+      "breakpoints": true
     }
   ]
 }
