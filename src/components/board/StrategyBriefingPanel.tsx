@@ -115,7 +115,8 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
       try {
         // Upload to storage
         const path = `${boardId}/${Date.now()}_${file.name}`;
-        await supabase.storage.from("board-files").upload(path, file);
+        const { error: uploadError } = await supabase.storage.from("board-files").upload(path, file);
+        if (uploadError) throw uploadError;
 
         // Extract text based on type
         let text = "";
@@ -130,7 +131,7 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
         }
 
         // Save to board_source_files
-        await supabase.from("board_source_files").insert({
+        const { error: insertError } = await supabase.from("board_source_files").insert({
           board_id: boardId,
           file_name: file.name,
           file_type: file.type,
@@ -138,6 +139,7 @@ const StrategyBriefingPanel = ({ open, onClose, onGenerate, clientData, boardId 
           extracted_text: text.substring(0, 10000),
           file_size: file.size,
         } as any);
+        if (insertError) throw insertError;
 
         setFiles(prev => prev.map(f => f.name === file.name ? { ...f, text, status: "done" as const } : f));
       } catch {

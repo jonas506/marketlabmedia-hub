@@ -38,7 +38,7 @@ const CATEGORY_LABEL: Record<string, string> = Object.fromEntries(
 );
 
 export default function ExpenseReimbursementsSection({ isAdmin, profiles, memberFilter, month, year }: Props) {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const qc = useQueryClient();
 
   const today = new Date().toISOString().split("T")[0];
@@ -126,7 +126,9 @@ export default function ExpenseReimbursementsSection({ isAdmin, profiles, member
   const deleteMutation = useMutation({
     mutationFn: async (item: any) => {
       if (item.receipt_url) {
-        await supabase.storage.from("expense-receipts").remove([item.receipt_url]);
+        if (role !== 'admin' && role !== 'head_of_content') throw new Error('Belege dürfen nur von Admin oder Head of Content gelöscht werden.');
+        const { error } = await supabase.storage.from("expense-receipts").remove([item.receipt_url]);
+        if (error) throw error;
       }
       const { error } = await supabase.from("expense_reimbursements").delete().eq("id", item.id);
       if (error) throw error;
@@ -382,7 +384,7 @@ export default function ExpenseReimbursementsSection({ isAdmin, profiles, member
                           <Check className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      {(e.user_id === user?.id || isAdmin) && (
+                      {(e.user_id === user?.id || isAdmin) && (!e.receipt_url || role === 'admin' || role === 'head_of_content') && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
