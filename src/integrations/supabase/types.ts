@@ -4354,6 +4354,7 @@ export type Database = {
           consent_evidence: Json
           contact_id: string
           created_at: string
+          crm_error: string | null
           email: string
           email_consent: boolean
           first_name: string
@@ -4365,6 +4366,7 @@ export type Database = {
           request_id: string
           result_mail_status: string
           result_type: string
+          score: number | null
           scores: Json
           session_id: string | null
           status: string
@@ -4372,6 +4374,8 @@ export type Database = {
           total: number
           unsubscribe_token: string
           unsubscribed_at: string | null
+          variant: string | null
+          weg: string | null
           whatsapp_consent: boolean
         }
         Insert: {
@@ -4382,6 +4386,7 @@ export type Database = {
           consent_evidence: Json
           contact_id: string
           created_at?: string
+          crm_error?: string | null
           email: string
           email_consent?: boolean
           first_name: string
@@ -4393,6 +4398,7 @@ export type Database = {
           request_id: string
           result_mail_status?: string
           result_type: string
+          score?: number | null
           scores: Json
           session_id?: string | null
           status?: string
@@ -4400,6 +4406,8 @@ export type Database = {
           total: number
           unsubscribe_token?: string
           unsubscribed_at?: string | null
+          variant?: string | null
+          weg?: string | null
           whatsapp_consent?: boolean
         }
         Update: {
@@ -4410,6 +4418,7 @@ export type Database = {
           consent_evidence?: Json
           contact_id?: string
           created_at?: string
+          crm_error?: string | null
           email?: string
           email_consent?: boolean
           first_name?: string
@@ -4421,6 +4430,7 @@ export type Database = {
           request_id?: string
           result_mail_status?: string
           result_type?: string
+          score?: number | null
           scores?: Json
           session_id?: string | null
           status?: string
@@ -4428,6 +4438,8 @@ export type Database = {
           total?: number
           unsubscribe_token?: string
           unsubscribed_at?: string | null
+          variant?: string | null
+          weg?: string | null
           whatsapp_consent?: boolean
         }
         Relationships: [

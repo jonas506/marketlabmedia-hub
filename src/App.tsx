@@ -58,6 +58,11 @@ import CourseAdmin from "./pages/admin/CourseAdmin";
 import OfferView from "./pages/OfferView";
 import PositioningAnalysis from "./pages/PositioningAnalysis";
 import PositioningAdmin from "./pages/PositioningAdmin";
+import CheckPage from "./pages/check/CheckPage";
+import CheckResultPage from "./pages/check/ResultPage";
+import CheckPrivacyPage from "./pages/check/PrivacyPage";
+import CheckUnsubscribePage from "./pages/check/UnsubscribePage";
+import CheckAdmin from "./pages/check/CheckAdmin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -119,6 +124,10 @@ const App = () => (
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/positionierungs-analyse" element={<PositioningAnalysis />} />
                   <Route path="/positionierungs-analyse/admin" element={<PositioningAdmin />} />
+                  <Route path="/check" element={<CheckPage />} />
+                  <Route path="/check/auswertung/:token" element={<CheckResultPage />} />
+                  <Route path="/check/datenschutz" element={<CheckPrivacyPage />} />
+                  <Route path="/check/abmelden" element={<CheckUnsubscribePage />} />
                   <Route path="/angebot/:token" element={<OfferView />} />
                   <Route path="/dokument/:token" element={<DocumentSign />} />
                   <Route path="/kurs/anmelden" element={<CourseSignup />} />
@@ -147,6 +156,7 @@ const App = () => (
                   <Route path="/crew" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/time-tracking" element={<Navigate to="/crew" replace />} />
                   <Route path="/crm" element={<ProtectedRoute adminOnly><CRMHome /></ProtectedRoute>} />
+                  <Route path="/vertriebs-check/admin" element={<ProtectedRoute adminOnly><CheckAdmin /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute adminOnly><CRMLeadDetail /></ProtectedRoute>} />
                   <Route path="/crm/kontakt/:id" element={<ProtectedRoute adminOnly><CRMContactDetail /></ProtectedRoute>} />
                   <Route path="/crm/event/:id" element={<ProtectedRoute adminOnly><CRMEventDetail /></ProtectedRoute>} />
