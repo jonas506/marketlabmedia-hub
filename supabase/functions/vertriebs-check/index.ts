@@ -33,7 +33,7 @@ async function notifySlack(db:any,s:any){
   await db.from('vertriebs_check_submissions').update({slack_status:res.ok?'sent':'failed'}).eq('id',s.id);
  }catch{await db.from('vertriebs_check_submissions').update({slack_status:'failed'}).eq('id',s.id);}
 }
-const names=['Sichtbarkeit','Filter','Vertrauen','Tempo','Termin','Cockpit'];
+const names=['Anzeigen','Cockpit','Filter','Vertrauen','Tempo'];const namesB=['Sichtbarkeit','Gesichter','Tempo','Kapazität','Zielgruppe'];
 async function hash(v:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v.trim().toLowerCase())))).map(b=>b.toString(16).padStart(2,'0')).join('');}
 Deno.serve(async(req)=>{
  if(req.method==='OPTIONS')return new Response(null,{headers:cors});
