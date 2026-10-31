@@ -20,7 +20,7 @@ describe('Vertriebs-Check rules', () => {
   });
   it('weakest station: first question wins on tie', () => { expect(evaluate('a', [1, 0, 2, 0, 1]).weakest?.key).toBe('cockpit'); });
   it('no weakest station when all green', () => { expect(evaluate('b', [2, 2, 2, 2, 2]).weakest).toBeNull(); });
-  it('hero by v, unknown falls back', () => { expect(heroFor('ads').b).toBe('Aber sind sie gut?'); expect(heroFor('xyz').b).toBe('Wo steht euer Vertrieb?'); expect(heroFor(null).b).toBe('Wo steht euer Vertrieb?'); });
+  it('hero by v, unknown falls back', () => { expect(heroFor('ads').b).toBe('Aber sind sie gut?'); expect(heroFor('xyz').b).toBe('Social Media für euren Vertrieb?'); expect(heroFor(null).b).toBe('Social Media für euren Vertrieb?'); });
   const base = { first_name: 'Jonas', company: 'Marketlab Test', postcode: '12345', phone: '+491234567890', email: 'test@example.org', privacy: true as const, whatsapp_consent: false, email_consent: false };
   it('postcode exactly 5 digits', () => { expect(contactSchema.safeParse(base).success).toBe(true); for (const postcode of ['1234', '123456', 'abcde']) expect(contactSchema.safeParse({ ...base, postcode }).success).toBe(false); });
   for (const field of ['first_name', 'company', 'phone', 'email']) it(`${field} required`, () => expect(contactSchema.safeParse({ ...base, [field]: '' }).success).toBe(false));

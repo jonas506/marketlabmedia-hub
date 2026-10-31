@@ -18,6 +18,9 @@
 .vc-hero img{width:100%;height:auto;max-height:560px;object-fit:contain}
 .vc-ticks{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;font-size:13px;color:hsl(var(--muted-foreground))}
 .vc-ticks span{display:inline-flex;align-items:center;gap:6px}.vc-ticks svg{color:hsl(var(--vc-green))}
+.vc-list{list-style:none;margin:0 0 26px;padding:0;display:flex;flex-direction:column;gap:8px}
+.vc-list li{display:flex;align-items:flex-start;gap:10px;font-size:16px}.vc-list svg{color:hsl(var(--vc-green));flex-shrink:0;margin-top:3px}
+.vc-sub{margin-top:14px;font-size:13px;line-height:1.5;color:hsl(var(--muted-foreground))}
 .vc-progress{display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:13px;color:hsl(var(--muted-foreground))}
 .vc-progress button{width:44px;height:44px;border-radius:999px}
 .vc-bar{height:6px;border-radius:999px;background:hsl(var(--border));overflow:hidden;margin-bottom:32px}
