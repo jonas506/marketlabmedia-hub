@@ -4426,7 +4426,7 @@ export type Database = {
           lead_sent_at: string | null
           owner_mail_status: string
           phone: string
-          postcode: string
+          postcode: string | null
           purchase_sent_at: string | null
           request_id: string
           result_mail_status: string
@@ -4470,7 +4470,7 @@ export type Database = {
           lead_sent_at?: string | null
           owner_mail_status?: string
           phone: string
-          postcode: string
+          postcode?: string | null
           purchase_sent_at?: string | null
           request_id: string
           result_mail_status?: string
@@ -4514,7 +4514,7 @@ export type Database = {
           lead_sent_at?: string | null
           owner_mail_status?: string
           phone?: string
-          postcode?: string
+          postcode?: string | null
           purchase_sent_at?: string | null
           request_id?: string
           result_mail_status?: string

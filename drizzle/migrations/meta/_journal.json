@@ -113,6 +113,13 @@
       "when": 1793479199793,
       "tag": "0015_vertriebs_check_trustpilot",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793479924332,
+      "tag": "0016_drop_plz",
+      "breakpoints": true
     }
   ]
 }
