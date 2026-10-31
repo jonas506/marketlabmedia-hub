@@ -83,6 +83,14 @@ export default function CheckAdmin() {
           {rows.length === 0 && <li className="py-2 text-sm text-muted-foreground">Noch keine Gebiete eingetragen.</li>}
         </ul>
       </Card>
+      <Card className="space-y-4 p-5">
+        <h2 className="font-semibold">Trustpilot</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><label htmlFor="vc-trust-score" className="mb-1 block text-sm font-medium">Bewertung (0–5)</label><Input id="vc-trust-score" type="number" min="0" max="5" step="0.1" value={trustScore} onChange={e => setTrustScore(e.target.value)} /></div>
+          <div><label htmlFor="vc-trust-reviews" className="mb-1 block text-sm font-medium">Anzahl Bewertungen</label><Input id="vc-trust-reviews" type="number" min="0" step="1" value={trustReviews} onChange={e => setTrustReviews(e.target.value)} /></div>
+        </div>
+        <Button onClick={saveTrust} className="min-h-11">Trustpilot speichern</Button>
+      </Card>
     </div>
   );
 }

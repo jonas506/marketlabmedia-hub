@@ -52,6 +52,11 @@ Deno.serve(async(req)=>{
  if(body.id){const id=uuid.parse(body.id);const {error}=await db.from('vertriebs_check_consents').update({choice,withdrawn_at:choice==='necessary'?new Date().toISOString():null}).eq('id',id);if(error)throw error;return json({id});}
  const {data,error}=await db.from('vertriebs_check_consents').insert({choice}).select('id').single();if(error)throw error;return json(data);
  }
+ if(action==='trust'){
+ const {data,error}=await db.from('vertriebs_check_settings').select('trustpilot_score,trustpilot_reviews').eq('id',true).maybeSingle();
+ if(error)throw error;
+ return json({trustpilot_score:Number(data?.trustpilot_score??4.4),trustpilot_reviews:data?.trustpilot_reviews??10});
+ }
  if(action==='unsubscribe'){
  const token=uuid.parse(body.token||new URL(req.url).searchParams.get('token'));
  const {data,error}=await db.from('vertriebs_check_submissions').select('id,unsubscribed_at').eq('unsubscribe_token',token).maybeSingle();if(error)throw error;if(!data)return json({error:'Ungültiger Link'},404);
