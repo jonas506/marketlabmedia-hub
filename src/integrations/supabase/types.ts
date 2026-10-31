@@ -2005,6 +2005,7 @@ export type Database = {
           stage: string
           status_id: string | null
           updated_at: string
+          vertriebs_check_data: Json | null
           website: string | null
         }
         Insert: {
@@ -2037,6 +2038,7 @@ export type Database = {
           stage?: string
           status_id?: string | null
           updated_at?: string
+          vertriebs_check_data?: Json | null
           website?: string | null
         }
         Update: {
@@ -2069,6 +2071,7 @@ export type Database = {
           stage?: string
           status_id?: string | null
           updated_at?: string
+          vertriebs_check_data?: Json | null
           website?: string | null
         }
         Relationships: [
@@ -2528,6 +2531,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gebiete: {
+        Row: {
+          plz_prefix: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          plz_prefix: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          plz_prefix?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       landing_page_templates: {
         Row: {
@@ -4158,6 +4179,281 @@ export type Database = {
         }
         Relationships: []
       }
+      vertriebs_check_consents: {
+        Row: {
+          accepted_at: string
+          choice: string
+          id: string
+          notice_version: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          choice: string
+          id?: string
+          notice_version?: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          choice?: string
+          id?: string
+          notice_version?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: []
+      }
+      vertriebs_check_events: {
+        Row: {
+          attribution: Json
+          capi_status: string
+          consent_id: string
+          created_at: string
+          event_id: string
+          id: string
+          session_id: string
+          step: string
+        }
+        Insert: {
+          attribution?: Json
+          capi_status?: string
+          consent_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          session_id: string
+          step: string
+        }
+        Update: {
+          attribution?: Json
+          capi_status?: string
+          consent_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          session_id?: string
+          step?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vertriebs_check_events_consent_id_fkey"
+            columns: ["consent_id"]
+            isOneToOne: false
+            referencedRelation: "vertriebs_check_consents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vertriebs_check_jobs: {
+        Row: {
+          body: string | null
+          channel: string
+          created_at: string
+          day: number
+          due_at: string
+          id: string
+          status: string
+          submission_id: string
+        }
+        Insert: {
+          body?: string | null
+          channel: string
+          created_at?: string
+          day?: number
+          due_at: string
+          id?: string
+          status?: string
+          submission_id: string
+        }
+        Update: {
+          body?: string | null
+          channel?: string
+          created_at?: string
+          day?: number
+          due_at?: string
+          id?: string
+          status?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vertriebs_check_jobs_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "vertriebs_check_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vertriebs_check_rate_limits: {
+        Row: {
+          attempts: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          attempts?: number
+          key: string
+          window_start?: string
+        }
+        Update: {
+          attempts?: number
+          key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      vertriebs_check_sequence_steps: {
+        Row: {
+          body: string
+          day: number
+          enabled: boolean
+          subject: string
+        }
+        Insert: {
+          body?: string
+          day: number
+          enabled?: boolean
+          subject?: string
+        }
+        Update: {
+          body?: string
+          day?: number
+          enabled?: boolean
+          subject?: string
+        }
+        Relationships: []
+      }
+      vertriebs_check_settings: {
+        Row: {
+          calendar_url: string
+          id: boolean
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          calendar_url?: string
+          id?: boolean
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          calendar_url?: string
+          id?: boolean
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      vertriebs_check_submissions: {
+        Row: {
+          advertising_consent_id: string | null
+          answers: number[]
+          attribution: Json
+          company: string
+          consent_evidence: Json
+          contact_id: string
+          created_at: string
+          email: string
+          email_consent: boolean
+          first_name: string
+          id: string
+          lead_id: string
+          owner_mail_status: string
+          phone: string
+          postcode: string
+          request_id: string
+          result_mail_status: string
+          result_type: string
+          scores: Json
+          session_id: string | null
+          status: string
+          token: string
+          total: number
+          unsubscribe_token: string
+          unsubscribed_at: string | null
+          whatsapp_consent: boolean
+        }
+        Insert: {
+          advertising_consent_id?: string | null
+          answers: number[]
+          attribution?: Json
+          company: string
+          consent_evidence: Json
+          contact_id: string
+          created_at?: string
+          email: string
+          email_consent?: boolean
+          first_name: string
+          id?: string
+          lead_id: string
+          owner_mail_status?: string
+          phone: string
+          postcode: string
+          request_id: string
+          result_mail_status?: string
+          result_type: string
+          scores: Json
+          session_id?: string | null
+          status?: string
+          token?: string
+          total: number
+          unsubscribe_token?: string
+          unsubscribed_at?: string | null
+          whatsapp_consent?: boolean
+        }
+        Update: {
+          advertising_consent_id?: string | null
+          answers?: number[]
+          attribution?: Json
+          company?: string
+          consent_evidence?: Json
+          contact_id?: string
+          created_at?: string
+          email?: string
+          email_consent?: boolean
+          first_name?: string
+          id?: string
+          lead_id?: string
+          owner_mail_status?: string
+          phone?: string
+          postcode?: string
+          request_id?: string
+          result_mail_status?: string
+          result_type?: string
+          scores?: Json
+          session_id?: string | null
+          status?: string
+          token?: string
+          total?: number
+          unsubscribe_token?: string
+          unsubscribed_at?: string | null
+          whatsapp_consent?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vertriebs_check_submissions_advertising_consent_id_fkey"
+            columns: ["advertising_consent_id"]
+            isOneToOne: false
+            referencedRelation: "vertriebs_check_consents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vertriebs_check_submissions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vertriebs_check_submissions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -4287,6 +4583,8 @@ export type Database = {
         Args: { _caption: string; _piece_id: string; _token: string }
         Returns: undefined
       }
+      vc_rate_limit: { Args: { _key: string; _max: number }; Returns: boolean }
+      vc_submit: { Args: { _data: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "head_of_content" | "cutter"
