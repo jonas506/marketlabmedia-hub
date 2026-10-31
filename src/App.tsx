@@ -156,6 +156,7 @@ const App = () => (
                   <Route path="/crew" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
                   <Route path="/time-tracking" element={<Navigate to="/crew" replace />} />
                   <Route path="/crm" element={<ProtectedRoute adminOnly><CRMHome /></ProtectedRoute>} />
+                  <Route path="/vertriebs-check/admin" element={<ProtectedRoute adminOnly><CheckAdmin /></ProtectedRoute>} />
                   <Route path="/crm/lead/:id" element={<ProtectedRoute adminOnly><CRMLeadDetail /></ProtectedRoute>} />
                   <Route path="/crm/kontakt/:id" element={<ProtectedRoute adminOnly><CRMContactDetail /></ProtectedRoute>} />
                   <Route path="/crm/event/:id" element={<ProtectedRoute adminOnly><CRMEventDetail /></ProtectedRoute>} />
