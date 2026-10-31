@@ -4,14 +4,14 @@ const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'au
 const json=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
 const uuid=z.string().uuid();
 const attr=z.record(z.string().max(500).nullable()).refine(v=>Object.keys(v).every(k=>['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].includes(k)));
-const contact=z.object({request_id:uuid,weg:z.enum(['a','b']),variant:z.string().max(40).regex(/^[a-z0-9_-]*$/).optional().nullable(),answers:z.array(z.number().int().min(0).max(2)).length(5),first_name:z.string().trim().min(1).max(100),company:z.string().trim().min(1).max(200),postcode:z.string().regex(/^\d{5}$/),phone:z.string().trim().regex(/^\+?[0-9 ()/\-]{7,32}$/).refine(v=>v.replace(/\D/g,'').length>=7),email:z.string().trim().email().max(255),privacy:z.literal(true),whatsapp_consent:z.boolean(),email_consent:z.boolean(),attribution:attr.optional(),session_id:uuid.nullable().optional(),advertising_consent_id:uuid.nullable().optional(),event_id:uuid.nullable().optional(),fbp:z.string().max(200).nullable().optional(),fbc:z.string().max(300).nullable().optional()});
+const contact=z.object({request_id:uuid,weg:z.enum(['a','b']),variant:z.string().max(40).regex(/^[a-z0-9_-]*$/).optional().nullable(),answers:z.array(z.number().int().min(0).max(2)).length(5),first_name:z.string().trim().min(1).max(100),company:z.string().trim().min(1).max(200),phone:z.string().trim().regex(/^\+?[0-9 ()/\-]{7,32}$/).refine(v=>v.replace(/\D/g,'').length>=7),email:z.string().trim().email().max(255),privacy:z.literal(true),whatsapp_consent:z.boolean(),email_consent:z.boolean(),attribution:attr.optional(),session_id:uuid.nullable().optional(),advertising_consent_id:uuid.nullable().optional(),event_id:uuid.nullable().optional(),fbp:z.string().max(200).nullable().optional(),fbc:z.string().max(300).nullable().optional()});
 const eventSchema=z.object({session_id:uuid,consent_id:uuid,event_id:uuid,step:z.enum(['besuch','check_start','kein_meta','formular']),weg:z.enum(['a','b']).nullable().optional(),variant:z.string().max(40).regex(/^[a-z0-9_-]*$/).nullable().optional(),attribution:attr.optional(),fbp:z.string().max(200).nullable().optional(),fbc:z.string().max(300).nullable().optional()});
 const SOURCE_URL='https://hub.marketlab-media.de/';
 const now=()=>Math.floor(Date.now()/1000);
 async function sha(v:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)))).map(b=>b.toString(16).padStart(2,'0')).join('');}
 export function normalizePhone(p:string){let d=p.replace(/\D/g,'');if(d.startsWith('0049'))d='49'+d.slice(4);else if(d.startsWith('49'))d=d;else if(d.startsWith('0'))d='49'+d.slice(1);return d;}
 async function consentOk(db:any,id:string){const {data}=await db.from('vertriebs_check_consents').select('choice,withdrawn_at').eq('id',id).maybeSingle();return !!data&&data.choice==='all'&&!data.withdrawn_at;}
-async function leadUserData(s:any){const ud:Record<string,unknown>={em:[await sha(String(s.email).trim().toLowerCase())],ph:[await sha(normalizePhone(String(s.phone)))],fn:[await sha(String(s.first_name).trim().toLowerCase())],zp:[await sha(String(s.postcode).trim())],external_id:[await sha(String(s.lead_id||s.id))]};if(s.fbp)ud.fbp=s.fbp;if(s.fbc)ud.fbc=s.fbc;if(s.client_ip)ud.client_ip_address=s.client_ip;if(s.client_user_agent)ud.client_user_agent=s.client_user_agent;return ud;}
+async function leadUserData(s:any){const ud:Record<string,unknown>={em:[await sha(String(s.email).trim().toLowerCase())],ph:[await sha(normalizePhone(String(s.phone)))],fn:[await sha(String(s.first_name).trim().toLowerCase())],external_id:[await sha(String(s.lead_id||s.id))]};if(s.fbp)ud.fbp=s.fbp;if(s.fbc)ud.fbc=s.fbc;if(s.client_ip)ud.client_ip_address=s.client_ip;if(s.client_user_agent)ud.client_user_agent=s.client_user_agent;return ud;}
 // Standard events only; no custom names, custom_data limited to value/currency, URL without path.
 async function sendMeta(db:any,ev:{event_name:'PageView'|'InitiateCheckout'|'CompleteRegistration'|'Lead'|'Schedule'|'Purchase';event_id:string;event_time:number;user_data:Record<string,unknown>;custom_data?:{value:number;currency:'EUR'};submission_id?:string;test?:boolean}){
  const token=Deno.env.get('META_ACCESS_TOKEN');const code=Deno.env.get('META_TEST_EVENT_CODE')||undefined;
@@ -64,10 +64,9 @@ Deno.serve(async(req)=>{
  }
  if(action==='result'){
  const token=uuid.parse(new URL(req.url).searchParams.get('token')||body.token);
- const {data,error}=await db.from('vertriebs_check_submissions').select('first_name,company,postcode,answers,total,score,result_type,weg').eq('token',token).maybeSingle();if(error)throw error;if(!data)return json({error:'Diese Auswertung wurde nicht gefunden.'},404);
- const [area,settings]=await Promise.all([db.from('gebiete').select('status').eq('plz_prefix',data.postcode.slice(0,3)).maybeSingle(),db.from('vertriebs_check_settings').select('video_url,calendar_url').eq('id',true).maybeSingle()]);
- if(area.error||settings.error)throw area.error||settings.error;
- return json({first_name:data.first_name,company:data.company,weg:data.weg,score:data.score,postcode_prefix:data.postcode.slice(0,3),answers:data.answers,total:data.total,type:data.result_type,area_status:area.data?.status||'frei',video_url:settings.data?.video_url||null,calendar_url:settings.data?.calendar_url||'https://calendar.app.google/i2jtG5DapbEjzWba6'});
+ const {data,error}=await db.from('vertriebs_check_submissions').select('first_name,company,answers,total,score,result_type,weg').eq('token',token).maybeSingle();if(error)throw error;if(!data)return json({error:'Diese Auswertung wurde nicht gefunden.'},404);
+ const {data:settings,error:sErr}=await db.from('vertriebs_check_settings').select('video_url,calendar_url').eq('id',true).maybeSingle();if(sErr)throw sErr;
+ return json({first_name:data.first_name,company:data.company,weg:data.weg,score:data.score,answers:data.answers,total:data.total,type:data.result_type,video_url:settings?.video_url||null,calendar_url:settings?.calendar_url||'https://calendar.app.google/i2jtG5DapbEjzWba6'});
  }
  if(action==='event'){
  const e=eventSchema.parse(body);
@@ -101,7 +100,7 @@ Deno.serve(async(req)=>{
  if(!u?.user)return json({error:'unauthorized'},401);
  const {data:isAdmin}=await db.rpc('has_role',{_user_id:u.user.id,_role:'admin'});if(!isAdmin)return json({error:'forbidden'},403);
  const code=Deno.env.get('META_TEST_EVENT_CODE');if(!code)return json({error:'META_TEST_EVENT_CODE fehlt'},400);
- const fake={id:crypto.randomUUID(),lead_id:crypto.randomUUID(),email:'test.person@example.com',phone:'0171 2345678',first_name:'Testperson',postcode:'10115',fbp:'fb.1.1700000000000.1234567890',fbc:null,client_ip:'203.0.113.10',client_user_agent:'Mozilla/5.0 (Test)'};
+ const fake={id:crypto.randomUUID(),lead_id:crypto.randomUUID(),email:'test.person@example.com',phone:'0171 2345678',first_name:'Testperson',fbp:'fb.1.1700000000000.1234567890',fbc:null,client_ip:'203.0.113.10',client_user_agent:'Mozilla/5.0 (Test)'};
  const ic=await sendMeta(db,{test:true,event_name:'InitiateCheckout',event_id:crypto.randomUUID(),event_time:now(),user_data:{client_user_agent:fake.client_user_agent,client_ip_address:fake.client_ip,fbp:fake.fbp}});
  const cr=await sendMeta(db,{test:true,event_name:'CompleteRegistration',event_id:crypto.randomUUID(),event_time:now(),user_data:await leadUserData(fake)});
  return json({InitiateCheckout:ic.response,CompleteRegistration:cr.response});
@@ -130,7 +129,7 @@ Deno.serve(async(req)=>{
  await Promise.all(sends.map(async(send)=>{
  if(s[send.status]==='queued'||s[send.status]==='sent')return;
  try{
- const {error:mailError,data:mailData}=await db.functions.invoke('send-transactional-email',{body:{templateName:send.name,recipientEmail:send.email,idempotencyKey:`${send.name}-${s.id}`,templateData:{name:s.first_name,company:s.company,postcode:s.postcode,phone:s.phone,type:s.result_type,red,url:send.url}}});
+ const {error:mailError,data:mailData}=await db.functions.invoke('send-transactional-email',{body:{templateName:send.name,recipientEmail:send.email,idempotencyKey:`${send.name}-${s.id}`,templateData:{name:s.first_name,company:s.company,phone:s.phone,type:s.result_type,red,url:send.url}}});
  await db.from('vertriebs_check_submissions').update({[send.status]:mailError||mailData?.error?'failed':'queued'}).eq('id',s.id);
  }catch{await db.from('vertriebs_check_submissions').update({[send.status]:'failed'}).eq('id',s.id);}
  }));

@@ -1,7 +1,8 @@
 import * as React from 'npm:react@18.3.1';
 import {Body,Container,Head,Heading,Html,Preview,Text,Button} from 'npm:@react-email/components@0.0.22';
 import type {TemplateEntry} from './registry.ts';
-interface Props {name?:string;company?:string;postcode?:string;phone?:string;type?:string;red?:string;url?:string;}
+interface Props {name?:string;company?:string;phone?:string;type?:string;red?:string;url?:string;}
+
 const main={backgroundColor:'#ffffff',fontFamily:'Arial,sans-serif',color:'#142138'};
 const container={padding:'32px 24px',maxWidth:'560px'};
 const cta={backgroundColor:'#1C6FF3',color:'#ffffff',padding:'14px 22px',borderRadius:'6px',textDecoration:'none'};
