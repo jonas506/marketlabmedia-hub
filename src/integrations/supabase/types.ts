@@ -4412,7 +4412,7 @@ export type Database = {
           client_user_agent: string | null
           company: string
           consent_evidence: Json
-          contact_id: string
+          contact_id: string | null
           created_at: string
           crm_error: string | null
           email: string
@@ -4422,7 +4422,7 @@ export type Database = {
           first_name: string
           id: string
           kontakt_at: string | null
-          lead_id: string
+          lead_id: string | null
           lead_sent_at: string | null
           owner_mail_status: string
           phone: string
@@ -4456,7 +4456,7 @@ export type Database = {
           client_user_agent?: string | null
           company: string
           consent_evidence: Json
-          contact_id: string
+          contact_id?: string | null
           created_at?: string
           crm_error?: string | null
           email: string
@@ -4466,7 +4466,7 @@ export type Database = {
           first_name: string
           id?: string
           kontakt_at?: string | null
-          lead_id: string
+          lead_id?: string | null
           lead_sent_at?: string | null
           owner_mail_status?: string
           phone: string
@@ -4500,7 +4500,7 @@ export type Database = {
           client_user_agent?: string | null
           company?: string
           consent_evidence?: Json
-          contact_id?: string
+          contact_id?: string | null
           created_at?: string
           crm_error?: string | null
           email?: string
@@ -4510,7 +4510,7 @@ export type Database = {
           first_name?: string
           id?: string
           kontakt_at?: string | null
-          lead_id?: string
+          lead_id?: string | null
           lead_sent_at?: string | null
           owner_mail_status?: string
           phone?: string
