@@ -1,19 +1,153 @@
-import {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {ArrowLeft,ArrowRight,LockKeyhole} from 'lucide-react';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Checkbox} from '@/components/ui/checkbox';
-import {supabase} from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { supabase } from '@/integrations/supabase/client';
+import preview from '@/assets/check/vorschau.jpg.asset.json';
 import CheckShell from './CheckShell';
-import {stations,contactSchema} from './model';
-import {track,attribution,readConsent,sessionId,permitted} from './tracking';
-function restore(){try{const v=JSON.parse(sessionStorage.getItem('vc_answers')||'[]');return Array.isArray(v)&&v.length<=6&&v.every(n=>[0,1,2].includes(n))?v as number[]:[];}catch{return []}}
-export default function CheckPage(){
- const navigate=useNavigate();const [answers,setAnswers]=useState<number[]>(restore);const [step,setStep]=useState(()=>restore().length);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
- const [fields,setFields]=useState({first_name:'',company:'',postcode:'',phone:'',email:'',privacy:false,whatsapp_consent:false,email_consent:false});
- function answer(value:number){if(step===0&&answers.length===0)void track('check_gestartet');void track(`frage_${step+1}`);const next=[...answers.slice(0,step),value];setAnswers(next);sessionStorage.setItem('vc_answers',JSON.stringify(next));setStep(step+1);}
- async function submit(e:React.FormEvent){e.preventDefault();const validated=contactSchema.safeParse(fields);if(!validated.success){setError(validated.error.issues[0]?.message||'Bitte die Angaben prüfen.');return;}setBusy(true);setError('');let requestId=sessionStorage.getItem('vc_request');if(!requestId){requestId=crypto.randomUUID();sessionStorage.setItem('vc_request',requestId);}try{const {data,error:err}=await supabase.functions.invoke('vertriebs-check',{body:{...validated.data,answers,request_id:requestId,attribution:attribution(),session_id:sessionId(),advertising_consent_id:permitted()?readConsent()?.id:null}});if(err||!data?.token)throw err||new Error();await track('eingetragen',data.token);sessionStorage.removeItem('vc_answers');sessionStorage.removeItem('vc_request');navigate(`/check/auswertung/${data.token}`);}catch{setError('Die Auswertung konnte nicht gespeichert werden. Bitte erneut versuchen.');}finally{setBusy(false)}}
- const question=stations[step];
- return <CheckShell><main className="vc-main"><div className="vc-intro"><h1>Vertriebs-Check für <em>Kapitalanlage-Vertriebe</em></h1><p>6 Fragen, 2 Minuten. Danach siehst du, wo euer Vertrieb Termine verliert.</p></div><div className="vc-progress"><Button variant="ghost" size="icon" aria-label="Vorherige Frage" disabled={step===0||busy} onClick={()=>setStep(Math.max(0,step-1))}><ArrowLeft size={18}/></Button><span>{step<6?`Frage ${step+1} von 6`:'Deine Auswertung'}</span><span>{step<6?question?.name:'Fast geschafft'}</span></div><div className="vc-track" aria-label={`${Math.min(step,6)} von 6 beantwortet`}>{stations.map((s,i)=><span key={s.key} className={i<step?'complete':''}/>)}</div>{question?<section className="vc-question" key={question.key}><h2>{question.question}</h2><div className="vc-options">{question.answers.map((a,i)=><Button key={a} variant="outline" className="vc-answer" aria-pressed={answers[step]===i} onClick={()=>answer(i)}><span className="vc-number">{i+1}</span><span>{a}</span><ArrowRight size={18}/></Button>)}</div></section>:<form className="vc-form" onSubmit={submit} noValidate><h2 className="text-2xl font-semibold">Wohin dürfen wir deine Auswertung schicken?</h2><div className="vc-fields">{[{key:'first_name',label:'Vorname',type:'text',max:100,auto:'given-name'},{key:'company',label:'Firma',type:'text',max:200,auto:'organization'},{key:'postcode',label:'PLZ',type:'text',max:5,auto:'postal-code'},{key:'phone',label:'Handynummer',type:'tel',max:32,auto:'tel'},{key:'email',label:'E-Mail',type:'email',max:255,auto:'email'}].map(f=><div className="vc-field" key={f.key}><label htmlFor={`vc-${f.key}`}>{f.label}</label><Input id={`vc-${f.key}`} type={f.type} autoComplete={f.auto} inputMode={f.key==='postcode'?'numeric':undefined} maxLength={f.max} required value={fields[f.key as 'first_name']} onChange={e=>setFields({...fields,[f.key]:e.target.value})}/>{f.key==='postcode'&&<small>Wir prüfen, ob euer Gebiet noch frei ist.</small>}</div>)}</div><label className="vc-check"><Checkbox checked={fields.whatsapp_consent} onCheckedChange={v=>setFields({...fields,whatsapp_consent:v===true})}/><span>Schickt mir meine Auswertung auch per WhatsApp.</span></label><label className="vc-check"><Checkbox checked={fields.email_consent} onCheckedChange={v=>setFields({...fields,email_consent:v===true})}/><span>Ich möchte weitere Tipps zu meiner Auswertung per E-Mail, jederzeit abbestellbar.</span></label><label className="vc-check"><Checkbox checked={fields.privacy} onCheckedChange={v=>setFields({...fields,privacy:v===true})}/><span>Ich habe die <a href="/check/datenschutz" target="_blank" rel="noreferrer">Datenschutzerklärung</a> gelesen.</span></label>{error&&<p className="vc-error" role="alert">{error}</p>}<Button type="submit" className="vc-submit" disabled={busy}>{busy?'Auswertung wird gespeichert …':'Auswertung anzeigen'}<ArrowRight size={18}/></Button><div className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><LockKeyhole size={13}/><span>Deine persönliche Auswertung</span></div></form>}</main></CheckShell>
+import { VC, heroFor, contactSchema, type Weg } from './model';
+
+type Screen = 'start' | 'weiche' | 'q' | 'stop' | 'form';
+const VARIANT_KEY = 'vc_v';
+
+export default function CheckPage() {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [variant, setVariant] = useState<string>(() => sessionStorage.getItem(VARIANT_KEY) ?? '');
+  useEffect(() => {
+    const v = params.get('v');
+    if (v !== null) { const clean = v.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 40); sessionStorage.setItem(VARIANT_KEY, clean); setVariant(clean); }
+  }, [params]);
+  const hero = heroFor(variant);
+
+  const [screen, setScreen] = useState<Screen>('start');
+  const [weg, setWeg] = useState<Weg | null>(null);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [qi, setQi] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [fields, setFields] = useState({ first_name: '', company: '', phone: '', email: '', postcode: '', whatsapp_consent: false, email_consent: false, privacy: false });
+
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [screen, qi]);
+
+  function chooseWeg(i: number) {
+    if (i === 2) { setScreen('stop'); return; }
+    const next: Weg = i === 0 ? 'a' : 'b';
+    if (next !== weg) setAnswers([]); // switching ways discards old answers
+    setWeg(next); setQi(0); setScreen('q');
+  }
+  function answer(i: number) {
+    const next = [...answers.slice(0, qi), i];
+    setAnswers(next);
+    if (qi < 4) setQi(qi + 1); else setScreen('form');
+  }
+  function back() {
+    if (screen === 'form') { setScreen('q'); setQi(4); return; }
+    if (screen === 'q') { if (qi === 0) setScreen('weiche'); else setQi(qi - 1); return; }
+    if (screen === 'weiche') setScreen('start');
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const v = contactSchema.safeParse(fields);
+    if (!v.success) { setError(v.error.issues[0]?.message || 'Bitte prüft eure Angaben.'); return; }
+    if (!weg || answers.length !== 5) { setError('Bitte beantwortet zuerst alle Fragen.'); return; }
+    setBusy(true); setError('');
+    let requestId = sessionStorage.getItem('vc_request');
+    if (!requestId) { requestId = crypto.randomUUID(); sessionStorage.setItem('vc_request', requestId); }
+    try {
+      const { data, error: err } = await supabase.functions.invoke('vertriebs-check', { body: { ...v.data, weg, answers, variant: variant || null, request_id: requestId } });
+      if (err || !data?.token) throw err || new Error('no token');
+      sessionStorage.removeItem('vc_request');
+      navigate(`/check/auswertung/${data.token}`);
+    } catch {
+      setError('Das hat gerade nicht geklappt. Bitte prüft eure Verbindung und versucht es noch einmal.');
+    } finally { setBusy(false); }
+  }
+
+  const step = screen === 'weiche' ? 1 : screen === 'q' ? qi + 2 : 6;
+  const progress = (screen === 'weiche' || screen === 'q') && (
+    <>
+      <div className="vc-progress">
+        <Button variant="ghost" size="icon" aria-label="Zurück" onClick={back}><ArrowLeft size={18} /></Button>
+        <span>Frage {step} von 6</span>
+      </div>
+      <div className="vc-bar" aria-hidden><span style={{ width: `${(step / 6) * 100}%` }} /></div>
+    </>
+  );
+
+  return (
+    <CheckShell>
+      {screen === 'start' && (
+        <main className="vc-main">
+          <section className="vc-hero">
+            <div>
+              <p className="vc-kicker">Für Immobilien- und Finanzvertriebe</p>
+              <h1 className="vc-h1"><span className="l">{hero.l}</span><span className="b">{hero.b}</span></h1>
+              <p className="mb-7 text-lg">{hero.t}</p>
+              <Button className="vc-pill" onClick={() => setScreen('weiche')}>Check starten →</Button>
+              <div className="vc-ticks">{['kostenlos', 'Ergebnis sofort', 'nur für Immobilien- und Finanzvertriebe'].map(t => <span key={t}><Check size={15} />{t}</span>)}</div>
+            </div>
+            <div className="vc-hero-img"><img src={preview.url} alt="Vorschau der persönlichen Vertriebs-Check-Auswertung" width={1100} height={1000} /></div>
+          </section>
+        </main>
+      )}
+
+      {screen === 'weiche' && (
+        <main className="vc-main vc-narrow">
+          {progress}
+          <h2 className="vc-q">{VC.weiche.q}</h2>
+          <p className="vc-hint">{VC.weiche.hint}</p>
+          <div className="vc-options">{VC.weiche.a.map((a, i) => <Button key={a} variant="outline" className="vc-answer" onClick={() => chooseWeg(i)}>{a}<ArrowRight size={18} /></Button>)}</div>
+        </main>
+      )}
+
+      {screen === 'q' && weg && (() => { const q = VC.wege[weg].questions[qi]; return (
+        <main className="vc-main vc-narrow" key={q.key}>
+          {progress}
+          <h2 className="vc-q">{q.q}</h2>
+          <div className="vc-options">{q.a.map((a, i) => <Button key={a} variant="outline" className="vc-answer" aria-pressed={answers[qi] === i} onClick={() => answer(i)}>{a}<ArrowRight size={18} /></Button>)}</div>
+        </main>
+      ); })()}
+
+      {screen === 'stop' && (
+        <main className="vc-main vc-narrow vc-stop">
+          <h2 className="vc-q mb-4">Dann passt der Check gerade nicht.</h2>
+          <p className="mb-8">Der Vertriebs-Check zeigt, wie ihr über Anzeigen auf Instagram und Facebook mehr Kunden gewinnt. Wenn das für euch kein Thema ist, sparen wir euch die restlichen Fragen.</p>
+          <Button className="vc-pill" onClick={() => setScreen('weiche')}>Doch, wir überlegen es uns →</Button>
+        </main>
+      )}
+
+      {screen === 'form' && (
+        <main className="vc-main vc-narrow">
+          <div className="vc-progress"><Button variant="ghost" size="icon" aria-label="Zurück" onClick={back}><ArrowLeft size={18} /></Button><span>Alle 6 Fragen beantwortet</span></div>
+          <div className="vc-bar" aria-hidden><span style={{ width: '100%' }} /></div>
+          <h2 className="vc-h2"><span className="l">Fast geschafft.</span><span className="b">Wohin dürfen wir eure Auswertung schicken?</span></h2>
+          <form className="vc-form vc-card" onSubmit={submit} noValidate>
+            <div className="vc-fields">
+              {([
+                { key: 'first_name', label: 'Vorname', type: 'text', max: 100, auto: 'given-name' },
+                { key: 'company', label: 'Firma', type: 'text', max: 200, auto: 'organization' },
+                { key: 'phone', label: 'Handynummer', type: 'tel', max: 32, auto: 'tel' },
+                { key: 'email', label: 'E-Mail', type: 'email', max: 255, auto: 'email' },
+                { key: 'postcode', label: 'PLZ eures Firmensitzes', type: 'text', max: 5, auto: 'postal-code' },
+              ] as const).map(f => (
+                <div className="vc-field" key={f.key}>
+                  <label htmlFor={`vc-${f.key}`}>{f.label}</label>
+                  <Input id={`vc-${f.key}`} type={f.type} autoComplete={f.auto} inputMode={f.key === 'postcode' ? 'numeric' : undefined} maxLength={f.max} required value={fields[f.key]} onChange={e => setFields({ ...fields, [f.key]: f.key === 'postcode' ? e.target.value.replace(/\D/g, '') : e.target.value })} />
+                </div>
+              ))}
+            </div>
+            <label className="vc-check"><Checkbox checked={fields.whatsapp_consent} onCheckedChange={v => setFields({ ...fields, whatsapp_consent: v === true })} /><span>Schickt mir meine Auswertung auch per WhatsApp.</span></label>
+            <label className="vc-check"><Checkbox checked={fields.email_consent} onCheckedChange={v => setFields({ ...fields, email_consent: v === true })} /><span>Ich möchte weitere Tipps zu meiner Auswertung per E-Mail, jederzeit abbestellbar.</span></label>
+            <label className="vc-check"><Checkbox checked={fields.privacy} onCheckedChange={v => setFields({ ...fields, privacy: v === true })} /><span>Ich habe die <a href="/check/datenschutz" target="_blank" rel="noreferrer">Datenschutzerklärung</a> gelesen.</span></label>
+            {error && <p className="vc-error" role="alert">{error}</p>}
+            <Button type="submit" className="vc-pill w-full" disabled={busy}>{busy ? 'Wird ausgewertet …' : 'Auswertung anzeigen →'}</Button>
+          </form>
+        </main>
+      )}
+    </CheckShell>
+  );
 }
