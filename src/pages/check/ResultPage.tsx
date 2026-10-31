@@ -4,6 +4,7 @@ import { MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import preview from '@/assets/check/vorschau.jpg.asset.json';
 import CheckShell from './CheckShell';
+import ClientLogos from './ClientLogos';
 import { evaluate, type Weg } from './model';
 
 const DEFAULT_CALENDAR = 'https://calendar.app.google/i2jtG5DapbEjzWba6';
@@ -86,6 +87,7 @@ export function ResultView({ data }: { data: Result }) {
           <p className="mt-3 text-sm"><a className="underline" href={data.calendar_url} target="_blank" rel="noreferrer">Kalender in neuem Tab öffnen</a></p>
         </div>
       </section>
+      <ClientLogos />
     </main>
   );
 }

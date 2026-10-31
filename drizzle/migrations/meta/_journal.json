@@ -106,6 +106,13 @@
       "when": 1793476965743,
       "tag": "0014_vertriebs_check_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793479199793,
+      "tag": "0015_vertriebs_check_trustpilot",
+      "breakpoints": true
     }
   ]
 }

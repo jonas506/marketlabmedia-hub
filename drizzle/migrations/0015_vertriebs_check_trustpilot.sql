@@ -1,0 +1,3 @@
+ALTER TABLE public.vertriebs_check_settings ADD COLUMN trustpilot_score numeric(2,1) NOT NULL DEFAULT 4.4 CHECK (trustpilot_score BETWEEN 0 AND 5), ADD COLUMN trustpilot_reviews integer NOT NULL DEFAULT 10 CHECK (trustpilot_reviews >= 0);
+COMMENT ON COLUMN public.vertriebs_check_settings.trustpilot_score IS 'Manually maintained Trustpilot rating displayed on /check';
+COMMENT ON COLUMN public.vertriebs_check_settings.trustpilot_reviews IS 'Manually maintained Trustpilot review count displayed on /check';

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { DEFAULT_TRUST, trustSettingsSchema } from './trust-settings';
 
 interface Gebiet { plz_prefix: string; status: string }
 
@@ -13,13 +14,17 @@ export default function CheckAdmin() {
   const [calendar, setCalendar] = useState('');
   const [rows, setRows] = useState<Gebiet[]>([]);
   const [prefix, setPrefix] = useState('');
+  const [trustScore, setTrustScore] = useState(String(DEFAULT_TRUST.trustpilot_score));
+  const [trustReviews, setTrustReviews] = useState(String(DEFAULT_TRUST.trustpilot_reviews));
 
   async function load() {
     const [s, g] = await Promise.all([
-      supabase.from('vertriebs_check_settings').select('video_url,calendar_url').eq('id', true).maybeSingle(),
+      supabase.from('vertriebs_check_settings').select('video_url,calendar_url,trustpilot_score,trustpilot_reviews').eq('id', true).maybeSingle(),
       supabase.from('gebiete').select('plz_prefix,status').order('plz_prefix'),
     ]);
     setVideo(s.data?.video_url ?? ''); setCalendar(s.data?.calendar_url ?? '');
+    setTrustScore(String(s.data?.trustpilot_score ?? DEFAULT_TRUST.trustpilot_score));
+    setTrustReviews(String(s.data?.trustpilot_reviews ?? DEFAULT_TRUST.trustpilot_reviews));
     setRows(g.data ?? []);
   }
   useEffect(() => { void load(); }, []);
@@ -34,6 +39,12 @@ export default function CheckAdmin() {
     if (!/^\d{3}$/.test(prefix)) { toast.error('Bitte genau 3 Ziffern eingeben.'); return; }
     const { error } = await supabase.from('gebiete').upsert({ plz_prefix: prefix, status: 'vergeben', updated_at: new Date().toISOString() });
     if (error) toast.error('Speichern fehlgeschlagen.'); else { setPrefix(''); void load(); }
+  }
+  async function saveTrust() {
+    const parsed = trustSettingsSchema.safeParse({ trustpilot_score: trustScore.trim() ? Number(trustScore.replace(',', '.')) : NaN, trustpilot_reviews: trustReviews.trim() ? Number(trustReviews) : NaN });
+    if (!parsed.success) { toast.error('Bewertung: 0 bis 5 mit einer Nachkommastelle. Anzahl: ganze Zahl ab 0.'); return; }
+    const { error } = await supabase.from('vertriebs_check_settings').upsert({ id: true, ...parsed.data, updated_at: new Date().toISOString() });
+    if (error) toast.error('Speichern fehlgeschlagen.'); else toast.success('Trustpilot-Bewertung gespeichert');
   }
   async function setStatus(p: string, status: string) {
     const { error } = await supabase.from('gebiete').update({ status, updated_at: new Date().toISOString() }).eq('plz_prefix', p);
@@ -71,6 +82,14 @@ export default function CheckAdmin() {
           ))}
           {rows.length === 0 && <li className="py-2 text-sm text-muted-foreground">Noch keine Gebiete eingetragen.</li>}
         </ul>
+      </Card>
+      <Card className="space-y-4 p-5">
+        <h2 className="font-semibold">Trustpilot</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><label htmlFor="vc-trust-score" className="mb-1 block text-sm font-medium">Bewertung (0–5)</label><Input id="vc-trust-score" type="number" min="0" max="5" step="0.1" value={trustScore} onChange={e => setTrustScore(e.target.value)} /></div>
+          <div><label htmlFor="vc-trust-reviews" className="mb-1 block text-sm font-medium">Anzahl Bewertungen</label><Input id="vc-trust-reviews" type="number" min="0" step="1" value={trustReviews} onChange={e => setTrustReviews(e.target.value)} /></div>
+        </div>
+        <Button onClick={saveTrust} className="min-h-11">Trustpilot speichern</Button>
       </Card>
     </div>
   );

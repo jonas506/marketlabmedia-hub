@@ -4379,18 +4379,24 @@ export type Database = {
         Row: {
           calendar_url: string
           id: boolean
+          trustpilot_reviews: number
+          trustpilot_score: number
           updated_at: string
           video_url: string | null
         }
         Insert: {
           calendar_url?: string
           id?: boolean
+          trustpilot_reviews?: number
+          trustpilot_score?: number
           updated_at?: string
           video_url?: string | null
         }
         Update: {
           calendar_url?: string
           id?: boolean
+          trustpilot_reviews?: number
+          trustpilot_score?: number
           updated_at?: string
           video_url?: string | null
         }
