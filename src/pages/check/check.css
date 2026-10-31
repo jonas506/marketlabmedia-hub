@@ -17,8 +17,8 @@
 .vc-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;padding-top:24px}
 .vc-hero>div:first-child{text-align:center}
 .vc-hero>div:first-child .vc-list{align-items:center}
-.vc-hero>div:first-child .vc-list li{justify-content:center}
-.vc-hero>div:first-child .vc-list svg{margin-top:1px}
+.vc-hero>div:first-child .vc-list li{width:fit-content;max-width:100%}
+.vc-hero>div:first-child .vc-trust-line{justify-content:center}
 .vc-hero>div:first-child .vc-trust{margin-inline:auto}
 .vc-hero img{width:100%;height:auto;max-height:560px;object-fit:contain}
 .vc-ticks{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;font-size:13px;color:hsl(var(--muted-foreground))}
@@ -74,7 +74,6 @@
 .vc-trust-line li{display:flex;align-items:center;gap:7px;font-size:13px;color:#C9CEDB;line-height:1.3}
 .vc-trust-ico{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.12);flex:none}
 @media(max-width:800px){
-.vc-trust-line{justify-content:center}
 }
 @media(max-width:800px){.vc-hero{grid-template-columns:1fr;gap:16px;padding-top:0}.vc-hero picture,.vc-hero .vc-hero-img{order:-1}.vc-hero img{max-height:230px}.vc-panel-grid,.vc-two{grid-template-columns:1fr}.vc-fields{grid-template-columns:1fr}.vc-panel{padding:18px}.vc-gauge-num b{font-size:54px}}
 @media(prefers-reduced-motion:reduce){.vc *{animation:none!important;transition:none!important}}
