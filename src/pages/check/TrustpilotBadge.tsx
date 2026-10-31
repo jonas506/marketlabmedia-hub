@@ -12,7 +12,7 @@ export default function TrustpilotBadge() {
     let active = true;
     void supabase.functions.invoke('vertriebs-check?action=trust', { body: {} }).then(({ data }) => {
       const parsed = trustSettingsSchema.safeParse(data);
-      if (active && parsed.success) setSettings(parsed.data);
+      if (active && parsed.success) setSettings({ trustpilot_score: parsed.data.trustpilot_score ?? DEFAULT_TRUST.trustpilot_score, trustpilot_reviews: parsed.data.trustpilot_reviews ?? DEFAULT_TRUST.trustpilot_reviews });
     });
     return () => { active = false; };
   }, []);
