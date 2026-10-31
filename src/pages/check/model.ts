@@ -6,13 +6,13 @@ export interface WegDef { label: string; score: string; leck: string; call: { h:
 
 export const VC = {
   weiche: {
-    q: 'Schaltet ihr Werbeanzeigen auf Meta?', hint: 'Also auf Instagram und Facebook.',
+    q: 'Schaltet ihr schon Werbung auf Instagram oder Facebook?',
     a: ['Ja, die laufen schon', 'Noch nicht, wir wollen anfangen', 'Nein, kommt für uns nicht infrage'],
   },
   wege: {
     a: {
       label: 'Weg A (schaltet Ads)',
-      score: 'Vertriebs-Score', leck: 'Größtes Leck',
+      score: 'Social-Media-Score', leck: 'Größtes Leck',
       call: { h: 'Eure Kampagnen live durchgehen', t: 'In 30 Minuten schauen wir uns eure Kampagnen gemeinsam im Werbekonto an und ich gehe mit euch die konkreten Lösungsvorschläge für eure roten Stationen durch. Kostenlos und unverbindlich.' },
       questions: [
         { key: 'anzeigen', name: 'Anzeigen', q: 'Wie oft bringt ihr neue Anzeigen raus?', a: ['Selten bis nie', 'Alle paar Monate', 'Jeden Monat'], t: [
@@ -76,7 +76,7 @@ export const VC = {
     },
   } as Record<Weg, WegDef>,
   hero: {
-    '': { l: 'Mehr Kunden über Instagram und Facebook?', b: 'Wo steht euer Vertrieb?', t: 'Ob ihr schon Anzeigen schaltet oder gerade anfangen wollt: 6 kurze Fragen, 2 Minuten. Danach seht ihr, wo ihr steht und womit ihr als Nächstes ansetzen solltet.' },
+    '': { l: 'Wie gut funktioniert', b: 'Social Media für euren Vertrieb?', t: '6 Fragen, 2 Minuten. Ihr bekommt sofort:' },
     ads: { l: 'Ihr schaltet Anzeigen.', b: 'Aber sind sie gut?', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, was eure Anzeigen bringen und an welcher Stelle Kunden abspringen.' },
     start: { l: 'Andere Vertriebe sind auf Instagram.', b: 'Seid ihr startklar?', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, was euch für den Start noch fehlt und womit ihr anfangen solltet.' },
     leads: { l: 'Schluss mit gekauften Leads.', b: 'Eure eigenen Anfragen.', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, wie viele eurer Anfragen euch wirklich gehören und was euch zu eigenen Anfragen noch fehlt.' },
@@ -86,6 +86,7 @@ export const VC = {
 };
 
 export const heroFor = (v: string | null) => VC.hero[v ?? ''] ?? VC.hero[''];
+export const heroBullets = ['euren Score von 0 bis 100', 'die Stelle, an der ihr die meisten Kunden verliert', 'den ersten Schritt zu mehr eigenen Anfragen'];
 export const answerSchema = z.array(z.number().int().min(0).max(2)).length(5);
 
 export function evaluate(weg: Weg, answers: number[]) {
