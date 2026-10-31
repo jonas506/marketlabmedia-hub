@@ -19,7 +19,7 @@ function Gauge({ score, label }: { score: number; label: string }) {
   const ticks = Array.from({ length: 21 }, (_, i) => START - (SPAN * i) / 20);
   return (
     <div className="vc-gauge">
-      <svg viewBox="-14 0 328 215" role="img" aria-label={`${label}: ${score} von 100`}>
+      <svg viewBox="-14 -24 328 236" role="img" aria-label={`${label}: ${score} von 100`}>
         <defs>
           <linearGradient id="vcg" x1="0" x2="1" y1="0" y2="0">
             <stop offset="0" stopColor="hsl(var(--vc-red))" /><stop offset=".3" stopColor="hsl(24 100% 58%)" /><stop offset=".55" stopColor="hsl(var(--vc-yellow))" /><stop offset=".78" stopColor="hsl(100 70% 60%)" /><stop offset="1" stopColor="hsl(var(--vc-green))" />
