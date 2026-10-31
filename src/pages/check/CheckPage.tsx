@@ -34,7 +34,7 @@ export default function CheckPage() {
   const [qi, setQi] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [fields, setFields] = useState({ first_name: '', company: '', phone: '', email: '', postcode: '', whatsapp_consent: false, email_consent: false, privacy: false });
+  const [fields, setFields] = useState({ first_name: '', company: '', phone: '', email: '', whatsapp_consent: false, email_consent: false, privacy: false });
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, [screen, qi]);
 
@@ -141,11 +141,10 @@ export default function CheckPage() {
                 { key: 'company', label: 'Firma', type: 'text', max: 200, auto: 'organization' },
                 { key: 'phone', label: 'Handynummer', type: 'tel', max: 32, auto: 'tel' },
                 { key: 'email', label: 'E-Mail', type: 'email', max: 255, auto: 'email' },
-                { key: 'postcode', label: 'PLZ eures Firmensitzes', type: 'text', max: 5, auto: 'postal-code' },
               ] as const).map(f => (
                 <div className="vc-field" key={f.key}>
                   <label htmlFor={`vc-${f.key}`}>{f.label}</label>
-                  <Input id={`vc-${f.key}`} type={f.type} autoComplete={f.auto} inputMode={f.key === 'postcode' ? 'numeric' : undefined} maxLength={f.max} required value={fields[f.key]} onChange={e => setFields({ ...fields, [f.key]: f.key === 'postcode' ? e.target.value.replace(/\D/g, '') : e.target.value })} />
+                  <Input id={`vc-${f.key}`} type={f.type} autoComplete={f.auto} maxLength={f.max} required value={fields[f.key]} onChange={e => setFields({ ...fields, [f.key]: e.target.value })} />
                 </div>
               ))}
             </div>
@@ -154,7 +153,8 @@ export default function CheckPage() {
             <label className="vc-check"><Checkbox checked={fields.privacy} onCheckedChange={v => setFields({ ...fields, privacy: v === true })} /><span>Ich habe die <a href="/check/datenschutz" target="_blank" rel="noreferrer">Datenschutzerklärung</a> gelesen.</span></label>
             {error && <p className="vc-error" role="alert">{error}</p>}
             <Button type="submit" className="vc-pill w-full" disabled={busy}>{busy ? 'Wird ausgewertet …' : 'Auswertung anzeigen →'}</Button>
-            <p className="vc-sub">Jonas meldet sich kurz, um die Auswertung mit euch durchzugehen. Kein Verkaufsgespräch, wenn ihr das nicht wollt.</p>
+            <p className="vc-sub">Jonas meldet sich anschließend kurz bei euch und geht die Auswertung mit euch durch.</p>
+            <TrustpilotBadge />
           </form>
         </main>
       )}
