@@ -5,7 +5,8 @@
 - [x] Formular mit Pflichtfeldern und Einwilligungen; Speicherung in Kontakt, Lead (Zusammenarbeit/Erstkontakt), Aktivität; CRM-Fehler blockieren nicht
 - [x] Auswertung /check/auswertung/{token} mit Tacho, Leck, Typ, Karten, PLZ-Hinweis, Video, Kalender; Vorschau ohne Speichern
 - [x] Adminseite /vertriebs-check/admin für Video, Kalender, PLZ-Gebiete
-- [ ] Tracking — kommt mit nächstem Auftrag
+- [x] Tracking: Banner, Standard-Events Browser+Server, CRM-Status-Events, Funnel-Events, Herkunft, ads-stats, Protokoll
+- [ ] Meta-Testereignisse und Slack — warten auf Testcode und Slack-Webhook (Formular abgelehnt)
 - [ ] Echter Test-Eintrag — auf Wunsch nicht abgeschickt
 - [ ] Veröffentlichung nur nach Freigabe — wartet auf Jonas
 
