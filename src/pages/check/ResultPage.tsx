@@ -43,7 +43,7 @@ export function ResultView({ data }: { data: Result }) {
   const a = data.weg === 'a';
   const color = ['rot', 'gelb', 'grün'];
   return (
-    <main className="vc-main">
+    <main className="vc-main vc-result">
       <p className="vc-kicker">Eure persönliche Auswertung</p>
       <h1 className="vc-h1"><span className="l">{data.first_name},</span><span className="b">{a ? 'hier verliert euer Vertrieb Kunden.' : 'was euch für den Start fehlt.'}</span></h1>
 
