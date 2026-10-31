@@ -66,8 +66,9 @@ Deno.serve(async(req)=>{
  const {data:result,error}=await db.rpc('vc_submit',{_data:parsed});if(error)throw error;
  const {data:s,error:se}=await db.from('vertriebs_check_submissions').select('*').eq('id',result.id).single();if(se)throw se;
  const base='https://hub.marketlab-media.de';
- const red=names.filter((_,i)=>s.answers[i]===0).join(', ');
- const sends=[{name:'vertriebs-check-result',email:s.email,status:'result_mail_status',url:`${base}/check/auswertung/${s.token}`},{name:'vertriebs-check-owner',email:'jonas@marketlab-media.de',status:'owner_mail_status',url:`${base}/crm/lead/${s.lead_id}`}];
+ if(s.crm_error)console.error('vertriebs-check crm sync failed',s.id,s.crm_error);
+ const red=(s.weg==='a'?names:namesB).filter((_,i)=>s.answers[i]===0).join(', ')||'keine';
+ const sends=[{name:'vertriebs-check-result',email:s.email,status:'result_mail_status',url:`${base}/check/auswertung/${s.token}`},{name:'vertriebs-check-owner',email:'jonas@marketlab-media.de',status:'owner_mail_status',url:s.lead_id?`${base}/crm/lead/${s.lead_id}`:`${base}/crm`}];
  await Promise.all(sends.map(async(send)=>{
  if(s[send.status]==='queued'||s[send.status]==='sent')return;
  try{
