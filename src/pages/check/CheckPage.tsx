@@ -7,6 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import preview from '@/assets/check/vorschau.jpg.asset.json';
 import CheckShell from './CheckShell';
+import TrustpilotBadge from './TrustpilotBadge';
+import ClientLogos from './ClientLogos';
 import { VC, heroFor, heroBullets, contactSchema, type Weg } from './model';
 import { mountTracking, track, submitTracking, trackRegistration, permitted } from './tracking';
 
@@ -95,10 +97,11 @@ export default function CheckPage() {
               <p className="mb-3 text-lg">{hero.t}</p>
               <ul className="vc-list">{heroBullets.map(t => <li key={t}><Check size={16} />{t}</li>)}</ul>
               <Button className="vc-pill" onClick={() => setScreen('weiche')}>Check starten →</Button>
-              <p className="vc-sub">Von Marketlab Media. Wir bauen Immobilien- und Finanzvertrieben eigene Anfragen auf: Idee, Dreh, Schnitt, Anzeigen. Ihr telefoniert nur.</p>
+              <TrustpilotBadge />
             </div>
             <div className="vc-hero-img"><img src={preview.url} alt="Vorschau der persönlichen Vertriebs-Check-Auswertung" width={1100} height={1000} /></div>
           </section>
+          <ClientLogos />
         </main>
       )}
 
