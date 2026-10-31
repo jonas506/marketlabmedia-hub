@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import preview from '@/assets/check/vorschau.jpg.asset.json';
 import CheckShell from './CheckShell';
-import { VC, heroFor, contactSchema, type Weg } from './model';
+import { VC, heroFor, heroBullets, contactSchema, type Weg } from './model';
 import { mountTracking, track, submitTracking, trackRegistration, permitted } from './tracking';
 
 type Screen = 'start' | 'weiche' | 'q' | 'stop' | 'form';
@@ -92,9 +92,10 @@ export default function CheckPage() {
             <div>
               <p className="vc-kicker">Für Immobilien- und Finanzvertriebe</p>
               <h1 className="vc-h1"><span className="l">{hero.l}</span><span className="b">{hero.b}</span></h1>
-              <p className="mb-7 text-lg">{hero.t}</p>
+              <p className="mb-3 text-lg">{hero.t}</p>
+              <ul className="vc-list">{heroBullets.map(t => <li key={t}><Check size={16} />{t}</li>)}</ul>
               <Button className="vc-pill" onClick={() => setScreen('weiche')}>Check starten →</Button>
-              <div className="vc-ticks">{['kostenlos', 'Ergebnis sofort', 'nur für Immobilien- und Finanzvertriebe'].map(t => <span key={t}><Check size={15} />{t}</span>)}</div>
+              <p className="vc-sub">Von Marketlab Media. Wir bauen Immobilien- und Finanzvertrieben eigene Anfragen auf: Idee, Dreh, Schnitt, Anzeigen. Ihr telefoniert nur.</p>
             </div>
             <div className="vc-hero-img"><img src={preview.url} alt="Vorschau der persönlichen Vertriebs-Check-Auswertung" width={1100} height={1000} /></div>
           </section>
@@ -105,7 +106,6 @@ export default function CheckPage() {
         <main className="vc-main vc-narrow">
           {progress}
           <h2 className="vc-q">{VC.weiche.q}</h2>
-          <p className="vc-hint">{VC.weiche.hint}</p>
           <div className="vc-options">{VC.weiche.a.map((a, i) => <Button key={a} variant="outline" className="vc-answer" onClick={() => chooseWeg(i)}>{a}<ArrowRight size={18} /></Button>)}</div>
         </main>
       )}
@@ -151,6 +151,7 @@ export default function CheckPage() {
             <label className="vc-check"><Checkbox checked={fields.privacy} onCheckedChange={v => setFields({ ...fields, privacy: v === true })} /><span>Ich habe die <a href="/check/datenschutz" target="_blank" rel="noreferrer">Datenschutzerklärung</a> gelesen.</span></label>
             {error && <p className="vc-error" role="alert">{error}</p>}
             <Button type="submit" className="vc-pill w-full" disabled={busy}>{busy ? 'Wird ausgewertet …' : 'Auswertung anzeigen →'}</Button>
+            <p className="vc-sub">Jonas meldet sich kurz, um die Auswertung mit euch durchzugehen. Kein Verkaufsgespräch, wenn ihr das nicht wollt.</p>
           </form>
         </main>
       )}
