@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, CheckCircle, Lock, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -97,6 +97,11 @@ export default function CheckPage() {
               <p className="mb-3 text-lg">{hero.t}</p>
               <ul className="vc-list">{heroBullets.map(t => <li key={t}><Check size={16} />{t}</li>)}</ul>
               <Button className="vc-pill" onClick={() => setScreen('weiche')}>Check starten →</Button>
+              <ul className="vc-trust-line">
+                <li><span className="vc-trust-ico"><Lock size={10} /></span>DSGVO-konform</li>
+                <li><span className="vc-trust-ico"><CheckCircle size={10} /></span>Kein Weiterverkauf eurer Daten</li>
+                <li><span className="vc-trust-ico"><Zap size={10} /></span>Ergebnis sofort</li>
+              </ul>
               <TrustpilotBadge />
             </div>
             <div className="vc-hero-img"><img src={preview.url} alt="Vorschau der persönlichen Vertriebs-Check-Auswertung" width={1100} height={1000} /></div>
