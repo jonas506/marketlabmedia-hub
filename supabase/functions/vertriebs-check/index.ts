@@ -4,9 +4,35 @@ const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'au
 const json=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
 const uuid=z.string().uuid();
 const attr=z.record(z.string().max(500).nullable()).refine(v=>Object.keys(v).every(k=>['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].includes(k)));
-const contact=z.object({request_id:uuid,weg:z.enum(['a','b']),variant:z.string().max(40).regex(/^[a-z0-9_-]*$/).optional().nullable(),answers:z.array(z.number().int().min(0).max(2)).length(5),first_name:z.string().trim().min(1).max(100),company:z.string().trim().min(1).max(200),postcode:z.string().regex(/^\d{5}$/),phone:z.string().trim().regex(/^\+?[0-9 ()/\-]{7,32}$/).refine(v=>v.replace(/\D/g,'').length>=7),email:z.string().trim().email().max(255),privacy:z.literal(true),whatsapp_consent:z.boolean(),email_consent:z.boolean(),attribution:attr.optional(),session_id:uuid.nullable().optional(),advertising_consent_id:uuid.nullable().optional()});
-const steps=['besuch','check_gestartet','frage_1','frage_2','frage_3','frage_4','frage_5','frage_6','eingetragen','auswertung_geoeffnet'] as const;
-const eventSchema=z.object({session_id:uuid,consent_id:uuid,event_id:uuid,step:z.enum(steps),attribution:attr,fbp:z.string().max(200).nullable().optional(),fbc:z.string().max(300).nullable().optional(),submission_token:uuid.optional()});
+const contact=z.object({request_id:uuid,weg:z.enum(['a','b']),variant:z.string().max(40).regex(/^[a-z0-9_-]*$/).optional().nullable(),answers:z.array(z.number().int().min(0).max(2)).length(5),first_name:z.string().trim().min(1).max(100),company:z.string().trim().min(1).max(200),postcode:z.string().regex(/^\d{5}$/),phone:z.string().trim().regex(/^\+?[0-9 ()/\-]{7,32}$/).refine(v=>v.replace(/\D/g,'').length>=7),email:z.string().trim().email().max(255),privacy:z.literal(true),whatsapp_consent:z.boolean(),email_consent:z.boolean(),attribution:attr.optional(),session_id:uuid.nullable().optional(),advertising_consent_id:uuid.nullable().optional(),event_id:uuid.nullable().optional(),fbp:z.string().max(200).nullable().optional(),fbc:z.string().max(300).nullable().optional()});
+const eventSchema=z.object({session_id:uuid,consent_id:uuid,event_id:uuid,step:z.enum(['besuch','check_start','kein_meta','formular']),weg:z.enum(['a','b']).nullable().optional(),variant:z.string().max(40).regex(/^[a-z0-9_-]*$/).nullable().optional(),attribution:attr.optional(),fbp:z.string().max(200).nullable().optional(),fbc:z.string().max(300).nullable().optional()});
+const SOURCE_URL='https://hub.marketlab-media.de/';
+const now=()=>Math.floor(Date.now()/1000);
+async function sha(v:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)))).map(b=>b.toString(16).padStart(2,'0')).join('');}
+export function normalizePhone(p:string){let d=p.replace(/\D/g,'');if(d.startsWith('0049'))d='49'+d.slice(4);else if(d.startsWith('49'))d=d;else if(d.startsWith('0'))d='49'+d.slice(1);return d;}
+async function consentOk(db:any,id:string){const {data}=await db.from('vertriebs_check_consents').select('choice,withdrawn_at').eq('id',id).maybeSingle();return !!data&&data.choice==='all'&&!data.withdrawn_at;}
+async function leadUserData(s:any){const ud:Record<string,unknown>={em:[await sha(String(s.email).trim().toLowerCase())],ph:[await sha(normalizePhone(String(s.phone)))],fn:[await sha(String(s.first_name).trim().toLowerCase())],zp:[await sha(String(s.postcode).trim())],external_id:[await sha(String(s.lead_id||s.id))]};if(s.fbp)ud.fbp=s.fbp;if(s.fbc)ud.fbc=s.fbc;if(s.client_ip)ud.client_ip_address=s.client_ip;if(s.client_user_agent)ud.client_user_agent=s.client_user_agent;return ud;}
+// Standard events only; no custom names, custom_data limited to value/currency, URL without path.
+async function sendMeta(db:any,ev:{event_name:'PageView'|'InitiateCheckout'|'CompleteRegistration'|'Lead'|'Schedule'|'Purchase';event_id:string;event_time:number;user_data:Record<string,unknown>;custom_data?:{value:number;currency:'EUR'};submission_id?:string;test?:boolean}){
+ const token=Deno.env.get('META_ACCESS_TOKEN');const code=Deno.env.get('META_TEST_EVENT_CODE')||undefined;
+ const log=(status:string,received:number|null,error:string|null)=>db.from('capi_log').insert({submission_id:ev.submission_id||null,event_name:ev.event_name,event_id:ev.event_id,status,events_received:received,error,test:!!ev.test||!!code});
+ if(!token){await log('missing_token',null,'META_ACCESS_TOKEN fehlt');return {status:'missing_token',response:null};}
+ try{
+  const res=await fetch('https://graph.facebook.com/v26.0/2349392999129892/events',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({partner_agent:'lovable',...(code?{test_event_code:code}:{}),data:[{event_name:ev.event_name,event_id:ev.event_id,event_time:ev.event_time,action_source:'website',event_source_url:SOURCE_URL,user_data:ev.user_data,...(ev.custom_data?{custom_data:ev.custom_data}:{})}]})});
+  const r=await res.json().catch(()=>({}));
+  await log(res.ok?'accepted':'failed',r?.events_received??null,res.ok?null:String(r?.error?.error_user_msg||r?.error?.message||res.status).slice(0,500));
+  return {status:res.ok?'accepted':'failed',response:r};
+ }catch(err){await log('failed',null,String(err).slice(0,500));return {status:'failed',response:null};}
+}
+async function notifySlack(db:any,s:any){
+ const hook=Deno.env.get('SLACK_WEBHOOK_URL');if(!hook){await db.from('vertriebs_check_submissions').update({slack_status:'missing_secret'}).eq('id',s.id);return;}
+ try{
+  const a=s.attribution||{};const src=[a.utm_campaign,a.utm_content].filter(Boolean).join('/')||'direkt';
+  const text=`🟦 Neuer Vertriebs-Check · ${s.first_name} · ${s.company} · Weg ${String(s.weg).toUpperCase()} · Typ ${s.result_type} · Variante ${s.variant||'–'} · Quelle ${src}\n<https://hub.marketlab-media.de/crm/lead/${s.lead_id||''}|Lead im CRM öffnen>`;
+  const res=await fetch(hook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+  await db.from('vertriebs_check_submissions').update({slack_status:res.ok?'sent':'failed'}).eq('id',s.id);
+ }catch{await db.from('vertriebs_check_submissions').update({slack_status:'failed'}).eq('id',s.id);}
+}
 const names=['Sichtbarkeit','Filter','Vertrauen','Tempo','Termin','Cockpit'];
 async function hash(v:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v.trim().toLowerCase())))).map(b=>b.toString(16).padStart(2,'0')).join('');}
 Deno.serve(async(req)=>{
@@ -40,31 +66,58 @@ Deno.serve(async(req)=>{
  }
  if(action==='event'){
  const e=eventSchema.parse(body);
- const {data:consent,error:ce}=await db.from('vertriebs_check_consents').select('choice,withdrawn_at').eq('id',e.consent_id).maybeSingle();if(ce)throw ce;if(!consent||consent.choice!=='all'||consent.withdrawn_at)return json({ignored:true});
- let lead:Record<string,any>|null=null;
- if(e.step==='eingetragen'){
- if(!e.submission_token)return json({error:'submission_required'},400);
- const {data}=await db.from('vertriebs_check_submissions').select('email,phone,advertising_consent_id,created_at').eq('token',e.submission_token).maybeSingle();
- if(!data||data.advertising_consent_id!==e.consent_id)return json({ignored:true});lead=data;
- }
- const {data:saved,error:ee}=await db.from('vertriebs_check_events').insert({session_id:e.session_id,consent_id:e.consent_id,event_id:e.event_id,step:e.step,attribution:e.attribution}).select('created_at').single();
+ if(!await consentOk(db,e.consent_id))return json({ignored:true});
+ const a=e.attribution||{};
+ const {error:ee}=await db.from('positioning_funnel_events').insert({funnel:'vertriebs-check',session_id:e.session_id,step:e.step,event_id:e.event_id,weg:e.weg||null,variant:e.variant||null,utm_source:a.utm_source||null,utm_medium:a.utm_medium||null,utm_campaign:a.utm_campaign||null,utm_content:a.utm_content||null,utm_term:a.utm_term||null,fbclid:a.fbclid||null});
  if(ee?.code==='23505')return json({duplicate:true});if(ee)throw ee;
- const eventName=e.step==='besuch'?'PageView':e.step==='check_gestartet'?'CheckGestartet':e.step==='eingetragen'?'Lead':null;
- if(!eventName)return json({saved:true});
- // Recheck current permission immediately before sending to Meta.
- const {data:latest}=await db.from('vertriebs_check_consents').select('choice,withdrawn_at').eq('id',e.consent_id).single();if(latest?.choice!=='all'||latest.withdrawn_at)return json({saved:true,blocked:true});
- const token=Deno.env.get('META_ACCESS_TOKEN')||Deno.env.get('META_CAPI_TOKEN');
- if(!token){await db.from('vertriebs_check_events').update({capi_status:'missing_token'}).eq('event_id',e.event_id);return json({saved:true,capi:'missing_token'});}
- const userData:Record<string,unknown>={client_user_agent:req.headers.get('user-agent')||''};if(ip!=='unknown')userData.client_ip_address=ip;if(e.fbp)userData.fbp=e.fbp;if(e.fbc)userData.fbc=e.fbc;
- if(lead){userData.em=[await hash(lead.email)];userData.ph=[await hash(lead.phone.replace(/\D/g,''))];}
- const meta=await fetch('https://graph.facebook.com/v26.0/2349392999129892/events',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({partner_agent:'lovable',data:[{event_name:eventName,event_id:e.event_id,event_time:Math.floor(new Date(lead?.created_at||saved.created_at).getTime()/1000),action_source:'website',event_source_url:'https://hub.marketlab-media.de/check',user_data:userData}]})});
- await db.from('vertriebs_check_events').update({capi_status:meta.ok?'accepted':'failed'}).eq('event_id',e.event_id);
- return json({saved:true,capi:meta.ok?'accepted':'failed'});
+ if(e.step!=='check_start')return json({saved:true});
+ const ud:Record<string,unknown>={client_user_agent:req.headers.get('user-agent')||''};if(ip!=='unknown')ud.client_ip_address=ip;if(e.fbp)ud.fbp=e.fbp;if(e.fbc)ud.fbc=e.fbc;
+ const r=await sendMeta(db,{event_name:'InitiateCheckout',event_id:e.event_id,event_time:now(),user_data:ud});
+ return json({saved:true,capi:r.status});
+ }
+ if(action==='status'){
+ const id=uuid.parse(body.submission_id);
+ const {data:s,error}=await db.from('vertriebs_check_submissions').select('*').eq('id',id).maybeSingle();if(error)throw error;
+ if(!s||!s.tracking_consent||!s.advertising_consent_id||!await consentOk(db,s.advertising_consent_id))return json({ignored:true});
+ const {data:lead}=s.lead_id?await db.from('crm_leads').select('deal_value').eq('id',s.lead_id).maybeSingle():{data:null};
+ const out:Record<string,string>={};
+ for(const [name,at,sent] of [['Lead','kontakt_at','lead_sent_at'],['Schedule','termin_at','schedule_sent_at'],['Purchase','abschluss_at','purchase_sent_at']] as const){
+  if(!s[at]||s[sent])continue;
+  const {data:claimed}=await db.from('vertriebs_check_submissions').update({[sent]:new Date().toISOString()}).eq('id',s.id).is(sent,null).select('id').maybeSingle();if(!claimed)continue;
+  const t=Math.floor(new Date(s[at]).getTime()/1000);
+  const r=await sendMeta(db,{submission_id:s.id,event_name:name,event_id:`${s.id}-${name.toLowerCase()}`,event_time:now()-t>7*86400?now():t,user_data:await leadUserData(s),custom_data:name==='Purchase'?{value:Number(lead?.deal_value||0),currency:'EUR'}:undefined});
+  if(r.status!=='accepted')await db.from('vertriebs_check_submissions').update({[sent]:null}).eq('id',s.id);
+  out[name]=r.status;
+ }
+ return json(out);
+ }
+ if(action==='test'){
+ const jwt=(req.headers.get('authorization')||'').replace(/^Bearer /,'');const {data:u}=await db.auth.getUser(jwt);
+ if(!u?.user)return json({error:'unauthorized'},401);
+ const {data:isAdmin}=await db.rpc('has_role',{_user_id:u.user.id,_role:'admin'});if(!isAdmin)return json({error:'forbidden'},403);
+ const code=Deno.env.get('META_TEST_EVENT_CODE');if(!code)return json({error:'META_TEST_EVENT_CODE fehlt'},400);
+ const fake={id:crypto.randomUUID(),lead_id:crypto.randomUUID(),email:'test.person@example.com',phone:'0171 2345678',first_name:'Testperson',postcode:'10115',fbp:'fb.1.1700000000000.1234567890',fbc:null,client_ip:'203.0.113.10',client_user_agent:'Mozilla/5.0 (Test)'};
+ const ic=await sendMeta(db,{test:true,event_name:'InitiateCheckout',event_id:crypto.randomUUID(),event_time:now(),user_data:{client_user_agent:fake.client_user_agent,client_ip_address:fake.client_ip,fbp:fake.fbp}});
+ const cr=await sendMeta(db,{test:true,event_name:'CompleteRegistration',event_id:crypto.randomUUID(),event_time:now(),user_data:await leadUserData(fake)});
+ return json({InitiateCheckout:ic.response,CompleteRegistration:cr.response});
  }
  if(action!=='submit')return json({error:'unknown_action'},400);
  const parsed=contact.parse(body);
  const {data:result,error}=await db.rpc('vc_submit',{_data:parsed});if(error)throw error;
+ let tracked=false;
+ if(!result.existing){
+  const consent=!!parsed.advertising_consent_id&&!!parsed.session_id&&await consentOk(db,parsed.advertising_consent_id);
+  const a=parsed.attribution||{};
+  await db.from('vertriebs_check_submissions').update({attribution:a,tracking_consent:consent,advertising_consent_id:consent?parsed.advertising_consent_id:null,session_id:consent?parsed.session_id:null,fbp:consent?parsed.fbp||null:null,fbc:consent?parsed.fbc||null:null,client_ip:consent&&ip!=='unknown'?ip:null,client_user_agent:consent?req.headers.get('user-agent'):null}).eq('id',result.id);
+  if(result.lead_id){const {data:l}=await db.from('crm_leads').select('vertriebs_check_data').eq('id',result.lead_id).maybeSingle();await db.from('crm_leads').update({vertriebs_check_data:{...(l?.vertriebs_check_data||{}),attribution:a,tracking_consent:consent}}).eq('id',result.lead_id);}
+  if(consent&&parsed.event_id){
+   await db.from('positioning_funnel_events').insert({funnel:'vertriebs-check',session_id:parsed.session_id,step:'eingetragen',event_id:parsed.event_id,weg:parsed.weg,variant:parsed.variant||null,utm_source:a.utm_source||null,utm_medium:a.utm_medium||null,utm_campaign:a.utm_campaign||null,utm_content:a.utm_content||null,utm_term:a.utm_term||null,fbclid:a.fbclid||null});
+   const {data:fresh}=await db.from('vertriebs_check_submissions').select('*').eq('id',result.id).single();
+   if(fresh){await sendMeta(db,{submission_id:fresh.id,event_name:'CompleteRegistration',event_id:parsed.event_id,event_time:now(),user_data:await leadUserData(fresh)});tracked=true;}
+  }
+ }
  const {data:s,error:se}=await db.from('vertriebs_check_submissions').select('*').eq('id',result.id).single();if(se)throw se;
+ if(!result.existing&&!s.slack_status)await notifySlack(db,s);
  const base='https://hub.marketlab-media.de';
  if(s.crm_error)console.error('vertriebs-check crm sync failed',s.id,s.crm_error);
  const red=(s.weg==='a'?names:namesB).filter((_,i)=>s.answers[i]===0).join(', ')||'keine';
@@ -76,6 +129,6 @@ Deno.serve(async(req)=>{
  await db.from('vertriebs_check_submissions').update({[send.status]:mailError||mailData?.error?'failed':'queued'}).eq('id',s.id);
  }catch{await db.from('vertriebs_check_submissions').update({[send.status]:'failed'}).eq('id',s.id);}
  }));
- return json({token:result.token});
+ return json({token:result.token,tracked});
  }catch(e){if(e instanceof z.ZodError)return json({error:'Bitte die Angaben prüfen.',fields:e.flatten()},400);return json({error:'Das hat nicht geklappt. Bitte erneut versuchen.'},500);}
 });
