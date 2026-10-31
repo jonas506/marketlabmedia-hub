@@ -1,13 +1,13 @@
 # Roadmap
 
-## Vertriebs-Check (31.10.2026)
-- [ ] Vorhandene Funnel-, CRM-, Kalender-, Mail- und Tracking-Bausteine prüfen und Umsetzung planen
-- [ ] Öffentlichen Check mit sechs Fragen, Pflichtkontaktfeldern und tokenbasierter Auswertung bauen
-- [ ] CRM-Verknüpfung, Einwilligungsnachweise, Gebiete und Video-/Sequenzeinstellungen ergänzen
-- [ ] Benachrichtigungen, Ergebnis-Mail und optionale WhatsApp-/Mail-Automation verbinden
-- [ ] Consent-gebundenes Tracking und kompatible Ads-Statistik ergänzen
-- [ ] Vollständigen Test durchführen, Testdaten bereinigen und offene Integrationsfragen dokumentieren
-- [ ] Veröffentlichung nur nach ausdrücklicher Freigabe — wartet auf Jonas
+## Vertriebs-Check (31.10.2026, neue Fassung)
+- [x] Startseite /check mit Varianten (v), Weiche + Weg A/B je 5 Fragen, Nein-Seite
+- [x] Formular mit Pflichtfeldern und Einwilligungen; Speicherung in Kontakt, Lead (Zusammenarbeit/Erstkontakt), Aktivität; CRM-Fehler blockieren nicht
+- [x] Auswertung /check/auswertung/{token} mit Tacho, Leck, Typ, Karten, PLZ-Hinweis, Video, Kalender; Vorschau ohne Speichern
+- [x] Adminseite /vertriebs-check/admin für Video, Kalender, PLZ-Gebiete
+- [ ] Tracking — kommt mit nächstem Auftrag
+- [ ] Echter Test-Eintrag — auf Wunsch nicht abgeschickt
+- [ ] Veröffentlichung nur nach Freigabe — wartet auf Jonas
 
 ## CRM-Detailseiten-Umbau (abgeschlossen 21.10.2026)
 - [x] Notiz-Bug: RLS (nur Admin-Policies) + fehlender `meeting`-Enum → Migration `crm_hoc_access_and_meeting_type`
