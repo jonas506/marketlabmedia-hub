@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import preview from '@/assets/check/vorschau.jpg.asset.json';
 import CheckShell from './CheckShell';
 import { VC, heroFor, contactSchema, type Weg } from './model';
+import { mountTracking, track, submitTracking, trackRegistration, permitted } from './tracking';
 
 type Screen = 'start' | 'weiche' | 'q' | 'stop' | 'form';
 const VARIANT_KEY = 'vc_v';
@@ -15,11 +16,14 @@ const VARIANT_KEY = 'vc_v';
 export default function CheckPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const [variant, setVariant] = useState<string>(() => sessionStorage.getItem(VARIANT_KEY) ?? '');
+  // The variant is kept in browser storage only with tracking consent; otherwise it lives in page state.
+  const [variant, setVariant] = useState<string>(() => (permitted() && sessionStorage.getItem(VARIANT_KEY)) || '');
   useEffect(() => {
     const v = params.get('v');
-    if (v !== null) { const clean = v.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 40); sessionStorage.setItem(VARIANT_KEY, clean); setVariant(clean); }
+    if (v !== null) { const clean = v.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 40); if (permitted()) sessionStorage.setItem(VARIANT_KEY, clean); setVariant(clean); }
   }, [params]);
+  useEffect(() => mountTracking(() => { if (variant && permitted()) sessionStorage.setItem(VARIANT_KEY, variant); track('besuch', { variant }); }), [variant]);
+  const requestRef = useRef<string>(crypto.randomUUID());
   const hero = heroFor(variant);
 
   const [screen, setScreen] = useState<Screen>('start');
@@ -33,15 +37,16 @@ export default function CheckPage() {
   useEffect(() => { window.scrollTo({ top: 0 }); }, [screen, qi]);
 
   function chooseWeg(i: number) {
-    if (i === 2) { setScreen('stop'); return; }
+    if (i === 2) { track('kein_meta', { variant }); setScreen('stop'); return; }
     const next: Weg = i === 0 ? 'a' : 'b';
+    track('check_start', { weg: next, variant });
     if (next !== weg) setAnswers([]); // switching ways discards old answers
     setWeg(next); setQi(0); setScreen('q');
   }
   function answer(i: number) {
     const next = [...answers.slice(0, qi), i];
     setAnswers(next);
-    if (qi < 4) setQi(qi + 1); else setScreen('form');
+    if (qi < 4) setQi(qi + 1); else { setScreen('form'); track('formular', { weg, variant }); }
   }
   function back() {
     if (screen === 'form') { setScreen('q'); setQi(4); return; }
@@ -55,12 +60,13 @@ export default function CheckPage() {
     if (!v.success) { setError(v.error.issues[0]?.message || 'Bitte prüft eure Angaben.'); return; }
     if (!weg || answers.length !== 5) { setError('Bitte beantwortet zuerst alle Fragen.'); return; }
     setBusy(true); setError('');
-    let requestId = sessionStorage.getItem('vc_request');
-    if (!requestId) { requestId = crypto.randomUUID(); sessionStorage.setItem('vc_request', requestId); }
+    const requestId = requestRef.current;
+    const t = submitTracking();
     try {
-      const { data, error: err } = await supabase.functions.invoke('vertriebs-check', { body: { ...v.data, weg, answers, variant: variant || null, request_id: requestId } });
+      const { data, error: err } = await supabase.functions.invoke('vertriebs-check', { body: { ...v.data, weg, answers, variant: variant || null, request_id: requestId, ...t } });
       if (err || !data?.token) throw err || new Error('no token');
-      sessionStorage.removeItem('vc_request');
+      if (data.tracked && 'event_id' in t) trackRegistration(t.event_id);
+      requestRef.current = crypto.randomUUID();
       navigate(`/check/auswertung/${data.token}`);
     } catch {
       setError('Das hat gerade nicht geklappt. Bitte prüft eure Verbindung und versucht es noch einmal.');

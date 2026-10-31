@@ -51,11 +51,16 @@ Deno.serve(async (req) => {
   const end = new Date(Date.parse(to) + 2 * 86400000).toISOString();
 
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const funnel = url.searchParams.get("funnel");
+  if (funnel !== null && funnel !== "vertriebs-check") return json({ error: "unbekannter funnel" }, 400);
+  if (funnel === "vertriebs-check") {
+    try { return json({ days: await vertriebsCheck(db, from, to, start, end, onlyAds) }); } catch (_e) { return json({ error: "internal_error" }, 500); }
+  }
 
   try {
     const [events, leads] = await Promise.all([
       fetchAll<{ session_id: string; step: string; created_at: string; utm_source: string | null }>((a, b) =>
-        db.from("positioning_funnel_events").select("session_id, step, created_at, utm_source").in("step", ["besuch", "video", "formular", "eingetragen"])
+        db.from("positioning_funnel_events").select("session_id, step, created_at, utm_source").eq("funnel", "positionierung").in("step", ["besuch", "video", "formular", "eingetragen"])
           .gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
       fetchAll<{ created_at: string; status: string; monthly_revenue: string; industry: string; utm_source: string | null; session_id: string | null }>((a, b) =>
         db.from("positioning_analysis_leads").select("created_at, status, monthly_revenue, industry, utm_source, session_id")
@@ -103,3 +108,41 @@ Deno.serve(async (req) => {
     return json({ error: "internal_error" }, 500);
   }
 });
+
+// Vertriebs-Check: aggregate counts only. Lead milestones are cumulative (a sale also counts as contacted and scheduled).
+// deno-lint-ignore no-explicit-any
+async function vertriebsCheck(db: any, from: string, to: string, start: string, end: string, onlyAds: boolean) {
+  const STEPS = ["besuch", "check_start", "kein_meta", "formular", "eingetragen"] as const;
+  const [events, subs] = await Promise.all([
+    fetchAll<{ session_id: string; step: string; created_at: string; utm_source: string | null }>((a, b) =>
+      db.from("positioning_funnel_events").select("session_id, step, created_at, utm_source").eq("funnel", "vertriebs-check")
+        .gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
+    fetchAll<{ created_at: string; weg: string; attribution: Record<string, string | null> | null; kontakt_at: string | null; termin_at: string | null; abschluss_at: string | null }>((a, b) =>
+      db.from("vertriebs_check_submissions").select("created_at, weg, attribution, kontakt_at, termin_at, abschluss_at")
+        .gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
+  ]);
+  const days = new Map<string, Record<string, number | string>>();
+  const sets = new Map<string, Record<string, Set<string>>>();
+  for (let t = Date.parse(from); t <= Date.parse(to); t += 86400000) {
+    const d = new Date(t).toISOString().slice(0, 10);
+    days.set(d, { date: d, besucher: 0, check_start: 0, kein_meta: 0, formular: 0, eingetragen: 0, leads: 0, weg_a: 0, weg_b: 0, kontaktiert: 0, termine: 0, abschluss: 0 });
+    sets.set(d, Object.fromEntries(STEPS.map((s) => [s, new Set<string>()])));
+  }
+  for (const e of events) {
+    const s = sets.get(berlinDay(e.created_at));
+    if (!s || !s[e.step] || (onlyAds && !(e.utm_source && ADS_RE.test(e.utm_source)))) continue;
+    s[e.step].add(e.session_id);
+  }
+  for (const [d, s] of sets) { const day = days.get(d)!; day.besucher = s.besuch.size; for (const k of STEPS.slice(1)) day[k] = s[k].size; }
+  const inc = (day: Record<string, number | string>, k: string) => { day[k] = (day[k] as number) + 1; };
+  for (const l of subs) {
+    const day = days.get(berlinDay(l.created_at));
+    const src = l.attribution?.utm_source;
+    if (!day || (onlyAds && !(src && ADS_RE.test(src)))) continue;
+    inc(day, "leads"); inc(day, l.weg === "a" ? "weg_a" : "weg_b");
+    if (l.kontakt_at || l.termin_at || l.abschluss_at) inc(day, "kontaktiert");
+    if (l.termin_at || l.abschluss_at) inc(day, "termine");
+    if (l.abschluss_at) inc(day, "abschluss");
+  }
+  return [...days.values()];
+}

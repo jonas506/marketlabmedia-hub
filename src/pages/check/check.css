@@ -64,3 +64,10 @@
 .vc-stop{text-align:center;padding-top:40px}
 @media(max-width:800px){.vc-hero{grid-template-columns:1fr;gap:16px;padding-top:0}.vc-hero picture,.vc-hero .vc-hero-img{order:-1}.vc-hero img{max-height:230px}.vc-panel-grid,.vc-two{grid-template-columns:1fr}.vc-fields{grid-template-columns:1fr}.vc-panel{padding:18px}.vc-gauge-num b{font-size:54px}}
 @media(prefers-reduced-motion:reduce){.vc *{animation:none!important;transition:none!important}}
+
+.vc-footer-link{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline}
+.vc-consent{position:fixed;left:16px;right:16px;bottom:16px;z-index:50;max-width:560px;margin:0 auto;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:20px;padding:20px;box-shadow:0 20px 60px -10px hsl(var(--background)/.9)}
+.vc-consent h3{font-weight:800;font-size:17px;margin:0 0 8px}
+.vc-consent p{font-size:13px;margin:0 0 8px}.vc-consent a{color:hsl(var(--primary));text-decoration:underline}
+.vc-consent-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.vc-consent-actions button{min-height:48px;border-radius:999px;font-weight:700}

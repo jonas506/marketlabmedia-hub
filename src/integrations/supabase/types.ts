@@ -138,6 +138,45 @@ export type Database = {
         }
         Relationships: []
       }
+      capi_log: {
+        Row: {
+          created_at: string
+          error: string | null
+          event_id: string | null
+          event_name: string
+          events_received: number | null
+          funnel: string
+          id: string
+          status: string
+          submission_id: string | null
+          test: boolean
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          event_id?: string | null
+          event_name: string
+          events_received?: number | null
+          funnel?: string
+          id?: string
+          status: string
+          submission_id?: string | null
+          test?: boolean
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          event_id?: string | null
+          event_name?: string
+          events_received?: number | null
+          funnel?: string
+          id?: string
+          status?: string
+          submission_id?: string | null
+          test?: boolean
+        }
+        Relationships: []
+      }
       cb_brands: {
         Row: {
           colors: string[]
@@ -3016,7 +3055,9 @@ export type Database = {
       positioning_funnel_events: {
         Row: {
           created_at: string
+          event_id: string | null
           fbclid: string | null
+          funnel: string
           id: string
           session_id: string
           step: string
@@ -3025,10 +3066,14 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          variant: string | null
+          weg: string | null
         }
         Insert: {
           created_at?: string
+          event_id?: string | null
           fbclid?: string | null
+          funnel?: string
           id?: string
           session_id: string
           step: string
@@ -3037,10 +3082,14 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          variant?: string | null
+          weg?: string | null
         }
         Update: {
           created_at?: string
+          event_id?: string | null
           fbclid?: string | null
+          funnel?: string
           id?: string
           session_id?: string
           step?: string
@@ -3049,6 +3098,8 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          variant?: string | null
+          weg?: string | null
         }
         Relationships: []
       }
@@ -4347,9 +4398,12 @@ export type Database = {
       }
       vertriebs_check_submissions: {
         Row: {
+          abschluss_at: string | null
           advertising_consent_id: string | null
           answers: number[]
           attribution: Json
+          client_ip: string | null
+          client_user_agent: string | null
           company: string
           consent_evidence: Json
           contact_id: string
@@ -4357,21 +4411,30 @@ export type Database = {
           crm_error: string | null
           email: string
           email_consent: boolean
+          fbc: string | null
+          fbp: string | null
           first_name: string
           id: string
+          kontakt_at: string | null
           lead_id: string
+          lead_sent_at: string | null
           owner_mail_status: string
           phone: string
           postcode: string
+          purchase_sent_at: string | null
           request_id: string
           result_mail_status: string
           result_type: string
+          schedule_sent_at: string | null
           score: number | null
           scores: Json
           session_id: string | null
+          slack_status: string | null
           status: string
+          termin_at: string | null
           token: string
           total: number
+          tracking_consent: boolean
           unsubscribe_token: string
           unsubscribed_at: string | null
           variant: string | null
@@ -4379,9 +4442,12 @@ export type Database = {
           whatsapp_consent: boolean
         }
         Insert: {
+          abschluss_at?: string | null
           advertising_consent_id?: string | null
           answers: number[]
           attribution?: Json
+          client_ip?: string | null
+          client_user_agent?: string | null
           company: string
           consent_evidence: Json
           contact_id: string
@@ -4389,21 +4455,30 @@ export type Database = {
           crm_error?: string | null
           email: string
           email_consent?: boolean
+          fbc?: string | null
+          fbp?: string | null
           first_name: string
           id?: string
+          kontakt_at?: string | null
           lead_id: string
+          lead_sent_at?: string | null
           owner_mail_status?: string
           phone: string
           postcode: string
+          purchase_sent_at?: string | null
           request_id: string
           result_mail_status?: string
           result_type: string
+          schedule_sent_at?: string | null
           score?: number | null
           scores: Json
           session_id?: string | null
+          slack_status?: string | null
           status?: string
+          termin_at?: string | null
           token?: string
           total: number
+          tracking_consent?: boolean
           unsubscribe_token?: string
           unsubscribed_at?: string | null
           variant?: string | null
@@ -4411,9 +4486,12 @@ export type Database = {
           whatsapp_consent?: boolean
         }
         Update: {
+          abschluss_at?: string | null
           advertising_consent_id?: string | null
           answers?: number[]
           attribution?: Json
+          client_ip?: string | null
+          client_user_agent?: string | null
           company?: string
           consent_evidence?: Json
           contact_id?: string
@@ -4421,21 +4499,30 @@ export type Database = {
           crm_error?: string | null
           email?: string
           email_consent?: boolean
+          fbc?: string | null
+          fbp?: string | null
           first_name?: string
           id?: string
+          kontakt_at?: string | null
           lead_id?: string
+          lead_sent_at?: string | null
           owner_mail_status?: string
           phone?: string
           postcode?: string
+          purchase_sent_at?: string | null
           request_id?: string
           result_mail_status?: string
           result_type?: string
+          schedule_sent_at?: string | null
           score?: number | null
           scores?: Json
           session_id?: string | null
+          slack_status?: string | null
           status?: string
+          termin_at?: string | null
           token?: string
           total?: number
+          tracking_consent?: boolean
           unsubscribe_token?: string
           unsubscribed_at?: string | null
           variant?: string | null
