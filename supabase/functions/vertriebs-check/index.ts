@@ -4,7 +4,7 @@ const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'au
 const json=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
 const uuid=z.string().uuid();
 const attr=z.record(z.string().max(500).nullable()).refine(v=>Object.keys(v).every(k=>['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].includes(k)));
-const contact=z.object({request_id:uuid,answers:z.array(z.number().int().min(0).max(2)).length(6),first_name:z.string().trim().min(1).max(100),company:z.string().trim().min(1).max(200),postcode:z.string().regex(/^\d{5}$/),phone:z.string().trim().regex(/^\+?[0-9 ()/\-]{7,32}$/).refine(v=>v.replace(/\D/g,'').length>=7),email:z.string().trim().email().max(255),privacy:z.literal(true),whatsapp_consent:z.boolean(),email_consent:z.boolean(),attribution:attr.optional(),session_id:uuid.nullable().optional(),advertising_consent_id:uuid.nullable().optional()});
+const contact=z.object({request_id:uuid,weg:z.enum(['a','b']),variant:z.string().max(40).regex(/^[a-z0-9_-]*$/).optional().nullable(),answers:z.array(z.number().int().min(0).max(2)).length(5),first_name:z.string().trim().min(1).max(100),company:z.string().trim().min(1).max(200),postcode:z.string().regex(/^\d{5}$/),phone:z.string().trim().regex(/^\+?[0-9 ()/\-]{7,32}$/).refine(v=>v.replace(/\D/g,'').length>=7),email:z.string().trim().email().max(255),privacy:z.literal(true),whatsapp_consent:z.boolean(),email_consent:z.boolean(),attribution:attr.optional(),session_id:uuid.nullable().optional(),advertising_consent_id:uuid.nullable().optional()});
 const steps=['besuch','check_gestartet','frage_1','frage_2','frage_3','frage_4','frage_5','frage_6','eingetragen','auswertung_geoeffnet'] as const;
 const eventSchema=z.object({session_id:uuid,consent_id:uuid,event_id:uuid,step:z.enum(steps),attribution:attr,fbp:z.string().max(200).nullable().optional(),fbc:z.string().max(300).nullable().optional(),submission_token:uuid.optional()});
 const names=['Sichtbarkeit','Filter','Vertrauen','Tempo','Termin','Cockpit'];
@@ -33,10 +33,10 @@ Deno.serve(async(req)=>{
  }
  if(action==='result'){
  const token=uuid.parse(new URL(req.url).searchParams.get('token')||body.token);
- const {data,error}=await db.from('vertriebs_check_submissions').select('first_name,postcode,answers,total,result_type').eq('token',token).maybeSingle();if(error)throw error;if(!data)return json({error:'Diese Auswertung wurde nicht gefunden.'},404);
+ const {data,error}=await db.from('vertriebs_check_submissions').select('first_name,company,postcode,answers,total,score,result_type,weg').eq('token',token).maybeSingle();if(error)throw error;if(!data)return json({error:'Diese Auswertung wurde nicht gefunden.'},404);
  const [area,settings]=await Promise.all([db.from('gebiete').select('status').eq('plz_prefix',data.postcode.slice(0,3)).maybeSingle(),db.from('vertriebs_check_settings').select('video_url,calendar_url').eq('id',true).maybeSingle()]);
  if(area.error||settings.error)throw area.error||settings.error;
- return json({first_name:data.first_name,postcode_prefix:data.postcode.slice(0,3),answers:data.answers,total:data.total,type:data.result_type,area_status:area.data?.status||'frei',video_url:settings.data?.video_url||null,calendar_url:settings.data?.calendar_url||'https://calendar.app.google/i2jtG5DapbEjzWba6'});
+ return json({first_name:data.first_name,company:data.company,weg:data.weg,score:data.score,postcode_prefix:data.postcode.slice(0,3),answers:data.answers,total:data.total,type:data.result_type,area_status:area.data?.status||'frei',video_url:settings.data?.video_url||null,calendar_url:settings.data?.calendar_url||'https://calendar.app.google/i2jtG5DapbEjzWba6'});
  }
  if(action==='event'){
  const e=eventSchema.parse(body);
