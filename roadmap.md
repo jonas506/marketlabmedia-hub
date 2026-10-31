@@ -1,5 +1,10 @@
 # Roadmap
 
+## Vertriebs-Check Trust (31.10.2026)
+- [ ] Statisches Trustpilot-Badge mit administrierbarer Bewertung und Anzahl ergänzen
+- [ ] Neun hochgeladene Logos auf Start- und Auswertungsseite anzeigen
+- [ ] Desktop-/Handy-Screenshots und gespeicherte Einstellungen prüfen; nicht veröffentlichen
+
 ## Vertriebs-Check (31.10.2026, neue Fassung)
 - [x] Startseite /check mit Varianten (v), Weiche + Weg A/B je 5 Fragen, Nein-Seite
 - [x] Formular mit Pflichtfeldern und Einwilligungen; Speicherung in Kontakt, Lead (Zusammenarbeit/Erstkontakt), Aktivität; CRM-Fehler blockieren nicht
