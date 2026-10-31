@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import preview from '@/assets/check/vorschau.jpg.asset.json';
 import CheckShell from './CheckShell';
@@ -8,7 +7,7 @@ import ClientLogos from './ClientLogos';
 import { evaluate, type Weg } from './model';
 
 const DEFAULT_CALENDAR = 'https://calendar.app.google/i2jtG5DapbEjzWba6';
-interface Result { first_name: string; weg: Weg; answers: number[]; postcode_prefix: string; area_status: string; video_url: string | null; calendar_url: string; }
+interface Result { first_name: string; weg: Weg; answers: number[]; video_url: string | null; calendar_url: string; }
 
 const START = 192, SPAN = 204, CX = 150, CY = 150, R = 118;
 const pt = (deg: number, r = R) => { const a = (deg * Math.PI) / 180; return [CX + r * Math.cos(a), CY - r * Math.sin(a)]; };
@@ -71,8 +70,6 @@ export function ResultView({ data }: { data: Result }) {
         ))}
       </section>
 
-      <div className="vc-note"><MapPin size={20} /><span>{data.area_status === 'vergeben' ? `Euer PLZ-Bereich ${data.postcode_prefix} ist aktuell vergeben. Wir setzen euch auf die Warteliste.` : `Für euren PLZ-Bereich ${data.postcode_prefix} nehmen wir aktuell noch einen Vertrieb auf.`}</span></div>
-
       <section className="vc-two">
         <div className="vc-card">
           <p className="vc-kicker">{a ? 'So schließen wir die roten Stationen' : 'So startet ihr richtig'}</p>
@@ -96,8 +93,7 @@ function parsePreview(q: URLSearchParams): Result | null {
   const weg = q.get('weg') === 'b' ? 'b' : 'a';
   const answers = (q.get('a') || '0,1,2,0,1').split(',').map(Number);
   if (answers.length !== 5 || answers.some(n => ![0, 1, 2].includes(n))) return null;
-  const plz = (q.get('plz') || '12345').replace(/\D/g, '').slice(0, 3);
-  return { weg, answers, first_name: (q.get('name') || 'Max').slice(0, 40), postcode_prefix: plz, area_status: q.get('gebiet') === 'vergeben' ? 'vergeben' : 'frei', video_url: null, calendar_url: DEFAULT_CALENDAR };
+  return { weg, answers, first_name: (q.get('name') || 'Max').slice(0, 40), video_url: null, calendar_url: DEFAULT_CALENDAR };
 }
 
 export default function ResultPage() {
