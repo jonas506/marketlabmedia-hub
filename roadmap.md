@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Vertriebs-Check Trust (31.10.2026)
-- [ ] Statisches Trustpilot-Badge mit administrierbarer Bewertung und Anzahl ergänzen
-- [ ] Neun hochgeladene Logos auf Start- und Auswertungsseite anzeigen
-- [ ] Desktop-/Handy-Screenshots und gespeicherte Einstellungen prüfen; nicht veröffentlichen
+- [x] Statisches Trustpilot-Badge mit administrierbarer Bewertung und Anzahl ergänzen
+- [x] Neun hochgeladene Logos auf Start- und Auswertungsseite anzeigen
+- [x] Desktop-/Handy-Screenshots, Admin-Speichern und öffentliche Anzeige geprüft; 24 Tests bestanden; nicht veröffentlicht
 
 ## Vertriebs-Check (31.10.2026, neue Fassung)
 - [x] Startseite /check mit Varianten (v), Weiche + Weg A/B je 5 Fragen, Nein-Seite
