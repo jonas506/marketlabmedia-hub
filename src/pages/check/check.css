@@ -112,3 +112,18 @@
  .vc-logo-window{overflow-x:auto}
  .vc-logo-duplicate{display:none}
 }
+
+/* Zentriertes, einspaltiges Layout (Pearlcap-Stil) */
+.vc-hero{grid-template-columns:1fr;max-width:720px;margin:0 auto;gap:36px;text-align:center}
+.vc-hero .vc-hero-img{order:0;display:flex;justify-content:center}
+.vc-hero img{max-width:560px;max-height:none}
+.vc-hero~.vc-client-logos,.vc-main>.vc-client-logos{max-width:720px;margin-inline:auto}
+.vc-narrow{max-width:560px}
+.vc-narrow>.vc-q,.vc-narrow>.vc-hint,.vc-narrow>.vc-h2,.vc-narrow>.vc-sub{text-align:center}
+.vc-narrow>.vc-progress{position:relative;justify-content:center;min-height:44px}
+.vc-narrow>.vc-progress button{position:absolute;left:0;top:0}
+.vc-form .vc-sub{text-align:center;margin-top:0}
+.vc-result{max-width:960px}
+.vc-result>.vc-kicker,.vc-result>.vc-h1{text-align:center}
+.vc-result>.vc-h1{margin-bottom:32px}
+@media(max-width:800px){.vc-hero{gap:24px}.vc-hero img{max-height:none}.vc-hero .vc-hero-img{order:0}}
