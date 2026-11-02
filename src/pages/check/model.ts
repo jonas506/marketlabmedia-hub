@@ -6,40 +6,40 @@ export interface WegDef { label: string; score: string; leck: string; call: { h:
 
 export const VC = {
   weiche: {
-    q: 'Schaltet ihr schon Werbung auf Instagram oder Facebook?',
-    a: ['Ja, die laufen schon', 'Noch nicht, wir wollen anfangen', 'Nein, kommt für uns nicht infrage'],
+    q: 'Schaltest du schon Werbung auf Instagram oder Facebook?',
+    a: ['Ja, die laufen schon', 'Noch nicht, ich will anfangen', 'Nein, kommt für mich nicht infrage'],
   },
   wege: {
     a: {
       label: 'Weg A (schaltet Ads)',
       score: 'Social-Media-Score', leck: 'Größtes Leck',
-      call: { h: 'Eure Kampagnen live durchgehen', t: 'In 30 Minuten schauen wir uns eure Kampagnen gemeinsam im Werbekonto an und ich gehe mit euch die konkreten Lösungsvorschläge für eure roten Stationen durch. Kostenlos und unverbindlich.' },
+      call: { h: 'Deine Kampagnen live durchgehen', t: 'In 30 Minuten schauen wir uns deine Kampagnen gemeinsam im Werbekonto an und ich gehe mit dir die konkreten Lösungsvorschläge für deine roten Stationen durch. Kostenlos und unverbindlich.' },
       questions: [
-        { key: 'anzeigen', name: 'Anzeigen', q: 'Wie oft bringt ihr neue Anzeigen raus?', a: ['Selten bis nie', 'Alle paar Monate', 'Jeden Monat'], t: [
+        { key: 'anzeigen', name: 'Anzeigen', q: 'Wie oft kommen bei dir neue Werbevideos oder -bilder dazu?', a: ['Selten, es laufen immer dieselben', 'Alle paar Monate', 'Jeden Monat'], t: [
           'Dieselben Anzeigen laufen zu lange. Meta spielt sie immer teurer aus, jede Anfrage kostet mehr.',
           'Alle paar Monate ist zu selten. Die besten Vertriebe testen jeden Monat neue Hooks und Videos.',
-          'Ihr testet regelmäßig. Damit findet ihr Gewinner-Anzeigen schneller als die meisten.'] },
-        { key: 'cockpit', name: 'Cockpit', q: 'Woran messt ihr, ob eure Anzeigen gut laufen?', a: ['Gar nicht genau', 'An den Kosten pro Lead', 'An den Kosten pro Termin oder Verkauf'], t: [
-          'Ihr wisst nicht, ob eure Anzeigen gut sind. Damit lässt sich nichts gezielt verbessern.',
+          'Du testest regelmäßig. Damit findest du Gewinner-Anzeigen schneller als die meisten.'] },
+        { key: 'cockpit', name: 'Cockpit', q: 'Woran misst du, ob deine Anzeigen gut laufen?', a: ['Gar nicht genau', 'An den Kosten pro Lead', 'An den Kosten pro Termin oder Verkauf'], t: [
+          'Du weißt nicht, ob deine Anzeigen gut sind. Damit lässt sich nichts gezielt verbessern.',
           'Kosten pro Lead sagen wenig. Entscheidend ist, was ein Termin kostet, der stattfindet.',
-          'Ihr steuert nach Zahlen. Damit lässt sich jeder Euro Werbung skalieren.'] },
-        { key: 'filter', name: 'Filter', q: 'Wie viele Anfragen passen wirklich zu eurem Angebot?', a: ['Kaum welche', 'Etwa die Hälfte', 'Die meisten'], t: [
-          'Eure Anzeigen ziehen die falschen Leute an. Eure Berater telefonieren Interessenten hinterher, die nie kaufen können.',
-          'Jede zweite Anfrage ist umsonst. Das sind Stunden, die euren Beratern für echte Kunden fehlen.',
-          'Eure Anfragen passen. Damit seid ihr weiter als die meisten.'] },
-        { key: 'vertrauen', name: 'Vertrauen', q: 'Was sieht ein Interessent vor dem ersten Anruf von euch?', a: ['Nichts', 'Unser Profil', 'Videos und Kundenstimmen'], t: [
-          'Euer Berater ist beim ersten Anruf ein Fremder. Genau da springen die meisten Interessenten ab.',
-          'Euer Profil ist da, aber es bereitet niemanden gezielt auf das Gespräch vor.',
-          'Eure Interessenten kennen euch vor dem Gespräch. Das merkt man an der Abschlussquote.'] },
-        { key: 'tempo', name: 'Tempo', q: 'Wann ruft ihr neue Anfragen an?', a: ['Am nächsten Tag', 'Am selben Tag', 'In der ersten Stunde'], t: [
+          'Du steuerst nach Zahlen. Damit lässt sich jeder Euro Werbung skalieren.'] },
+        { key: 'filter', name: 'Filter', q: 'Wie viele Anfragen passen wirklich zu deinem Angebot?', a: ['Kaum welche', 'Etwa die Hälfte', 'Die meisten'], t: [
+          'Deine Anzeigen ziehen die falschen Leute an. Du bzw. dein Team telefoniert Interessenten hinterher, die nie kaufen können.',
+          'Jede zweite Anfrage ist umsonst. Das sind Stunden, die dir bzw. deinem Team für echte Kunden fehlen.',
+          'Deine Anfragen passen. Damit bist du weiter als die meisten.'] },
+        { key: 'vertrauen', name: 'Vertrauen', q: 'Was sieht ein Interessent vor dem ersten Anruf von dir?', a: ['Nichts', 'Mein Profil', 'Videos und Kundenstimmen'], t: [
+          'Beim ersten Anruf bist du für den Interessenten ein Fremder. Genau da springen die meisten ab.',
+          'Dein Profil ist da, aber es bereitet niemanden gezielt auf das Gespräch vor.',
+          'Deine Interessenten kennen dich vor dem Gespräch. Das merkt man an der Abschlussquote.'] },
+        { key: 'tempo', name: 'Tempo', q: 'Wann rufst du neue Anfragen an?', a: ['Am nächsten Tag', 'Am selben Tag', 'In der ersten Stunde'], t: [
           'Wer erst am nächsten Tag anruft, hat den Interessenten oft schon an einen anderen Vertrieb verloren.',
           'Am selben Tag ist gut. In der ersten Stunde ist die Chance aber um ein Vielfaches höher.',
           'Schnell genug. Jetzt muss der Rest mithalten.'] },
       ],
       typ(t: number) {
-        if (t <= 3) return { name: 'Blindflug', text: 'Ihr zahlt für Anzeigen, wisst aber nicht, was sie bringen.' };
+        if (t <= 3) return { name: 'Blindflug', text: 'Du zahlst für Anzeigen, weißt aber nicht, was sie bringen.' };
         if (t <= 7) return { name: 'Lead-Hamsterrad', text: 'Anfragen sind da. Bis zum Abschluss schaffen es zu wenige.' };
-        return { name: 'Kurz vor Marktführer', text: 'Ein, zwei Stationen fehlen euch noch.' };
+        return { name: 'Kurz vor Marktführer', text: 'Ein, zwei Stationen fehlen dir noch.' };
       },
     },
     b: {
