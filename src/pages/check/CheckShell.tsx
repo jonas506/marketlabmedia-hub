@@ -11,7 +11,7 @@ export default function CheckShell({ children, result = false }: { children: Rea
     link.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&display=swap';
     document.head.append(link);
     const previous = document.title;
-    document.title = result ? 'Eure persönliche Auswertung | Marketlab Media' : 'Vertriebs-Check für Immobilien- und Finanzvertriebe | Marketlab Media';
+    document.title = result ? 'Deine persönliche Auswertung | Marketlab Media' : 'Vertriebs-Check für Immobilien- und Finanzvertriebe | Marketlab Media';
     const meta = document.createElement('meta');
     meta.name = 'robots';
     meta.content = result ? 'noindex, nofollow' : 'index, follow';
