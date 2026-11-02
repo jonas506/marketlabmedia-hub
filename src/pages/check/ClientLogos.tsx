@@ -23,7 +23,7 @@ const logos = [
 export default function ClientLogos() {
   return (
     <section className="vc-client-logos" aria-label="Kunden von Marketlab Media">
-      <p className="vc-kicker">Diese Vertriebe vertrauen uns schon</p>
+      <p className="vc-kicker">Diese Makler und Vertriebe vertrauen uns schon</p>
       <div className="vc-logo-window">
         <div className="vc-logo-track">
           {[false, true].map(duplicate => <div className={`vc-logo-group${duplicate ? ' vc-logo-duplicate' : ''}`} key={String(duplicate)} aria-hidden={duplicate || undefined}>

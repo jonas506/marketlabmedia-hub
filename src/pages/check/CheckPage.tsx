@@ -59,8 +59,8 @@ export default function CheckPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const v = contactSchema.safeParse(fields);
-    if (!v.success) { setError(v.error.issues[0]?.message || 'Bitte prüft eure Angaben.'); return; }
-    if (!weg || answers.length !== 5) { setError('Bitte beantwortet zuerst alle Fragen.'); return; }
+    if (!v.success) { setError(v.error.issues[0]?.message || 'Bitte prüfe deine Angaben.'); return; }
+    if (!weg || answers.length !== 5) { setError('Bitte beantworte zuerst alle Fragen.'); return; }
     setBusy(true); setError('');
     const requestId = requestRef.current;
     const t = submitTracking();
@@ -71,7 +71,7 @@ export default function CheckPage() {
       requestRef.current = crypto.randomUUID();
       navigate(`/check/auswertung/${data.token}`);
     } catch {
-      setError('Das hat gerade nicht geklappt. Bitte prüft eure Verbindung und versucht es noch einmal.');
+      setError('Das hat gerade nicht geklappt. Bitte prüfe deine Verbindung und versuche es noch einmal.');
     } finally { setBusy(false); }
   }
 
@@ -92,14 +92,14 @@ export default function CheckPage() {
         <main className="vc-main">
           <section className="vc-hero">
             <div>
-              <p className="vc-kicker">Für Immobilien- und Finanzvertriebe</p>
+              <p className="vc-kicker">Für Makler, Finanzberater und Vertriebe</p>
               <h1 className="vc-h1"><span className="l">{hero.l}</span><span className="b">{hero.b}</span></h1>
               <p className="mb-3 text-lg">{hero.t}</p>
               <ul className="vc-list">{heroBullets.map(t => <li key={t}><Check size={16} />{t}</li>)}</ul>
               <Button className="vc-pill" onClick={() => setScreen('weiche')}>Check starten →</Button>
               <ul className="vc-trust-line">
                 <li><span className="vc-trust-ico"><Lock size={10} /></span>DSGVO-konform</li>
-                <li><span className="vc-trust-ico"><CheckCircle size={10} /></span>Kein Weiterverkauf eurer Daten</li>
+                <li><span className="vc-trust-ico"><CheckCircle size={10} /></span>Kein Weiterverkauf deiner Daten</li>
                 <li><span className="vc-trust-ico"><Zap size={10} /></span>Ergebnis sofort</li>
               </ul>
               <TrustpilotBadge />
@@ -129,8 +129,8 @@ export default function CheckPage() {
       {screen === 'stop' && (
         <main className="vc-main vc-narrow vc-stop">
           <h2 className="vc-q mb-4">Dann passt der Check gerade nicht.</h2>
-          <p className="mb-8">Der Vertriebs-Check zeigt, wie ihr über Anzeigen auf Instagram und Facebook mehr Kunden gewinnt. Wenn das für euch kein Thema ist, sparen wir euch die restlichen Fragen.</p>
-          <Button className="vc-pill" onClick={() => setScreen('weiche')}>Doch, wir überlegen es uns →</Button>
+          <p className="mb-8">Der Vertriebs-Check zeigt, wie du über Anzeigen auf Instagram und Facebook mehr Kunden gewinnst. Wenn das für dich kein Thema ist, sparen wir dir die restlichen Fragen.</p>
+          <Button className="vc-pill" onClick={() => setScreen('weiche')}>Doch, ich überlege es mir →</Button>
         </main>
       )}
 
@@ -138,7 +138,7 @@ export default function CheckPage() {
         <main className="vc-main vc-narrow">
           <div className="vc-progress"><Button variant="ghost" size="icon" aria-label="Zurück" onClick={back}><ArrowLeft size={18} /></Button><span>Alle 6 Fragen beantwortet</span></div>
           <div className="vc-bar" aria-hidden><span style={{ width: '100%' }} /></div>
-          <h2 className="vc-h2"><span className="l">Fast geschafft.</span><span className="b">Wohin dürfen wir eure Auswertung schicken?</span></h2>
+          <h2 className="vc-h2"><span className="l">Fast geschafft.</span><span className="b">Wohin dürfen wir deine Auswertung schicken?</span></h2>
           <form className="vc-form vc-card" onSubmit={submit} noValidate>
             <div className="vc-fields">
               {([
@@ -153,12 +153,12 @@ export default function CheckPage() {
                 </div>
               ))}
             </div>
-            <label className="vc-check"><Checkbox checked={fields.whatsapp_consent} onCheckedChange={v => setFields({ ...fields, whatsapp_consent: v === true })} /><span>Schickt mir meine Auswertung auch per WhatsApp.</span></label>
+            <label className="vc-check"><Checkbox checked={fields.whatsapp_consent} onCheckedChange={v => setFields({ ...fields, whatsapp_consent: v === true })} /><span>Schick mir meine Auswertung auch per WhatsApp.</span></label>
             <label className="vc-check"><Checkbox checked={fields.email_consent} onCheckedChange={v => setFields({ ...fields, email_consent: v === true })} /><span>Ich möchte weitere Tipps zu meiner Auswertung per E-Mail, jederzeit abbestellbar.</span></label>
             <label className="vc-check"><Checkbox checked={fields.privacy} onCheckedChange={v => setFields({ ...fields, privacy: v === true })} /><span>Ich habe die <a href="/check/datenschutz" target="_blank" rel="noreferrer">Datenschutzerklärung</a> gelesen.</span></label>
             {error && <p className="vc-error" role="alert">{error}</p>}
             <Button type="submit" className="vc-pill w-full" disabled={busy}>{busy ? 'Wird ausgewertet …' : 'Auswertung anzeigen →'}</Button>
-            <p className="vc-sub">Jonas meldet sich anschließend kurz bei euch und geht die Auswertung mit euch durch.</p>
+            <p className="vc-sub">Jonas meldet sich anschließend kurz bei dir und geht die Auswertung mit dir durch.</p>
             <TrustpilotBadge />
           </form>
         </main>
