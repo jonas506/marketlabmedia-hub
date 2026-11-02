@@ -76,17 +76,17 @@ export const VC = {
     },
   } as Record<Weg, WegDef>,
   hero: {
-    '': { l: 'Wie gut funktioniert', b: 'Social Media für euren Vertrieb?', t: '6 Fragen, 2 Minuten. Ihr bekommt sofort:' },
-    ads: { l: 'Ihr schaltet Anzeigen.', b: 'Aber sind sie gut?', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, was eure Anzeigen bringen und an welcher Stelle Kunden abspringen.' },
-    start: { l: 'Andere Vertriebe sind auf Instagram.', b: 'Seid ihr startklar?', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, was euch für den Start noch fehlt und womit ihr anfangen solltet.' },
-    leads: { l: 'Schluss mit gekauften Leads.', b: 'Eure eigenen Anfragen.', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, wie viele eurer Anfragen euch wirklich gehören und was euch zu eigenen Anfragen noch fehlt.' },
-    marke: { l: 'Kunden kaufen bei Gesichtern, die sie kennen.', b: 'Kennt man eure Berater?', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, wie sichtbar euer Vertrieb ist und wo Kunden abspringen, bevor sie euch kennen.' },
-    alles: { l: 'Idee, Dreh, Schnitt, Anzeigen.', b: 'Ihr telefoniert nur noch.', t: '6 kurze Fragen, 2 Minuten. Danach seht ihr, was ein System für eigene Anfragen bei euch bräuchte und was wir euch komplett abnehmen.' },
+    '': { l: 'Wie gut funktioniert', b: 'Social Media für deinen Vertrieb?', t: '6 Fragen, 2 Minuten. Du bekommst sofort:' },
+    ads: { l: 'Du schaltest Anzeigen.', b: 'Aber sind sie gut?', t: '6 kurze Fragen, 2 Minuten. Danach siehst du, was deine Anzeigen bringen und an welcher Stelle Kunden abspringen.' },
+    start: { l: 'Andere Vertriebe sind auf Instagram.', b: 'Bist du startklar?', t: '6 kurze Fragen, 2 Minuten. Danach siehst du, was dir für den Start noch fehlt und womit du anfangen solltest.' },
+    leads: { l: 'Schluss mit gekauften Leads.', b: 'Deine eigenen Anfragen.', t: '6 kurze Fragen, 2 Minuten. Danach siehst du, wie viele deiner Anfragen dir wirklich gehören und was dir zu eigenen Anfragen noch fehlt.' },
+    marke: { l: 'Kunden kaufen bei Gesichtern, die sie kennen.', b: 'Kennt man dich?', t: '6 kurze Fragen, 2 Minuten. Danach siehst du, wie sichtbar dein Vertrieb ist und wo Kunden abspringen, bevor sie dich kennen.' },
+    alles: { l: 'Idee, Dreh, Schnitt, Anzeigen.', b: 'Du telefonierst nur noch.', t: '6 kurze Fragen, 2 Minuten. Danach siehst du, was ein System für eigene Anfragen bei dir bräuchte und was wir dir komplett abnehmen.' },
   } as Record<string, { l: string; b: string; t: string }>,
 };
 
 export const heroFor = (v: string | null) => VC.hero[v ?? ''] ?? VC.hero[''];
-export const heroBullets = ['euren Score von 0 bis 100', 'die Stelle, an der ihr die meisten Kunden verliert', 'den ersten Schritt zu mehr eigenen Anfragen'];
+export const heroBullets = ['deinen Score von 0 bis 100', 'die Stelle, an der du die meisten Kunden verlierst', 'den ersten Schritt zu mehr eigenen Anfragen'];
 export const answerSchema = z.array(z.number().int().min(0).max(2)).length(5);
 
 export function evaluate(weg: Weg, answers: number[]) {
