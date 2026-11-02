@@ -101,13 +101,14 @@ export function evaluate(weg: Weg, answers: number[]) {
 }
 
 export const contactSchema = z.object({
-  first_name: z.string().trim().min(1, 'Bitte euren Vornamen eingeben.').max(100),
-  company: z.string().trim().min(1, 'Bitte eure Firma eingeben.').max(200),
+  first_name: z.string().trim().min(1, 'Bitte deinen Vornamen eingeben.').max(100),
+  company: z.string().trim().min(1, 'Bitte deine Firma eingeben.').max(200),
   phone: z.string().trim().regex(/^\+?[0-9 ()/\-]{7,32}$/, 'Bitte eine gültige Handynummer eingeben.').refine(v => v.replace(/\D/g, '').length >= 7, 'Bitte eine gültige Handynummer eingeben.'),
   email: z.string().trim().email('Bitte eine gültige E-Mail-Adresse eingeben.').max(255),
-  whatsapp_consent: z.literal(true, { errorMap: () => ({ message: 'Bitte setzt das Häkchen für die Auswertung per WhatsApp.' }) }),
-  email_consent: z.literal(true, { errorMap: () => ({ message: 'Bitte setzt das Häkchen für die Tipps per E-Mail.' }) }),
-  privacy: z.literal(true, { errorMap: () => ({ message: 'Bitte bestätigt, dass ihr die Datenschutzerklärung gelesen habt.' }) }),
+  // WhatsApp- und E-Mail-Tipps sind freiwillige Einwilligungen und dürfen das Absenden nie blockieren.
+  whatsapp_consent: z.boolean(),
+  email_consent: z.boolean(),
+  privacy: z.literal(true, { errorMap: () => ({ message: 'Bitte bestätige, dass du die Datenschutzerklärung gelesen hast.' }) }),
 });
 
 export const sequenceDays = [1, 2, 4, 6, 9, 14];
