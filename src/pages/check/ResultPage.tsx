@@ -44,19 +44,19 @@ export function ResultView({ data }: { data: Result }) {
   const color = ['rot', 'gelb', 'grün'];
   return (
     <main className="vc-main vc-result">
-      <p className="vc-kicker">Eure persönliche Auswertung</p>
-      <h1 className="vc-h1"><span className="l">{data.first_name},</span><span className="b">{a ? 'hier verliert euer Vertrieb Kunden.' : 'was euch für den Start fehlt.'}</span></h1>
+      <p className="vc-kicker">Deine persönliche Auswertung</p>
+      <h1 className="vc-h1"><span className="l">{data.first_name},</span><span className="b">{a ? 'hier verliert dein Vertrieb Kunden.' : 'das fehlt dir noch für den Start.'}</span></h1>
 
       <section className="vc-panel">
-        <div className="vc-panel-top"><span>Euer Ergebnis</span><span><i className="vc-dot vc-c2" style={{ width: 8, height: 8 }} />Persönlich ausgewertet</span></div>
+        <div className="vc-panel-top"><span>Dein Ergebnis</span><span><i className="vc-dot vc-c2" style={{ width: 8, height: 8 }} />Persönlich ausgewertet</span></div>
         <div className="vc-panel-grid">
-          <Gauge score={r.score} label={`Euer ${r.def.score}`} />
+          <Gauge score={r.score} label={`Dein ${r.def.score}`} />
           <div>
             <div className="vc-leck">
               <div className="vc-label">{r.def.leck}</div>
               {r.weakest ? <><h3><i className={`vc-dot vc-c${r.weakest.score}`} />{r.weakest.name}</h3><p>{r.weakest.text}</p></> : <h3>Keine – alle Stationen sind grün.</h3>}
             </div>
-            <div className="vc-typ"><div className="vc-label">Euer Typ</div><h3>{r.type.name}</h3><p>{r.type.text}</p></div>
+            <div className="vc-typ"><div className="vc-label">Dein Typ</div><h3>{r.type.name}</h3><p>{r.type.text}</p></div>
           </div>
         </div>
       </section>
@@ -72,12 +72,12 @@ export function ResultView({ data }: { data: Result }) {
 
       <section className="vc-two">
         <div className="vc-card">
-          <p className="vc-kicker">{a ? 'So schließen wir die roten Stationen' : 'So startet ihr richtig'}</p>
-          <h2>3 Minuten, die euren Vertrieb verändern</h2>
+          <p className="vc-kicker">{a ? 'So schließen wir die roten Stationen' : 'So startest du richtig'}</p>
+          <h2>3 Minuten, die deinen Vertrieb verändern</h2>
           <div className="vc-video">{data.video_url ? <video src={data.video_url} controls playsInline preload="metadata" poster={preview.url} /> : <img src={preview.url} alt="Vorschau der Auswertung" />}</div>
         </div>
         <div className="vc-card">
-          <p className="vc-kicker">Euer nächster Schritt</p>
+          <p className="vc-kicker">Dein nächster Schritt</p>
           <h2>{r.def.call.h}</h2>
           <p>{r.def.call.t}</p>
           <iframe className="vc-calendar" title="Auswertung mit Jonas (30 Min)" src={data.calendar_url} loading="lazy" />
@@ -105,7 +105,7 @@ export default function ResultPage() {
   useEffect(() => {
     if (isPreview || !token) return;
     void supabase.functions.invoke(`vertriebs-check?action=result&token=${encodeURIComponent(token)}`, { body: { token } }).then(({ data, error }) => {
-      if (error || !data?.answers || !data?.weg) { setError('Diese Auswertung wurde nicht gefunden. Bitte prüft euren Link.'); return; }
+      if (error || !data?.answers || !data?.weg) { setError('Diese Auswertung wurde nicht gefunden. Bitte prüfe deinen Link.'); return; }
       setData(data);
     });
   }, [token, isPreview]);
