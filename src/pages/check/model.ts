@@ -45,33 +45,33 @@ export const VC = {
     b: {
       label: 'Weg B (will starten)',
       score: 'Startklar-Score', leck: 'Größte Baustelle',
-      call: { h: 'Eure ersten 90 Tage planen', t: 'In 30 Minuten plane ich mit euch den Start: welche Videos, welches Budget, wer die Anfragen anruft. Dazu gehe ich die konkreten Lösungsvorschläge für eure Baustellen mit euch durch. Kostenlos und unverbindlich.' },
+      call: { h: 'Deine ersten 90 Tage planen', t: 'In 30 Minuten plane ich mit dir den Start: welche Videos, welches Budget, wer die Anfragen anruft. Dazu gehe ich die konkreten Lösungsvorschläge für deine Baustellen mit dir durch. Kostenlos und unverbindlich.' },
       questions: [
-        { key: 'sichtbarkeit', name: 'Sichtbarkeit', q: 'Was gibt es schon von euch zu sehen?', a: ['Noch nichts', 'Website oder Profil', 'Videos mit unseren Beratern'], t: [
-          'Wer euch sucht, findet nichts. Bevor die erste Anzeige läuft, braucht es Inhalte, die Vertrauen aufbauen.',
-          'Ein Profil ist eine Basis. Für Anzeigen fehlen noch Videos, in denen eure Berater zu sehen sind.',
-          'Ihr habt Material. Daraus lassen sich direkt die ersten Anzeigen bauen.'] },
-        { key: 'kamera', name: 'Gesichter', q: 'Würden eure Berater vor die Kamera gehen?', a: ['Eher nicht', 'Einzelne schon', 'Ja'], t: [
+        { key: 'sichtbarkeit', name: 'Sichtbarkeit', q: 'Was gibt es schon von dir zu sehen?', a: ['Noch nichts', 'Website oder Profil', 'Videos mit mir oder meinem Team'], t: [
+          'Wer dich sucht, findet nichts. Bevor die erste Anzeige läuft, braucht es Inhalte, die Vertrauen aufbauen.',
+          'Ein Profil ist eine Basis. Für Anzeigen fehlen noch Videos, in denen du zu sehen bist.',
+          'Du hast Material. Daraus lassen sich direkt die ersten Anzeigen bauen.'] },
+        { key: 'kamera', name: 'Gesichter', q: 'Würdest du bzw. dein Team vor die Kamera gehen?', a: ['Eher nicht', 'Teilweise', 'Ja'], t: [
           'Ohne Gesichter wird es schwer. Bei Geld und Immobilien kaufen Kunden bei Menschen, die sie schon gesehen haben.',
           'Ein, zwei Gesichter reichen für den Start. Damit lässt sich der erste Drehtag planen.',
-          'Beste Voraussetzung. Eure Berater werden zum Grund, warum Kunden bei euch anfragen.'] },
-        { key: 'tempo', name: 'Tempo', q: 'Wer würde neue Anfragen anrufen?', a: ['Noch offen', 'Die Berater nebenbei', 'Ein fester Ansprechpartner'], t: [
+          'Beste Voraussetzung. Du wirst zum Grund, warum Kunden bei dir anfragen.'] },
+        { key: 'tempo', name: 'Tempo', q: 'Wer würde neue Anfragen anrufen?', a: ['Noch offen', 'Ich bzw. wir nebenbei', 'Jemand, der sich fest darum kümmert'], t: [
           'Ohne festen Rückruf verpufft das Werbebudget. Wer nicht in der ersten Stunde anruft, verliert die meisten Anfragen.',
           'Nebenbei klappt am Anfang. Ab 20 Anfragen pro Woche bleibt dann aber etwas liegen.',
-          'Ein fester Ansprechpartner ist der wichtigste Baustein. Damit seid ihr bereit.'] },
-        { key: 'kapazitaet', name: 'Kapazität', q: 'Wie viele zusätzliche Termine schafft euer Team pro Woche?', a: ['Unter 5', '5 bis 15', 'Über 15'], t: [
+          'Ein fester Ansprechpartner ist der wichtigste Baustein. Damit bist du bereit.'] },
+        { key: 'kapazitaet', name: 'Kapazität', q: 'Wie viele zusätzliche Termine schaffst du bzw. dein Team pro Woche?', a: ['Unter 5', '5 bis 15', 'Über 15'], t: [
           'Für wenige Termine lohnen sich Anzeigen selten. Erst Beraterzeit schaffen, dann starten.',
           'Genug für einen sauberen Start mit überschaubarem Budget.',
           'Viel Kapazität. Hier lohnt sich ein Start mit mehr Budget.'] },
-        { key: 'zielgruppe', name: 'Zielgruppe', q: 'Wisst ihr, welche Kunden ihr ansprechen wollt?', a: ['Noch nicht', 'Grob', 'Genau'], t: [
-          'Ohne klare Zielgruppe zahlt ihr für Klicks von Leuten, die nie kaufen.',
+        { key: 'zielgruppe', name: 'Zielgruppe', q: 'Weißt du, welche Kunden du ansprechen willst?', a: ['Noch nicht', 'Grob', 'Genau'], t: [
+          'Ohne klare Zielgruppe zahlst du für Klicks von Leuten, die nie kaufen.',
           'Grob reicht für den Start. Genauer wird es mit Einkommen, Eigenkapital und Region.',
-          'Ihr kennt euren Kunden. Damit lassen sich die Anzeigen von Tag eins an scharf stellen.'] },
+          'Du kennst deinen Kunden. Damit lassen sich die Anzeigen von Tag eins an scharf stellen.'] },
       ],
       typ(t: number) {
         if (t <= 3) return { name: 'Erst Grundlagen', text: 'Bevor die erste Anzeige läuft, fehlen noch ein paar Bausteine.' };
-        if (t <= 7) return { name: 'Fast startklar', text: 'Mit zwei, drei Bausteinen könnt ihr in wenigen Wochen starten.' };
-        return { name: 'Startklar', text: 'Ihr könnt direkt mit den ersten Anzeigen loslegen.' };
+        if (t <= 7) return { name: 'Fast startklar', text: 'Mit zwei, drei Bausteinen kannst du in wenigen Wochen starten.' };
+        return { name: 'Startklar', text: 'Du kannst direkt mit den ersten Anzeigen loslegen.' };
       },
     },
   } as Record<Weg, WegDef>,
