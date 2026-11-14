@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actionLabel, cleanName, isTestEmail, normalizePhone, playbookFormSchema, BERATER, UMSATZ } from './model';
+import { actionLabel, hasActionExpired, cleanName, isTestEmail, normalizePhone, playbookFormSchema, BERATER, UMSATZ } from './model';
 
 const valid = { first_name: 'Maximilian', last_name: 'Mustermann', email: 'max@firma.de', phone: '151 23456789', privacy: true as const };
 
@@ -35,5 +35,13 @@ describe('Leads-Playbook Formular', () => {
   it('beendet die Aktion nach ihrem Datum', () => {
     expect(actionLabel('2027-01-01', new Date('2026-11-14T12:00:00Z'))).toBe('Nur bis 01.01.2027 kostenfrei:');
     expect(actionLabel('2026-01-01', new Date('2026-11-14T12:00:00Z'))).toBe('Kostenfrei:');
+  });
+});
+
+describe('Playbook-Aktionszeitraum', () => {
+  it('endet erst nach dem gesetzten Aktionstag', () => {
+    expect(hasActionExpired('2026-11-14', new Date('2026-11-14T21:00:00Z'))).toBe(false);
+    expect(hasActionExpired('2026-11-14', new Date('2026-11-14T23:00:00Z'))).toBe(true);
+    expect(hasActionExpired(null, new Date('2026-11-14T23:00:00Z'))).toBe(false);
   });
 });

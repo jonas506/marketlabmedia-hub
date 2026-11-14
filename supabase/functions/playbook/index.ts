@@ -133,13 +133,14 @@ Deno.serve(async (req) => {
       if (error) throw error;
       if (!submission) return json({ error: 'Dieser Playbook-Link ist ungültig.' }, 404);
       if (action === 'skip') {
-        await db.from('playbook_submissions').update({ skipped_at: new Date().toISOString(), step2_completed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', submission.id);
+        const { error: saveError } = await db.from('playbook_submissions').update({ skipped_at: new Date().toISOString(), step2_completed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', submission.id);
+        if (saveError) throw saveError;
         return json({ success: true });
       }
       const answers = z.object({ berater_typ: z.enum(BERATER), umsatz_stufe: z.enum(UMSATZ) }).parse(body);
-      await db.from('playbook_submissions').update({ ...answers, step2_completed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', submission.id);
+      const { error: saveError } = await db.from('playbook_submissions').update({ ...answers, step2_completed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', submission.id);
+      if (saveError) throw saveError;
       try {
-        const { data: owner } = await db.from('user_roles').select('user_id').eq('role', 'admin').order('created_at').limit(1).maybeSingle();
         if (submission.contact_id) {
           const { data: contact } = await db.from('crm_contacts').select('tags').eq('id', submission.contact_id).maybeSingle();
           const tags = [...new Set([...(contact?.tags || []), `berater:${answers.berater_typ}`])];
@@ -147,7 +148,6 @@ Deno.serve(async (req) => {
         }
         if (submission.lead_id) {
           await db.from('crm_leads').update({ next_step: `Anrufen (15 Min) – Playbook, ${answers.berater_typ}, ${answers.umsatz_stufe}`, last_activity_at: new Date().toISOString() }).eq('id', submission.lead_id);
-          await db.from('crm_activities').insert({ lead_id: submission.lead_id, contact_id: submission.contact_id, type: 'note', title: `Playbook Schritt 2: ${answers.berater_typ}, ${answers.umsatz_stufe}`, created_by: owner?.user_id, metadata: { submission_id: submission.id } });
         }
       } catch (crmError) { console.error('playbook step2 CRM sync failed', crmError); }
       return json({ success: true });

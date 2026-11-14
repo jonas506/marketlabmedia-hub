@@ -15,3 +15,5 @@
 - Scope opt-in-only Playbook presentation overrides under `.pb-optin` so thank-you, download and admin views retain their existing presentation.
 
 - Reuse PlaybookAction for follow-up download and progression controls so their visual treatment stays consistent without changing submission handlers.
+
+- Record Playbook step-two activities atomically through a submission trigger, using the CRM owner and deduplicating repeats, so missing role timestamps cannot silently lose activity records.

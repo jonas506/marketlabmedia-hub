@@ -41,3 +41,9 @@ export function actionLabel(date: string | null, today = new Date()) {
   const [year, month, day] = date.split('-');
   return `Nur bis ${day}.${month}.${year} kostenfrei:`;
 }
+
+export function hasActionExpired(date: string | null, today = new Date()) {
+  if (!date) return false;
+  const end = new Date(`${date}T23:59:59+01:00`);
+  return !Number.isNaN(end.getTime()) && end <= today;
+}

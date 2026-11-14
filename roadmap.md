@@ -1,5 +1,9 @@
 # Roadmap
 
+## Playbook Heartbeat-Vorlage (14.11.2026)
+- [x] Opt-in-Aufbau und exakte Texte, Desktop 1512×771 und 1440×900 sowie Handy 390 px geprüft, Vergleichsscreenshots erstellt
+- [x] Schritt-2-/Überspringen-Aktivität zuverlässig gespeichert und mit zwei markierten @example.com-Einträgen end-to-end geprüft; ursprünglichen Test-Lead einmal ergänzt und erhalten. Neun Tests bestanden; nicht veröffentlicht.
+
 ## Letzte Playbook-Korrekturen (14.11.2026)
 - [x] Schrift, kompakter Einstieg, Schritt 2 und Abschluss sowie Download nach Vorgabe
 - [x] Test-Lead nur gelesen und erhalten; Antworten, PDF, Consent und Erstkontakt bestätigt, Anforderungsaktivität vorhanden, Schritt-2-Aktivität fehlt. Keine Mail-/Meta-Protokolle, Slack-Testguard aktiv. Screenshots Desktop/Handy geprüft; acht Tests bestanden, nicht veröffentlicht.

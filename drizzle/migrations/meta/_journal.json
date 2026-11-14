@@ -141,6 +141,13 @@
       "when": 1794692465627,
       "tag": "0019_playbook_contact_name_update",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794694154163,
+      "tag": "0020_playbook_step2_activity",
+      "breakpoints": true
     }
   ]
 }
