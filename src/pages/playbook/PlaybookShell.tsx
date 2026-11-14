@@ -14,12 +14,12 @@ function Consent({ current, onDecide, home }: { current: Choice | null; onDecide
   </div>;
 }
 
-export default function PlaybookShell({ children, noindex = false, home = false }: { children: React.ReactNode; noindex?: boolean; home?: boolean }) {
+export default function PlaybookShell({ children, noindex = false, home = false, followup = false }: { children: React.ReactNode; noindex?: boolean; home?: boolean; followup?: boolean }) {
   const [consent, setConsent] = useState<Choice | null>(() => readConsent()?.choice ?? null);
   const [bannerOpen, setBannerOpen] = useState(() => !readConsent());
   useEffect(() => {
     const link = document.createElement('link');
-    link.rel = 'stylesheet'; link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500&display=swap'; document.head.append(link);
+    link.rel = 'stylesheet'; link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap'; document.head.append(link);
     const previous = document.title;
     document.title = home ? 'Das Leads-Playbook 2027 · Marketlab Media' : 'Dein Leads-Playbook 2027 · Marketlab Media';
     const meta = document.createElement('meta'); meta.name = 'robots'; meta.content = noindex ? 'noindex, nofollow' : 'index, follow'; document.head.append(meta);
@@ -32,7 +32,7 @@ export default function PlaybookShell({ children, noindex = false, home = false 
     return () => { link.remove(); meta.remove(); description.remove(); tags.forEach((tag) => tag.remove()); document.title = previous; };
   }, [home, noindex]);
   function decide(choice: Choice) { setConsent(choice); setBannerOpen(false); chooseConsent(choice).catch(() => undefined); }
-  return <div className={home ? 'pb pb-optin' : 'pb'}>
+  return <div className={home ? 'pb pb-optin' : followup ? 'pb pb-followup' : 'pb'}>
     <header className="pb-header"><a href="/playbook" aria-label="Marketlab Media – Leads-Playbook"><img src={logo.url} alt="Marketlab Media" /></a></header>
     {children}
     <footer className="pb-footer"><span>© 2026 Marketlab Media</span><a href="/playbook/datenschutz">Datenschutz</a><a href="https://marketlab-media.de/impressum" target="_blank" rel="noreferrer">Impressum</a><button type="button" onClick={() => setBannerOpen(true)}>Cookie-Einstellungen</button></footer>

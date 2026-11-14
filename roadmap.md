@@ -1,5 +1,9 @@
 # Roadmap
 
+## Letzte Playbook-Korrekturen (14.11.2026)
+- [x] Schrift, kompakter Einstieg, Schritt 2 und Abschluss sowie Download nach Vorgabe
+- [x] Test-Lead nur gelesen und erhalten; Antworten, PDF, Consent und Erstkontakt bestätigt, Anforderungsaktivität vorhanden, Schritt-2-Aktivität fehlt. Keine Mail-/Meta-Protokolle, Slack-Testguard aktiv. Screenshots Desktop/Handy geprüft; acht Tests bestanden, nicht veröffentlicht.
+
 ## Playbook-Korrekturen (14.11.2026)
 - [x] Exakte Kopf- und Formulartexte, Icons, kompakte Desktop-/Handy-Anordnung nur auf /playbook
 - [x] Desktop 1440×900 und 1512×771 sowie Handy 390 px geprüft, Screenshots bereitgestellt; nicht veröffentlicht. Lokale Logo-Auslieferung für Screenshots mit Originaldatei überbrückt; acht Tests bestanden, Formular nicht abgesendet.

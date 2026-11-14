@@ -13,3 +13,5 @@
 - CRM contact matching/upsert lives only in DB functions (crm_match_contact, crm_upsert_contact, crm_merge_contacts) so the crm-api function, CSV import and lead trigger share one dedupe rule.
 - Reuse scoped ClientLogos on check start/results; expose only the two public Trustpilot settings via the existing funnel function, preserving admin-only access to full settings.
 - Scope opt-in-only Playbook presentation overrides under `.pb-optin` so thank-you, download and admin views retain their existing presentation.
+
+- Reuse PlaybookAction for follow-up download and progression controls so their visual treatment stays consistent without changing submission handlers.

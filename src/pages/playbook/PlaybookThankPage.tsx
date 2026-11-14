@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import { Check, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import PlaybookAction from './PlaybookAction';
 import { supabase } from '@/integrations/supabase/client';
 import PlaybookShell from './PlaybookShell';
 import { BERATER, UMSATZ } from './model';
@@ -30,7 +32,7 @@ export default function PlaybookThankPage() {
   }, [token, preview]);
 
   async function step2() {
-    if (!advisor || !revenue) { setError('Bitte beantworte beide Fragen – oder überspringe diesen Schritt.'); return; }
+    if (!advisor || !revenue) { setError('Bitte beantworte beide Fragen oder überspringe diesen Schritt.'); return; }
     setError(''); setSending(true);
     if (preview) { setDone(true); setSending(false); return; }
     const { data, error: requestError } = await supabase.functions.invoke('playbook?action=step2', { body: { token, berater_typ: advisor, umsatz_stufe: revenue } });
@@ -46,31 +48,27 @@ export default function PlaybookThankPage() {
   }
   function download() { track('download'); }
 
-  return <PlaybookShell noindex><main className="pb-thanks">
+  return <PlaybookShell noindex followup><main className="pb-thanks">
     {error && !lead && <><h1>Link nicht gefunden</h1><p className="pb-thanks-intro">{error}</p></>}
     {!lead && !error && <p className="pb-thanks-intro">Dein Playbook wird geladen …</p>}
-    {lead && !done && <>
-      <p className="pb-thanks-greeting">Hallo, {lead.first_name}.</p>
-      <p className="pb-thanks-kicker">Fast geschafft</p>
-      <h1>Dein Playbook ist unterwegs.</h1>
-      <p className="pb-thanks-intro">Wir haben deine Ausgabe an <strong>{lead.email}</strong> geschickt. Der Download ist unten schon bereit.</p>
-      <div className="pb-button-shell"><a className="pb-button" href={`/playbook/download/${token}`} onClick={download}><Download />Jetzt herunterladen</a></div>
-      <p className="pb-thanks-note">Damit dein Gespräch mit uns direkt konkret wird, sag uns noch kurz zwei Dinge über dich.</p>
-      <p className="pb-question-kicker">Frage 1 von 2</p><h2>Was machst du?</h2>
-      <div className="pb-answers">{BERATER.map((item) => <button type="button" className={`pb-answer ${advisor === item ? 'selected' : ''}`} key={item} onClick={() => setAdvisor(item)}><span>{item}</span></button>)}</div>
-      <p className="pb-question-kicker">Frage 2 von 2</p><h2>Wo stehst du gerade mit dem Monatsumsatz?</h2>
-      <div className="pb-answers">{UMSATZ.map((item) => <button type="button" className={`pb-answer ${revenue === item ? 'selected' : ''}`} key={item} onClick={() => setRevenue(item)}><span>{item}</span></button>)}</div>
+    {lead && !done && <section className="pb-step-card">
+      <p className="pb-thanks-kicker"><svg viewBox="0 0 19 14" fill="none" aria-hidden="true"><path d="M1 13 13 1M6 13 18 1" stroke="currentColor" strokeWidth="1.6" /></svg>Schritt 2 von 2</p>
+      <h1>{lead.first_name}, noch zwei kurze Fragen.</h1>
+      <p className="pb-thanks-intro">Damit wir dir die passenden Beispiele schicken.</p>
+      <p className="pb-question-kicker">Frage 1 von 2</p><h2>Was für ein Berater bist du?</h2>
+      <div className="pb-answers">{BERATER.map((item) => <Button type="button" aria-pressed={advisor === item} className={`pb-answer ${advisor === item ? 'selected' : ''}`} key={item} onClick={() => setAdvisor(item)}><span>{item}{advisor === item && <Check aria-hidden="true" />}</span></Button>)}</div>
+      <p className="pb-question-kicker">Frage 2 von 2</p><h2>Wie viel Umsatz machst du im Monat durchschnittlich?</h2>
+      <div className="pb-answers">{UMSATZ.map((item) => <Button type="button" aria-pressed={revenue === item} className={`pb-answer ${revenue === item ? 'selected' : ''}`} key={item} onClick={() => setRevenue(item)}><span>{item}{revenue === item && <Check aria-hidden="true" />}</span></Button>)}</div>
       {error && <p className="pb-error">{error}</p>}
-      <div className="pb-button-shell"><button className="pb-button" onClick={step2} disabled={sending}>{sending ? 'Wird gespeichert …' : 'Weiter zum Download →'}</button></div>
-      <button className="pb-skip" type="button" onClick={skip} disabled={sending}>Überspringen und direkt zum Download</button>
-    </>}
+      <PlaybookAction onClick={step2} disabled={sending}>{sending ? 'Wird gespeichert …' : 'Weiter zu meinem Playbook'}</PlaybookAction>
+      <Button variant="link" className="pb-skip" type="button" onClick={skip} disabled={sending}>Überspringen</Button>
+    </section>}
     {lead && done && <>
-      <p className="pb-thanks-kicker">Viel Erfolg beim Umsetzen!</p>
-      <h1>Deine nächsten 5 Minuten könnten dein <strong>2027 verändern.</strong></h1>
+      <h1>Danke, {lead.first_name}. Dein Playbook ist fertig.</h1>
       <img className="pb-final-book" src={cover.url} alt="Dein Leads-Playbook 2027" />
-      <p className="pb-thanks-intro">Dein Leads-Playbook 2027 ist bereit.</p>
-      <div className="pb-button-shell"><a className="pb-button" href={`/playbook/download/${token}`} onClick={download}><Download />Playbook herunterladen</a></div>
-      <p className="pb-thanks-note">Der Download-Link liegt auch in deiner Mail. Wir melden uns in den nächsten Tagen kurz bei dir.</p>
+      <PlaybookAction href={`/playbook/download/${token}`} onClick={download} subtitle={`PDF · 20 Seiten · persönliche Ausgabe für ${lead.first_name} ${lead.last_name}`}>Playbook herunterladen</PlaybookAction>
+      <p className="pb-thanks-note">Wir haben es dir auch an {lead.email} geschickt.</p>
+      <aside className="pb-call-note"><Phone aria-hidden="true" /><div><h2>Wir rufen dich an</h2><p>Jonas oder jemand aus seinem Team meldet sich kurz telefonisch bei dir und schaut mit dir, welche der 7 Phasen dir noch fehlt. Kein Verkaufsgespräch, wenn du das nicht willst.</p></div></aside>
     </>}
   </main></PlaybookShell>;
 }
