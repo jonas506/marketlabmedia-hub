@@ -1,5 +1,9 @@
 # Roadmap
 
+## Playbook-Korrekturen (14.11.2026)
+- [x] Exakte Kopf- und Formulartexte, Icons, kompakte Desktop-/Handy-Anordnung nur auf /playbook
+- [x] Desktop 1440×900 und 1512×771 sowie Handy 390 px geprüft, Screenshots bereitgestellt; nicht veröffentlicht. Lokale Logo-Auslieferung für Screenshots mit Originaldatei überbrückt; acht Tests bestanden, Formular nicht abgesendet.
+
 ## Leads-Playbook 2027 (14.11.2026)
 - [x] Opt-in /playbook mit eigenem Design, Formular, Trustpilot und Consent
 - [x] Serverseitige CRM-Anlage, Token, Tracking, Slack und E-Mail

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, CheckSquare, FileText, Clock } from 'lucide-react';
+import { Check, User, Mail, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import PlaybookShell from './PlaybookShell';
 import TrustpilotBadge from './TrustpilotBadge';
-import { playbookFormSchema, isTestEmail } from './model';
+import { playbookFormSchema, isTestEmail, actionLabel } from './model';
 import { mountTracking, track, submitTracking, trackLead } from './tracking';
 import cover from '@/assets/playbook-cover-mockup.png.asset.json';
 
@@ -64,6 +65,7 @@ export default function PlaybookPage() {
   const field = (key: 'first_name' | 'last_name' | 'email' | 'phone', label: string, type = 'text', autoComplete: string = key) => <div className="pb-field">
     <label className="pb-sr" htmlFor={`pb-${key}`}>{label}</label>
     <div className="pb-input-shell">
+      <span className="pb-field-icon" aria-hidden="true">{key === 'email' ? <Mail /> : key === 'phone' ? <Phone /> : <User />}</span>
       {key === 'phone' && <span className="pb-phone-prefix" aria-hidden="true">+49</span>}
       <input id={`pb-${key}`} name={key} type={type} inputMode={key === 'phone' ? 'tel' : undefined} autoComplete={autoComplete} placeholder={label} value={fields[key]} onChange={(event) => update(key, event.target.value)} aria-invalid={!!errors[key]} aria-describedby={errors[key] ? `pb-${key}-error` : undefined} />
     </div>
@@ -73,11 +75,11 @@ export default function PlaybookPage() {
   return <PlaybookShell home>
     <main className="pb-home">
       <section className="pb-hero" aria-labelledby="pb-title">
-        <p className="pb-kicker"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m2 9 2-6 2 4 2-6 2 6 2-4 2 6-2 6H4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>Dein kostenloses Playbook für 2027</p>
-        {settings.aktion_bis && <p className="pb-cost">Nur bis {settings.aktion_bis.split('-').reverse().join('.')} kostenfrei:</p>}
-        <h1 className="pb-title" id="pb-title">Social Media in 2027 meistern.<strong>Die Komplettanleitung auf 20 Seiten.</strong></h1>
-        <p className="pb-subtitle">So kommst du 2027 über Social Media an Leads, die nur dir gehören.</p>
-        <div className="pb-chips"><span><FileText />20 Seiten</span><span className="pb-chip-dot" /><span><CheckSquare />7 Phasen</span><span className="pb-chip-dot" /><span><Clock />Sofort als PDF</span></div>
+        <p className="pb-kicker"><svg viewBox="0 0 19 14" fill="none" aria-hidden="true"><path d="M1 13 13 1M6 13 18 1" stroke="currentColor" strokeWidth="1.6" /></svg>Für Makler, Finanzberater und Kapitalanlage-Vertriebe</p>
+        <p className="pb-cost">{actionLabel(settings.aktion_bis)}</p>
+        <h1 className="pb-title" id="pb-title"><span className="pb-title-box">Social Media</span><span className="pb-title-line">in 2027 meistern.</span></h1>
+        <p className="pb-subtitle">Der schnellste Weg, über Social Media an Leads zu kommen, die nur dir gehören. <span>Sofort umsetzbar.</span></p>
+        <div className="pb-chips">{['Funnel-Handbuch', 'Millionen-Euro-Vertrieb aufbauen', 'Social-Media-Masterclass'].map((text) => <span key={text}><span className="pb-chip-check"><Check /></span>{text}</span>)}</div>
       </section>
       <div className="pb-offer">
         <figure className="pb-book"><img src={settings.cover_bild_url || cover.url} alt="Buch-Mockup: Social Media in 2027 meistern – der Marktführer-Funnel" /></figure>
@@ -85,12 +87,12 @@ export default function PlaybookPage() {
           <form className="pb-form" onSubmit={submit} onFocusCapture={formStarted} noValidate>
             {field('first_name', 'Vorname', 'text', 'given-name')}
             {field('last_name', 'Nachname', 'text', 'family-name')}
-            {field('email', 'E-Mail-Adresse', 'email', 'email')}
+            {field('email', 'E-Mail', 'email', 'email')}
             {field('phone', 'Telefonnummer', 'tel', 'tel')}
             <label className="pb-checkbox"><input type="checkbox" checked={fields.privacy} onChange={(event) => update('privacy', event.target.checked)} aria-describedby={errors.privacy ? 'pb-privacy-error' : undefined} /><span>Ich habe die <a href="/playbook/datenschutz" target="_blank">Datenschutzerklärung</a> gelesen. Marketlab Media darf mich zum Playbook per E-Mail und telefonisch kontaktieren.</span></label>
             {errors.privacy && <p className="pb-error" id="pb-privacy-error">{errors.privacy}</p>}
-            <div className="pb-button-shell"><button className="pb-button" type="submit" disabled={sending}>{sending ? 'Playbook wird vorbereitet …' : 'Jetzt kostenlos sichern →'}</button></div>
-            <p className="pb-note">Kein Abo. Keine versteckten Kosten. Nur das Playbook und ein kurzer Anruf von uns.</p>
+            <div className="pb-button-shell"><Button className="pb-button" type="submit" disabled={sending}><span className="pb-button-copy"><span>{sending ? 'Playbook wird vorbereitet …' : 'Jetzt Playbook kostenfrei sichern'}</span><span>Komplettanleitung auf 20 Seiten</span></span><span className="pb-button-arrow" aria-hidden="true"><span /></span></Button></div>
+            <p className="pb-note">Nach dem Download rufen wir dich kurz an. Kein Weiterverkauf deiner Daten.</p>
             {errors.general && <p className="pb-error" role="alert">{errors.general}</p>}
             <TrustpilotBadge score={settings.trustpilot_score} reviews={settings.trustpilot_reviews} />
           </form>
