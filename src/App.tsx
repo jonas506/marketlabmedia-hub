@@ -63,6 +63,11 @@ import CheckResultPage from "./pages/check/ResultPage";
 import CheckPrivacyPage from "./pages/check/PrivacyPage";
 import CheckUnsubscribePage from "./pages/check/UnsubscribePage";
 import CheckAdmin from "./pages/check/CheckAdmin";
+import PlaybookPage from "./pages/playbook/PlaybookPage";
+import PlaybookThankPage from "./pages/playbook/PlaybookThankPage";
+import PlaybookDownloadPage from "./pages/playbook/PlaybookDownloadPage";
+import PlaybookPrivacyPage from "./pages/playbook/PlaybookPrivacyPage";
+import PlaybookAdmin from "./pages/playbook/PlaybookAdmin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -128,6 +133,11 @@ const App = () => (
                   <Route path="/check/auswertung/:token" element={<CheckResultPage />} />
                   <Route path="/check/datenschutz" element={<CheckPrivacyPage />} />
                   <Route path="/check/abmelden" element={<CheckUnsubscribePage />} />
+                  <Route path="/playbook" element={<PlaybookPage />} />
+                  <Route path="/playbook/danke/:token" element={<PlaybookThankPage />} />
+                  <Route path="/playbook/download/:token" element={<PlaybookDownloadPage />} />
+                  <Route path="/playbook/datenschutz" element={<PlaybookPrivacyPage />} />
+                  <Route path="/playbook/admin" element={<ProtectedRoute adminOnly><PlaybookAdmin /></ProtectedRoute>} />
                   <Route path="/angebot/:token" element={<OfferView />} />
                   <Route path="/dokument/:token" element={<DocumentSign />} />
                   <Route path="/kurs/anmelden" element={<CourseSignup />} />

@@ -15,3 +15,12 @@ export const playbookTemplate = {
   displayName: 'Leads-Playbook: Persönlicher Download',
   previewData: { name: 'Maximilian', url: 'https://hub.marketlab-media.de/playbook/download/00000000-0000-4000-8000-000000000000' },
 } satisfies TemplateEntry;
+
+const PlaybookOwnerMail = ({ name, email, phone, source }: { name?: string; email?: string; phone?: string; source?: string }) => <Html lang="de"><Head /><Preview>Neuer Playbook-Eintrag</Preview><Body style={main}><Container style={container}><Heading style={{ color: '#ECEEF4', fontSize: '26px', fontWeight: 500 }}>Neuer Playbook-Eintrag</Heading><Text style={text}>{name || 'Neuer Kontakt'}<br />{email}<br />{phone}</Text><Text style={text}>Quelle: {source || 'direkt'}</Text></Container></Body></Html>;
+export const playbookOwnerTemplate = {
+  component: PlaybookOwnerMail,
+  to: 'jonas@marketlab-media.de',
+  subject: (data: Record<string, any>) => `Neues Playbook: ${data.name || 'Neuer Kontakt'}`,
+  displayName: 'Leads-Playbook: Interner Hinweis',
+  previewData: { name: 'Maximilian Mustermann', email: 'max@example.com', phone: '+4915112345678', source: 'direkt' },
+} satisfies TemplateEntry;

@@ -4,18 +4,18 @@ import { Check, CheckSquare, FileText, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import PlaybookShell from './PlaybookShell';
 import TrustpilotBadge from './TrustpilotBadge';
-import { playbookFormSchema, PLAYBOOK_PRIVACY_TEXT, isTestEmail } from './model';
-import { mountTracking, track, submitTracking, trackLead, readConsent } from './tracking';
+import { playbookFormSchema, isTestEmail } from './model';
+import { mountTracking, track, submitTracking, trackLead } from './tracking';
 import cover from '@/assets/playbook-cover-mockup.png.asset.json';
 
-type Settings = { aktion_bis: string | null; trustpilot_score: number; trustpilot_reviews: number };
+type Settings = { aktion_bis: string | null; cover_bild_url: string | null; trustpilot_score: number; trustpilot_reviews: number };
 type Fields = { first_name: string; last_name: string; email: string; phone: string; privacy: boolean };
 const empty: Fields = { first_name: '', last_name: '', email: '', phone: '', privacy: false };
 
 export default function PlaybookPage() {
   const navigate = useNavigate();
   const variant = useMemo(() => new URLSearchParams(location.search).get('v'), []);
-  const [settings, setSettings] = useState<Settings>({ aktion_bis: null, trustpilot_score: 4.4, trustpilot_reviews: 11 });
+  const [settings, setSettings] = useState<Settings>({ aktion_bis: null, cover_bild_url: cover.url, trustpilot_score: 4.4, trustpilot_reviews: 11 });
   const [fields, setFields] = useState<Fields>(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
@@ -24,7 +24,7 @@ export default function PlaybookPage() {
 
   useEffect(() => {
     supabase.functions.invoke('playbook?action=settings', { body: {} }).then(({ data }) => {
-      if (data && !data.error) setSettings({ aktion_bis: data.aktion_bis, trustpilot_score: Number(data.trustpilot_score), trustpilot_reviews: Number(data.trustpilot_reviews) });
+      if (data && !data.error) setSettings({ aktion_bis: data.aktion_bis, cover_bild_url: data.cover_bild_url || cover.url, trustpilot_score: Number(data.trustpilot_score), trustpilot_reviews: Number(data.trustpilot_reviews) });
     });
     return mountTracking(() => track('besuch', variant || undefined));
   }, [variant]);
@@ -61,7 +61,7 @@ export default function PlaybookPage() {
     } finally { setSending(false); }
   }
 
-  const field = (key: 'first_name' | 'last_name' | 'email' | 'phone', label: string, type = 'text', autoComplete = key) => <div className="pb-field">
+  const field = (key: 'first_name' | 'last_name' | 'email' | 'phone', label: string, type = 'text', autoComplete: string = key) => <div className="pb-field">
     <label className="pb-sr" htmlFor={`pb-${key}`}>{label}</label>
     <div className="pb-input-shell">
       {key === 'phone' && <span className="pb-phone-prefix" aria-hidden="true">+49</span>}
@@ -80,14 +80,14 @@ export default function PlaybookPage() {
         <div className="pb-chips"><span><FileText />20 Seiten</span><span className="pb-chip-dot" /><span><CheckSquare />7 Phasen</span><span className="pb-chip-dot" /><span><Clock />Sofort als PDF</span></div>
       </section>
       <div className="pb-offer">
-        <figure className="pb-book"><img src={cover.url} alt="Buch-Mockup: Social Media in 2027 meistern – der Marktführer-Funnel" /></figure>
+        <figure className="pb-book"><img src={settings.cover_bild_url || cover.url} alt="Buch-Mockup: Social Media in 2027 meistern – der Marktführer-Funnel" /></figure>
         <div className="pb-form-shell">
           <form className="pb-form" onSubmit={submit} onFocusCapture={formStarted} noValidate>
             {field('first_name', 'Vorname', 'text', 'given-name')}
             {field('last_name', 'Nachname', 'text', 'family-name')}
             {field('email', 'E-Mail-Adresse', 'email', 'email')}
             {field('phone', 'Telefonnummer', 'tel', 'tel')}
-            <label className="pb-checkbox"><input type="checkbox" checked={fields.privacy} onChange={(event) => update('privacy', event.target.checked)} aria-describedby={errors.privacy ? 'pb-privacy-error' : undefined} /><span>{PLAYBOOK_PRIVACY_TEXT.replace('Datenschutzerklärung', '')}<a href="/playbook/datenschutz" target="_blank">Datenschutzerklärung</a>.</span></label>
+            <label className="pb-checkbox"><input type="checkbox" checked={fields.privacy} onChange={(event) => update('privacy', event.target.checked)} aria-describedby={errors.privacy ? 'pb-privacy-error' : undefined} /><span>Ich habe die <a href="/playbook/datenschutz" target="_blank">Datenschutzerklärung</a> gelesen. Marketlab Media darf mich zum Playbook per E-Mail und telefonisch kontaktieren.</span></label>
             {errors.privacy && <p className="pb-error" id="pb-privacy-error">{errors.privacy}</p>}
             <div className="pb-button-shell"><button className="pb-button" type="submit" disabled={sending}>{sending ? 'Playbook wird vorbereitet …' : 'Jetzt kostenlos sichern →'}</button></div>
             <p className="pb-note">Kein Abo. Keine versteckten Kosten. Nur das Playbook und ein kurzer Anruf von uns.</p>

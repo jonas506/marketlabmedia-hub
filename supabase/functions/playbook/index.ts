@@ -49,6 +49,16 @@ async function sendMail(db: any, submission: any) {
       },
     });
     await db.from('playbook_submissions').update({ mail_status: error || data?.error ? 'failed' : 'queued' }).eq('id', submission.id);
+    const source = [submission.attribution?.utm_campaign, submission.attribution?.utm_content].filter(Boolean).join('/') || 'direkt';
+    try {
+      await db.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'leads-playbook-owner',
+          idempotencyKey: `leads-playbook-owner-${submission.id}`,
+          templateData: { name: `${submission.first_name} ${submission.last_name}`, email: submission.email, phone: submission.phone, source },
+        },
+      });
+    } catch (ownerError) { console.error('playbook owner mail failed', ownerError); }
   } catch {
     await db.from('playbook_submissions').update({ mail_status: 'failed' }).eq('id', submission.id);
   }
@@ -70,7 +80,6 @@ async function notifySlack(db: any, submission: any) {
 async function postSubmit(db: any, id: string) {
   const { data: fresh } = await db.from('playbook_submissions').select('*').eq('id', id).single();
   if (!fresh) return;
-  if (fresh.tracking_consent && fresh.event_id_pending) { /* legacy-free guard: CAPI is handled by the caller */ }
   try { await db.functions.invoke('playbook-pdf', { body: { token: fresh.token } }); } catch (error) { console.error('playbook pdf invocation failed', error); }
   await sendMail(db, fresh);
   await notifySlack(db, fresh);
@@ -157,7 +166,8 @@ Deno.serve(async (req) => {
       const path = submission.pdf_status === 'ready' && submission.pdf_path ? submission.pdf_path : FALLBACK_PATH;
       const first = cleanName(submission.first_name).replace(/\s+/g, '-') || 'Playbook';
       const last = cleanName(submission.last_name).replace(/\s+/g, '-') || '2027';
-      const { data, error: signError } = await db.storage.from('playbook').createSignedUrl(path, 3600, { download: `Leads-Playbook-2027_${first}-${last}.pdf` });
+      const filename = path === FALLBACK_PATH ? 'Leads-Playbook-2027_ohne-Name.pdf' : `Leads-Playbook-2027_${first}-${last}.pdf`;
+      const { data, error: signError } = await db.storage.from('playbook').createSignedUrl(path, 3600, { download: filename });
       if (signError || !data?.signedUrl) return json({ error: 'Das PDF ist noch nicht verfügbar. Bitte versuche es gleich erneut.' }, 404);
       return json({ url: data.signedUrl, fallback: path === FALLBACK_PATH });
     }
@@ -181,8 +191,20 @@ Deno.serve(async (req) => {
       return json(output);
     }
 
-    if (action === 'upload_url' || action === 'files') {
+    if (action === 'upload_url' || action === 'files' || action === 'cleanup_test') {
       if (!await adminId(req, db)) return json({ error: 'forbidden' }, 403);
+      if (action === 'cleanup_test') {
+        const token = uuid.parse(body.token);
+        const { data: test } = await db.from('playbook_submissions').select('id,pdf_path').eq('token', token).eq('is_test', true).maybeSingle();
+        if (!test) return json({ success: true, removed: false });
+        if (test.pdf_path?.startsWith('leads/')) {
+          const { error: removeError } = await db.storage.from('playbook').remove([test.pdf_path]);
+          if (removeError) throw removeError;
+        }
+        const { error: deleteError } = await db.from('playbook_submissions').delete().eq('id', test.id).eq('is_test', true);
+        if (deleteError) throw deleteError;
+        return json({ success: true, removed: true });
+      }
       if (action === 'files') {
         const { data, error } = await db.storage.from('playbook').list('vorlage', { limit: 20, sortBy: { column: 'name', order: 'asc' } });
         if (error) throw error;

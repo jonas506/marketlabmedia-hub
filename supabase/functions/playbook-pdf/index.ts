@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
-import { PDFDocument, rgb, setCharacterSpacing } from 'npm:pdf-lib@1.17.1';
+import { PDFDocument, PDFName, rgb, setCharacterSpacing } from 'npm:pdf-lib@1.17.1';
 import fontkit from 'npm:@pdf-lib/fontkit@1.1.1';
 import { z } from 'npm:zod@3.25.76';
 import { cleanName } from '../_shared/playbook-utils.ts';
@@ -76,6 +76,8 @@ async function generate(db: any, token: string) {
     intro.pushOperators(setCharacterSpacing(0));
     pdf.setTitle('Das Leads-Playbook 2027');
     pdf.setAuthor('Marketlab Media');
+    // The uploaded template carries stale XMP metadata; Info metadata is the single source of truth.
+    pdf.catalog.delete(PDFName.of('Metadata'));
     const bytes = await pdf.save();
     const path = `leads/${token}.pdf`;
     const { error: uploadError } = await db.storage.from(BUCKET).upload(path, bytes, { contentType: 'application/pdf', upsert: true });

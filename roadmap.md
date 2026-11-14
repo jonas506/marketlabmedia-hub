@@ -1,12 +1,12 @@
 # Roadmap
 
 ## Leads-Playbook 2027 (14.11.2026)
-- [ ] Opt-in /playbook mit eigenem Design, Formular, Trustpilot und Consent
-- [ ] Serverseitige CRM-Anlage, Token, Tracking, Slack und E-Mail
-- [ ] Danke-Seite mit Schritt 2, Abschluss und signiertem Download
-- [ ] Persönliche PDF-Erzeugung, privater Bucket und Upload-/Status-API
-- [ ] Adminseite, Statistik-Erweiterung und Datenschutztext
-- [ ] Regeltests, Beispielansichten und Mail-Vorschau; nicht veröffentlichen
+- [x] Opt-in /playbook mit eigenem Design, Formular, Trustpilot und Consent
+- [x] Serverseitige CRM-Anlage, Token, Tracking, Slack und E-Mail
+- [x] Danke-Seite mit Schritt 2, Abschluss und signiertem Download
+- [x] Persönliche PDF-Erzeugung, privater Bucket und Upload-/Status-API
+- [x] Adminseite, Statistik-Erweiterung und Datenschutztext
+- [x] Regeltests, Beispielansichten und Mail-Vorschau; nicht veröffentlicht
 
 ## Vertriebs-Check Trust (31.10.2026)
 - [x] Statisches Trustpilot-Badge mit administrierbarer Bewertung und Anzahl ergänzen

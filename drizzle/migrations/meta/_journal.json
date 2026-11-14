@@ -134,6 +134,13 @@
       "when": 1794692067777,
       "tag": "0018_create_leads_playbook",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794692465627,
+      "tag": "0019_playbook_contact_name_update",
+      "breakpoints": true
     }
   ]
 }

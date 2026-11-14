@@ -50,6 +50,7 @@ export default function PlaybookThankPage() {
     {error && !lead && <><h1>Link nicht gefunden</h1><p className="pb-thanks-intro">{error}</p></>}
     {!lead && !error && <p className="pb-thanks-intro">Dein Playbook wird geladen …</p>}
     {lead && !done && <>
+      <p className="pb-thanks-greeting">Hallo, {lead.first_name}.</p>
       <p className="pb-thanks-kicker">Fast geschafft</p>
       <h1>Dein Playbook ist unterwegs.</h1>
       <p className="pb-thanks-intro">Wir haben deine Ausgabe an <strong>{lead.email}</strong> geschickt. Der Download ist unten schon bereit.</p>

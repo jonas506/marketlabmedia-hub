@@ -75,6 +75,7 @@
 .pb-simple p, .pb-simple li { color: var(--pb-sub); line-height: 1.75; }
 .pb-simple a { color: var(--pb-text); }
 .pb-thanks { width: min(880px,calc(100% - 32px)); margin: 24px auto 40px; text-align: center; flex: 1; }
+.pb-thanks-greeting { color: var(--pb-muted); text-transform: uppercase; letter-spacing: .08em; font-size: 14px; margin: 0 0 8px; }
 .pb-thanks-kicker { color: var(--pb-orange); text-transform: uppercase; letter-spacing: .08em; font-size: 14px; font-weight: 500; margin: 0; }
 .pb-thanks h1 { font-size: 40px; line-height: 1.15; font-weight: 500; margin: 12px 0; }
 .pb-thanks h1 strong { color: var(--pb-orange); font-weight: 500; }
@@ -114,7 +115,11 @@
 .pb-mail-cta { display: inline-block; padding: 15px 24px; background: var(--pb-blue); color: var(--pb-text); text-decoration: none; clip-path: polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%); }
 .pb-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 @media (min-width: 901px) {
-  .pb-home { display: flex; flex-direction: column; justify-content: center; padding-bottom: 10px; }
+  .pb-header { padding-top: 18px; padding-bottom: 18px; }
+  .pb-home { display: flex; flex-direction: column; justify-content: center; padding-bottom: 0; }
+  .pb-offer { margin-top: 20px; }
+  .pb-form { padding: 20px 24px; }
+  .pb-footer { margin-top: 12px; }
 }
 @media (max-width: 900px) {
   .pb-header { padding: 20px; }
