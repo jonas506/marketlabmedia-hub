@@ -1,4 +1,5 @@
 import type * as React from 'npm:react@18.3.1';
 import {resultTemplate,ownerTemplate} from './vertriebs-check.tsx';
+import {playbookTemplate} from './playbook.tsx';
 export interface TemplateEntry { component:React.ComponentType<any>;subject:string|((data:Record<string,any>)=>string);displayName?:string;previewData?:Record<string,any>;to?:string; }
-export const TEMPLATES:Record<string,TemplateEntry>={'vertriebs-check-result':resultTemplate,'vertriebs-check-owner':ownerTemplate};
+export const TEMPLATES:Record<string,TemplateEntry>={'vertriebs-check-result':resultTemplate,'vertriebs-check-owner':ownerTemplate,'leads-playbook-result':playbookTemplate};

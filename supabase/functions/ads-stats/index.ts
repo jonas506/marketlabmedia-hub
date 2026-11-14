@@ -52,9 +52,12 @@ Deno.serve(async (req) => {
 
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const funnel = url.searchParams.get("funnel");
-  if (funnel !== null && funnel !== "vertriebs-check") return json({ error: "unbekannter funnel" }, 400);
+  if (funnel !== null && funnel !== "vertriebs-check" && funnel !== "leads-playbook") return json({ error: "unbekannter funnel" }, 400);
   if (funnel === "vertriebs-check") {
     try { return json({ days: await vertriebsCheck(db, from, to, start, end, onlyAds) }); } catch (_e) { return json({ error: "internal_error" }, 500); }
+  }
+  if (funnel === "leads-playbook") {
+    try { return json({ days: await leadsPlaybook(db, from, to, start, end, onlyAds) }); } catch (_e) { return json({ error: "internal_error" }, 500); }
   }
 
   try {
@@ -143,6 +146,48 @@ async function vertriebsCheck(db: any, from: string, to: string, start: string, 
     if (l.kontakt_at || l.termin_at || l.abschluss_at) inc(day, "kontaktiert");
     if (l.termin_at || l.abschluss_at) inc(day, "termine");
     if (l.abschluss_at) inc(day, "abschluss");
+  }
+  return [...days.values()];
+}
+
+// Leads-Playbook: aggregate counts only. Test addresses and their events never count.
+// deno-lint-ignore no-explicit-any
+async function leadsPlaybook(db: any, from: string, to: string, start: string, end: string, onlyAds: boolean) {
+  const STEPS = ["besuch", "formular_start", "eingetragen", "schritt2", "download"] as const;
+  const [events, subs] = await Promise.all([
+    fetchAll<{ session_id: string; step: string; created_at: string; utm_source: string | null }>((a, b) =>
+      db.from("positioning_funnel_events").select("session_id, step, created_at, utm_source").eq("funnel", "leads-playbook")
+        .gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
+    fetchAll<{ created_at: string; is_test: boolean; attribution: Record<string, string | null> | null; kontakt_at: string | null; termin_at: string | null; abschluss_at: string | null }>((a, b) =>
+      db.from("playbook_submissions").select("created_at, is_test, attribution, kontakt_at, termin_at, abschluss_at")
+        .eq("is_test", false).gte("created_at", start).lt("created_at", end).order("created_at").range(a, b)),
+  ]);
+  const days = new Map<string, Record<string, number | string>>();
+  const sets = new Map<string, Record<string, Set<string>>>();
+  for (let t = Date.parse(from); t <= Date.parse(to); t += 86400000) {
+    const d = new Date(t).toISOString().slice(0, 10);
+    days.set(d, { date: d, besucher: 0, formular_start: 0, eingetragen: 0, schritt2: 0, download: 0, leads: 0, kontaktiert: 0, termine: 0, abschluss: 0 });
+    sets.set(d, Object.fromEntries(STEPS.map((s) => [s, new Set<string>()])));
+  }
+  for (const e of events) {
+    const s = sets.get(berlinDay(e.created_at));
+    if (!s || !s[e.step] || (onlyAds && !(e.utm_source && ADS_RE.test(e.utm_source)))) continue;
+    s[e.step].add(e.session_id);
+  }
+  for (const [d, s] of sets) {
+    const day = days.get(d)!;
+    day.besucher = s.besuch.size;
+    for (const k of STEPS.slice(1)) day[k] = s[k].size;
+  }
+  const inc = (day: Record<string, number | string>, key: string) => { day[key] = (day[key] as number) + 1; };
+  for (const lead of subs) {
+    const day = days.get(berlinDay(lead.created_at));
+    const src = lead.attribution?.utm_source;
+    if (!day || (onlyAds && !(src && ADS_RE.test(src)))) continue;
+    inc(day, "leads");
+    if (lead.kontakt_at || lead.termin_at || lead.abschluss_at) inc(day, "kontaktiert");
+    if (lead.termin_at || lead.abschluss_at) inc(day, "termine");
+    if (lead.abschluss_at) inc(day, "abschluss");
   }
   return [...days.values()];
 }

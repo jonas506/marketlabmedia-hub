@@ -2986,6 +2986,175 @@ export type Database = {
         }
         Relationships: []
       }
+      playbook_settings: {
+        Row: {
+          aktion_bis: string | null
+          cover_bild_url: string | null
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          aktion_bis?: string | null
+          cover_bild_url?: string | null
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          aktion_bis?: string | null
+          cover_bild_url?: string | null
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      playbook_submissions: {
+        Row: {
+          abschluss_at: string | null
+          advertising_consent_id: string | null
+          attribution: Json
+          berater_typ: string | null
+          client_ip: string | null
+          client_user_agent: string | null
+          consent_evidence: Json
+          contact_id: string | null
+          created_at: string
+          crm_error: string | null
+          email: string
+          fbc: string | null
+          fbp: string | null
+          first_name: string
+          id: string
+          is_test: boolean
+          kontakt_at: string | null
+          last_name: string
+          lead_id: string | null
+          lead_sent_at: string
+          mail_status: string
+          pdf_error: string | null
+          pdf_path: string | null
+          pdf_status: string
+          phone: string
+          privacy_consent: boolean
+          purchase_sent_at: string | null
+          request_id: string
+          schedule_sent_at: string | null
+          session_id: string | null
+          skipped_at: string | null
+          slack_status: string | null
+          step2_completed_at: string | null
+          termin_at: string | null
+          token: string
+          tracking_consent: boolean
+          umsatz_stufe: string | null
+          updated_at: string
+          variant: string | null
+        }
+        Insert: {
+          abschluss_at?: string | null
+          advertising_consent_id?: string | null
+          attribution?: Json
+          berater_typ?: string | null
+          client_ip?: string | null
+          client_user_agent?: string | null
+          consent_evidence: Json
+          contact_id?: string | null
+          created_at?: string
+          crm_error?: string | null
+          email: string
+          fbc?: string | null
+          fbp?: string | null
+          first_name: string
+          id?: string
+          is_test?: boolean
+          kontakt_at?: string | null
+          last_name: string
+          lead_id?: string | null
+          lead_sent_at?: string
+          mail_status?: string
+          pdf_error?: string | null
+          pdf_path?: string | null
+          pdf_status?: string
+          phone: string
+          privacy_consent?: boolean
+          purchase_sent_at?: string | null
+          request_id: string
+          schedule_sent_at?: string | null
+          session_id?: string | null
+          skipped_at?: string | null
+          slack_status?: string | null
+          step2_completed_at?: string | null
+          termin_at?: string | null
+          token?: string
+          tracking_consent?: boolean
+          umsatz_stufe?: string | null
+          updated_at?: string
+          variant?: string | null
+        }
+        Update: {
+          abschluss_at?: string | null
+          advertising_consent_id?: string | null
+          attribution?: Json
+          berater_typ?: string | null
+          client_ip?: string | null
+          client_user_agent?: string | null
+          consent_evidence?: Json
+          contact_id?: string | null
+          created_at?: string
+          crm_error?: string | null
+          email?: string
+          fbc?: string | null
+          fbp?: string | null
+          first_name?: string
+          id?: string
+          is_test?: boolean
+          kontakt_at?: string | null
+          last_name?: string
+          lead_id?: string | null
+          lead_sent_at?: string
+          mail_status?: string
+          pdf_error?: string | null
+          pdf_path?: string | null
+          pdf_status?: string
+          phone?: string
+          privacy_consent?: boolean
+          purchase_sent_at?: string | null
+          request_id?: string
+          schedule_sent_at?: string | null
+          session_id?: string | null
+          skipped_at?: string | null
+          slack_status?: string | null
+          step2_completed_at?: string | null
+          termin_at?: string | null
+          token?: string
+          tracking_consent?: boolean
+          umsatz_stufe?: string | null
+          updated_at?: string
+          variant?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbook_submissions_advertising_consent_id_fkey"
+            columns: ["advertising_consent_id"]
+            isOneToOne: false
+            referencedRelation: "vertriebs_check_consents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_submissions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_submissions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       positioning_analysis_leads: {
         Row: {
           admin_notes: string | null
@@ -4656,6 +4825,7 @@ export type Database = {
         Returns: number
       }
       next_offer_number: { Args: never; Returns: string }
+      playbook_submit: { Args: { _data: Json }; Returns: Json }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

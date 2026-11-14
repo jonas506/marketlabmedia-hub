@@ -47,6 +47,8 @@ const Body = z.discriminatedUnion("action", [
   })).min(1).max(200) }),
   z.object({ action: z.literal("search"), q: z.string().max(200).optional(), segment: z.enum(SEGMENTS).optional(), event_slug: z.string().max(200).optional(), limit: z.number().int().min(1).max(200).optional() }),
   z.object({ action: z.literal("list_events") }),
+  z.object({ action: z.literal("playbook_upload_url"), datei: z.enum(["vorlage", "ohne_name"]) }),
+  z.object({ action: z.literal("playbook_status") }),
 ]);
 
 const json = (body: unknown, status = 200) =>
@@ -187,6 +189,26 @@ Deno.serve(async (req) => {
           results.push({ index: i, id: leadId, status });
         }
         return json({ results });
+      }
+
+      case "playbook_upload_url": {
+        const path = body.datei === "vorlage"
+          ? "vorlage/Leads-Playbook-2027_Vorlage.pdf"
+          : "vorlage/Leads-Playbook-2027_ohne-Name.pdf";
+        const { data, error } = await db.storage.from("playbook").createSignedUploadUrl(path, { upsert: true });
+        if (error) throw error;
+        return json({ ...data, path });
+      }
+
+      case "playbook_status": {
+        const { data, error } = await db.storage.from("playbook").list("vorlage", { limit: 20, sortBy: { column: "name", order: "asc" } });
+        if (error) throw error;
+        return json({
+          bucket: "playbook",
+          files: (data ?? []).filter((file: any) => file.name !== ".emptyFolderPlaceholder").map((file: any) => ({
+            name: file.name, size: file.metadata?.size ?? 0, updated_at: file.updated_at ?? file.created_at,
+          })),
+        });
       }
 
       case "search": {
